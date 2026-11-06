@@ -44,6 +44,7 @@ function clean(c) {
       week: /^\d{4}-\d{2}-\d{2}$/.test(str(b && b.week, 10)) ? monday(str(b && b.week, 10)) : '',
       day: ['mon', 'tue', 'wed', 'thu', 'fri'].includes(b && b.day) ? b.day : '',
       homework: str(b && b.homework, 4000),
+      section: str(b && b.section, 80),   // Advanced lectures are grouped by section
     })).filter((b) => b.id && b.title),
     announcements: arr(c.announcements, 100).map((a) => ({
       id: id(a && a.id), title: str(a && a.title, 140), body: str(a && a.body, 2000),

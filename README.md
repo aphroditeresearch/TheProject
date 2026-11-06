@@ -248,3 +248,19 @@ All and by Lessons / Breakdowns / Homework, or search a member. **Clear all hand
 (items you marked done are kept). All hand-ins were cleared once automatically after this update.
 
 **Progress**: see "catching members up" above.
+
+
+## Advanced tab
+Members who reach the top level (Enlightened) get an **Advanced** tab next to Breakdowns. Add lectures to it in
+**Admin → Advanced** (section, title, video, summary, homework). They unlock one at a time, like breakdowns, and are
+grouped by section. Nobody below the top level sees the tab or its lectures.
+
+## Homework notifications
+New homework and work that's sent back or approved show as notifications at the top of the Homework tab and as a popup
+in the bottom-right corner. "Watch the lectures for this" opens the videos an assignment is linked to.
+
+## Journal reviews and calendar
+New journal entries are **pending** until an admin approves them in **Admin → Journal**. Only approved entries score on
+the psych leaderboard. Denying needs a short note, which the member sees. Entries posted before this update count as
+approved. The member's journal opens on a month calendar: green days made money, red days lost it, and clicking a day
+shows its entries.

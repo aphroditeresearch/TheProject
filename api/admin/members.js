@@ -12,9 +12,10 @@
 // POST { action:'bulk', userIds:[…], keys:[…], op:'unlock'|'lock'|'reset'|'done'|'undone'|'unlock-done' }
 //      → the same change for many members and many items at once
 // POST { action:'clear-handins' } → delete every hand-in members submitted (items an admin marked done are kept)
-// POST { action:'journal-void', userId, entryId, void:true|false } → void a journal entry (0 points) or restore it
+// POST { action:'journal-review', userId, entryId, status:'approved'|'denied'|'pending', note } → approve a journal entry for the
+//      leaderboard, deny it (0 points), or put it back to pending
 const { readSession, isAdmin, adminIds, kvConfigured, kv, listMembers, loadProgress, saveProgress, loadFlags, json } = require('../_lib');
-const { contentWithDefaults, memberState, loadSubs, saveSub, deleteSub, setOverride, loadCerts, loadPromo, savePromo, findItem, loadJournal, loadEntries, saveEntry, entryPoints } = require('../_gate');
+const { contentWithDefaults, memberState, loadSubs, saveSub, deleteSub, setOverride, loadCerts, loadPromo, savePromo, findItem, loadJournal, loadEntries, saveEntry, entryPoints, entryStatus, basePoints } = require('../_gate');
 const { signAll } = require('../_blob');
 
 const ID = /^\d{5,25}$/;
@@ -80,13 +81,17 @@ module.exports = async (req, res) => {
 
     if (!ID.test(String(userId || ''))) return json(res, 400, { error: 'bad_target' });
 
-    if (body.action === 'journal-void') {
+    if (body.action === 'journal-review' || body.action === 'journal-void') {
       const entries = await loadEntries(userId);
       const e = entries[String(body.entryId || '')];
       if (!e) return json(res, 404, { error: 'no_entry' });
-      e.void = !!body.void; e.voidBy = e.void ? who : null;
+      const status = body.action === 'journal-void' ? (body.void ? 'denied' : 'approved') : body.status;
+      if (!['approved', 'denied', 'pending'].includes(status)) return json(res, 400, { error: 'bad_status' });
+      e.status = status; e.void = status === 'denied';
+      e.reviewedBy = status === 'pending' ? null : who; e.reviewedAt = status === 'pending' ? null : new Date().toISOString();
+      e.reviewNote = typeof body.note === 'string' ? body.note.trim().slice(0, 500) : '';
       await saveEntry(userId, e);
-      return json(res, 200, { saved: true });
+      return json(res, 200, { saved: true, status });
     }
 
     if (body.action === 'promote') {
@@ -146,7 +151,7 @@ module.exports = async (req, res) => {
       try { st = await memberState(m.id, m.roles || [], false, content); } catch (e) {}
       Object.values(st.subs).forEach((sb) => (sb.files || []).forEach((f) => files.push(f)));
       Object.values(certs).forEach((c) => files.push(c.file));
-      const ents = Object.values(entries).sort((a, b) => (String(b.date) + (b.time || '')).localeCompare(String(a.date) + (a.time || ''))).map((e) => Object.assign({}, e, { points: entryPoints(e) }));
+      const ents = Object.values(entries).sort((a, b) => (String(b.date) + (b.time || '')).localeCompare(String(a.date) + (a.time || ''))).map((e) => Object.assign({}, e, { status: entryStatus(e), points: entryPoints(e), worth: basePoints(e) }));
       ents.forEach((e) => (e.files || []).forEach((f) => files.push(f)));
       return Object.assign({}, m, {
         progress, flags, subs: st.subs, overrides: st.overrides, promo: st.promo,

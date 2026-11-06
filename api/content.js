@@ -61,10 +61,10 @@ module.exports = async (req, res) => {
   chains.main.concat(chains.advanced).forEach((b) => {
     const key = bdKey(b), a = access.breakdowns[key] || { open: false, reason: 'level' };
     if (a.reason === 'hidden') return;
-    const slot = { id: b.id, kind: bdKind(b), week: b.week || '', day: b.day || '' };
+    const slot = { id: b.id, kind: bdKind(b), week: b.week || '', day: b.day || '', section: b.section || '', createdAt: b.createdAt || '' };
     if (!a.open) { out.breakdowns.push(Object.assign(slot, { open: false, reason: a.reason })); return; }
     out.breakdowns.push(Object.assign(slot, { title: b.title, date: b.date || '', summary: b.summary || '', video: b.video || '', link: b.link || '',
-      homework: b.homework || BD_TASK[slot.kind], createdAt: b.createdAt || '', open: true, passed: a.passed, sub: withSub(key) }));
+      homework: b.homework || BD_TASK[slot.kind], open: true, passed: a.passed, sub: withSub(key) }));
   });
   out.announcements = (content.announcements || []).filter((a) => !a.expires || Date.parse(a.expires) > now);
 

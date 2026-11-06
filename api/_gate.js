@@ -160,7 +160,7 @@ const BD_TASK = {
   daily: 'Mark up today\'s chart the way it was broken down: the range, the liquidity taken, your entry, stop and target. Upload a screenshot of your mark-up.',
   weekly: 'Mark up the week: the weekly range, the key highs and lows, and what each day did. Upload a screenshot of your mark-up.',
   outlook: 'Mark up your plan for next week: key levels, your bias, and what you need to see before you take a trade. Upload a screenshot of your mark-up.',
-  advanced: 'Mark up the chart from this breakdown and explain each step in your own words. Upload a screenshot of your mark-up.',
+  advanced: 'Write up what this lecture covered in your own words, then find examples on your own charts and upload screenshots of them.',
 };
 function bdKind(b) { return ['daily', 'weekly', 'outlook', 'advanced'].includes(b && b.kind) ? b.kind : 'daily'; }
 function bdOrderKey(b) {
@@ -225,8 +225,17 @@ async function saveJournal(userId, j) { await kv(['SET', 'journal:' + userId, JS
 async function loadEntries(userId) { return kvConfigured() ? hashToObj(await kv(['HGETALL', 'jentries:' + userId]), true) : {}; }
 async function saveEntry(userId, e) { await kv(['HSET', 'jentries:' + userId, e.id, JSON.stringify(e)]); }
 async function deleteEntry(userId, id) { await kv(['HDEL', 'jentries:' + userId, id]); }
+// journal entries are reviewed by an admin before they count: 'pending' → 'approved' | 'denied'.
+// Entries from before reviews existed count as approved (or denied if they'd been voided).
+function entryStatus(e) { return e && ['pending', 'approved', 'denied'].includes(e.status) ? e.status : (e && e.void ? 'denied' : 'approved'); }
+// what an entry scores if approved
+function basePoints(e) {
+  if (!e || !e.followed) return 0;
+  if (e.kind === 'none') return 1;
+  return e.outcome === 'tp' ? 3 : 1;
+}
 function entryPoints(e) {
-  if (!e || e.void || !e.followed) return 0;
+  if (!e || entryStatus(e) !== 'approved' || !e.followed) return 0;
   if (e.kind === 'none') return 1;
   return e.outcome === 'tp' ? 3 : 1;
 }
@@ -286,7 +295,7 @@ module.exports = {
   ROLES, contentWithDefaults,
   loadSubs, saveSub, deleteSub, loadOverrides, setOverride, loadPromo, savePromo, loadCerts, saveCert, deleteCert,
   unitsOf, passes, chapterRoles, roleLevel, promotionStep, levelFor, accessFor,
-  bdKind, bdChains, bdKey, bdOrderKey, accessForBreakdowns, BD_TASK,
+  bdKind, bdChains, bdKey, bdOrderKey, accessForBreakdowns, BD_TASK, entryStatus, basePoints,
   memberState, gateFor, findItem, allKeys, signInBlock, accessForHomework,
   loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints,
 };

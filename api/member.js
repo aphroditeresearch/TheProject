@@ -13,7 +13,7 @@
 // Files are uploaded straight from the browser to Vercel Blob first (see /api/upload), into members/<their id>/…
 const crypto = require('crypto');
 const { readSession, isAdmin, kvConfigured, loadProgress, json, kv, clientIp } = require('./_lib');
-const { gateFor, saveSub, findItem, loadCerts, saveCert, deleteCert, loadPromo, savePromo, loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints } = require('./_gate');
+const { gateFor, saveSub, findItem, loadCerts, saveCert, deleteCert, loadPromo, savePromo, loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints, entryStatus, basePoints } = require('./_gate');
 const { listMembers } = require('./_lib');
 const { signAll, cleanFile } = require('./_blob');
 
@@ -29,7 +29,7 @@ async function leaderboard(period, me) {
   const rows = [];
   await Promise.all(members.map(async (m) => {
     const j = await loadJournal(m.id); if (!j) return;
-    const ents = Object.values(await loadEntries(m.id)).filter((e) => e.date >= from && !e.void);
+    const ents = Object.values(await loadEntries(m.id)).filter((e) => e.date >= from && entryStatus(e) === 'approved');   // only entries an admin approved
     const points = ents.reduce((t, e) => t + entryPoints(e), 0);
     const trades = ents.filter((e) => e.kind === 'trade');
     rows.push({ id: m.id, name: m.displayName || m.username, username: m.username, avatar: m.avatar || null, points,
@@ -69,7 +69,7 @@ module.exports = async (req, res) => {
     if (board) return json(res, 200, await leaderboard(board[1], uid));
     const [certs, promo, journal, entries] = await Promise.all([loadCerts(uid), loadPromo(uid), loadJournal(uid), loadEntries(uid)]);
     const list = Object.values(certs).sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt)));
-    const ents = Object.values(entries).sort(byEntry).map((e) => Object.assign({}, e, { points: entryPoints(e) }));
+    const ents = Object.values(entries).sort(byEntry).map((e) => Object.assign({}, e, { status: entryStatus(e), points: entryPoints(e), worth: basePoints(e) }));
     await signAll(req, list.map((c) => c.file).concat(...ents.map((e) => e.files || [])), 'url');
     return json(res, 200, { certs: list, promo, journal, entries: ents });
   }
@@ -138,7 +138,7 @@ module.exports = async (req, res) => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(Date.parse(date)) || Date.parse(date) > Date.now() + 36 * 3600 * 1000) return json(res, 400, { error: 'bad_date' });
     if (typeof e.followed !== 'boolean') return json(res, 400, { error: 'need_followed' });
     const overview = str(e.overview, 4000);
-    const entry = { id: 'j' + crypto.randomBytes(6).toString('hex'), kind, date, followed: e.followed, overview, session: str(e.session, 40), createdAt: new Date().toISOString(), void: false };
+    const entry = { id: 'j' + crypto.randomBytes(6).toString('hex'), kind, date, followed: e.followed, overview, session: str(e.session, 40), createdAt: new Date().toISOString(), void: false, status: 'pending' };
     const entries = await loadEntries(uid);
     if (kind === 'none') {
       if (overview.length < 10) return json(res, 400, { error: 'overview_short' });
@@ -158,12 +158,13 @@ module.exports = async (req, res) => {
       if (!entry.files.length || entry.files.some((f) => !f)) return json(res, 400, { error: 'need_files' });
     }
     await saveEntry(uid, entry);
-    return json(res, 200, { saved: true, entry: Object.assign({}, entry, { points: entryPoints(entry) }) });
+    return json(res, 200, { saved: true, entry: Object.assign({}, entry, { points: entryPoints(entry), worth: basePoints(entry) }) });
   }
   if (action === 'journal-delete') {
     const entries = await loadEntries(uid);
     const e = entries[String(body.id || '')];
     if (!e) return json(res, 404, { error: 'no_entry' });
+    if (entryStatus(e) === 'approved') return json(res, 409, { error: 'approved' });                    // approved entries stay on the record
     if (Date.now() - Date.parse(e.createdAt) > 7 * 864e5) return json(res, 409, { error: 'too_old' });   // a week to fix mistakes
     await deleteEntry(uid, e.id);
     return json(res, 200, { saved: true });
