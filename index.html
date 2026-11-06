@@ -74,8 +74,8 @@ a{color:var(--blue);text-underline-offset:3px}
 .hero{position:relative;display:flex;align-items:center;gap:.02em}
 /* one big, faint green glow centred behind the whole wordmark + diamond */
 .hero::after{content:"";position:absolute;z-index:-1;pointer-events:none;left:-30%;right:-30%;top:50%;height:4.2em;transform:translateY(-50%);
-  background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(46,240,140,.17),rgba(30,220,130,.07) 45%,transparent 72%);filter:blur(34px)}
-.moon{position:relative;flex:none;height:2.8em;aspect-ratio:1080/1240;margin:-.82em -.42em -.98em -.36em;z-index:1}
+  background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(46,240,140,.12),rgba(30,220,130,.05) 45%,transparent 72%);filter:blur(34px);opacity:.75}
+.moon{position:relative;flex:none;height:2.8em;aspect-ratio:1080/1240;margin:-.925em -.42em -.875em -.54em;z-index:1}
 .moon video{--vt:translate(0,0);position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;max-width:none;transform:var(--vt);
   filter:hue-rotate(-44deg) saturate(1.2) contrast(1.25) brightness(.98);
   -webkit-mask-image:radial-gradient(ellipse 44% 40% at 50% 47%,#000 45%,transparent 100%);mask-image:radial-gradient(ellipse 44% 40% at 50% 47%,#000 45%,transparent 100%)}
@@ -91,8 +91,8 @@ a{color:var(--blue);text-underline-offset:3px}
 .word{position:absolute;left:max(24px,4vw);top:var(--cy);transform:translateY(-50%);z-index:3;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
 .word .hero{font-size:clamp(60px,8.6vw,172px)}
 .word .wm{font-size:1em}
-.word .wm-t{filter:drop-shadow(0 0 2px rgba(236,255,246,.5)) drop-shadow(0 0 12px rgba(205,255,230,.42)) drop-shadow(0 0 30px rgba(90,245,175,.26))}
-.word .wm-n{text-shadow:0 0 10px rgba(205,255,230,.5),0 0 24px rgba(90,245,175,.3)}
+.word .wm-t{filter:drop-shadow(0 0 1px rgba(236,255,246,.55)) drop-shadow(0 0 6px rgba(205,255,230,.26)) drop-shadow(0 0 16px rgba(90,245,175,.12))}
+.word .wm-n{text-shadow:0 0 1px rgba(236,255,246,.5),0 0 8px rgba(160,255,210,.22)}
 .word .tag{font-size:15px;margin-top:.9em;letter-spacing:.04em;color:var(--muted);padding-left:.2em;align-self:flex-start;text-align:left}
 .word .wm{gap:.07em}
 /* stacked 00: outlined italic zeros in the wordmark's face, one above the other, as tall as CLEARED */
@@ -133,6 +133,13 @@ a{color:var(--blue);text-underline-offset:3px}
   @keyframes fadeup{from{opacity:0}}
   @keyframes bpin{from{opacity:0}}
   @keyframes float{0%,100%{translate:0 0}50%{translate:0 -.06em}}
+  /* the glow breathes: slow swell in, slow fade out; the diamond's glow and the letters' edge follow it */
+  .hero::after{animation:breathe 5.2s ease-in-out 1.6s infinite}
+  .moon::before{animation:breathe 5.2s ease-in-out 1.6s infinite}
+  .word .wm-t{animation:breatheText 5.2s ease-in-out 1.6s infinite}
+  @keyframes breathe{0%,100%{opacity:.4;scale:.92}50%{opacity:1;scale:1.07}}
+  @keyframes breatheText{0%,100%{filter:drop-shadow(0 0 1px rgba(236,255,246,.5)) drop-shadow(0 0 5px rgba(205,255,230,.18)) drop-shadow(0 0 12px rgba(90,245,175,.08))}
+    50%{filter:drop-shadow(0 0 1px rgba(236,255,246,.6)) drop-shadow(0 0 8px rgba(205,255,230,.34)) drop-shadow(0 0 20px rgba(90,245,175,.18))}}
   @keyframes slam{0%{opacity:0;transform:scale(1.7);filter:blur(10px)}40%{opacity:1}100%{opacity:1;transform:none;filter:blur(0)}}
   @keyframes pulse{0%{transform:var(--vt) scale(1.015)}100%{transform:var(--vt) scale(1)}}
   @keyframes impact{0%{opacity:0}25%{opacity:.7}100%{opacity:0}}
@@ -550,7 +557,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       <div class="hello">
         <span class="eyebrow">Member portal</span>
         <h2>Welcome back <span id="hello-name">Member</span>.</h2>
-        <p class="hi-sub">Welcome to <em>THE PROJECT</em>.</p>
+        
       </div>
       <div class="course">
         <aside class="side" aria-label="Lessons">
@@ -901,11 +908,15 @@ img,video{-webkit-user-drag:none;user-drag:none}
     chapter3: '1546326926099222538'    // Enlightened
   };
   var CURRICULUM = [
-    { id:'ch1', name:'Awakened', role:ROLES.chapter1, lessons:[
+    // Mirrors the Discord server: Awakened is open to everyone in the server except its last four
+    // lessons, which need the Awakened role. Illuminated and Enlightened need their own roles.
+    { id:'ch1', name:'Awakened', role:null, lessons:[
       'Before You Begin','The Beginning','Candles & Timeframes','Trends','Displacement','Accumulation',
       'Liquidity','Manipulation','Ranges','Internal Manipulation','Confirmation','Continuations',
       'Entries, SL & TP','Sessions','Checklist','Order Blocks','AMD','News','Structure','Entry Triggers',
-      'HTF','Start of Many','Narrative','Protection','Identification','Conclusion'] },
+      'HTF','Start of Many',
+      { title:'Narrative', role:ROLES.chapter1 }, { title:'Protection', role:ROLES.chapter1 },
+      { title:'Identification', role:ROLES.chapter1 }, { title:'Conclusion', role:ROLES.chapter1 }] },
     { id:'ch2', name:'Illuminated', role:ROLES.chapter2, lessons:['AMD V2','Entry Models','Your Next Steps'] },
     { id:'ch3', name:'Enlightened', role:ROLES.chapter3, lessons:[
       'SMT / POI','Inducements','Orderflow','Time IDM','NQ','News V2','Divergence','HTF V2','SMT V2'] }
@@ -923,14 +934,14 @@ img,video{-webkit-user-drag:none;user-drag:none}
   // Once you post from the Admin tab, what's saved there replaces the lists above.
 
   /* ---------- content model ---------- */
-  var ROLE_BY_ID = { ch1: ROLES.chapter1, ch2: ROLES.chapter2, ch3: ROLES.chapter3 };
+  var ROLE_BY_ID = { ch2: ROLES.chapter2, ch3: ROLES.chapter3 };
   function normalizeCurriculum(list){
     return (list || []).map(function(ch){
       return { id: ch.id, name: ch.name, role: ch.role || ROLE_BY_ID[ch.id] || null,
         lessons: (ch.lessons || []).map(function(l, li){
           return typeof l === 'string'
             ? { id: ch.id + '-' + (li+1), title: l, video: '', summary: '' }
-            : { id: l.id || (ch.id + '-' + (li+1)), title: l.title, video: l.video || '', summary: l.summary || '' };
+            : { id: l.id || (ch.id + '-' + (li+1)), title: l.title, video: l.video || '', summary: l.summary || '', role: l.role || null };
         }) };
     });
   }
@@ -980,7 +991,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
 
   function user(){ return (SESSION && SESSION.user) || DEMO_USER; }
   function memberRoles(){ return DEMO_MODE ? demoRoles : (SESSION.roles || []); }
-  function hasAccess(ch){ return !ch.role || memberRoles().indexOf(ch.role) !== -1; }
+  function hasAccess(ch){ return !ch.role || !!(SESSION && SESSION.isAdmin) || memberRoles().indexOf(ch.role) !== -1; }   // works for a chapter or a single lesson
   function el(tag, cls, text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
 
   /* ---------- course tracks: lectures + breakdowns share one sidebar/content engine ---------- */
@@ -997,7 +1008,9 @@ img,video{-webkit-user-drag:none;user-drag:none}
       var ok = hasAccess(ch);
       return { id:ch.id, name:ch.name, locked:!ok, lockMsg: ch.name + ' unlocks with its member role in Discord.',
         items: ch.lessons.map(function(l, li){
-          return { key: l.id, num: li+1, title:l.title, video:l.video||'', summary:l.summary||'', kicker: ch.name + ' · Lesson ' + (li+1) }; }) };
+          var lk = ok && !hasAccess(l);
+          return { key: l.id, num: li+1, title:l.title, video:l.video||'', summary:l.summary||'', kicker: ch.name + ' · Lesson ' + (li+1),
+            locked: lk, lockMsg: lk ? l.title + ' unlocks with the ' + (roleName(l.role) || 'member') + ' role in Discord.' : '' }; }) };
     });
   }
   function breakdownGroups(){
@@ -1009,7 +1022,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
     lx: { groups: lectureGroups, unit:['lesson','lessons'], verb:'finished', doneLabel:'Mark complete', doneOn:'Completed', empty:'No lessons yet.' },
     bx: { groups: breakdownGroups, unit:['breakdown','breakdowns'], verb:'watched', doneLabel:'Mark watched', doneOn:'Watched', empty:'They show up here as soon as your mentor posts one.', sideEmpty:'Nothing posted yet.' }
   };
-  function flat(groups, onlyOpen){ var a=[]; groups.forEach(function(g){ if (!onlyOpen || !g.locked) g.items.forEach(function(it){ a.push(it); }); }); return a; }
+  function flat(groups, onlyOpen){ var a=[]; groups.forEach(function(g){ if (!onlyOpen || !g.locked) g.items.forEach(function(it){ if (!onlyOpen || !it.locked) a.push(it); }); }); return a; }
+  function roleName(r){ return r === ROLES.chapter1 ? 'Awakened' : r === ROLES.chapter2 ? 'Illuminated' : r === ROLES.chapter3 ? 'Enlightened' : ''; }
 
   function renderTrack(id){
     var T = TRACKS[id], groups = T.groups(), all = flat(groups,false), avail = flat(groups,true);
@@ -1038,21 +1052,22 @@ img,video{-webkit-user-drag:none;user-drag:none}
       sec.appendChild(hb);
       var ul = el('ul');
       g.items.forEach(function(it){
-        var isDone = !!doneSet[it.key], isCur = cur && cur.key === it.key && !g.locked;
-        var li = el('li','it'+(isCur?' cur':'')+(g.locked?' locked':''));
+        var lk = g.locked || it.locked, msg = it.lockMsg || g.lockMsg;
+        var isDone = !!doneSet[it.key], isCur = cur && cur.key === it.key && !lk;
+        var li = el('li','it'+(isCur?' cur':'')+(lk?' locked':''));
         li.tabIndex = 0; li.setAttribute('role','button');
         if (isCur) li.setAttribute('aria-current','true');
-        var box = el('button','box'+(isDone?' on':'')+(g.locked?' lk':'')); box.type='button';
-        if (g.locked){ box.innerHTML = lockSvg; box.setAttribute('aria-label', it.title + ': locked'); }
+        var box = el('button','box'+(isDone?' on':'')+(lk?' lk':'')); box.type='button';
+        if (lk){ box.innerHTML = lockSvg; box.setAttribute('aria-label', it.title + ': locked'); }
         else if (isDone){ box.innerHTML = checkSvg; box.setAttribute('aria-label', it.title + ': completed ' + fmtDay(doneSet[it.key])); }
         else { box.textContent = it.num; box.setAttribute('aria-label', it.title + ': not finished'); }
         box.addEventListener('click', function(e){ e.stopPropagation();
-          if (g.locked){ toast(g.lockMsg); return; }
+          if (lk){ toast(msg); return; }
           if (!mustWatch(id, it)){ if (doneSet[it.key]) unmark(it.key); else markDone(it.key); renderTrack(id); return; }
           pick(); });
         li.appendChild(box); li.appendChild(el('span','ttl',it.title));
         if (isDone) li.title = 'Completed ' + fmtDay(doneSet[it.key]);
-        function pick(){ if (g.locked){ toast(g.lockMsg); return; } current[id]=it.key; saveCurrent(); renderTrack(id);
+        function pick(){ if (lk){ toast(msg); return; } current[id]=it.key; saveCurrent(); renderTrack(id);
           if (window.innerWidth <= 900) document.getElementById(id+'-pane').scrollIntoView({behavior: reduce?'auto':'smooth', block:'start'}); }
         li.addEventListener('click', pick);
         li.addEventListener('keydown', function(e){ if (e.key==='Enter'||e.key===' '){ e.preventDefault(); pick(); } });
@@ -1409,6 +1424,9 @@ img,video{-webkit-user-drag:none;user-drag:none}
         cols.appendChild(fld('Video', videoField(l.video, 'lessons', function(v){ l.video = v; mark(); }), 'Members must watch it all the way through to complete the lesson.'));
         var sm = inputEl('textarea', l.summary, 'Short description shown under the video (optional)'); sm.addEventListener('input', function(){ l.summary = sm.value; mark(); });
         cols.appendChild(fld('Notes', sm));
+        var lr = inputEl('text', l.role || '', 'Leave blank = same as the chapter'); lr.inputMode='numeric';
+        lr.addEventListener('input', function(){ l.role = lr.value.trim() || null; mark(); });
+        cols.appendChild(fld('Discord role ID for just this lesson (optional)', lr));
         row.appendChild(cols);
         var ord = el('div','ord');
         var upb = el('button','btn-s','↑'); upb.type='button'; upb.setAttribute('aria-label','Move up'); upb.disabled = li === 0;

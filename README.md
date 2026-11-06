@@ -114,7 +114,7 @@ The watch-to-complete check runs in the browser, so treat it as a strong nudge r
 
 ## Admin panel
 
-An **Admin** tab appears in the portal for your Discord account only (ID `1313595031466021026`). To add more admins, set `ADMIN_DISCORD_IDS` in Vercel to a comma-separated list of Discord user IDs. Everyone else never sees the tab, and the server refuses admin requests from them.
+An **Admin** tab appears in the portal for the admin Discord accounts only (IDs `1313595031466021026` and `484654761757507584`). To add more admins, set `ADMIN_DISCORD_IDS` in Vercel to a comma-separated list of Discord user IDs. Everyone else never sees the tab, and the server refuses admin requests from them.
 
 | Section | What you can do |
 |---|---|
@@ -144,3 +144,14 @@ These stop casual copying, but nothing running in a browser can stop someone det
 ## Asset rights
 
 The diamond video comes from a third-party wallpaper site. Confirm you have the right to use them commercially, or swap in your own, before the site goes public.
+
+## Who sees what (mirrors the Discord server)
+
+| Section | Who can open it |
+|---|---|
+| Awakened, lessons 1–22 | everyone in the server |
+| Awakened: Narrative, Protection, Identification, Conclusion | Awakened role `1546326866875646084` |
+| Illuminated | Illuminated role `1554996401979654165` |
+| Enlightened | Enlightened role `1546326926099222538` |
+
+Change these in the Admin tab: each chapter has a role ID, and each lesson has an optional role ID of its own.

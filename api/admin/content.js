@@ -16,7 +16,7 @@ function clean(c) {
     curriculum: arr(c.curriculum, 30).map((ch) => ({
       id: id(ch && ch.id), name: str(ch && ch.name, 80), role: role(ch && ch.role),
       lessons: arr(ch && ch.lessons, 80).map((l) => ({
-        id: id(l && l.id), title: str(l && l.title, 140), video: url(l && l.video), summary: str(l && l.summary, 2000),
+        id: id(l && l.id), title: str(l && l.title, 140), video: url(l && l.video), summary: str(l && l.summary, 2000), role: role(l && l.role),
       })).filter((l) => l.id && l.title),
     })).filter((ch) => ch.id && ch.name),
     homework: arr(c.homework, 300).map((h) => ({

@@ -49,7 +49,8 @@ module.exports = async (req, res) => {
     const open = admin || !role || roles.includes(role);
     return Object.assign({}, ch, {
       role,
-      lessons: (ch.lessons || []).map((l) => (open ? Object.assign({}, l) : { id: l.id, title: l.title })),
+      lessons: (ch.lessons || []).map((l) => (open && (admin || !l.role || roles.includes(l.role))
+        ? Object.assign({}, l) : { id: l.id, title: l.title, role: l.role || null })),
     });
   });
   out.breakdowns = (content.breakdowns || []).map((b) => Object.assign({}, b));

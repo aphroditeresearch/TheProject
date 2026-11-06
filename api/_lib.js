@@ -156,7 +156,7 @@ function clientIp(req) {
 /* ---------- admins + members ---------- */
 // Discord user IDs allowed into the admin panel (comma-separated in ADMIN_DISCORD_IDS).
 function adminIds() {
-  return (env('ADMIN_DISCORD_IDS', true) || '1313595031466021026').split(',').map((x) => x.trim()).filter(Boolean);
+  return (env('ADMIN_DISCORD_IDS', true) || '1313595031466021026,484654761757507584').split(',').map((x) => x.trim()).filter(Boolean);
 }
 function isAdmin(session) { return !!(session && session.user && adminIds().includes(session.user.id)); }
 
@@ -184,7 +184,7 @@ async function loadFlags(userId) {
 
 /* ---------- site content (announcements, homework, breakdowns, lessons) ---------- */
 // Which Discord role unlocks each chapter. Chapters added in the admin panel carry their own role.
-const CHAPTER_ROLES = { ch1: '1546326866875646084' /* Awakened */, ch2: '1554996401979654165' /* Illuminated */, ch3: '1546326926099222538' /* Enlightened */ };
+const CHAPTER_ROLES = { ch2: '1554996401979654165' /* Illuminated */, ch3: '1546326926099222538' /* Enlightened */ };
 
 async function loadContent() {
   if (!kvConfigured()) return null;
