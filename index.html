@@ -46,7 +46,6 @@ body{font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smooth
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
 canvas.fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
 #rays{z-index:0}
-#petals{z-index:3}
 #rain{z-index:0;opacity:0;transition:opacity 1.2s ease}
 #rain.on{opacity:1}
 .portal{position:relative;z-index:1}
@@ -922,7 +921,6 @@ img,video{-webkit-user-drag:none;user-drag:none}
 </head>
 <body>
 <canvas id="rain" class="fx" aria-hidden="true"></canvas>
-<canvas id="petals" class="fx" aria-hidden="true"></canvas>
 
 <div class="page">
   <!-- SIGN-IN SCENE -->
@@ -975,7 +973,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       </div>
     </div>
 
-    <div class="pv-bar" id="pv-bar" hidden><span><b id="pv-name">Awakened</b> preview · locked and blurred the way a member on this step sees it. Your own hand-ins count.</span><button class="btn-s" type="button" id="pv-off">Back to admin view</button></div>
+    <div class="pv-bar" id="pv-bar" hidden><span><b id="pv-name">Awakened</b> preview · locked and blurred the way a member on this step sees it. Nothing is marked done, and hand-ins are off.</span><button class="btn-s" type="button" id="pv-off">Back to admin view</button></div>
     <div class="annc" id="annc" aria-label="Announcements"></div>
 
     <!-- LECTURES -->
@@ -1396,52 +1394,46 @@ img,video{-webkit-user-drag:none;user-drag:none}
     laser.style.setProperty('--ly', (y0/h*100).toFixed(1)+'%');
   }
 
-  /* ---------- drifting leaves ---------- */
-  var cv = document.getElementById('petals'), cx = cv.getContext('2d'), P = [], W, H;
-  function size(){ var d = Math.min(window.devicePixelRatio||1,2); W = cv.clientWidth; H = cv.clientHeight; cv.width = W*d; cv.height = H*d; cx.setTransform(d,0,0,d,0,0); }
-  function petal(init){ return { x:Math.random()*W, y:init?Math.random()*H:-20, r:4+Math.random()*6, vy:.3+Math.random()*.6, vx:-.2+Math.random()*.5, a:Math.random()*6.28, va:-.02+Math.random()*.04, sw:Math.random()*6.28, o:.25+Math.random()*.45 }; }
-  function drawPetal(p){
-    cx.save(); cx.translate(p.x,p.y); cx.rotate(p.a); cx.scale(1,.55+.45*Math.abs(Math.sin(p.sw)));
-    cx.globalAlpha=p.o; cx.fillStyle = p.r>8 ? '#137D86' : '#14A39D'; cx.shadowColor='#14A39D'; cx.shadowBlur = p.r>8 ? 4 : 12;
-    cx.beginPath(); cx.moveTo(0,-p.r); cx.bezierCurveTo(p.r*.9,-p.r*.6,p.r*.7,p.r*.8,0,p.r); cx.bezierCurveTo(-p.r*.7,p.r*.8,-p.r*.9,-p.r*.6,0,-p.r); cx.fill(); cx.restore();
-  }
-  function tick(){ cx.clearRect(0,0,W,H); for (var i=0;i<P.length;i++){ var p=P[i]; p.y+=p.vy; p.x+=p.vx+Math.sin(p.sw)*.3; p.a+=p.va; p.sw+=.02; if(p.y>H+20||p.x<-30||p.x>W+30) P[i]=petal(false); drawPetal(p);} requestAnimationFrame(tick); }
-
-  function layout(){ size(); placeLaser(); }
+  function layout(){ placeLaser(); }
   layout(); window.addEventListener('resize', layout);
-  for (var i=0;i<(W<600?14:26);i++) P.push(petal(true));
-  if (reduce) P.forEach(drawPetal); else requestAnimationFrame(tick);
 
   /* ---------- THE PROJECT letter rain behind the portal (faint, like the Matrix) ---------- */
   var rain = (function(){
-    var c = document.getElementById('rain'), g = c.getContext('2d'), WORD = 'THEPROJECT', cols = [], RW, RH, FS, on = false, last = 0, raf2 = 0;
+    var c = document.getElementById('rain'), g = c.getContext('2d'), WORD = 'THEPROJECT', cols = [], RW, RH, FS, LH, on = false, last = 0, raf2 = 0, glyph = {}, dpr = 1;
+    // each letter drawn once (trail colour + head colour), then stamped with drawImage: much cheaper than fillText every frame
+    function glyphs(){
+      glyph = {}; var font = '600 ' + FS + 'px ' + (getComputedStyle(document.body).getPropertyValue('--mono') || 'monospace');
+      WORD.split('').forEach(function(ch){ if (glyph[ch]) return; glyph[ch] = ['rgb(46,214,170)', 'rgb(200,255,240)'].map(function(col){
+        var o = document.createElement('canvas'), w = Math.ceil(FS * 1.1 * dpr), h = Math.ceil(LH * dpr); o.width = w; o.height = h;
+        var x = o.getContext('2d'); x.scale(dpr, dpr); x.font = font; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = col; x.fillText(ch, FS * .55, LH / 2); return o; }); });
+    }
     function fit(){
-      var d = Math.min(window.devicePixelRatio || 1, 2); RW = c.clientWidth; RH = c.clientHeight; c.width = RW * d; c.height = RH * d; g.setTransform(d, 0, 0, d, 0, 0);
-      FS = RW < 600 ? 13 : 15; var step = RW < 600 ? 24 : 28, n = Math.ceil(RW / step);
+      dpr = Math.min(window.devicePixelRatio || 1, 2); RW = c.clientWidth; RH = c.clientHeight; c.width = RW * dpr; c.height = RH * dpr; g.setTransform(1, 0, 0, 1, 0, 0);
+      FS = RW < 600 ? 12 : 14; LH = FS * 1.3; glyphs();
+      var step = RW < 600 ? 30 : 36, n = Math.ceil(RW / step);
       cols = []; for (var i = 0; i < n; i++) cols.push(drop(i * step + step / 2, true));
     }
-    function drop(x, init){ return { x:x, y: init ? Math.random() * -60 : -Math.random() * 30, v: .12 + Math.random() * .22, len: 7 + Math.floor(Math.random() * 12), off: Math.floor(Math.random() * 10), wait: init ? 0 : Math.random() * 240 }; }
+    function drop(x, init){ return { x:x, y: init ? -Math.random() * 50 : -Math.random() * 20, v: .06 + Math.random() * .1, len: 6 + Math.floor(Math.random() * 10), off: Math.floor(Math.random() * 10), wait: init ? Math.random() * 60 : 40 + Math.random() * 260 }; }
     function frame(ts){
       raf2 = requestAnimationFrame(frame);
-      if (ts - last < 33) return; last = ts;                      // ~30 fps is plenty
-      g.clearRect(0, 0, RW, RH); g.font = '600 ' + FS + 'px ' + getComputedStyle(document.body).getPropertyValue('--mono');
-      g.textAlign = 'center';
-      var rows = RH / (FS * 1.25);
+      if (ts - last < 42) return; last = ts;                      // ~24 fps
+      g.clearRect(0, 0, c.width, c.height);
+      var rows = RH / LH, gw = FS * 1.1 * dpr, gh = LH * dpr;
       for (var i = 0; i < cols.length; i++){
         var k = cols[i]; if (k.wait > 0){ k.wait--; continue; }
         k.y += k.v; var head = Math.floor(k.y);
         for (var j = 0; j < k.len; j++){
           var r = head - j; if (r < 0 || r > rows) continue;
-          var a = j === 0 ? .30 : .16 * (1 - j / k.len);
-          g.fillStyle = j === 0 ? 'rgba(190,255,235,' + a + ')' : 'rgba(46,214,170,' + a + ')';
-          g.fillText(WORD[(r + k.off) % 10], k.x, (r + 1) * FS * 1.25);
+          g.globalAlpha = j === 0 ? .17 : .09 * (1 - j / k.len);
+          g.drawImage(glyph[WORD[(r + k.off) % 10]][j === 0 ? 1 : 0], (k.x - FS * .55) * dpr, r * gh, gw, gh);
         }
         if (head - k.len > rows) cols[i] = drop(k.x, false);
       }
+      g.globalAlpha = 1;
     }
     function start(){ if (on || reduce) return; on = true; fit(); c.classList.add('on'); last = 0; raf2 = requestAnimationFrame(frame); }
     function stop(){ on = false; cancelAnimationFrame(raf2); c.classList.remove('on'); }
-    window.addEventListener('resize', function(){ if (on) fit(); });
+    var rt; window.addEventListener('resize', function(){ if (!on) return; clearTimeout(rt); rt = setTimeout(fit, 200); });
     document.addEventListener('visibilitychange', function(){ if (!on) return; if (document.hidden) cancelAnimationFrame(raf2); else { last = 0; raf2 = requestAnimationFrame(frame); } });
     return { start:start, stop:stop };
   })();
@@ -1583,16 +1575,17 @@ img,video{-webkit-user-drag:none;user-drag:none}
   function uid(){ return (SESSION && SESSION.user && SESSION.user.id) || 'demo'; }
   function loadProgress(){
     doneSet = {}; watch = {};
+    if (PREVIEW) return;   // preview: a new member, nothing watched or finished
     try { doneSet = JSON.parse(localStorage.getItem('theproject.progress.' + uid()) || '{}') || {}; } catch(e) {}
     try { watch = JSON.parse(localStorage.getItem('theproject.watch.' + uid()) || '{}') || {}; } catch(e) {}
     if (SESSION && SESSION.progress && typeof SESSION.progress === 'object'){
       Object.keys(SESSION.progress).forEach(function(k){ doneSet[k] = SESSION.progress[k]; });   // server copy wins
     }
   }
-  function saveDone(){ try { localStorage.setItem('theproject.progress.' + uid(), JSON.stringify(doneSet)); } catch(e) {} }
-  function saveWatch(){ try { localStorage.setItem('theproject.watch.' + uid(), JSON.stringify(watch)); } catch(e) {} }
+  function saveDone(){ if (PREVIEW) return; try { localStorage.setItem('theproject.progress.' + uid(), JSON.stringify(doneSet)); } catch(e) {} }
+  function saveWatch(){ if (PREVIEW) return; try { localStorage.setItem('theproject.watch.' + uid(), JSON.stringify(watch)); } catch(e) {} }
   function syncProgress(key, completedAt){
-    if (!BACKEND || !SESSION) return;
+    if (!BACKEND || !SESSION || PREVIEW) return;
     fetch('/api/progress', { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({ key:key, completedAt:completedAt }) }).catch(function(){});
   }
@@ -2057,7 +2050,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
             .then(function(r){ files.push(r); saveDraft(); drawFiles(); })
             .then(function(r){ say(''); return r; })
             .catch(function(e){ say('Upload failed (' + f.name + '): ' + String((e && e.message) || e).replace(/^Vercel Blob:\s*/,'')); })
-            .then(function(){ busy--; if (!busy){ upNote.textContent = 'Images or PDFs from your computer, up to 25 MB each.'; go.disabled = locked || !watched; } });
+            .then(function(){ busy--; if (!busy){ upNote.textContent = 'Images or PDFs from your computer, up to 25 MB each.'; go.disabled = locked || !watched || !!PREVIEW; } });
         });
       });
       fileBox.appendChild(pickL); fileBox.appendChild(upNote);
@@ -2068,7 +2061,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
     if (sub && sub.link) { var old = el('a','lnk', sub.link); old.href = sub.link; old.target = '_blank'; old.rel = 'noopener noreferrer'; box.appendChild(old); }
     var go = el('button','pbtn pri'); go.type = 'button';
     go.textContent = locked ? 'Approved' : !watched ? 'Finish the video to hand in' : sub ? 'Hand in again' : 'Hand in notes & ' + word;
-    go.disabled = locked || !watched;
+    go.disabled = locked || !watched || !!PREVIEW;
+    if (PREVIEW) go.textContent = 'Hand-ins are off in preview';
     var msgEl = el('p','hi-err'); msgEl.setAttribute('role','alert'); msgEl.hidden = true;
     function say(t){ msgEl.textContent = t || ''; msgEl.hidden = !t; if (t) toast(t); }
     var ERR = { notes_short:'Your notes need at least 20 characters — write a few sentences in “Your notes”.', homework_short: bd ? 'Describe your mark-ups (20+ characters) or upload a screenshot of them.' : 'Answer the homework (20+ characters) or upload your files.',
@@ -2769,7 +2763,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   function setPreview(v){
     PREVIEW = /^[1-9]$/.test(v) ? v : '';
     try { if (PREVIEW) localStorage.setItem(previewKey(), PREVIEW); else localStorage.removeItem(previewKey()); } catch(e) {}
-    paintPreview(); toast(PREVIEW ? 'Previewing ' + document.getElementById('viewas-s').selectedOptions[0].text.replace(/^As /,'as ') + '.' : 'Back to the admin view.');
+    loadProgress(); paintPreview(); toast(PREVIEW ? 'Previewing ' + document.getElementById('viewas-s').selectedOptions[0].text.replace(/^As /,'as ') + '.' : 'Back to the admin view.');
     refreshContent().then(function(){ if ((location.hash || '') === '#advanced' && !advOk()) location.hash = '#lectures'; showView(); });
   }
   document.getElementById('viewas-s').addEventListener('change', function(e){ setPreview(e.target.value); });

@@ -267,8 +267,8 @@ shows its entries.
 
 ## Admins: preview as a member
 The **View as** menu in the top bar (admins only) shows the site the way a member on one step sees it: Awakened,
-Illuminated or Enlightened, with the same locks and blur. The Admin tab stays. Your own hand-ins count in the preview, so
-you can test the unlock order. Pick **Admin view** (or "Back to admin view") to see everything again. The choice is
+Illuminated or Enlightened, with the same locks and blur, as a brand-new member with nothing done. The Admin tab stays. Hand-ins are off in the
+preview, and your own progress is left alone. Pick **Admin view** (or "Back to admin view") to see everything again. The choice is
 remembered in that browser.
 
 ## Letter rain

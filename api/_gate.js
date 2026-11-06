@@ -241,9 +241,10 @@ function entryPoints(e) {
 }
 
 /* ---------- everything for one member ---------- */
-async function memberState(userId, roles, admin, content) {
+// fresh = a brand-new member with nothing done (the admin "View as" preview)
+async function memberState(userId, roles, admin, content, fresh) {
   content = content || await contentWithDefaults();
-  const [subs, overrides, promo] = await Promise.all([loadSubs(userId), loadOverrides(userId), loadPromo(userId)]);
+  const [subs, overrides, promo] = fresh ? [{}, {}, null] : await Promise.all([loadSubs(userId), loadOverrides(userId), loadPromo(userId)]);
   const args = { curriculum: content.curriculum, settings: content.settings, roles: roles || [], subs, overrides, promo, admin };
   const access = accessFor(args);
   access.breakdowns = accessForBreakdowns({ breakdowns: content.breakdowns, level: access.level, top: content.curriculum.length,
