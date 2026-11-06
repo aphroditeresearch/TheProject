@@ -397,6 +397,23 @@ a{color:var(--blue);text-underline-offset:3px}
 .lp-n{color:var(--kana-c);font-weight:500;font-size:12px}
 .lp-i{display:flex;align-items:center;gap:8px;padding:3px 0 3px 14px;font-size:14px;color:var(--ink);cursor:pointer}
 .lp-i.all{color:var(--kana-c);font-weight:600}
+.hi-err{margin:10px 0 0;padding:10px 12px;border:1px solid #6A3A2A;background:rgba(232,120,90,.08);color:#F2B9A6;font-size:14px}
+.pg-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:16px;align-items:start}
+.pg-card{border:1px solid var(--line);background:var(--panel);padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.pg-h{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.pg-btns{display:flex;gap:6px}
+.pg-card input[type=search]{width:100%;box-sizing:border-box;min-height:40px;padding:0 12px;background:var(--bg,#05090a);border:1px solid var(--line);color:var(--ink);font:400 14px var(--sans)}
+.pg-gh .btn-s{margin-left:auto;min-height:30px;padding:0 10px;font-size:13px}
+.pg-list{max-height:440px;overflow-y:auto;display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.pg-m,.pg-i{display:flex;align-items:center;gap:10px;padding:8px 6px;border-bottom:1px solid var(--line);cursor:pointer;font-size:14px}
+.pg-m:hover,.pg-i:hover{background:var(--panel-2)}
+.pg-m .av{width:28px;height:28px;flex:none}
+.pg-mn{display:flex;flex-direction:column;min-width:0;flex:1}.pg-mn small{color:var(--muted)}
+.pg-it{flex:1;min-width:0}
+.pg-gh{display:flex;align-items:baseline;gap:10px;padding:12px 6px 6px;position:sticky;top:0;background:var(--panel);z-index:1;border-bottom:1px solid var(--line)}
+.pg-bar{position:sticky;bottom:0;z-index:5;margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--blue);background:var(--panel-2)}
+.pg-acts{display:flex;flex-wrap:wrap;gap:8px}
+@media (max-width:860px){.pg-grid{grid-template-columns:1fr}.pg-list{max-height:320px}}
 .bulk{border:1px solid var(--blue);background:var(--panel);padding:14px 16px;margin-bottom:16px;display:flex;flex-direction:column;gap:10px}
 .bulk-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .bulk-pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;max-height:360px;overflow-y:auto;align-items:start}
@@ -875,6 +892,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
         <button type="button" data-sec="lectures" aria-pressed="false">Lectures</button>
         <button type="button" data-sec="breakdowns" aria-pressed="false">Breakdowns</button>
         <button type="button" data-sec="review" aria-pressed="false">Hand-ins</button>
+        <button type="button" data-sec="progress" aria-pressed="false">Progress</button>
         <button type="button" data-sec="members" aria-pressed="false">Members</button>
       </nav>
       <div id="adm-body"></div>
@@ -1770,13 +1788,15 @@ img,video{-webkit-user-drag:none;user-drag:none}
       fi.addEventListener('change', function(){
         var list = Array.prototype.slice.call(fi.files || []).slice(0, Math.max(0, 8 - files.length)); fi.value = '';
         list.forEach(function(f){
-          if (!/^(image\/|application\/pdf)/.test(f.type || '')){ toast(f.name + ' isn\'t an image or PDF.'); return; }
-          if (f.size > 25 * 1024 * 1024){ toast(f.name + ' is over 25 MB.'); return; }
+          var ftype = fileType(f); if (!ftype){ say(f.name + ' isn\'t an image or PDF.'); return; }
+          if (ftype !== f.type) f = new File([f], f.name, { type: ftype });
+          if (f.size > 25 * 1024 * 1024){ say(f.name + ' is over 25 MB.'); return; }
           busy++; go.disabled = true; upNote.textContent = 'Uploading ' + f.name + '…';
           uploadFile(f, 'members/' + (user().id || 'demo') + '/homework/' + safeName(f.name), function(pc){ upNote.textContent = 'Uploading ' + f.name + '… ' + Math.round(pc) + '%'; })
             .then(function(r){ files.push(r); saveDraft(); drawFiles(); })
-            .catch(function(e){ toast('Upload failed: ' + String((e && e.message) || e).replace(/^Vercel Blob:\s*/,'')); })
-            .then(function(){ busy--; if (!busy){ upNote.textContent = 'Images or PDFs from your computer, up to 25 MB each.'; go.disabled = !watched; } });
+            .then(function(r){ say(''); return r; })
+            .catch(function(e){ say('Upload failed (' + f.name + '): ' + String((e && e.message) || e).replace(/^Vercel Blob:\s*/,'')); })
+            .then(function(){ busy--; if (!busy){ upNote.textContent = 'Images or PDFs from your computer, up to 25 MB each.'; go.disabled = locked || !watched; } });
         });
       });
       fileBox.appendChild(pickL); fileBox.appendChild(upNote);
@@ -1788,15 +1808,17 @@ img,video{-webkit-user-drag:none;user-drag:none}
     var go = el('button','pbtn pri'); go.type = 'button';
     go.textContent = locked ? 'Approved' : !watched ? 'Finish the video to hand in' : sub ? 'Hand in again' : 'Hand in notes & ' + word;
     go.disabled = locked || !watched;
-    var ERR = { notes_short:'Write a few sentences of notes first.', homework_short: bd ? 'Describe your mark-ups or upload a screenshot of them.' : 'Answer the homework (a few sentences) or upload your files.',
-      bad_file:'One of the files didn\'t upload properly. Remove it and upload it again.', watch_first:'Finish the video first, then hand in.', locked:'This lesson is locked.',
+    var msgEl = el('p','hi-err'); msgEl.setAttribute('role','alert'); msgEl.hidden = true;
+    function say(t){ msgEl.textContent = t || ''; msgEl.hidden = !t; if (t) toast(t); }
+    var ERR = { notes_short:'Your notes need at least 20 characters — write a few sentences in “Your notes”.', homework_short: bd ? 'Describe your mark-ups (20+ characters) or upload a screenshot of them.' : 'Answer the homework (20+ characters) or upload your files.',
+      bad_file:'One of the files didn\'t upload properly. Remove it and upload it again.', watch_first:'The site hasn\'t recorded that you finished the video yet. Play it to the end once more, then hand in.', locked:'This is locked for you right now. Refresh the page; if it\'s still locked, ask an admin.', signed_out:'You\'ve been signed out. Sign in again, then hand in (your notes are saved).',
       already_approved:'This one is already approved.', no_storage:'Hand-ins need Upstash Redis connected in Vercel.' };
     go.addEventListener('click', function(){
-      if (busy){ toast('Wait for your files to finish uploading.'); return; }
+      if (busy){ say('Wait for your files to finish uploading.'); return; }
       var body = { action:'submit', lessonId:key, notes:notes.value.trim(), homework:hw.value.trim(), files:files };
-      if (body.notes.length < 20){ toast(ERR.notes_short); notes.focus(); return; }
-      if (body.homework.length < 20 && !files.length){ toast(ERR.homework_short); hw.focus(); return; }
-      go.disabled = true; go.textContent = 'Handing in…';
+      if (body.notes.length < 20){ say(ERR.notes_short); notes.focus(); return; }
+      if (body.homework.length < 20 && !files.length){ say(ERR.homework_short); hw.focus(); return; }
+      say(''); saveDraft(); go.disabled = true; go.textContent = 'Handing in…';
       var done = function(){
         try { localStorage.removeItem(draftKey(key)); } catch(e) {}
         var wasPassed = l.passed;
@@ -1807,16 +1829,29 @@ img,video{-webkit-user-drag:none;user-drag:none}
           toast(approve ? 'Handed in. Your mentor will review it.' : (nxt && !wasPassed ? 'Handed in. Unlocked: ' + (track === 'bx' ? nxt.pre + ' · ' : '') + nxt.title : 'Handed in.'));
         });
       };
+      var fail = function(t){ go.disabled = false; go.textContent = sub ? 'Hand in again' : 'Hand in notes & ' + word; say(t); };
       if (DEMO_MODE){
         var prev = demoSubs[key]; var now = new Date().toISOString();
         demoSubs[key] = Object.assign({}, body, { status:'submitted', submittedAt:now, attempts:((prev && prev.attempts) || 0) + 1, feedback: prev && prev.status==='returned' ? prev.feedback : '' });
         saveDemoGate(); if (hwk){ HOMEWORK.forEach(function(h){ if ('hw:' + h.id === key) h.sub = demoSubs[key]; }); } done(); return;
       }
-      fetch('/api/member', { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) })
-        .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
-        .then(function(x){ if (!x.ok){ toast(ERR[x.j && x.j.error] || 'Couldn\'t hand that in. Try again.'); if (hwk) renderHomework(); else renderTrack(track); return; } done(); })
-        .catch(function(){ toast('Couldn\'t hand that in. Check your connection and try again.'); if (hwk) renderHomework(); else renderTrack(track); });
+      var post = function(url, data){ return fetch(url, { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(data) })
+        .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return { ok:r.ok, status:r.status, j:j || {} }; }); }); };
+      var send = function(retried){
+        return post('/api/member', body).then(function(x){
+          if (x.ok){ done(); return; }
+          var code = x.j.error || (x.status === 401 ? 'signed_out' : '');
+          // the browser knows the video was finished but the server missed it: record it again, then retry once
+          if (code === 'watch_first' && !retried && doneSet[key]){
+            return post('/api/progress', { key:key, completedAt: doneSet[key] }).then(function(){ return send(true); });
+          }
+          if (code === 'bad_file') return fail('These files didn\'t upload properly: ' + ((x.j.files || []).join(', ') || 'one of them') + '. Remove them (×) and upload them again.');
+          fail(ERR[code] || ('Couldn\'t hand that in (' + (code || 'error ' + x.status) + '). Try again in a moment.'));
+        });
+      };
+      send(false).catch(function(){ fail('Couldn\'t reach the site. Check your connection and try again — your notes are saved.'); });
     });
+    box.appendChild(msgEl);
     box.appendChild(go);
     return box;
   }
@@ -2099,6 +2134,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
     var D = JR.draft; if (!D.date) D.date = todayYmd();
     var grid2 = el('div','jr-fields');
     function field(label, ctl, wide){ var w = fld(label, ctl); if (wide) w.classList.add('wide'); grid2.appendChild(w); return ctl; }
+    var ENTRY_MODELS = ['BOS','MITIGATION','Chained OBs','DIV + OB'];
+    if (D.model && ENTRY_MODELS.indexOf(D.model) < 0) D.model = '';
     function txt(name, type, ph, list){ var i = inputEl(type, D[name], ph); i.addEventListener('input', function(){ D[name] = i.value; preview(); }); if (list){ i.setAttribute('list', list); } return i; }
     function sel(name, opts){ var x = el('select'); x.appendChild(el('option',null,'Choose…')).value = ''; opts.forEach(function(o){ var op = el('option',null,o); op.value = o; x.appendChild(op); }); x.value = D[name] || ''; x.addEventListener('change', function(){ D[name] = x.value; }); return x; }
     var SESSIONS = ['Asia','London','New York AM','New York PM'];
@@ -2111,7 +2148,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       var ct = txt('contracts','number','1'); ct.min = '0'; ct.step = 'any'; field('Contracts', ct);
       field('Outcome', seg([['tp','TP'],['sl','SL'],['be','BE']], D.outcome, function(v){ D.outcome = v; drawJournal(host); }));
       var pn = txt('pnl','number','e.g. 640 or -200'); pn.step = 'any'; field('Trade P&L ($)', pn);
-      field('Entry model', txt('model','text','e.g. AMD + order block','jr-models'));
+      field('Entry model', sel('model', ENTRY_MODELS));
       var ov = txt('overview','textarea','What you saw, why you took it, how you managed it'); ov.rows = 4; field('Trade overview', ov, true);
       // screenshots
       var fb = el('div','hi-up'), chips = el('div'), busy = 0;
@@ -2176,7 +2213,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     });
     grid.appendChild(side); grid.appendChild(main); host.appendChild(grid);
     if (!document.getElementById('jr-pairs')){ var dl = el('datalist'); dl.id = 'jr-pairs'; ['NQ','MNQ','ES','MES','YM','RTY','GC','CL','EURUSD','GBPUSD','XAUUSD'].forEach(function(x){ var o = el('option'); o.value = x; dl.appendChild(o); }); document.body.appendChild(dl);
-      var dm = el('datalist'); dm.id = 'jr-models'; ['AMD','Order block','Breaker','SMT divergence','Displacement + FVG','Liquidity sweep'].forEach(function(x){ var o = el('option'); o.value = x; dm.appendChild(o); }); document.body.appendChild(dm); }
+      var dm = el('datalist'); dm.id = 'jr-models'; [].forEach(function(x){ var o = el('option'); o.value = x; dm.appendChild(o); }); document.body.appendChild(dm); }
   }
 
   /* ---------- psych leaderboard ---------- */
@@ -2303,7 +2340,12 @@ img,video{-webkit-user-drag:none;user-drag:none}
       }); })
       .then(function(r){ return { url: r.url, name: f.name, type: f.type, size: f.size }; });
   }
-  var FILE_TYPES = 'image/png,image/jpeg,image/webp,image/gif,image/heic,image/heif,application/pdf';
+  var FILE_TYPES = 'image/png,image/jpeg,image/webp,image/gif,image/heic,image/heif,application/pdf,.png,.jpg,.jpeg,.webp,.gif,.heic,.heif,.pdf';
+  // an upload's type: what the browser says, or worked out from the name (some browsers give none for HEIC/PDF)
+  function fileType(f){ var t = String(f.type || '').toLowerCase(); if (t === 'image/jpg' || t === 'image/pjpeg') t = 'image/jpeg';
+    if (/^(image\/(png|jpeg|webp|gif|heic|heif)|application\/pdf)$/.test(t)) return t;
+    var ext = (/\.([a-z0-9]{2,5})$/i.exec(f.name || '') || [])[1]; ext = String(ext || '').toLowerCase();
+    return { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', webp:'image/webp', gif:'image/gif', heic:'image/heic', heif:'image/heif', pdf:'application/pdf' }[ext] || ''; }
   function safeName(n){ return String(n || 'file').replace(/[^\w.\-]+/g,'-').slice(-80); }
   // thumbnails for uploaded images and PDFs
   function fileChips(files, onRemove){
@@ -2712,63 +2754,140 @@ img,video{-webkit-user-drag:none;user-drag:none}
     return c;
   }
 
-  /* ---------- per-member access: unlock, lock, or mark done (for work done off site) ---------- */
-  function accessPanel(m, redraw){
-    var box = el('div','acc'), cur = (adm.content && adm.content.curriculum) || CURRICULUM;
-    box.appendChild(el('p','adm-note','Step: ' + (m.isAdmin ? 'Admin (sees everything)' : levelName(m.level)) + '. Unlock or lock anything for this member, or mark it done if they already did it off site. Your choice beats the usual rules until you reset or undo it.'));
-    function act(payload, okMsg, btn){ if (btn) btn.disabled = true;
-      memberAction(Object.assign({ userId:m.id }, payload)).then(function(){ toast(okMsg); redraw(); })
-        .catch(function(){ if (btn) btn.disabled = false; toast('Couldn\'t save that. Try again.'); }); }
-    function section(name, rows){
-      var sec = el('div','acc-ch'), head = el('div','acc-hd'); head.appendChild(el('b',null,name));
-      if (rows.length){
-        var pick = el('select'); rows.forEach(function(r, i){ var o = el('option',null, r.label); o.value = i; pick.appendChild(o); });
-        var thru = el('button','btn-s','Mark done through'); thru.type = 'button';
-        var wrapT = el('span','acc-thru'); wrapT.appendChild(thru); wrapT.appendChild(pick); head.appendChild(wrapT);
-        thru.addEventListener('click', function(){ var n = +pick.value, keys = rows.slice(0, n + 1).map(function(r){ return r.key; });
-          act({ action:'complete', keys:keys, done:true }, 'Marked ' + keys.length + ' done through “' + rows[n].label + '”.', thru); });
-      }
-      sec.appendChild(head);
-      rows.forEach(function(r){
-        var a = (m.access || {})[r.key] || {}, sb = (m.subs || {})[r.key], ov = (m.overrides || {})[r.key], done = sb && sb.status === 'approved';
-        var row = el('div','acc-row'); row.appendChild(el('span','acc-t', r.label));
-        var state = !a.open ? (a.reason === 'admin' ? 'Locked by admin' : a.reason === 'hidden' ? 'Not reached' : 'Locked') : done ? (sb.offsite ? 'Done (marked)' : 'Approved') : sb ? (sb.status === 'returned' ? 'Sent back' : 'Handed in') : 'Open · to do';
-        row.appendChild(el('span','chip' + (!a.open ? ' lkd' : done ? ' ok' : sb ? ' wait' : '') + (ov ? ' ov' : ''), state + (ov === 'unlock' ? ' · unlocked by admin' : '')));
-        var btns = el('span','acc-b');
-        function mk(label, fn){ var bt = el('button','btn-s', label); bt.type = 'button'; bt.addEventListener('click', function(){ fn(bt); }); btns.appendChild(bt); }
-        if (!a.open) mk('Unlock', function(bt){ act({ action:'override', lessonId:r.key, mode:'unlock' }, 'Unlocked “' + r.label + '”.', bt); });
-        else mk('Lock', function(bt){ act({ action:'override', lessonId:r.key, mode:'lock' }, 'Locked “' + r.label + '”.', bt); });
-        if (!done) mk('Mark done', function(bt){ act({ action:'complete', keys:[r.key], done:true }, 'Marked “' + r.label + '” done.', bt); });
-        else mk('Undo done', function(bt){ act({ action:'complete', keys:[r.key], done:false }, 'Undid “' + r.label + '”.', bt); });
-        if (ov) mk('Reset', function(bt){ act({ action:'override', lessonId:r.key, mode:null }, 'Back to the usual rules.', bt); });
-        row.appendChild(btns); sec.appendChild(row);
+  /* ---------- Progress: pick members, pick lectures/breakdowns/homework, then one action ----------
+     Unlock + mark done is the usual one (work done off site, or moving someone forward). */
+  function progressItems(){
+    var cur = (adm.content && adm.content.curriculum) || CURRICULUM, groups = [];
+    cur.forEach(function(ch){ var list = []; ch.lessons.forEach(function(l, li){
+      if (l.parts && l.parts.length) l.parts.forEach(function(p){ list.push({ key:p.id, label:(li+1) + '. ' + partTitle(l, p) }); });
+      else list.push({ key:l.id, label:(li+1) + '. ' + l.title }); }); if (list.length) groups.push({ name:ch.name, list:list }); });
+    var bds = adminBreakdowns(), bl = function(b){ return { key:'bd:' + b.id, label: bdSlot(b) + ' · ' + weekLabel(b.week).replace('Week of ','') + (b.title ? ' · ' + b.title : '') }; };
+    var main = bds.filter(function(b){ return bdKind(b) !== 'advanced'; }), adv = bds.filter(function(b){ return bdKind(b) === 'advanced'; });
+    if (main.length) groups.push({ name:'Breakdowns', list:main.map(bl) });
+    if (adv.length) groups.push({ name:'Advanced Breakdowns', list:adv.map(bl) });
+    var hws = (adm.content && adm.content.homework) || []; if (hws.length) groups.push({ name:'Homework', list:hws.map(function(h){ return { key:'hw:' + h.id, label:h.title }; }) });
+    return groups;
+  }
+  function itemState(m, key){
+    var a = (m.access || {})[key] || {}, sb = (m.subs || {})[key], ov = (m.overrides || {})[key];
+    if (m.isAdmin) return { t:'Admin', c:'' };
+    if (sb && sb.status === 'approved') return { t: sb.offsite ? 'Done' : 'Approved', c:' ok' };
+    if (!a.open) return { t: ov === 'lock' ? 'Locked by you' : 'Locked', c:' lkd' };
+    if (sb) return { t: sb.status === 'returned' ? 'Sent back' : 'Handed in', c:' wait' };
+    return { t: ov === 'unlock' ? 'Unlocked by you' : 'Open', c:'' };
+  }
+  function progressView(){
+    var wrap = el('div','pg');
+    wrap.appendChild(el('p','adm-note','Tick members, tick items, then pick an action at the bottom. Shift-click ticks a range. With one member ticked, each item shows where they are.'));
+    var host = el('div'); wrap.appendChild(host);
+    host.appendChild(el('p','adm-note','Loading members…'));
+    loadMembers(draw, function(t, line){ host.textContent = ''; emptyState(host, t, line); });
+    function draw(rows){
+      host.textContent = '';
+      if (!rows.length){ emptyState(host,'No members yet','Members appear here after they sign in with Discord.'); return; }
+      var picked = adm.picked || (adm.picked = {}), chosen = adm.chosenKeys || (adm.chosenKeys = {}), groups = progressItems();
+      Object.keys(picked).forEach(function(id){ if (!rows.some(function(m){ return m.id === id; })) delete picked[id]; });
+      var known = {}; groups.forEach(function(g){ g.list.forEach(function(x){ known[x.key] = 1; }); });
+      Object.keys(chosen).forEach(function(k){ if (!known[k]) delete chosen[k]; });
+      var grid = el('div','pg-grid'); host.appendChild(grid);
+
+      // ---- 1. members ----
+      var c1 = el('section','pg-card'), h1 = el('div','pg-h'), t1 = el('b'); h1.appendChild(t1);
+      var q = el('input'); q.type = 'search'; q.placeholder = 'Search members'; q.setAttribute('aria-label','Search members'); q.value = adm.pgQ || '';
+      var all1 = el('button','btn-s','Select all'), none1 = el('button','btn-s','Clear'); all1.type = none1.type = 'button';
+      var b1 = el('span','pg-btns'); b1.appendChild(all1); b1.appendChild(none1); h1.appendChild(b1); c1.appendChild(h1); c1.appendChild(q);
+      var ml = el('div','pg-list'); c1.appendChild(ml); grid.appendChild(c1);
+      var mBoxes = [];
+      rows.forEach(function(m){
+        var lab = el('label','pg-m'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!picked[m.id];
+        var av = el('span','av'); setAvatar(av, m);
+        var nm = el('span','pg-mn'); nm.appendChild(el('b',null, m.displayName || m.username)); nm.appendChild(el('small',null,'@' + (m.username || '')));
+        lab.appendChild(cb); lab.appendChild(av); lab.appendChild(nm); lab.appendChild(el('span','chip', m.isAdmin ? 'Admin' : levelName(m.level)));
+        cb.addEventListener('change', function(){ if (cb.checked) picked[m.id] = true; else delete picked[m.id]; refresh(); });
+        mBoxes.push({ m:m, cb:cb, lab:lab }); ml.appendChild(lab);
       });
-      box.appendChild(sec);
+      function filterM(){ var v = q.value.trim().toLowerCase(); adm.pgQ = q.value; mBoxes.forEach(function(x){ x.lab.hidden = !!v && ((x.m.displayName || '') + ' ' + (x.m.username || '')).toLowerCase().indexOf(v) < 0; }); }
+      q.addEventListener('input', filterM); filterM();
+      all1.addEventListener('click', function(){ mBoxes.forEach(function(x){ if (!x.lab.hidden){ picked[x.m.id] = true; x.cb.checked = true; } }); refresh(); });
+      none1.addEventListener('click', function(){ mBoxes.forEach(function(x){ delete picked[x.m.id]; x.cb.checked = false; }); refresh(); });
+
+      // ---- 2. items ----
+      var c2 = el('section','pg-card'), h2 = el('div','pg-h'), t2 = el('b'); h2.appendChild(t2);
+      var all2 = el('button','btn-s','Select everything'), none2 = el('button','btn-s','Clear'); all2.type = none2.type = 'button';
+      var b2 = el('span','pg-btns'); b2.appendChild(all2); b2.appendChild(none2); h2.appendChild(b2); c2.appendChild(h2);
+      var il = el('div','pg-list pg-items'); c2.appendChild(il); grid.appendChild(c2);
+      var iBoxes = [], last = null;
+      groups.forEach(function(g){
+        var gh = el('div','pg-gh'); gh.appendChild(el('b',null,g.name)); var gn = el('span','adm-note'); gh.appendChild(gn);
+        var ga = el('button','btn-s'); ga.type = 'button'; gh.appendChild(ga); il.appendChild(gh);
+        var mine = [];
+        g.list.forEach(function(x){
+          var lab = el('label','pg-i'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!chosen[x.key];
+          var st = el('span','chip'); st.hidden = true;
+          lab.appendChild(cb); lab.appendChild(el('span','pg-it', x.label)); lab.appendChild(st);
+          var rec = { x:x, cb:cb, st:st, idx:iBoxes.length }; iBoxes.push(rec); mine.push(rec); il.appendChild(lab);
+          cb.addEventListener('click', function(ev){
+            if (ev.shiftKey && last !== null){ var lo = Math.min(last, rec.idx), hi = Math.max(last, rec.idx);
+              for (var i = lo; i <= hi; i++){ iBoxes[i].cb.checked = cb.checked; if (cb.checked) chosen[iBoxes[i].x.key] = true; else delete chosen[iBoxes[i].x.key]; } }
+            else { if (cb.checked) chosen[x.key] = true; else delete chosen[x.key]; }
+            last = rec.idx; refresh(); });
+        });
+        g.recs = mine; g.count = gn; g.toggle = ga;
+        ga.addEventListener('click', function(){ var on = !mine.every(function(r){ return chosen[r.x.key]; });
+          mine.forEach(function(r){ r.cb.checked = on; if (on) chosen[r.x.key] = true; else delete chosen[r.x.key]; }); refresh(); });
+      });
+      all2.addEventListener('click', function(){ iBoxes.forEach(function(r){ r.cb.checked = true; chosen[r.x.key] = true; }); refresh(); });
+      none2.addEventListener('click', function(){ iBoxes.forEach(function(r){ r.cb.checked = false; delete chosen[r.x.key]; }); refresh(); });
+
+      // ---- 3. actions ----
+      var bar = el('div','pg-bar'), sum = el('span','pg-sum'); bar.appendChild(sum);
+      var acts = el('span','pg-acts'); bar.appendChild(acts); host.appendChild(bar);
+      var ACTS = [['unlock-done','Unlock + mark done','pri','Opens them and counts them as finished'],['done','Mark done','','Counts them as finished'],['unlock','Unlock','','Opens them, still to do'],
+                  ['lock','Lock','','Closes them'],['undone','Undo done','','Removes the finish and any hand-in'],['reset','Reset','','Back to the usual rules']];
+      var btns = ACTS.map(function(o){ var bt = el('button','btn-s' + (o[2] ? ' ' + o[2] : ''), o[1]); bt.type = 'button'; bt.title = o[3]; acts.appendChild(bt);
+        bt.addEventListener('click', function(){
+          var ids = Object.keys(picked), ks = Object.keys(chosen).filter(function(k){ return chosen[k]; });
+          if (!ids.length || !ks.length) return;
+          if ((o[0] === 'undone' || o[0] === 'reset' || o[0] === 'lock') && ids.length * ks.length > 1 && !confirmInline(bt, o[1] + '?')) return;
+          btns.forEach(function(x){ x.disabled = true; }); bt.textContent = 'Saving…';
+          memberAction({ action:'bulk', userIds: ids, keys: ks, op: o[0] })
+            .then(function(){ toast(o[1] + ': ' + ks.length + (ks.length === 1 ? ' item' : ' items') + ' for ' + ids.length + (ids.length === 1 ? ' member.' : ' members.')); admRender(); })
+            .catch(function(){ toast('Couldn\'t apply that. Try again.'); admRender(); });
+        });
+        return bt; });
+
+      function refresh(){
+        var ids = Object.keys(picked), ks = iBoxes.filter(function(r){ return chosen[r.x.key]; }).length;
+        t1.textContent = '1 · Members (' + ids.length + ' of ' + rows.length + ')';
+        t2.textContent = '2 · Lectures & breakdowns (' + ks + ')';
+        groups.forEach(function(g){ var c = g.recs.filter(function(r){ return chosen[r.x.key]; }).length;
+          g.count.textContent = c + '/' + g.recs.length; g.toggle.textContent = c === g.recs.length ? 'Clear' : 'Select all'; });
+        var one = ids.length === 1 ? rows.filter(function(m){ return m.id === ids[0]; })[0] : null;
+        iBoxes.forEach(function(r){ if (!one){ r.st.hidden = true; return; } var s2 = itemState(one, r.x.key); r.st.hidden = false; r.st.className = 'chip' + s2.c; r.st.textContent = s2.t; });
+        sum.textContent = '3 · ' + (!ids.length ? 'Tick at least one member.' : !ks ? 'Tick at least one item.' : ks + (ks === 1 ? ' item' : ' items') + ' for ' + ids.length + (ids.length === 1 ? ' member' : ' members'));
+        btns.forEach(function(b){ b.disabled = !ids.length || !ks; });
+      }
+      refresh();
     }
-    cur.forEach(function(ch){ var rows = []; ch.lessons.forEach(function(l, li){
-      if (l.parts && l.parts.length) l.parts.forEach(function(p){ rows.push({ key:p.id, label:(li+1) + '. ' + partTitle(l, p) }); });
-      else rows.push({ key:l.id, label:(li+1) + '. ' + l.title }); }); section(ch.name, rows); });
-    var bds = adminBreakdowns(), main = bds.filter(function(b){ return bdKind(b) !== 'advanced'; }), adv = bds.filter(function(b){ return bdKind(b) === 'advanced'; });
-    var bl = function(b){ return { key:'bd:' + b.id, label: bdSlot(b) + ' · ' + weekLabel(b.week).replace('Week of ','') + ' · ' + (b.title || '') }; };
-    if (main.length) section('Breakdowns', main.map(bl));
-    if (adv.length) section('Advanced Breakdowns', adv.map(bl));
-    return box;
+    return wrap;
+  }
+  // a second click within 4s confirms (no browser dialogs)
+  function confirmInline(bt, label){
+    if (bt.dataset.arm){ delete bt.dataset.arm; return true; }
+    var orig = bt.textContent; bt.dataset.arm = '1'; bt.textContent = label + ' Click again';
+    setTimeout(function(){ if (bt.dataset.arm){ delete bt.dataset.arm; bt.textContent = orig; } }, 4000);
+    return false;
   }
 
   function membersView(){
     var wrap = el('div','adm-list');
-    wrap.appendChild(el('p','adm-note','Everyone who has signed in, newest first. Tick members to change many at once, or open one for their lessons, journal and certificates.'));
+    wrap.appendChild(el('p','adm-note','Everyone who has signed in, newest first. Open a member for their journal, certificates and promotion. To unlock or mark lectures done, use Progress.'));
     var host = el('div'); wrap.appendChild(host);
     function draw(rows){
       host.textContent = '';
       if (!rows.length){ emptyState(host,'No members yet','Members appear here after they sign in with Discord.'); return; }
       var lessons = Object.keys(lessonIndex());
-      var picked = adm.picked || (adm.picked = {});
-      var bulk = el('div','bulk'); host.appendChild(bulk);
       var tw = el('div','mem-wrap'), t = el('table','mem'), th = el('thead'), hr = el('tr');
-      var thc = el('th'), allCb = el('input'); allCb.type = 'checkbox'; allCb.setAttribute('aria-label','Select all members'); thc.appendChild(allCb); hr.appendChild(thc);
-      allCb.checked = rows.length > 0 && rows.every(function(m){ return picked[m.id]; });
-      allCb.addEventListener('change', function(){ rows.forEach(function(m){ if (allCb.checked) picked[m.id] = true; else delete picked[m.id]; }); tb.querySelectorAll('input.mcb').forEach(function(c){ c.checked = allCb.checked; }); drawBulk(); });
       ['Member','Last seen','Lessons','Hand-ins','Step','Flags',''].forEach(function(x){ hr.appendChild(el('th',null,x)); });
       th.appendChild(hr); t.appendChild(th); var tb = el('tbody'); t.appendChild(tb);
       rows.forEach(function(m){
@@ -2777,9 +2896,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
         var subsN = Object.keys(m.subs || {}).length, waitN = Object.keys(m.subs || {}).filter(function(k){ return m.subs[k] && m.subs[k].status === 'submitted'; }).length;
         var hw = subsN + (waitN ? ' (' + waitN + ' waiting)' : '');
         var chs = m.isAdmin ? 'Admin' : levelName(m.level) + (m.promo && m.promo.status === 'requested' ? ' · promotion requested' : '');
-        var tr = el('tr'), c0 = el('td'), mcb = el('input'); mcb.type = 'checkbox'; mcb.className = 'mcb'; mcb.checked = !!picked[m.id]; mcb.setAttribute('aria-label','Select ' + (m.displayName || m.username));
-        mcb.addEventListener('change', function(){ if (mcb.checked) picked[m.id] = true; else delete picked[m.id]; allCb.checked = rows.every(function(x){ return picked[x.id]; }); drawBulk(); });
-        c0.appendChild(mcb); tr.appendChild(c0);
+        var tr = el('tr');
         var c1 = el('td'), who = el('div','who2'), av = el('span','av'); setAvatar(av, m); who.appendChild(av);
         var nmw = el('div'); nmw.appendChild(el('b',null, m.displayName || m.username)); nmw.appendChild(el('div','adm-note','@' + (m.username||''))); who.appendChild(nmw); c1.appendChild(who); tr.appendChild(c1);
         tr.appendChild(el('td',null, m.lastSeen ? fmtDay(m.lastSeen) : '—'));
@@ -2789,7 +2906,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
         var fl = m.flags || {}, ft = parseInt(fl.total || 0, 10), fc = el('td', ft ? 'flagged' : null, ft ? String(ft) : '0'); if (ft) fc.title = 'Last: ' + (fl.lastKind || '') + ' · ' + fmtDay(fl.last); tr.appendChild(fc);
         var c6 = el('td'), lb = el('button','lnk','Details'); lb.type='button'; c6.appendChild(lb); tr.appendChild(c6);
         tb.appendChild(tr);
-        var det = el('tr','det'); det.hidden = true; var dc = el('td'); dc.colSpan = 8; det.appendChild(dc); tb.appendChild(det);
+        var det = el('tr','det'); det.hidden = true; var dc = el('td'); dc.colSpan = 7; det.appendChild(dc); tb.appendChild(det);
         if (adm.openMember === m.id){ setTimeout(function(){ lb.click(); adm.openMember = null; }, 0); }
         lb.addEventListener('click', function(){
           det.hidden = !det.hidden; tr.classList.toggle('open', !det.hidden); lb.textContent = det.hidden ? 'Details' : 'Hide';
@@ -2834,7 +2951,9 @@ img,video{-webkit-user-drag:none;user-drag:none}
               });
             }
             dc.appendChild(jb);
-            dc.appendChild(accessPanel(m, function(){ adm.openMember = m.id; admRender(); }));
+            var gp = el('button','btn-s pri','Unlock or mark done for ' + (m.displayName || m.username)); gp.type = 'button';
+            gp.addEventListener('click', function(){ adm.picked = {}; adm.picked[m.id] = true; adm.sec = 'progress'; admRender(); window.scrollTo(0, 0); });
+            var gpw = el('div','acc-promo'); gpw.appendChild(el('b',null,'Progress · ' + (m.isAdmin ? 'Admin' : levelName(m.level)))); gpw.appendChild(gp); dc.appendChild(gpw);
             if (!keys.length){ dc.appendChild(el('span','adm-note','No videos finished yet.')); return; }
             dc.appendChild(el('b','acc-sub','Videos finished'));
             var ul = el('ul'); keys.forEach(function(k){ var li = el('li'); li.appendChild(el('span',null, titles[k] || k)); var tm = el('time',null, fmtDay(prog[k])); tm.dateTime = prog[k]; li.appendChild(tm); ul.appendChild(li); });
@@ -2843,45 +2962,6 @@ img,video{-webkit-user-drag:none;user-drag:none}
         });
       });
       tw.appendChild(t); host.appendChild(tw);
-      // bulk: pick items, then one action for every ticked member
-      var chosen = adm.chosenKeys || (adm.chosenKeys = {});
-      function drawBulk(){
-        bulk.textContent = '';
-        var ids = rows.filter(function(m){ return picked[m.id]; }).map(function(m){ return m.id; }), keys = Object.keys(chosen).filter(function(k){ return chosen[k]; });
-        var head = el('div','bulk-h'); head.appendChild(el('b',null, ids.length ? ids.length + (ids.length === 1 ? ' member selected' : ' members selected') : 'Bulk changes'));
-        head.appendChild(el('span','adm-note', ids.length ? 'Pick what to change below, then choose an action.' : 'Tick members in the list, then pick lessons, parts, breakdowns or homework below.'));
-        bulk.appendChild(head);
-        if (!ids.length) return;
-        var pickWrap = el('div','bulk-pick'), cur = (adm.content && adm.content.curriculum) || CURRICULUM;
-        function group(name, list){
-          var g = el('details','lp-ch'), sm = el('summary',null, name), n = el('span','lp-n'); sm.appendChild(n); g.appendChild(sm);
-          var sa = el('label','lp-i all'), sab = el('input'); sab.type = 'checkbox'; sa.appendChild(sab); sa.appendChild(document.createTextNode('Select all in ' + name)); g.appendChild(sa);
-          var boxes = [];
-          var upd = function(){ var c = list.filter(function(x){ return chosen[x.key]; }).length; n.textContent = c ? ' · ' + c + ' picked' : ''; sab.checked = c === list.length && c > 0; };
-          list.forEach(function(x){ var lab = el('label','lp-i'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!chosen[x.key]; boxes.push(cb);
-            cb.addEventListener('change', function(){ if (cb.checked) chosen[x.key] = true; else delete chosen[x.key]; upd(); countLine(); });
-            lab.appendChild(cb); lab.appendChild(document.createTextNode(x.label)); g.appendChild(lab); });
-          sab.addEventListener('change', function(){ list.forEach(function(x, i){ if (sab.checked) chosen[x.key] = true; else delete chosen[x.key]; boxes[i].checked = sab.checked; }); upd(); countLine(); });
-          upd(); pickWrap.appendChild(g);
-        }
-        cur.forEach(function(ch){ var list = []; ch.lessons.forEach(function(l, li){ if (l.parts && l.parts.length) l.parts.forEach(function(p){ list.push({ key:p.id, label:(li+1) + '. ' + partTitle(l, p) }); }); else list.push({ key:l.id, label:(li+1) + '. ' + l.title }); }); group(ch.name, list); });
-        var bds = adminBreakdowns(); if (bds.length) group('Breakdowns', bds.map(function(b){ return { key:'bd:' + b.id, label: bdSlot(b) + ' · ' + weekLabel(b.week).replace('Week of ','') + ' · ' + (b.title || '') }; }));
-        if ((adm.content.homework || []).length) group('Homework', adm.content.homework.map(function(h){ return { key:'hw:' + h.id, label:h.title }; }));
-        bulk.appendChild(pickWrap);
-        var line = el('p','adm-note'); bulk.appendChild(line);
-        function countLine(){ var k = Object.keys(chosen).filter(function(x){ return chosen[x]; }).length; line.textContent = k + (k === 1 ? ' item' : ' items') + ' × ' + ids.length + (ids.length === 1 ? ' member' : ' members'); }
-        countLine();
-        var acts = el('div','bulk-acts');
-        [['unlock-done','Unlock + mark done','pri'],['unlock','Unlock',''],['done','Mark done',''],['lock','Lock',''],['undone','Undo done',''],['reset','Reset to usual rules','']].forEach(function(o){
-          var b = el('button','btn-s' + (o[2] ? ' ' + o[2] : ''), o[1]); b.type = 'button';
-          b.addEventListener('click', function(){ var ks = Object.keys(chosen).filter(function(x){ return chosen[x]; }); if (!ks.length){ toast('Pick at least one item.'); return; }
-            b.disabled = true; memberAction({ action:'bulk', userIds: ids, keys: ks, op: o[0] })
-              .then(function(){ toast(o[1] + ': ' + ks.length + (ks.length === 1 ? ' item' : ' items') + ' for ' + ids.length + (ids.length === 1 ? ' member.' : ' members.')); admRender(); })
-              .catch(function(){ b.disabled = false; toast('Couldn\'t apply that. Try again.'); }); });
-          acts.appendChild(b); });
-        bulk.appendChild(acts);
-      }
-      drawBulk();
     }
     host.appendChild(el('p','adm-note','Loading members…'));
     loadMembers(draw, function(t, line){ host.textContent=''; emptyState(host, t, line); });
@@ -2920,6 +3000,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       meta:function(b){ return bdSlot(b) + ' · ' + weekLabel(b.week) + (b.video ? ' · video' : '') + (b.link ? ' · link' : ''); } }));
     else if (adm.sec === 'lectures') body.appendChild(lecturesEditor());
     else if (adm.sec === 'review') body.appendChild(reviewView());
+    else if (adm.sec === 'progress') body.appendChild(progressView());
     else body.appendChild(membersView());
   }
   document.querySelectorAll('#adm-nav button').forEach(function(b){

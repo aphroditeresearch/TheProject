@@ -190,11 +190,13 @@ titles, videos and notes never leave the server.
 
 ## For admins: catching members up
 
-**Admin → Members → Details** lists every lesson and breakdown for that member with:
-- **Unlock / Lock**: open or close that one item for them
-- **Mark done / Undo done**: for work they already did off site (counts as approved, so the next item opens)
-- **Mark done through…**: pick an item and mark everything up to it done in one go
-- **Reset**: drop your unlock/lock and go back to the usual rules
+**Admin → Progress** is the one place for this:
+1. Tick members (**Select all**, or search).
+2. Tick lectures, lesson parts, breakdowns or homework (**Select all** per chapter, **Select everything**, or shift-click a range).
+3. Pick an action at the bottom: **Unlock + mark done** (the usual one), Mark done, Unlock, Lock, Undo done or Reset.
+
+With one member ticked, every item shows where they are (Done, Open, Locked, Handed in…). In **Members → Details**,
+"Unlock or mark done for …" jumps to Progress with that member already ticked.
 
 Both admin accounts (`1313595031466021026`, `484654761757507584`) have all of this, see every lesson and breakdown, and aren't covered by the focus shield.
 
@@ -219,7 +221,7 @@ YouTube outside the site, so uploaded MP4s (signed links that expire) are the mo
 
 **Journal tab**: each member first creates their journal by writing their rules. The rules sit next to the entry form.
 Every trade entry needs: pair, account type, session, trade date & time, contracts, outcome (TP / SL / BE), trade P&L,
-trade overview, entry model, 1–4 screenshots, and "Did you follow your rules?". It won't post without all of them.
+trade overview, entry model (BOS, MITIGATION, Chained OBs or DIV + OB), 1–4 screenshots, and "Did you follow your rules?". It won't post without all of them.
 A "No trades today" entry needs the date, session, a short overview and the rules answer (one per day).
 Members can delete their own entries for 7 days. Admins can **Void** an entry (0 points) in Members → Details.
 
@@ -245,5 +247,4 @@ tab shows a count of open assignments, and a small reminder pops up in the corne
 All and by Lessons / Breakdowns / Homework, or search a member. **Clear all hand-ins** deletes every member hand-in
 (items you marked done are kept). All hand-ins were cleared once automatically after this update.
 
-**Members**: tick members (or the select-all box), pick items (each chapter, Breakdowns and Homework have "Select all"),
-then **Unlock + mark done**, Unlock, Mark done, Lock, Undo done or Reset, all at once.
+**Progress**: see "catching members up" above.

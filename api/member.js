@@ -83,13 +83,21 @@ module.exports = async (req, res) => {
   if (action === 'submit') {
     const lessonId = typeof body.lessonId === 'string' ? body.lessonId : '';
     const notes = str(body.notes, 8000), homework = str(body.homework, 8000);
-    const files = (Array.isArray(body.files) ? body.files : []).slice(0, 8).map((f) => cleanFile(f, uid, 'homework'));
-    if (files.some((f) => !f)) return json(res, 400, { error: 'bad_file' });
     if (notes.length < 20) return json(res, 400, { error: 'notes_short' });
-    if (homework.length < 20 && !files.length) return json(res, 400, { error: 'homework_short' });
-
     const admin = isAdmin(s);
     const { content, subs, access } = await gateFor(s, admin);
+    // files: new uploads in the member's folder, or ones already in their earlier hand-in (those come back as signed links)
+    const prevFiles = ((subs[lessonId] || {}).files || []);
+    const files = [], badNames = [];
+    (Array.isArray(body.files) ? body.files : []).slice(0, 8).forEach((f) => {
+      const ok = cleanFile(f, uid, 'homework')
+        || prevFiles.find((p) => f && p.url && typeof f.url === 'string' && f.url.split('?')[0] === p.url)
+        || prevFiles.find((p) => f && p.name && p.name === f.name && (+p.size || 0) === (+f.size || 0));
+      if (ok) files.push(ok); else badNames.push(String((f && f.name) || 'a file').slice(0, 80));
+    });
+    if (badNames.length) return json(res, 400, { error: 'bad_file', files: badNames });
+    if (homework.length < 20 && !files.length) return json(res, 400, { error: 'homework_short' });
+
     const found = findItem(content, lessonId);
     if (!found) return json(res, 404, { error: 'no_lesson' });
     if (!access.all[lessonId] || !access.all[lessonId].open) return json(res, 403, { error: 'locked' });
@@ -139,7 +147,7 @@ module.exports = async (req, res) => {
     } else {
       Object.assign(entry, {
         time: /^\d{2}:\d{2}$/.test(str(e.time, 5)) ? str(e.time, 5) : '', pair: str(e.pair, 40), account: str(e.account, 40),
-        contracts: Number(e.contracts), outcome: ['tp', 'sl', 'be'].includes(e.outcome) ? e.outcome : '', pnl: Number(e.pnl), model: str(e.model, 80),
+        contracts: Number(e.contracts), outcome: ['tp', 'sl', 'be'].includes(e.outcome) ? e.outcome : '', pnl: Number(e.pnl), model: ['BOS', 'MITIGATION', 'Chained OBs', 'DIV + OB'].includes(e.model) ? e.model : '',
         files: (Array.isArray(e.files) ? e.files : []).slice(0, 4).map((f) => cleanFile(f, uid, 'journal')),
       });
       const missing = ['time', 'pair', 'account', 'session', 'outcome', 'model'].filter((k) => !entry[k]);
