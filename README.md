@@ -145,13 +145,27 @@ These stop casual copying, but nothing running in a browser can stop someone det
 
 The diamond video comes from a third-party wallpaper site. Confirm you have the right to use them commercially, or swap in your own, before the site goes public.
 
-## Who sees what (mirrors the Discord server)
+## Who sees what: the ladder
 
-| Section | Who can open it |
-|---|---|
-| Awakened, lessons 1–22 | everyone in the server |
-| Awakened: Narrative, Protection, Identification, Conclusion | Awakened role `1546326866875646084` |
-| Illuminated | Illuminated role `1554996401979654165` |
-| Enlightened | Enlightened role `1546326926099222538` |
+Members hold **one** Discord role. That role sets their step, and everything is enforced on the server:
 
-Change these in the Admin tab: each chapter has a role ID, and each lesson has an optional role ID of its own.
+| Discord role | Awakened | Illuminated | Enlightened |
+|---|---|---|---|
+| none | locked | locked | locked |
+| Awakened `1546326866875646084` | one lesson at a time | locked | locked |
+| Illuminated `1554996401979654165` | all open | one lesson at a time | locked |
+| Enlightened `1546326926099222538` | all open | all open | one lesson at a time |
+
+"One lesson at a time" means each lesson opens once the previous one's **notes and homework** are handed in
+(the form under each video). If a lesson has a video, it has to be watched to the end before handing in.
+Locked lessons are blurred, and their titles, videos and homework never leave the server.
+
+**Admin → Hand-ins** lists everything waiting for review. Approve it, or send it back with feedback (sent-back
+work doesn't unlock the next lesson until it's handed in again). At the top you choose when the next lesson
+unlocks: **On hand-in** (default) or **After I approve**.
+
+**Admin → Members → Details** shows every lesson for that member with Unlock / Lock / Reset, to open or close
+any single lesson on their behalf.
+
+**Admin → Lectures** edits lesson titles, videos, notes and the homework shown under each video.
+The built-in lessons live in `api/_curriculum.js` (server only); once you save from Lectures, the saved copy is used.

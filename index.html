@@ -333,6 +333,44 @@ a{color:var(--blue);text-underline-offset:3px}
 .it.cur::before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:3px;background:var(--blue);box-shadow:0 0 10px var(--blue)}
 .it.locked{color:var(--muted);cursor:not-allowed}
 .it .ttl{min-width:0;overflow-wrap:anywhere}
+/* gatekeeping: lessons you haven't unlocked are blurred and their titles never leave the server */
+.it .ttl.blur{filter:blur(5px);opacity:.6;user-select:none;-webkit-user-select:none;pointer-events:none}
+.grp.locked ul{position:relative}
+/* notes + homework under each lesson */
+.handin{margin-top:28px;width:100%;max-width:min(100%,calc((100vh - 380px) * 16 / 9));box-sizing:border-box;border:1px solid var(--line);background:color-mix(in srgb,var(--panel) 94%,transparent);padding:22px;display:flex;flex-direction:column;gap:14px}
+.hi-h{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hi-h h4{margin:0;font-family:var(--display);font-style:italic;font-weight:900;font-stretch:125%;font-size:21px;letter-spacing:-.01em}
+.chip{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:5px 9px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.ok{color:var(--kana-c);border-color:var(--blue)}
+.chip.wait{color:#E8D27A;border-color:#5A4E22}
+.chip.warn{color:#FF8A8A;border-color:#5A2A33}
+.chip.lkd{opacity:.75}
+.chip.ov{border-style:dashed}
+.hi-state{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+.hi-task,.hi-fb{margin:0;padding:12px 14px;border-left:3px solid var(--blue);background:var(--panel-2);font-size:15px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.hi-fb{border-left-color:#E8D27A}
+.hi-task b,.hi-fb b{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;font-weight:500;white-space:normal}
+.handin .pbtn.pri{align-self:flex-start}
+.handin .pbtn:disabled{opacity:.5;cursor:not-allowed}
+/* admin: hand-ins + per-member access */
+.rv-set{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border:1px solid var(--line);background:var(--panel);padding:16px 18px;margin-bottom:18px}
+.rv-set b{display:block;margin-bottom:4px}
+.seg{display:flex;gap:8px}
+.rv-h{margin:22px 0 12px;font-size:15px;font-family:var(--mono);font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.rv-card{border:1px solid var(--line);background:var(--panel);padding:18px;display:flex;flex-direction:column;gap:12px;margin-bottom:14px}
+.rv-card.done{opacity:.85}
+.rv-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.rv-acts{display:flex;gap:10px;flex-wrap:wrap}
+.rv-card .lnk{color:var(--kana-c);overflow-wrap:anywhere}
+.acc{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+.acc-ch{display:flex;flex-direction:column;gap:4px}
+.acc-ch > b{font-family:var(--display);font-style:italic;font-weight:900;font-stretch:125%;font-size:16px;margin:6px 0 2px}
+.acc-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:14px}
+.acc-t{overflow-wrap:anywhere}
+.acc-b{display:flex;gap:6px}
+.acc-b .btn-s{min-height:32px;padding:0 10px;font-size:13px}
+.acc-sub{display:block;margin:8px 0 4px;font-size:13px;color:var(--muted)}
+@media (max-width:600px){.acc-row{grid-template-columns:1fr;gap:6px}.rv-top{flex-direction:column;align-items:flex-start}}
 .box{appearance:none;flex:none;width:28px;height:28px;padding:0;border-radius:6px;border:1.5px solid #2A4A4C;background:transparent;color:var(--muted);display:grid;place-items:center;font-family:var(--mono);font-size:12px;cursor:pointer;transition:background .2s,border-color .2s,box-shadow .2s}
 .box:hover{border-color:var(--blue)}
 .box.on{background:var(--blue);border-color:#7FE3D8;color:#fff;box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 30%,transparent),0 0 12px color-mix(in srgb,var(--blue) 50%,transparent)}
@@ -620,7 +658,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     <main class="main wide" data-view="admin" hidden>
       <div class="view-h">
         <h2>admin</h2>
-        <p>Post announcements, assign homework, and manage lectures and breakdowns. Only you can see this tab.</p>
+        <p>Post announcements, assign homework, and manage lectures and breakdowns. Only admins can see this tab.</p>
         <span class="adm-note" id="adm-note"></span>
       </div>
       <nav class="adm-nav" id="adm-nav" aria-label="Admin sections">
@@ -628,6 +666,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
         <button type="button" data-sec="homework" aria-pressed="false">Homework</button>
         <button type="button" data-sec="lectures" aria-pressed="false">Lectures</button>
         <button type="button" data-sec="breakdowns" aria-pressed="false">Breakdowns</button>
+        <button type="button" data-sec="review" aria-pressed="false">Hand-ins</button>
         <button type="button" data-sec="members" aria-pressed="false">Members</button>
       </nav>
       <div id="adm-body"></div>
@@ -908,19 +947,12 @@ img,video{-webkit-user-drag:none;user-drag:none}
     chapter2: '1554996401979654165',   // Illuminated
     chapter3: '1546326926099222538'    // Enlightened
   };
+  // The real lessons live on the server (api/_curriculum.js), so locked titles never reach the browser.
+  // These placeholders are only used in the local preview (demo mode).
   var CURRICULUM = [
-    // Mirrors the Discord server: Awakened is open to everyone in the server except its last four
-    // lessons, which need the Awakened role. Illuminated and Enlightened need their own roles.
-    { id:'ch1', name:'Awakened', role:null, lessons:[
-      'Before You Begin','The Beginning','Candles & Timeframes','Trends','Displacement','Accumulation',
-      'Liquidity','Manipulation','Ranges','Internal Manipulation','Confirmation','Continuations',
-      'Entries, SL & TP','Sessions','Checklist','Order Blocks','AMD','News','Structure','Entry Triggers',
-      'HTF','Start of Many',
-      { title:'Narrative', role:ROLES.chapter1 }, { title:'Protection', role:ROLES.chapter1 },
-      { title:'Identification', role:ROLES.chapter1 }, { title:'Conclusion', role:ROLES.chapter1 }] },
-    { id:'ch2', name:'Illuminated', role:ROLES.chapter2, lessons:['AMD V2','Entry Models','Your Next Steps'] },
-    { id:'ch3', name:'Enlightened', role:ROLES.chapter3, lessons:[
-      'SMT / POI','Inducements','Orderflow','Time IDM','NQ','News V2','Divergence','HTF V2','SMT V2'] }
+    { id:'ch1', name:'Awakened', role:ROLES.chapter1, lessons:['Sample lesson 1','Sample lesson 2','Sample lesson 3','Sample lesson 4','Sample lesson 5','Sample lesson 6'] },
+    { id:'ch2', name:'Illuminated', role:ROLES.chapter2, lessons:['Sample lesson 1','Sample lesson 2','Sample lesson 3'] },
+    { id:'ch3', name:'Enlightened', role:ROLES.chapter3, lessons:['Sample lesson 1','Sample lesson 2','Sample lesson 3'] }
   ];
   // Homework you assign. Newest first. due is optional.
   var HOMEWORK = [
@@ -935,14 +967,16 @@ img,video{-webkit-user-drag:none;user-drag:none}
   // Once you post from the Admin tab, what's saved there replaces the lists above.
 
   /* ---------- content model ---------- */
-  var ROLE_BY_ID = { ch2: ROLES.chapter2, ch3: ROLES.chapter3 };
+  var ROLE_BY_ID = { ch1: ROLES.chapter1, ch2: ROLES.chapter2, ch3: ROLES.chapter3 };
+  var SETTINGS = { unlockMode:'submit' }, LEVEL = 0;
   function normalizeCurriculum(list){
     return (list || []).map(function(ch){
-      return { id: ch.id, name: ch.name, role: ch.role || ROLE_BY_ID[ch.id] || null,
+      return { id: ch.id, name: ch.name, role: ch.role || ROLE_BY_ID[ch.id] || null, step: ch.step, locked: !!ch.locked,
         lessons: (ch.lessons || []).map(function(l, li){
           return typeof l === 'string'
-            ? { id: ch.id + '-' + (li+1), title: l, video: '', summary: '' }
-            : { id: l.id || (ch.id + '-' + (li+1)), title: l.title, video: l.video || '', summary: l.summary || '', role: l.role || null };
+            ? { id: ch.id + '-' + (li+1), title: l, video: '', summary: '', homework: '' }
+            : { id: l.id || (ch.id + '-' + (li+1)), title: l.title || '', video: l.video || '', summary: l.summary || '', homework: l.homework || '',
+                open: l.open, passed: l.passed, reason: l.reason || null, sub: l.sub || null };
         }) };
     });
   }
@@ -954,6 +988,14 @@ img,video{-webkit-user-drag:none;user-drag:none}
     if (Array.isArray(c.homework)) HOMEWORK = c.homework;
     if (Array.isArray(c.breakdowns)) BREAKDOWNS = c.breakdowns;
     if (Array.isArray(c.announcements)) ANNOUNCEMENTS = c.announcements;
+    if (c.settings && c.settings.unlockMode) SETTINGS = { unlockMode: c.settings.unlockMode };
+    if (typeof c.level === 'number') LEVEL = c.level;
+  }
+  // after a hand-in or an admin change: fetch this member's lessons again (the server decides what's unlocked)
+  function refreshContent(){
+    if (DEMO_MODE || !BACKEND){ renderContentViews(); return Promise.resolve(); }
+    return fetch('/api/content', { credentials:'same-origin' }).then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(c){ if (c && c.content) applyContent(c.content); renderContentViews(); }).catch(function(){});
   }
   function liveAnnouncements(){ var now = Date.now(); return ANNOUNCEMENTS.filter(function(a){ return !a.expires || Date.parse(a.expires) > now; }); }
 
@@ -965,7 +1007,36 @@ img,video{-webkit-user-drag:none;user-drag:none}
      ===================================================================== */
   var SESSION = null, BACKEND = false, DEMO_MODE = true;
   var DEMO_USER = { id:'—', username:'member', displayName:'Member', avatar:null, banner:null, joinedAt:null };
-  var demoRoles = [];
+  var demoRoles = [], demoSubs = {}, demoOverrides = {};
+  try { demoSubs = JSON.parse(localStorage.getItem('theproject.demoSubs') || '{}') || {}; } catch(e) {}
+  try { demoOverrides = JSON.parse(localStorage.getItem('theproject.demoOverrides') || '{}') || {}; } catch(e) {}
+  function saveDemoGate(){ try { localStorage.setItem('theproject.demoSubs', JSON.stringify(demoSubs)); localStorage.setItem('theproject.demoOverrides', JSON.stringify(demoOverrides)); } catch(e) {} }
+  // Same ladder as api/_gate.js: your one role sets your step; earlier chapters are open, later ones locked,
+  // and in your own chapter each lesson opens once the previous one is handed in (or approved).
+  function computeAccess(curriculum, roles, subs, overrides){
+    var level = 0, out = {};
+    curriculum.forEach(function(ch, i){ if (ch.role && roles.indexOf(ch.role) !== -1) level = i + 1; });
+    curriculum.forEach(function(ch, ci){
+      var prevPassed = true;
+      ch.lessons.forEach(function(l, li){
+        var sub = subs[l.id], ov = overrides[l.id], open, passed, reason = null, step = ci + 1;
+        if (step < level){ open = true; passed = true; }
+        else if (step > level){ open = false; passed = false; reason = 'level'; }
+        else { open = li === 0 || prevPassed; if (!open) reason = 'order';
+          passed = !!sub && (sub.status === 'approved' || (sub.status === 'submitted' && SETTINGS.unlockMode !== 'approve')); }
+        if (ov === 'unlock' && !open){ open = true; reason = null; }
+        if (ov === 'lock'){ open = false; reason = 'admin'; }
+        out[l.id] = { open: open, passed: open && passed, reason: reason, override: ov || null };
+        prevPassed = open && passed;
+      });
+    });
+    return { level: level, lessons: out };
+  }
+  function gateDemo(){
+    var a = computeAccess(CURRICULUM, demoRoles, demoSubs, demoOverrides); LEVEL = a.level;
+    CURRICULUM.forEach(function(ch){ ch.lessons.forEach(function(l){ var x = a.lessons[l.id]; l.open = x.open; l.passed = x.passed; l.reason = x.reason; l.sub = demoSubs[l.id] || null; }); });
+    return a;
+  }
   try { demoRoles = JSON.parse(localStorage.getItem('theproject.demoRoles') || JSON.stringify([ROLES.chapter1])); } catch(e) { demoRoles = []; }
   /* progress: doneSet maps an item key to the ISO date it was completed; watch keeps how far each video has been watched.
      Stored per user in the browser, and sent to the backend (POST /api/progress) when one is connected. */
@@ -1004,14 +1075,24 @@ img,video{-webkit-user-drag:none;user-drag:none}
   function saveCurrent(){ try { localStorage.setItem('theproject.current', JSON.stringify(current)); } catch(e) {} }
 
   function byNewest(a, b){ return String(b.createdAt || '').localeCompare(String(a.createdAt || '')); }
+  var LOCK_WORDS = ['Locked lesson','Hidden lesson title','Unlocks later','Lesson locked'];
   function lectureGroups(){
-    return CURRICULUM.map(function(ch, ci){
-      var ok = hasAccess(ch);
-      return { id:ch.id, name:ch.name, locked:!ok, lockMsg: ch.name + ' unlocks with its member role in Discord.',
+    if (DEMO_MODE) gateDemo();
+    return CURRICULUM.map(function(ch){
+      var chLocked = ch.lessons.length > 0 && ch.lessons.every(function(l){ return l.open === false && l.reason === 'level'; });
+      var roleMsg = ch.name + ' unlocks with the ' + ch.name + ' role in Discord.';
+      return { id:ch.id, name:ch.name, locked:chLocked, lockMsg: roleMsg,
         items: ch.lessons.map(function(l, li){
-          var lk = ok && !hasAccess(l);
-          return { key: l.id, num: li+1, title:l.title, video:l.video||'', summary:l.summary||'', kicker: ch.name + ' · Lesson ' + (li+1),
-            locked: lk, lockMsg: lk ? l.title + ' unlocks with the ' + (roleName(l.role) || 'member') + ' role in Discord.' : '' }; }) };
+          var lk = l.open === false, prev = ch.lessons[li-1], msg = '';
+          if (lk){
+            if (l.reason === 'admin') msg = 'Your mentor has locked this lesson for now.';
+            else if (l.reason === 'level') msg = roleMsg;
+            else msg = (prev && prev.title && prev.open !== false ? 'Hand in your notes and homework for “' + prev.title + '”' : 'Hand in the previous lesson\'s notes and homework')
+                     + (SETTINGS.unlockMode === 'approve' ? ' and get them approved' : '') + ' to unlock this.';
+          }
+          return { key: l.id, num: li+1, title: lk ? LOCK_WORDS[li % LOCK_WORDS.length] : l.title, video: lk ? '' : (l.video||''), summary: lk ? '' : (l.summary||''),
+            kicker: ch.name + ' · Lesson ' + (li+1), locked: lk, lockMsg: msg, lesson: l };
+        }) };
     });
   }
   function breakdownGroups(){
@@ -1036,6 +1117,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     document.getElementById(id+'-ring').style.left = pc + '%';
     // pick the current item: saved, else first unfinished available, else first available
     var cur = avail.filter(function(it){ return it.key === current[id]; })[0]
+           || avail.filter(function(it){ return it.lesson && !it.lesson.passed; })[0]
            || avail.filter(function(it){ return !doneSet[it.key]; })[0] || avail[0] || null;
     if (cur) current[id] = cur.key;
 
@@ -1066,7 +1148,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
           if (lk){ toast(msg); return; }
           if (!mustWatch(id, it)){ if (doneSet[it.key]) unmark(it.key); else markDone(it.key); renderTrack(id); return; }
           pick(); });
-        li.appendChild(box); li.appendChild(el('span','ttl',it.title));
+        li.appendChild(box); var tt = el('span','ttl'+(lk?' blur':''), it.title); if (lk) tt.setAttribute('aria-hidden','true'); li.appendChild(tt);
+        if (lk) li.setAttribute('aria-label', 'Locked lesson ' + it.num);
         if (isDone) li.title = 'Completed ' + fmtDay(doneSet[it.key]);
         function pick(){ if (lk){ toast(msg); return; } current[id]=it.key; saveCurrent(); renderTrack(id);
           if (window.innerWidth <= 900) document.getElementById(id+'-pane').scrollIntoView({behavior: reduce?'auto':'smooth', block:'start'}); }
@@ -1079,6 +1162,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
 
     // content pane
     var pane = document.getElementById(id+'-pane'); pane.textContent='';
+    if (!cur && id === 'lx' && all.length){ emptyState(pane, 'Nothing unlocked yet', (CURRICULUM[0] ? CURRICULUM[0].name : 'The first chapter') + ' unlocks with the ' + (CURRICULUM[0] ? CURRICULUM[0].name : 'member') + ' role in Discord. Ask your mentor if you think you should have it.'); return; }
     if (!cur){ emptyState(pane, id==='bx' ? 'No breakdowns yet' : 'No lessons available', T.empty); return; }
     pane.appendChild(el('span','kick',cur.kicker));
     pane.appendChild(el('h3',null,cur.title));
@@ -1139,7 +1223,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       }
     } else { var pb = el('div','play'); pb.innerHTML = playSvg; pl.appendChild(pb); pl.appendChild(el('span','note','Video coming soon')); }
     pane.appendChild(pl);
-    if (needs || isDone) { pane.appendChild(status); paintStatus((watch[cur.key]||{}).max && 0); }
+    if ((needs && src) || isDone) { pane.appendChild(status); paintStatus((watch[cur.key]||{}).max && 0); }
     if (cur.summary) pane.appendChild(el('p','sum',cur.summary));
     var acts = el('div','pacts');
     if (!needs){
@@ -1155,7 +1239,74 @@ img,video{-webkit-user-drag:none;user-drag:none}
     acts.appendChild(nb);
     if (cur.link){ var a = el('a','pbtn','Open link'); a.href=cur.link; a.target='_blank'; a.rel='noopener'; acts.appendChild(a); }
     pane.appendChild(acts);
+    if (id === 'lx' && cur.lesson) pane.appendChild(handinPanel(cur, !src || !!doneSet[cur.key]));
     saveCurrent();
+  }
+
+  /* ---------- notes + homework hand-in (under each lesson's video) ---------- */
+  function draftKey(lid){ return 'theproject.draft.' + uid() + '.' + lid; }
+  function handinPanel(it, watched){
+    var l = it.lesson, sub = l.sub || null, st = sub ? sub.status : 'none', approve = SETTINGS.unlockMode === 'approve';
+    var box = el('section','handin'); box.setAttribute('aria-label','Notes and homework');
+    var hd = el('div','hi-h'); hd.appendChild(el('h4',null,'Notes & homework'));
+    var chip = el('span','chip' + (st==='approved' ? ' ok' : st==='returned' ? ' warn' : st==='submitted' ? ' wait' : ''),
+      st==='approved' ? 'Approved' : st==='returned' ? 'Sent back' : st==='submitted' ? (approve ? 'Waiting for review' : 'Handed in') : 'Not handed in');
+    hd.appendChild(chip); box.appendChild(hd);
+    var line;
+    if (st === 'approved') line = 'Approved ' + fmtDay(sub.reviewedAt) + (sub.reviewer ? ' by ' + sub.reviewer : '') + '.';
+    else if (st === 'returned') line = 'Sent back ' + fmtDay(sub.reviewedAt) + '. Make the changes below and hand it in again to unlock the next lesson.';
+    else if (st === 'submitted') line = 'Handed in ' + fmtDay(sub.submittedAt) + (approve ? '. The next lesson unlocks once it\'s approved.' : '. The next lesson is unlocked.');
+    else if (l.passed) line = 'Optional here: this chapter is already unlocked for you.';
+    else line = approve ? 'Hand in your notes and homework. The next lesson unlocks once they\'re approved.' : 'Hand in your notes and homework to unlock the next lesson.';
+    box.appendChild(el('p','hi-state',line));
+    if (sub && sub.feedback){ var fb = el('div','hi-fb'); fb.appendChild(el('b',null,'Feedback from your mentor')); fb.appendChild(document.createTextNode(sub.feedback)); box.appendChild(fb); }
+    if (l.homework){ var tk = el('div','hi-task'); tk.appendChild(el('b',null,'Homework')); tk.appendChild(document.createTextNode(l.homework)); box.appendChild(tk); }
+    var draft = {}; try { draft = JSON.parse(localStorage.getItem(draftKey(l.id)) || '{}') || {}; } catch(e) {}
+    var src = sub || draft;
+    var notes = inputEl('textarea', src.notes, 'What you learned, in your own words'); notes.rows = 5;
+    var hw = inputEl('textarea', src.homework, 'Your answer to the homework'); hw.rows = 5;
+    var link = inputEl('url', src.link, 'https://www.tradingview.com/x/…');
+    var locked = st === 'approved';
+    [notes, hw, link].forEach(function(f){
+      if (locked) f.readOnly = true;
+      f.addEventListener('input', function(){ try { localStorage.setItem(draftKey(l.id), JSON.stringify({ notes:notes.value, homework:hw.value, link:link.value })); } catch(e) {} });
+    });
+    box.appendChild(fld('Your notes', notes));
+    box.appendChild(fld('Your homework', hw));
+    box.appendChild(fld('Chart or screenshot link (optional)', link, 'A TradingView snapshot or image link that shows your homework.'));
+    var go = el('button','pbtn pri'); go.type = 'button';
+    go.textContent = locked ? 'Approved' : !watched ? 'Finish the video to hand in' : sub ? 'Hand in again' : 'Hand in notes & homework';
+    go.disabled = locked || !watched;
+    var ERR = { notes_short:'Write a few sentences of notes first.', homework_short:'Answer the homework (a few sentences) or add a chart link.',
+      bad_link:'Links need to start with https://', watch_first:'Finish the video first, then hand in.', locked:'This lesson is locked.',
+      already_approved:'This one is already approved.', no_storage:'Hand-ins need Upstash Redis connected in Vercel.' };
+    go.addEventListener('click', function(){
+      var body = { lessonId:l.id, notes:notes.value.trim(), homework:hw.value.trim(), link:link.value.trim() };
+      if (body.notes.length < 20){ toast(ERR.notes_short); notes.focus(); return; }
+      if (body.homework.length < 20 && !body.link){ toast(ERR.homework_short); hw.focus(); return; }
+      if (body.link && !/^https:\/\/\S+$/.test(body.link)){ toast(ERR.bad_link); link.focus(); return; }
+      go.disabled = true; go.textContent = 'Handing in…';
+      var done = function(){
+        try { localStorage.removeItem(draftKey(l.id)); } catch(e) {}
+        var wasPassed = l.passed;
+        refreshContent().then(function(){
+          var nxt = null, seen = false;
+          CURRICULUM.forEach(function(ch){ ch.lessons.forEach(function(x){ if (seen && !nxt && x.open !== false) nxt = x; if (x.id === l.id) seen = true; }); });
+          toast(approve ? 'Handed in. Your mentor will review it.' : (nxt && !wasPassed ? 'Handed in. Unlocked: ' + nxt.title : 'Handed in.'));
+        });
+      };
+      if (DEMO_MODE){
+        var prev = demoSubs[l.id]; var now = new Date().toISOString();
+        demoSubs[l.id] = Object.assign({}, body, { status:'submitted', submittedAt:now, attempts:((prev && prev.attempts) || 0) + 1, feedback: prev && prev.status==='returned' ? prev.feedback : '' });
+        saveDemoGate(); done(); return;
+      }
+      fetch('/api/submit', { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) })
+        .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
+        .then(function(x){ if (!x.ok){ toast(ERR[x.j && x.j.error] || 'Couldn\'t hand that in. Try again.'); renderCurriculum(); return; } done(); })
+        .catch(function(){ toast('Couldn\'t hand that in. Check your connection and try again.'); renderCurriculum(); });
+    });
+    box.appendChild(go);
+    return box;
   }
   // Lessons always need a full watch. Breakdowns need one when they have a video; link-only breakdowns are ticked by hand.
   function mustWatch(id, it){ return id === 'lx' || !!it.video; }
@@ -1227,8 +1378,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
     });
   }
   function renderProfileAccess(){
-    var names = CURRICULUM.filter(hasAccess).map(function(c){ return c.name; });
-    document.getElementById('pf-access').textContent = names.join(', ');
+    var names = CURRICULUM.filter(function(c){ return c.lessons.some(function(l){ return l.open !== false; }); }).map(function(c){ return c.name; });
+    document.getElementById('pf-access').textContent = names.join(', ') || 'No chapters yet';
   }
 
 
@@ -1256,7 +1407,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   var adm = { content:null, sec:'announcements', dirty:false, members:null };
   function rid(prefix){ return prefix + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
   function clone(o){ return JSON.parse(JSON.stringify(o)); }
-  function currentContent(){ return { curriculum: clone(CURRICULUM), homework: clone(HOMEWORK), breakdowns: clone(BREAKDOWNS), announcements: clone(ANNOUNCEMENTS) }; }
+  function currentContent(){ return { curriculum: clone(CURRICULUM), homework: clone(HOMEWORK), breakdowns: clone(BREAKDOWNS), announcements: clone(ANNOUNCEMENTS), settings: clone(SETTINGS) }; }
 
   function admLoad(){
     var note = document.getElementById('adm-note');
@@ -1273,7 +1424,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   }
 
   function admSave(msg){
-    var c = clone(adm.content);
+    var c = clone(adm.content); c.settings = c.settings || clone(SETTINGS);
     if (DEMO_MODE){
       try { localStorage.setItem('theproject.demoContent', JSON.stringify(c)); } catch(e) {}
       applyContent(c); renderContentViews(); adm.dirty = false; admRender(); toast(msg || 'Saved.'); return Promise.resolve();
@@ -1413,7 +1564,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       var nm = inputEl('text', ch.name, 'Chapter name'); nm.addEventListener('input', function(){ ch.name = nm.value; mark(); });
       var rl = inputEl('text', ch.role || '', 'Leave blank = open to every member'); rl.inputMode='numeric';
       rl.addEventListener('input', function(){ ch.role = rl.value.trim() || null; mark(); });
-      h.appendChild(fld('Chapter', nm)); h.appendChild(fld('Discord role ID that unlocks it', rl));
+      h.appendChild(fld('Chapter', nm)); h.appendChild(fld('Discord role for this step (holders also get every earlier chapter)', rl));
       h.appendChild(delBtn(function(){ cur.splice(ci,1); admSave('Chapter deleted.'); }));
       box.appendChild(h);
       ch.lessons.forEach(function(l, li){
@@ -1425,9 +1576,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
         cols.appendChild(fld('Video', videoField(l.video, 'lessons', function(v){ l.video = v; mark(); }), 'Members must watch it all the way through to complete the lesson.'));
         var sm = inputEl('textarea', l.summary, 'Short description shown under the video (optional)'); sm.addEventListener('input', function(){ l.summary = sm.value; mark(); });
         cols.appendChild(fld('Notes', sm));
-        var lr = inputEl('text', l.role || '', 'Leave blank = same as the chapter'); lr.inputMode='numeric';
-        lr.addEventListener('input', function(){ l.role = lr.value.trim() || null; mark(); });
-        cols.appendChild(fld('Discord role ID for just this lesson (optional)', lr));
+        var hwI = inputEl('textarea', l.homework, 'What members hand in for this lesson'); hwI.addEventListener('input', function(){ l.homework = hwI.value; mark(); });
+        cols.appendChild(fld('Homework', hwI, 'Shown under the video. Members hand in their notes plus this homework to unlock the next lesson.'));
         row.appendChild(cols);
         var ord = el('div','ord');
         var upb = el('button','btn-s','↑'); upb.type='button'; upb.setAttribute('aria-label','Move up'); upb.disabled = li === 0;
@@ -1439,7 +1589,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
         row.appendChild(ord); box.appendChild(row);
       });
       var foot = el('div','adm-ch-f'), add = el('button','btn-s','+ Add lesson to ' + (ch.name || 'this chapter')); add.type='button';
-      add.addEventListener('click', function(){ ch.lessons.push({ id: ch.id + '-' + Date.now().toString(36), title:'New lesson', video:'', summary:'' }); adm.dirty = true; admRender(); });
+      add.addEventListener('click', function(){ ch.lessons.push({ id: ch.id + '-' + Date.now().toString(36), title:'New lesson', video:'', summary:'', homework:'' }); adm.dirty = true; admRender(); });
       foot.appendChild(add); box.appendChild(foot); wrap.appendChild(box);
     });
     var addCh = el('button','btn-s','+ Add chapter'); addCh.type='button';
@@ -1455,22 +1605,141 @@ img,video{-webkit-user-drag:none;user-drag:none}
     return wrap;
   }
 
+  /* ---------- members data shared by Hand-ins and Members ---------- */
+  function lessonIndex(){
+    var idx = {}, cur = (adm.content && adm.content.curriculum) || CURRICULUM;
+    cur.forEach(function(ch, ci){ ch.lessons.forEach(function(l, li){ idx[l.id] = { ch:ch, ci:ci, li:li, title:l.title, label: ch.name + ' · ' + (li+1) + '. ' + l.title }; }); });
+    return idx;
+  }
+  function demoMemberRow(){
+    var a = computeAccess((adm.content && adm.content.curriculum) || CURRICULUM, demoRoles, demoSubs, demoOverrides);
+    return Object.assign({}, user(), { id:'000000000000000000', roles: memberRoles(), lastSeen: new Date().toISOString(), progress: doneSet,
+      subs: demoSubs, overrides: demoOverrides, level: a.level, access: a.lessons, flags:{} });
+  }
+  function loadMembers(cb, fail){
+    if (DEMO_MODE){ cb([demoMemberRow()]); return; }
+    fetch('/api/admin/members', { credentials:'same-origin' }).then(function(r){
+      if (r.status === 503){ fail('Needs Upstash Redis','Connect Upstash Redis in Vercel, then members show up here after they sign in.'); return null; }
+      if (!r.ok) throw new Error(r.status); return r.json();
+    }).then(function(j){ if (j) cb(j.members || []); })
+      .catch(function(){ fail('Couldn\'t load members','Refresh the page to try again.'); });
+  }
+  // approve / send back a hand-in, or unlock / lock one lesson for one member
+  function memberAction(payload){
+    if (DEMO_MODE){
+      if (payload.action === 'review'){ var sb = demoSubs[payload.lessonId]; if (sb){ sb.status = payload.status; sb.feedback = payload.feedback || ''; sb.reviewedAt = new Date().toISOString(); sb.reviewer = user().displayName; } }
+      else { if (payload.mode) demoOverrides[payload.lessonId] = payload.mode; else delete demoOverrides[payload.lessonId]; }
+      saveDemoGate(); renderCurriculum(); return Promise.resolve(true);
+    }
+    return fetch('/api/admin/members', { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) })
+      .then(function(r){ if (!r.ok) throw new Error(r.status); return true; });
+  }
+  function levelName(lv){ var cur = (adm.content && adm.content.curriculum) || CURRICULUM; return lv ? (cur[lv-1] ? cur[lv-1].name : 'Step ' + lv) : 'No role'; }
+
+  /* ---------- Hand-ins: notes + homework waiting for review ---------- */
+  function reviewView(){
+    var wrap = el('div','adm-list');
+    var setBox = el('div','rv-set'), mode = (adm.content.settings || {}).unlockMode || 'submit';
+    var stx = el('div'); stx.appendChild(el('b',null,'When does the next lesson unlock?'));
+    stx.appendChild(el('span','adm-note', mode === 'approve' ? 'Only after an admin approves the hand-in.' : 'As soon as the member hands in. You can still review and send work back.'));
+    setBox.appendChild(stx);
+    var seg = el('div','seg');
+    [['submit','On hand-in'],['approve','After I approve']].forEach(function(o){
+      var b = el('button','btn-s' + (mode === o[0] ? ' pri' : ''), o[1]); b.type = 'button'; b.setAttribute('aria-pressed', mode === o[0] ? 'true' : 'false');
+      b.addEventListener('click', function(){ if (mode === o[0]) return; adm.content.settings = Object.assign({}, adm.content.settings, { unlockMode:o[0] }); SETTINGS = { unlockMode:o[0] }; admSave('Unlock setting saved.'); });
+      seg.appendChild(b);
+    });
+    setBox.appendChild(seg); wrap.appendChild(setBox);
+    var host = el('div','rv-list'); wrap.appendChild(host);
+    host.appendChild(el('p','adm-note','Loading hand-ins…'));
+    loadMembers(function(rows){
+      host.textContent = '';
+      var idx = lessonIndex(), waiting = [], reviewed = [];
+      rows.forEach(function(m){ Object.keys(m.subs || {}).forEach(function(k){ var sb = m.subs[k]; if (!sb) return;
+        var row = { m:m, k:k, sb:sb, info: idx[k] || { label:k } }; (sb.status === 'submitted' ? waiting : reviewed).push(row); }); });
+      waiting.sort(function(a,b){ return String(a.sb.submittedAt).localeCompare(String(b.sb.submittedAt)); });
+      reviewed.sort(function(a,b){ return String(b.sb.reviewedAt || b.sb.submittedAt).localeCompare(String(a.sb.reviewedAt || a.sb.submittedAt)); });
+      host.appendChild(el('h3','rv-h','Waiting for review · ' + waiting.length));
+      if (!waiting.length) host.appendChild(el('p','adm-note','Nothing waiting. New hand-ins show up here, oldest first.'));
+      waiting.forEach(function(x){ host.appendChild(handinCard(x, true)); });
+      if (reviewed.length){
+        host.appendChild(el('h3','rv-h','Reviewed · latest ' + Math.min(reviewed.length, 25)));
+        reviewed.slice(0, 25).forEach(function(x){ host.appendChild(handinCard(x, false)); });
+      }
+    }, function(t, line){ host.textContent=''; emptyState(host, t, line); });
+    return wrap;
+  }
+  function handinCard(x, open){
+    var c = el('article','rv-card' + (open ? '' : ' done')), h = el('div','rv-top'), who = el('div','who2'), av = el('span','av'); setAvatar(av, x.m); who.appendChild(av);
+    var nm = el('div'); nm.appendChild(el('b',null, x.m.displayName || x.m.username)); nm.appendChild(el('div','adm-note', (x.m.isAdmin ? 'Admin' : levelName(x.m.level) + ' role') + ' · ' + x.info.label)); who.appendChild(nm); h.appendChild(who);
+    var st = x.sb.status;
+    h.appendChild(el('span','chip' + (st==='approved' ? ' ok' : st==='returned' ? ' warn' : ' wait'), st==='approved' ? 'Approved' : st==='returned' ? 'Sent back' : 'Waiting'));
+    c.appendChild(h);
+    c.appendChild(el('p','adm-note','Handed in ' + fmtDay(x.sb.submittedAt) + (x.sb.attempts > 1 ? ' · attempt ' + x.sb.attempts : '') + (x.sb.reviewedAt ? ' · reviewed ' + fmtDay(x.sb.reviewedAt) + (x.sb.reviewer ? ' by ' + x.sb.reviewer : '') : '')));
+    var n = el('div','hi-task'); n.appendChild(el('b',null,'Notes')); n.appendChild(document.createTextNode(x.sb.notes || '—')); c.appendChild(n);
+    var w = el('div','hi-task'); w.appendChild(el('b',null,'Homework')); w.appendChild(document.createTextNode(x.sb.homework || '—')); c.appendChild(w);
+    if (x.sb.link){ var a = el('a','lnk', x.sb.link); a.href = x.sb.link; a.target = '_blank'; a.rel = 'noopener noreferrer'; c.appendChild(a); }
+    if (x.sb.feedback && !open){ var fb = el('div','hi-fb'); fb.appendChild(el('b',null,'Your feedback')); fb.appendChild(document.createTextNode(x.sb.feedback)); c.appendChild(fb); }
+    var fbI = inputEl('textarea', open ? '' : x.sb.feedback, 'Feedback for the member (needed to send it back)'); fbI.rows = 3;
+    var acts = el('div','rv-acts'), ok = el('button','btn-s pri','Approve'), back = el('button','btn-s warn','Send back');
+    ok.type = back.type = 'button';
+    if (st === 'approved') ok.disabled = true;
+    if (st === 'returned') back.disabled = true;
+    function act(status){
+      if (status === 'returned' && fbI.value.trim().length < 5){ toast('Add a line of feedback so they know what to fix.'); fbI.focus(); return; }
+      ok.disabled = back.disabled = true;
+      memberAction({ action:'review', userId:x.m.id, lessonId:x.k, status:status, feedback:fbI.value.trim() })
+        .then(function(){ toast(status === 'approved' ? 'Approved.' : 'Sent back with your feedback.'); admRender(); })
+        .catch(function(){ ok.disabled = back.disabled = false; toast('Couldn\'t save that. Try again.'); });
+    }
+    ok.addEventListener('click', function(){ act('approved'); }); back.addEventListener('click', function(){ act('returned'); });
+    c.appendChild(fld(open ? 'Feedback (optional when approving)' : 'Change the decision', fbI)); acts.appendChild(ok); acts.appendChild(back); c.appendChild(acts);
+    return c;
+  }
+
+  /* ---------- per-member lesson access: unlock or lock on their behalf ---------- */
+  function accessPanel(m, redraw){
+    var box = el('div','acc'), idx = lessonIndex(), cur = (adm.content && adm.content.curriculum) || CURRICULUM;
+    box.appendChild(el('p','adm-note','Step: ' + (m.isAdmin ? 'Admin (sees everything)' : levelName(m.level)) + '. Unlock or lock any lesson for this member. Your choice beats the usual rules until you reset it.'));
+    cur.forEach(function(ch){
+      var sec = el('div','acc-ch'); sec.appendChild(el('b',null,ch.name));
+      ch.lessons.forEach(function(l, li){
+        var a = (m.access || {})[l.id] || {}, sb = (m.subs || {})[l.id], ov = (m.overrides || {})[l.id];
+        var row = el('div','acc-row');
+        row.appendChild(el('span','acc-t', (li+1) + '. ' + l.title));
+        var state = a.open ? (sb ? (sb.status==='approved' ? 'Approved' : sb.status==='returned' ? 'Sent back' : 'Handed in') : (a.passed ? 'Open' : 'Open · to do')) : (a.reason==='admin' ? 'Locked by admin' : 'Locked');
+        row.appendChild(el('span','chip' + (a.open ? (sb && sb.status==='approved' ? ' ok' : '') : ' lkd') + (ov ? ' ov' : ''), state + (ov === 'unlock' ? ' · unlocked by admin' : '')));
+        var btns = el('span','acc-b');
+        function mk(label, mode){ var b = el('button','btn-s', label); b.type='button'; b.addEventListener('click', function(){ b.disabled = true;
+          memberAction({ action:'override', userId:m.id, lessonId:l.id, mode:mode }).then(function(){ toast(mode === 'unlock' ? 'Unlocked “' + l.title + '”.' : mode === 'lock' ? 'Locked “' + l.title + '”.' : 'Back to the usual rules.'); redraw(); })
+            .catch(function(){ b.disabled = false; toast('Couldn\'t save that. Try again.'); }); }); return b; }
+        if (!a.open) btns.appendChild(mk('Unlock','unlock'));
+        if (a.open) btns.appendChild(mk('Lock','lock'));
+        if (ov) btns.appendChild(mk('Reset', null));
+        row.appendChild(btns); sec.appendChild(row);
+      });
+      box.appendChild(sec);
+    });
+    return box;
+  }
+
   function membersView(){
     var wrap = el('div','adm-list');
-    wrap.appendChild(el('p','adm-note','Everyone who has signed in, newest first. Select a member to see what they completed and when.'));
+    wrap.appendChild(el('p','adm-note','Everyone who has signed in, newest first. Open a member to see their lessons, unlock or lock any of them, and see what they finished.'));
     var host = el('div'); wrap.appendChild(host);
     function draw(rows){
       host.textContent = '';
       if (!rows.length){ emptyState(host,'No members yet','Members appear here after they sign in with Discord.'); return; }
-      var lessons = []; CURRICULUM.forEach(function(c){ c.lessons.forEach(function(l){ lessons.push(l.id); }); });
+      var lessons = Object.keys(lessonIndex());
       var tw = el('div','mem-wrap'), t = el('table','mem'), th = el('thead'), hr = el('tr');
-      ['Member','Last seen','Lessons','Homework','Chapters','Flags',''].forEach(function(x){ hr.appendChild(el('th',null,x)); });
+      ['Member','Last seen','Lessons','Hand-ins','Step','Flags',''].forEach(function(x){ hr.appendChild(el('th',null,x)); });
       th.appendChild(hr); t.appendChild(th); var tb = el('tbody'); t.appendChild(tb);
       rows.forEach(function(m){
         var prog = m.progress || {}, done = lessons.filter(function(k){ return prog[k]; }).length;
         var pc = lessons.length ? Math.round(done / lessons.length * 100) : 0;
-        var hw = Object.keys(prog).filter(function(k){ return k.indexOf('hw:') === 0; }).length;
-        var chs = CURRICULUM.filter(function(c){ return !c.role || (m.roles || []).indexOf(c.role) !== -1; }).map(function(c){ return c.name.replace('Chapter ','Ch '); }).join(', ');
+        var subsN = Object.keys(m.subs || {}).length, waitN = Object.keys(m.subs || {}).filter(function(k){ return m.subs[k] && m.subs[k].status === 'submitted'; }).length;
+        var hw = subsN + (waitN ? ' (' + waitN + ' waiting)' : '');
+        var chs = m.isAdmin ? 'Admin' : levelName(m.level);
         var tr = el('tr'), c1 = el('td'), who = el('div','who2'), av = el('span','av'); setAvatar(av, m); who.appendChild(av);
         var nmw = el('div'); nmw.appendChild(el('b',null, m.displayName || m.username)); nmw.appendChild(el('div','adm-note','@' + (m.username||''))); who.appendChild(nmw); c1.appendChild(who); tr.appendChild(c1);
         tr.appendChild(el('td',null, m.lastSeen ? fmtDay(m.lastSeen) : '—'));
@@ -1484,7 +1753,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
         lb.addEventListener('click', function(){
           det.hidden = !det.hidden; tr.classList.toggle('open', !det.hidden); lb.textContent = det.hidden ? 'Details' : 'Hide';
           if (!det.hidden && !dc.firstChild){
-            var titles = {}; CURRICULUM.forEach(function(c){ c.lessons.forEach(function(l){ titles[l.id] = c.name + ' · ' + l.title; }); });
+            var titles = {}; var lix = lessonIndex(); Object.keys(lix).forEach(function(k){ titles[k] = lix[k].label; });
             HOMEWORK.forEach(function(h){ titles['hw:'+h.id] = 'Homework · ' + h.title; });
             BREAKDOWNS.forEach(function(b){ titles['bd:'+b.id] = 'Breakdown · ' + b.title; });
             var keys = Object.keys(prog).sort(function(a,b){ return String(prog[b]).localeCompare(String(prog[a])); });
@@ -1495,7 +1764,9 @@ img,video{-webkit-user-drag:none;user-drag:none}
               var fp = el('p','flagline', 'Blocked actions: ' + parts.join(', ') + '. Last on ' + fmtDay(flg.last) + (flg.lastIp ? ' from ' + flg.lastIp : '') + '.');
               dc.appendChild(fp);
             }
-            if (!keys.length){ dc.appendChild(el('span','adm-note','Nothing completed yet.')); return; }
+            dc.appendChild(accessPanel(m, function(){ admRender(); }));
+            if (!keys.length){ dc.appendChild(el('span','adm-note','No videos finished yet.')); return; }
+            dc.appendChild(el('b','acc-sub','Videos finished'));
             var ul = el('ul'); keys.forEach(function(k){ var li = el('li'); li.appendChild(el('span',null, titles[k] || k)); var tm = el('time',null, fmtDay(prog[k])); tm.dateTime = prog[k]; li.appendChild(tm); ul.appendChild(li); });
             dc.appendChild(ul);
           }
@@ -1503,13 +1774,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
       });
       tw.appendChild(t); host.appendChild(tw);
     }
-    if (DEMO_MODE){ draw([Object.assign({}, user(), { roles: memberRoles(), lastSeen: new Date().toISOString(), progress: doneSet })]); return wrap; }
     host.appendChild(el('p','adm-note','Loading members…'));
-    fetch('/api/admin/members', { credentials:'same-origin' }).then(function(r){
-      if (r.status === 503){ host.textContent=''; emptyState(host,'Needs Upstash Redis','Connect Upstash Redis in Vercel, then members show up here after they sign in.'); return null; }
-      if (!r.ok) throw new Error(r.status); return r.json();
-    }).then(function(j){ if (j) draw(j.members || []); })
-      .catch(function(){ host.textContent=''; emptyState(host,'Couldn\'t load members','Refresh the page to try again.'); });
+    loadMembers(draw, function(t, line){ host.textContent=''; emptyState(host, t, line); });
     return wrap;
   }
 
@@ -1534,6 +1800,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
                { name:'summary', label:'Summary', type:'textarea' }, { name:'link', label:'Extra link (optional)', type:'url', ph:'https://… chart or notes' } ],
       meta:function(b){ return (b.date || fmtDay(b.createdAt)) + (b.video ? ' · video' : '') + (b.link ? ' · link' : ''); } }));
     else if (adm.sec === 'lectures') body.appendChild(lecturesEditor());
+    else if (adm.sec === 'review') body.appendChild(reviewView());
     else body.appendChild(membersView());
   }
   document.querySelectorAll('#adm-nav button').forEach(function(b){
@@ -1563,10 +1830,10 @@ img,video{-webkit-user-drag:none;user-drag:none}
       var box = document.getElementById(cfg[0]);
       box.checked = demoRoles.indexOf(cfg[1]) !== -1;
       box.addEventListener('change', function(){
-        demoRoles = demoRoles.filter(function(r){ return r !== cfg[1]; });
-        if (box.checked) demoRoles.push(cfg[1]);
+        demoRoles = box.checked ? [cfg[1]] : [];   // members hold one role in Discord
+        ['tg-ch1','tg-ch2','tg-ch3'].forEach(function(id){ if (id !== cfg[0]) document.getElementById(id).checked = false; });
         try { localStorage.setItem('theproject.demoRoles', JSON.stringify(demoRoles)); } catch(e) {}
-        renderCurriculum(); toast(cfg[2] + (box.checked ? ' unlocked.' : ' locked.'));
+        renderCurriculum(); toast(box.checked ? 'Previewing with the ' + cfg[2] + ' role.' : 'Previewing with no role.');
       });
     });
   }

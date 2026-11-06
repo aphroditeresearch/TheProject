@@ -1,9 +1,10 @@
 // GET /api/content → announcements, homework, breakdowns and lessons for the signed-in member.
-// Videos and notes for chapters the member's roles don't unlock are left out, so a locked
-// lesson's video link never reaches their browser. Videos in a private Blob store are handed
+// Locked lessons come back as an id and a padlock only: no title, video, notes or homework,
+// so nothing behind a lock ever reaches the member's browser (see _gate.js for the rules). Videos in a private Blob store are handed
 // out as signed links that stop working after a few hours.
 const { issueSignedToken, presignUrl } = require('@vercel/blob');
-const { readSession, isAdmin, loadContent, CHAPTER_ROLES, json } = require('./_lib');
+const { readSession, isAdmin, json } = require('./_lib');
+const { gateFor } = require('./_gate');
 
 const PRIVATE_HOST = /^https:\/\/[a-z0-9]+\.private\.blob\.vercel-storage\.com\//i;
 const LINK_HOURS = 6;
@@ -35,23 +36,24 @@ module.exports = async (req, res) => {
   const s = readSession(req);
   if (!s) return json(res, 401, { error: 'signed_out' });
 
-  let content = null;
-  try { content = await loadContent(); } catch (e) { return json(res, 502, { error: 'storage' }); }
-  if (!content) return json(res, 200, { content: null });   // nothing saved yet: the page uses its built-in defaults
-
   const admin = isAdmin(s);
-  const roles = s.roles || [];
+  let gate;
+  try { gate = await gateFor(s, admin); } catch (e) { return json(res, 502, { error: 'storage' }); }
+  const { content, subs, access } = gate;
   const now = Date.now();
-  const out = Object.assign({}, content);
+  const out = { homework: content.homework || [], announcements: [], breakdowns: [] };
 
-  out.curriculum = (content.curriculum || []).map((ch) => {
-    const role = ch.role || CHAPTER_ROLES[ch.id] || null;
-    const open = admin || !role || roles.includes(role);
-    return Object.assign({}, ch, {
-      role,
-      lessons: (ch.lessons || []).map((l) => (open && (admin || !l.role || roles.includes(l.role))
-        ? Object.assign({}, l) : { id: l.id, title: l.title, role: l.role || null })),
+  out.level = access.level;
+  out.settings = { unlockMode: content.settings.unlockMode };
+  out.curriculum = (content.curriculum || []).map((ch, ci) => {
+    const lessons = (ch.lessons || []).map((l) => {
+      const a = access.lessons[l.id] || { open: false, reason: 'level' };
+      if (!a.open) return { id: l.id, open: false, reason: a.reason };               // padlock only
+      return { id: l.id, title: l.title, video: l.video || '', summary: l.summary || '', homework: l.homework || '',
+        open: true, passed: a.passed, sub: subs[l.id] || null };
     });
+    return { id: ch.id, name: ch.name, role: ch.role || null, step: ci + 1,
+      locked: lessons.every((l) => !l.open), lessons };
   });
   out.breakdowns = (content.breakdowns || []).map((b) => Object.assign({}, b));
   out.announcements = (content.announcements || []).filter((a) => !a.expires || Date.parse(a.expires) > now);

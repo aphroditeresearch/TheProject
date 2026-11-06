@@ -1,7 +1,8 @@
 // Admin only.
-// GET /api/admin/content → everything, including locked lessons and expired announcements
+// GET /api/admin/content → everything (built-in lessons until you first save), including locked lessons and expired announcements
 // PUT /api/admin/content { content } → replace it (the admin panel sends the whole thing on each save)
-const { readSession, isAdmin, kvConfigured, loadContent, saveContent, json } = require('../_lib');
+const { readSession, isAdmin, kvConfigured, saveContent, json } = require('../_lib');
+const { contentWithDefaults } = require('../_gate');
 
 const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 const id = (v) => (typeof v === 'string' && /^[\w-]{1,64}$/.test(v) ? v : null);
@@ -16,7 +17,7 @@ function clean(c) {
     curriculum: arr(c.curriculum, 30).map((ch) => ({
       id: id(ch && ch.id), name: str(ch && ch.name, 80), role: role(ch && ch.role),
       lessons: arr(ch && ch.lessons, 80).map((l) => ({
-        id: id(l && l.id), title: str(l && l.title, 140), video: url(l && l.video), summary: str(l && l.summary, 2000), role: role(l && l.role),
+        id: id(l && l.id), title: str(l && l.title, 140), video: url(l && l.video), summary: str(l && l.summary, 2000), homework: str(l && l.homework, 4000),
       })).filter((l) => l.id && l.title),
     })).filter((ch) => ch.id && ch.name),
     homework: arr(c.homework, 300).map((h) => ({
@@ -31,6 +32,7 @@ function clean(c) {
       id: id(a && a.id), title: str(a && a.title, 140), body: str(a && a.body, 2000),
       createdAt: date(a && a.createdAt), expires: date(a && a.expires),
     })).filter((a) => a.id && (a.title || a.body)),
+    settings: { unlockMode: c.settings && c.settings.unlockMode === 'approve' ? 'approve' : 'submit' },
     updatedAt: new Date().toISOString(),
   };
 }
@@ -42,7 +44,7 @@ module.exports = async (req, res) => {
   if (!kvConfigured()) return json(res, 503, { error: 'no_storage' });
 
   if (req.method === 'GET') {
-    try { return json(res, 200, { content: await loadContent() }); }
+    try { return json(res, 200, { content: await contentWithDefaults() }); }
     catch (e) { return json(res, 502, { error: 'storage' }); }
   }
   if (req.method === 'PUT' || req.method === 'POST') {
