@@ -3,7 +3,7 @@
   "private": true,
   "description": "The Project member site with Discord sign-in",
   "engines": {
-    "node": ">=18"
+    "node": "22.x"
   },
   "dependencies": {
     "@vercel/blob": "2.8.2"

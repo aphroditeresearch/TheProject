@@ -206,3 +206,10 @@ A website can't detect screen-recording software, so the portal makes recordings
 
 A recorder running in the background (like OBS) can still capture the screen, which is why the watermark matters. Only
 DRM video (Widevine, via a host such as Mux or Bunny Stream) makes the video itself record as black.
+
+## Videos: upload or YouTube
+
+A lesson, part or breakdown video can be an uploaded MP4 (Admin → Upload) or a YouTube link (watch, youtu.be, shorts or live).
+YouTube videos follow the same rules: no skipping ahead on the first watch, and the lesson completes when it ends.
+Set YouTube videos to **Unlisted** with **Allow embedding** on. Note that anyone who gets an unlisted link can watch it on
+YouTube outside the site, so uploaded MP4s (signed links that expire) are the more locked-down option.
