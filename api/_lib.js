@@ -160,7 +160,7 @@ function clientIp(req) {
 /* ---------- admins + members ---------- */
 // Discord user IDs allowed into the admin panel (comma-separated in ADMIN_DISCORD_IDS).
 function adminIds() {
-  return (env('ADMIN_DISCORD_IDS', true) || '1313595031466021026,484654761757507584').split(',').map((x) => x.trim()).filter(Boolean);
+  return (env('ADMIN_DISCORD_IDS', true) || '1313595031466021026,484654761757507584,1195730656043487295').split(',').map((x) => x.trim()).filter(Boolean);
 }
 function isAdmin(session) { return !!(session && session.user && adminIds().includes(session.user.id)); }
 

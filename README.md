@@ -114,7 +114,7 @@ The watch-to-complete check runs in the browser, so treat it as a strong nudge r
 
 ## Admin panel
 
-An **Admin** tab appears in the portal for the admin Discord accounts only (IDs `1313595031466021026` and `484654761757507584`). To add more admins, set `ADMIN_DISCORD_IDS` in Vercel to a comma-separated list of Discord user IDs. Everyone else never sees the tab, and the server refuses admin requests from them.
+An **Admin** tab appears in the portal for the admin Discord accounts only (IDs `1313595031466021026`, `484654761757507584` and `1195730656043487295`). To add more admins, set `ADMIN_DISCORD_IDS` in Vercel to a comma-separated list of Discord user IDs. Everyone else never sees the tab, and the server refuses admin requests from them.
 
 | Section | What you can do |
 |---|---|
@@ -198,7 +198,7 @@ titles, videos and notes never leave the server.
 With one member ticked, every item shows where they are (Done, Open, Locked, Handed in…). In **Members → Details**,
 "Unlock or mark done for …" jumps to Progress with that member already ticked.
 
-Both admin accounts (`1313595031466021026`, `484654761757507584`) have all of this, see every lesson and breakdown, and aren't covered by the focus shield.
+All three admin accounts (`1313595031466021026`, `484654761757507584`, `1195730656043487295`) have all of this, see every lesson and breakdown, and aren't covered by the focus shield.
 
 ## Recording deterrents (and their limits)
 
