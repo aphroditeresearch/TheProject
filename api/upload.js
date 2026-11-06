@@ -1,7 +1,7 @@
 // Lets the browser upload a file straight to Vercel Blob (large files never pass through this function).
 //   - admins: lesson and breakdown videos, into lessons/ or breakdowns/
 //   - every signed-in member: homework / mark-up images and PDFs into members/<their id>/homework/,
-//     and certificates into members/<their id>/certs/
+//     certificates into members/<their id>/certs/, and journal screenshots into members/<their id>/journal/
 //
 // Works with both kinds of Blob connection Vercel creates:
 //   - newer stores: BLOB_STORE_ID + a short-lived key Vercel gives each request (presigned uploads)
@@ -14,7 +14,7 @@ const { storeId, rwToken, oidcToken } = require('./_blob');
 const VIDEO = { types: ['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v'], max: 5 * 1024 * 1024 * 1024 };      // 5 GB
 const FILE = { types: ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/heic', 'image/heif', 'application/pdf'], max: 25 * 1024 * 1024 }; // 25 MB
 const VIDEO_PATH = /^(lessons|breakdowns)\/[\w.\-]{1,120}$/;
-const MEMBER_PATH = /^members\/(\d{5,25})\/(homework|certs)\/[\w.\-]{1,120}$/;
+const MEMBER_PATH = /^members\/(\d{5,25})\/(homework|certs|journal)\/[\w.\-]{1,120}$/;
 
 function rulesFor(pathname, s) {
   if (VIDEO_PATH.test(pathname)) return isAdmin(s) ? VIDEO : null;

@@ -173,6 +173,8 @@ a{color:var(--blue);text-underline-offset:3px}
 .ring .arc{stroke:var(--blue)}
 .ring .count{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--mono);font-size:26px;font-variant-numeric:tabular-nums;color:var(--ink);transition:opacity .18s ease}
 .ring .count.gone{opacity:0}   /* the number clears as the VERIFIED stamp lands */
+.ring svg{transition:opacity .2s ease}
+.ring.stamped svg{opacity:0;visibility:hidden}   /* and the circle goes too; the ring keeps its size so the box doesn't move */
 /* bank-check rubber stamp: double ink border, blue ink, worn texture */
 .stamp{position:absolute;top:calc(44px + 108px);left:50%;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 22px 9px;color:#19ADA5;
   border:4px solid currentColor;border-radius:10px;box-shadow:inset 0 0 0 3px var(--panel),inset 0 0 0 5px currentColor;
@@ -331,6 +333,10 @@ a{color:var(--blue);text-underline-offset:3px}
 .it.cur::before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:3px;background:var(--blue);box-shadow:0 0 10px var(--blue)}
 .it.locked{color:var(--muted);cursor:not-allowed}
 .it .ttl{min-width:0;overflow-wrap:anywhere}
+.side-h{position:relative;isolation:isolate}
+.side-h::before{content:"";position:absolute;z-index:-1;pointer-events:none;left:-10px;top:-14px;width:250px;height:110px;
+  background:radial-gradient(ellipse 50% 50% at 40% 45%,rgba(46,240,170,.16),rgba(20,163,157,.06) 55%,transparent 75%);filter:blur(10px)}
+.side-h .wm-t{filter:drop-shadow(0 0 8px rgba(120,255,210,.35))}
 /* gatekeeping: lessons you haven't unlocked are blurred and their titles never leave the server */
 .it .ttl .blur{filter:blur(5px);opacity:.6;user-select:none;-webkit-user-select:none;pointer-events:none}
 .it .ttl .pre{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--kana-c);margin-bottom:2px}
@@ -374,6 +380,110 @@ a{color:var(--blue);text-underline-offset:3px}
 .acc-thru{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .acc-thru select{min-height:34px;max-width:260px;background:#030B0D;border:1px solid #1F3A3C;color:var(--ink);font:13px var(--sans);padding:0 8px}
 .acc-thru .btn-s{min-height:34px;font-size:13px}
+/* admin: hand-ins by member */
+.rv-bar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin:4px 0 16px}
+.rv-bar .side-q{max-width:240px}
+.rv-cols{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:20px;align-items:start}
+.rv-people{display:flex;flex-direction:column;gap:6px;position:sticky;top:84px;max-height:calc(100vh - 110px);overflow-y:auto}
+.rv-person{appearance:none;display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:8px 12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);text-align:left;cursor:pointer;font:inherit}
+.rv-person.on{border-color:var(--blue);background:color-mix(in srgb,var(--blue) 14%,var(--panel))}
+.rv-pn{flex:1;min-width:0}.rv-pn b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rv-pn small{color:var(--muted);font-size:12px}
+.rv-n{min-width:26px;height:22px;display:grid;place-items:center;border-radius:999px;border:1px solid var(--line);font:700 12px var(--sans);color:var(--muted)}
+.rv-n.wait{background:#E8D27A;border-color:#E8D27A;color:#111}
+.rv-items .rv-h{margin-top:0}
+/* admin: lecture picker + bulk */
+.lp{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto;border:1px solid var(--line);padding:8px}
+.lp-ch summary{cursor:pointer;font-weight:600;padding:4px 0}
+.lp-n{color:var(--kana-c);font-weight:500;font-size:12px}
+.lp-i{display:flex;align-items:center;gap:8px;padding:3px 0 3px 14px;font-size:14px;color:var(--ink);cursor:pointer}
+.lp-i.all{color:var(--kana-c);font-weight:600}
+.bulk{border:1px solid var(--blue);background:var(--panel);padding:14px 16px;margin-bottom:16px;display:flex;flex-direction:column;gap:10px}
+.bulk-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.bulk-pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;max-height:360px;overflow-y:auto;align-items:start}
+.bulk-pick .lp-ch{border:1px solid var(--line);padding:6px 10px}
+.bulk-acts{display:flex;flex-wrap:wrap;gap:8px}
+table.mem td:first-child,table.mem th:first-child{width:34px}
+@media (max-width:900px){.rv-cols{grid-template-columns:1fr}.rv-people{position:static;max-height:none}}
+/* sidebar tools + scroll */
+.side-tools{display:flex;flex-direction:column;gap:10px;padding:14px 16px 6px;border-top:1px solid var(--line)}
+.side-q{width:100%;box-sizing:border-box;min-height:40px;padding:0 12px;background:#030B0D;border:1px solid #1F3A3C;color:var(--ink);font:14px var(--sans)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip-b{appearance:none;cursor:pointer;min-height:30px;padding:0 12px;border:1px solid var(--line);background:transparent;color:var(--muted);font:600 12px var(--sans);border-radius:999px}
+.chip-b.on{border-color:var(--blue);color:var(--ink);background:color-mix(in srgb,var(--blue) 22%,transparent)}
+.fold{display:flex;gap:14px}
+.fold .lnk{background:none;border:0;padding:0;color:var(--kana-c);font:600 12px var(--sans);cursor:pointer}
+@media (min-width:901px){
+  .side-list{max-height:min(68vh,760px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--blue-dim) transparent}
+  .side-list::-webkit-scrollbar{width:8px}
+  .side-list::-webkit-scrollbar-thumb{background:var(--blue-dim);border-radius:8px}
+}
+/* homework */
+.badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:4px;border-radius:999px;background:#E8D27A;color:#111;font:700 11px var(--sans);vertical-align:1px}
+.badge[hidden]{display:none}
+.hw-h{appearance:none;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;width:100%;padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer;font:inherit}
+.hw .tagx.lt{border-color:var(--blue);color:var(--kana-c)}
+.hw-sum{margin:10px 0 0;color:var(--muted);font-size:14px;line-height:1.5}
+.hw .handin{margin-top:16px;max-width:none}
+.hw-pop{position:fixed;left:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:65;width:min(320px,calc(100% - 40px));box-sizing:border-box;display:flex;flex-direction:column;gap:6px;padding:16px 18px;
+  background:var(--panel);border:1px solid #5A4E22;border-left:4px solid #E8D27A;box-shadow:0 12px 32px rgba(0,0,0,.45);animation:popin .35s cubic-bezier(.2,.9,.3,1.2)}
+.hw-pop[hidden]{display:none}
+.hw-pop b{font-size:15px}
+.hw-pop span{color:var(--muted);font-size:13px;line-height:1.45}
+.hw-pop .btn-s{align-self:flex-start;margin-top:6px;text-decoration:none;display:inline-flex;align-items:center}
+.hw-pop .x{position:absolute;top:6px;right:8px;border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer}
+/* journal */
+.jr-create{max-width:640px;border:2px solid var(--ink);box-shadow:9px 9px 0 var(--blue);background:var(--panel);padding:24px;display:flex;flex-direction:column;gap:12px}
+.jr-create h3{margin:0;font-family:var(--display);font-style:italic;font-weight:900;font-stretch:125%;font-size:24px}
+.jr-create p{margin:0;color:var(--muted);line-height:1.5}
+.jr-rl{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px}
+.jr-rl li{position:relative}
+.jr-rl input{width:100%;box-sizing:border-box;min-height:40px;padding:0 36px 0 10px;background:#030B0D;border:1px solid #1F3A3C;color:var(--ink);font:14px var(--sans)}
+.jr-rl .hf-x{top:7px}
+.jr-rl.show li{font-size:15px;line-height:1.45}
+.jr-acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.jr-grid{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:28px;align-items:start}
+.jr-side{position:sticky;top:84px;border:1px solid var(--blue);background:var(--panel);padding:18px;display:flex;flex-direction:column;gap:12px}
+.jr-side h4{margin:0;font-family:var(--display);font-style:italic;font-weight:900;font-stretch:125%;font-size:18px}
+.jr-side .lnk{align-self:flex-start;background:none;border:0;padding:0;color:var(--kana-c);font:600 13px var(--sans);cursor:pointer}
+.jr-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;border-top:1px solid var(--line);padding-top:12px}
+.jr-stats div{display:flex;flex-direction:column;gap:2px}
+.jr-stats b{font:700 20px var(--sans)}
+.jr-stats span{font-size:12px;color:var(--muted)}
+.jr-form{border:1px solid var(--line);background:var(--panel);padding:20px;display:flex;flex-direction:column;gap:14px}
+.jr-form h3,.jr-h{margin:0;font-family:var(--display);font-style:italic;font-weight:900;font-stretch:125%;font-size:20px}
+.jr-h{margin:28px 0 12px}
+.jr-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.jr-fields .wide{grid-column:1/-1}
+.jr-fields select{width:100%;min-height:42px;background:#030B0D;border:1px solid #1F3A3C;color:var(--ink);font:15px var(--sans);padding:0 10px}
+.seg2{display:inline-flex;flex-wrap:wrap;gap:0;border:1px solid var(--line);align-self:flex-start}
+.seg-b{appearance:none;cursor:pointer;min-height:40px;padding:0 16px;border:0;border-right:1px solid var(--line);background:transparent;color:var(--muted);font:600 14px var(--sans)}
+.seg-b:last-child{border-right:0}
+.seg-b.on{background:var(--blue);color:#fff}
+.jr-follow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 14px;border:1px dashed var(--blue)}
+.jr-pts{margin:0;color:var(--kana-c);font-size:14px;min-height:1em}
+.jr-e{border:1px solid var(--line);background:var(--panel);padding:16px;display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.jr-e.void{opacity:.55}
+.jr-e p{margin:0;font-size:14px;line-height:1.5;color:var(--muted);white-space:pre-wrap}
+.jr-e-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.jr-e-top small{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+.jr-tags{display:flex;gap:6px;align-items:flex-start}
+.chip.pts{color:var(--ink);border-color:var(--blue)}
+/* leaderboard */
+.lb-head{margin-bottom:16px}
+.lb-rules{border:1px solid var(--line);background:var(--panel);padding:14px 18px;margin-bottom:18px;max-width:520px}
+.lb-rules ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.lb-rules li{display:flex;justify-content:space-between;gap:12px;color:var(--muted)}
+.lb-rules li b{color:var(--ink)}
+.lb-list{display:flex;flex-direction:column;gap:8px;max-width:760px}
+.lb-row{display:grid;grid-template-columns:52px 40px minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 16px;border:1px solid var(--line);background:var(--panel)}
+.lb-row.me{border-color:var(--blue);box-shadow:4px 4px 0 var(--blue)}
+.lb-rank{font:800 18px var(--sans);color:var(--muted)}
+.lb-row.top1 .lb-rank{color:#E8D27A}.lb-row.top2 .lb-rank{color:#C9D3D6}.lb-row.top3 .lb-rank{color:#D39A6A}
+.lb-nm b{display:block}.lb-nm small{color:var(--muted);font-size:12px}
+.lb-pts{font:800 20px var(--sans);color:var(--kana-c)}
+@media (max-width:900px){.jr-grid{grid-template-columns:1fr}.jr-side{position:static}.jr-fields{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.jr-fields{grid-template-columns:1fr}}
+@keyframes popin{from{transform:translateY(16px);opacity:0}}
 /* lesson parts in the sidebar */
 .it.par{font-weight:600}
 .it .chev{margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--muted);white-space:nowrap;padding-left:8px}
@@ -652,8 +762,10 @@ img,video{-webkit-user-drag:none;user-drag:none}
         <div class="wm sm brand" aria-label="The Project"><span class="wm-n" aria-hidden="true"><span>T</span><span>H</span><span>E</span></span><span class="wm-t" aria-hidden="true">PROJECT</span></div>
         <nav class="tabs" aria-label="Portal">
           <a class="tab" href="#lectures" data-tab="lectures">Lectures</a>
-          <a class="tab" href="#homework" data-tab="homework">Homework</a>
+          <a class="tab" href="#homework" data-tab="homework">Homework <span class="badge" id="hw-badge" hidden>0</span></a>
           <a class="tab" href="#breakdowns" data-tab="breakdowns">Breakdowns</a>
+          <a class="tab" href="#journal" data-tab="journal">Journal</a>
+          <a class="tab" href="#leaderboard" data-tab="leaderboard">Leaderboard</a>
           <a class="tab" href="#profile" data-tab="profile">Profile</a>
           <a class="tab" href="#admin" data-tab="admin" id="admin-tab" hidden>Admin</a>
         </nav>
@@ -684,7 +796,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
             <div class="prog-top"><span class="prog-pc" id="lx-pc">0<span>%</span></span><span class="prog-sub" id="lx-sub">0 of 9 lessons finished</span></div>
             <div class="pbar" aria-hidden="true"><span class="trk"></span><span class="fill" id="lx-fill"></span><span class="ring0" id="lx-ring" style="left:0"></span></div>
           </div>
-          <div id="lx-groups"></div>
+          <div class="side-tools" id="lx-tools"></div>
+          <div id="lx-groups" class="side-list"></div>
         </aside>
         <section class="pane" id="lx-pane" aria-live="polite"></section>
       </div>
@@ -703,16 +816,34 @@ img,video{-webkit-user-drag:none;user-drag:none}
     <main class="main" data-view="homework" hidden>
       <div class="view-h">
         <h2>homework</h2>
-        <p>Assignments from your mentor. Mark each one done when you've finished it.</p>
+        <p>Assignments from your mentor. Open one to see the lectures it goes with and hand in your work.</p>
       </div>
       <div class="cards" id="hw-list"></div>
+    </main>
+
+    <!-- JOURNAL -->
+    <main class="main" data-view="journal" hidden>
+      <div class="view-h">
+        <h2>journal</h2>
+        <p>Your trading journal. Write your rules once, then log every trade (or no-trade day) against them.</p>
+      </div>
+      <div id="jr"></div>
+    </main>
+
+    <!-- LEADERBOARD -->
+    <main class="main" data-view="leaderboard" hidden>
+      <div class="view-h">
+        <h2>leaderboard</h2>
+        <p>The <b>psych leaderboard</b>: points for discipline, not profit. It's built from journal entries.</p>
+      </div>
+      <div id="lb"></div>
     </main>
 
     <!-- BREAKDOWNS -->
     <main class="main wide" data-view="breakdowns" hidden>
       <div class="view-h">
         <h2>breakdowns</h2>
-        <p>Daily breakdowns, weekly recaps and outlooks. Hand in your notes and mark-ups on each one to unlock the next.</p>
+        <p>Each week: the Weekly Outlook, then a breakdown every day, then the weekly recap. Hand in your notes and mark-ups on each one to unlock the next.</p>
       </div>
       <div class="course">
         <aside class="side" aria-label="Breakdowns">
@@ -724,7 +855,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
             <div class="prog-top"><span class="prog-pc" id="bx-pc">0<span>%</span></span><span class="prog-sub" id="bx-sub">0 of 0 watched</span></div>
             <div class="pbar" aria-hidden="true"><span class="trk"></span><span class="fill" id="bx-fill"></span><span class="ring0" id="bx-ring" style="left:0"></span></div>
           </div>
-          <div id="bx-groups"></div>
+          <div class="side-tools" id="bx-tools"></div>
+          <div id="bx-groups" class="side-list"></div>
         </aside>
         <section class="pane" id="bx-pane" aria-live="polite"></section>
       </div>
@@ -846,6 +978,11 @@ img,video{-webkit-user-drag:none;user-drag:none}
 </div>
 
 <div class="toast" id="toast" role="status" hidden></div>
+<div class="hw-pop" id="hw-pop" role="status" hidden>
+  <button class="x" type="button" id="hw-pop-x" aria-label="Hide reminder">×</button>
+  <b id="hw-pop-t">Homework</b><span id="hw-pop-s"></span>
+  <a class="btn-s pri" href="#homework" id="hw-pop-go">Open homework</a>
+</div>
 <!-- recording deterrents: a traceable watermark over the portal, and a cover whenever the window loses focus -->
 <div id="wmark" aria-hidden="true" hidden></div>
 <div id="shield" role="status" hidden><div><b>Paused</b><span>Lessons hide while this window isn't in focus. Click here to keep going.</span></div></div>
@@ -1254,7 +1391,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   function bdKind(b){ return KIND_LABEL[b && b.kind] ? b.kind : 'daily'; }
   function weekLabel(w){ if (!w) return 'Undated'; var d = new Date(w + 'T12:00:00'); return isNaN(d) ? 'Undated' : 'Week of ' + d.toLocaleDateString('en-GB',{ day:'numeric', month:'short' }); }
   function bdSlot(b){ var k = bdKind(b); return k === 'daily' ? (DAY_LABEL[b.day] || 'Daily breakdown') : KIND_LABEL[k]; }
-  function bdOrderKey(b){ var k = bdKind(b), r = k === 'daily' ? (DAY_RANK[b.day] || 1) : (k === 'weekly' ? 6 : k === 'outlook' ? 7 : 8);
+  function bdOrderKey(b){ var k = bdKind(b), r = k === 'daily' ? (DAY_RANK[b.day] || 1) : (k === 'outlook' ? 0 : k === 'weekly' ? 6 : 8);
     return String(b.week || String(b.createdAt || '').slice(0,10) || '0000-00-00') + '|' + r + '|' + String(b.createdAt || ''); }
   function bdSorted(){ return BREAKDOWNS.slice().sort(function(a,b){ return bdOrderKey(a).localeCompare(bdOrderKey(b)); }); }
   // preview only: the same breakdown chains as api/_gate.js
@@ -1318,6 +1455,37 @@ img,video{-webkit-user-drag:none;user-drag:none}
   function flat(groups, onlyOpen){ var a=[]; groups.forEach(function(g){ if (!onlyOpen || !g.locked) g.items.forEach(function(it){
       (it.children || [it]).forEach(function(x){ if (!onlyOpen || !x.locked) a.push(x); }); }); }); return a; }
   var openParents = {};
+  // sidebar filters: lectures can be searched and narrowed to To do / Done; breakdowns by type
+  var FILTERS = { lx:{ q:'', show:'all' }, bx:{ kind:'all', show:'all' } };
+  function itemDone(it){ return it.parent ? it.children.every(function(k){ return k.lesson && k.lesson.passed; }) : !!(it.lesson && it.lesson.passed); }
+  function matchItem(id, it){
+    var F = FILTERS[id], txt = ((it.pre || '') + ' ' + (it.fullTitle || it.title || '') + ' ' + (it.children || []).map(function(k){ return k.title; }).join(' ')).toLowerCase();
+    if (F.q && (it.locked || txt.indexOf(F.q.toLowerCase()) === -1)) return false;
+    if (F.show === 'todo' && (it.locked || itemDone(it))) return false;
+    if (F.show === 'done' && !itemDone(it)) return false;
+    if (id === 'bx' && F.kind !== 'all'){ var k = bdKind(it.lesson || {}); if (F.kind === 'weekly' ? (k !== 'weekly' && k !== 'outlook') : k !== F.kind) return false; }
+    return true;
+  }
+  function drawTools(id, groups){
+    var host = document.getElementById(id + '-tools'); if (!host) return;
+    var F = FILTERS[id];
+    if (!host.firstChild){
+      if (id === 'lx'){ var q = el('input','side-q'); q.type = 'search'; q.placeholder = 'Search lessons'; q.setAttribute('aria-label','Search lessons');
+        q.addEventListener('input', function(){ F.q = q.value.trim(); renderTrack(id); }); host.appendChild(q); }
+      var chips = el('div','chips'); chips.setAttribute('role','group'); chips.setAttribute('aria-label','Show');
+      var opts = id === 'lx' ? [['show','all','All'],['show','todo','To do'],['show','done','Done']]
+        : [['kind','all','All'],['kind','daily','Daily'],['kind','weekly','Weekly'],['kind','advanced','Advanced'],['show','todo','To do']];
+      opts.forEach(function(o){ var b = el('button','chip-b', o[2]); b.type = 'button'; b.dataset.k = o[0]; b.dataset.v = o[1];
+        b.addEventListener('click', function(){ if (o[0] === 'show' && id === 'bx') F.show = F.show === 'todo' ? 'all' : 'todo'; else F[o[0]] = o[1]; renderTrack(id); });
+        chips.appendChild(b); });
+      host.appendChild(chips);
+      if (id === 'bx'){ var fold = el('div','fold'); var ea = el('button','lnk','Expand all'), ca = el('button','lnk','Collapse all'); ea.type = ca.type = 'button';
+        ea.addEventListener('click', function(){ TRACKS.bx.groups().forEach(function(g){ closed['bx' + g.id] = false; }); renderTrack('bx'); });
+        ca.addEventListener('click', function(){ TRACKS.bx.groups().forEach(function(g){ closed['bx' + g.id] = true; }); renderTrack('bx'); });
+        fold.appendChild(ea); fold.appendChild(ca); host.appendChild(fold); }
+    }
+    host.querySelectorAll('.chip-b').forEach(function(b){ var on = b.dataset.k === 'show' && id === 'bx' ? F.show === 'todo' : F[b.dataset.k] === b.dataset.v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+  }
   function roleName(r){ return r === ROLES.chapter1 ? 'Awakened' : r === ROLES.chapter2 ? 'Illuminated' : r === ROLES.chapter3 ? 'Enlightened' : ''; }
 
   function renderTrack(id){
@@ -1335,11 +1503,18 @@ img,video{-webkit-user-drag:none;user-drag:none}
     if (cur) current[id] = cur.key;
 
     var host = document.getElementById(id+'-groups'); host.textContent='';
+    drawTools(id, groups);
+    var filtering = !!(FILTERS[id].q || FILTERS[id].show !== 'all' || (FILTERS[id].kind && FILTERS[id].kind !== 'all'));
     if (!groups.length){ host.appendChild(el('div','side-empty',T.sideEmpty||T.empty)); }
+    else if (filtering && !groups.some(function(g){ return g.items.some(function(it){ return matchItem(id, it); }); })) host.appendChild(el('div','side-empty','Nothing matches that filter.'));
     groups.forEach(function(g){
+      var shown = g.items.filter(function(it){ return matchItem(id, it); });
+      if (filtering && !shown.length) return;
+      // breakdowns: only the week you're on starts open
+      if (id === 'bx' && closed[id+g.id] === undefined) closed[id+g.id] = !(cur && flat([g], false).some(function(x){ return x.key === cur.key; }));
       if (g.allDone && closed[id+g.id] === undefined) closed[id+g.id] = true;   // finished weeks start folded
       var gUnits = flat([g], false), gd = gUnits.filter(function(it){ return doneSet[it.key] || (it.lesson && it.lesson.passed && it.lesson.sub); }).length;
-      var sec = el('section','grp'+(g.locked?' locked':'')+(closed[id+g.id]?' closed':''));
+      var sec = el('section','grp'+(g.locked?' locked':'')+(closed[id+g.id] && !filtering?' closed':''));
       var hb = el('button','grp-h'); hb.type='button'; hb.setAttribute('aria-expanded', closed[id+g.id]?'false':'true');
       hb.appendChild(el('b',null,g.name));
       var cnt = el('span'); if (g.locked) cnt.innerHTML = lockSvg + ' ';
@@ -1366,7 +1541,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
         var tm = el('span', lk ? 'blur' : 'nm', it.title); if (lk) tm.setAttribute('aria-hidden','true'); tt.appendChild(tm); li.appendChild(tt);
         if (lk) li.setAttribute('aria-label', 'Locked');
         if (isDone && !it.parent) li.title = 'Completed ' + fmtDay(doneSet[it.key]);
-        var expanded = it.parent && (openParents[it.key] !== undefined ? openParents[it.key] : hasCur);
+        var expanded = it.parent && (openParents[it.key] !== undefined ? openParents[it.key] : (hasCur || !!FILTERS[id].q));
         if (it.parent){
           var chev = el('span','chev', lk ? '' : it.children.length + ' parts ' + (expanded ? '▴' : '▾')); li.appendChild(chev);
           li.setAttribute('aria-expanded', expanded ? 'true' : 'false');
@@ -1386,7 +1561,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
           var sub = el('ul','parts'); it.children.forEach(function(k){ drawItem(k, sub, true); }); var holder = el('li','parts-wrap'); holder.appendChild(sub); into.appendChild(holder);
         }
       }
-      g.items.forEach(function(it){ drawItem(it, ul, false); });
+      shown.forEach(function(it){ drawItem(it, ul, false); });
       sec.appendChild(ul); host.appendChild(sec);
     });
     // what opens next (the next chapter isn't shown until it's reached)
@@ -1559,7 +1734,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   /* ---------- notes + homework hand-in (under each lesson's video) ---------- */
   function draftKey(lid){ return 'theproject.draft.' + uid() + '.' + lid; }
   function handinPanel(it, watched, track){
-    var bd = track === 'bx', key = it.key, word = bd ? 'mark-ups' : 'homework', unit = bd ? 'breakdown' : 'lesson';
+    var bd = track === 'bx', hwk = track === 'hw', key = it.key, word = bd ? 'mark-ups' : 'homework', unit = bd ? 'breakdown' : 'lesson';
     var l = it.lesson, sub = l.sub || null, st = sub ? sub.status : 'none', approve = SETTINGS.unlockMode === 'approve';
     var box = el('section','handin'); box.setAttribute('aria-label','Notes and ' + word);
     var hd = el('div','hi-h'); hd.appendChild(el('h4',null,'Notes & ' + word));
@@ -1571,7 +1746,9 @@ img,video{-webkit-user-drag:none;user-drag:none}
     else if (st === 'returned') line = 'Sent back ' + fmtDay(sub.reviewedAt) + '. Make the changes below and hand it in again to unlock the next ' + unit + '.';
     else if (st === 'submitted') line = 'Handed in ' + fmtDay(sub.submittedAt) + (approve ? '. The next ' + unit + ' unlocks once it\'s approved.' : '. The next ' + unit + ' is unlocked.');
     else if (l.passed) line = 'Optional here: this is already unlocked for you.';
-    else line = approve ? 'Hand in your notes and ' + word + '. The next ' + unit + ' unlocks once they\'re approved.' : 'Hand in your notes and ' + word + ' to unlock the next ' + unit + '.';
+    else line = hwk ? 'Hand in your notes and your homework. Your mentor will review it.' : approve ? 'Hand in your notes and ' + word + '. The next ' + unit + ' unlocks once they\'re approved.' : 'Hand in your notes and ' + word + ' to unlock the next ' + unit + '.';
+    if (hwk && st === 'submitted') line = 'Handed in ' + fmtDay(sub.submittedAt) + '. Your mentor will review it.';
+    if (hwk && st === 'returned') line = 'Sent back ' + fmtDay(sub.reviewedAt) + '. Make the changes below and hand it in again.';
     if (sub && sub.offsite && st === 'approved') line = 'Marked done by ' + (sub.reviewer || 'an admin') + ' on ' + fmtDay(sub.reviewedAt) + '.';
     box.appendChild(el('p','hi-state',line));
     if (sub && sub.feedback){ var fb = el('div','hi-fb'); fb.appendChild(el('b',null,'Feedback from your mentor')); fb.appendChild(document.createTextNode(sub.feedback)); box.appendChild(fb); }
@@ -1624,6 +1801,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
         try { localStorage.removeItem(draftKey(key)); } catch(e) {}
         var wasPassed = l.passed;
         refreshContent().then(function(){
+          if (hwk){ toast('Homework handed in. Your mentor will review it.'); return; }
           var items = flat(TRACKS[track].groups(), false), i = items.findIndex(function(x){ return x.key === key; });
           var nxt = items.slice(i + 1).filter(function(x){ return !x.locked; })[0];
           toast(approve ? 'Handed in. Your mentor will review it.' : (nxt && !wasPassed ? 'Handed in. Unlocked: ' + (track === 'bx' ? nxt.pre + ' · ' : '') + nxt.title : 'Handed in.'));
@@ -1632,12 +1810,12 @@ img,video{-webkit-user-drag:none;user-drag:none}
       if (DEMO_MODE){
         var prev = demoSubs[key]; var now = new Date().toISOString();
         demoSubs[key] = Object.assign({}, body, { status:'submitted', submittedAt:now, attempts:((prev && prev.attempts) || 0) + 1, feedback: prev && prev.status==='returned' ? prev.feedback : '' });
-        saveDemoGate(); done(); return;
+        saveDemoGate(); if (hwk){ HOMEWORK.forEach(function(h){ if ('hw:' + h.id === key) h.sub = demoSubs[key]; }); } done(); return;
       }
       fetch('/api/member', { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) })
         .then(function(r){ return r.json().then(function(j){ return { ok:r.ok, j:j }; }); })
-        .then(function(x){ if (!x.ok){ toast(ERR[x.j && x.j.error] || 'Couldn\'t hand that in. Try again.'); renderTrack(track); return; } done(); })
-        .catch(function(){ toast('Couldn\'t hand that in. Check your connection and try again.'); renderTrack(track); });
+        .then(function(x){ if (!x.ok){ toast(ERR[x.j && x.j.error] || 'Couldn\'t hand that in. Try again.'); if (hwk) renderHomework(); else renderTrack(track); return; } done(); })
+        .catch(function(){ toast('Couldn\'t hand that in. Check your connection and try again.'); if (hwk) renderHomework(); else renderTrack(track); });
     });
     box.appendChild(go);
     return box;
@@ -1691,22 +1869,51 @@ img,video{-webkit-user-drag:none;user-drag:none}
   function emptyState(hostEl, title, line){
     var e = el('div','empty'); e.innerHTML = emptyIcon; e.appendChild(el('b',null,title)); e.appendChild(el('span',null,line)); hostEl.appendChild(e);
   }
+  var hwOpen = {};
+  function openHomework(){ return HOMEWORK.filter(function(h){ return !(h.sub && (h.sub.status === 'submitted' || h.sub.status === 'approved')); }); }
   function renderHomework(){
     var list = document.getElementById('hw-list'); list.textContent='';
-    if (!HOMEWORK.length){ emptyState(list,'No homework yet','When your mentor assigns homework, it shows up here.'); return; }
-    HOMEWORK.slice().sort(byNewest).forEach(function(hw){
-      var key='hw:'+hw.id, isDone=!!doneSet[key];
-      var card = el('article','hw'+(isDone?' done':''));
-      var head = el('div'); head.appendChild(el('h3',null,hw.title));
-      var meta = el('div','meta'); if (hw.chapter) meta.appendChild(el('span','tagx',hw.chapter)); if (hw.due) meta.appendChild(el('span',null,'Due '+hw.due));
-      head.appendChild(meta); card.appendChild(head);
-      var b = el('button','hw-done',isDone?('Done · ' + fmtDay(doneSet[key])):'Mark done'); b.type='button'; b.setAttribute('aria-pressed',isDone?'true':'false');
-      b.addEventListener('click', function(){ if (doneSet[key]) unmark(key); else markDone(key); renderHomework(); renderCompletions(); });
-      card.appendChild(b);
-      if (hw.details) card.appendChild(el('p',null,hw.details));
+    var open = openHomework(), badge = document.getElementById('hw-badge');
+    badge.textContent = open.length; badge.hidden = !open.length || !!(SESSION && SESSION.isAdmin);
+    if (!HOMEWORK.length){ emptyState(list,'No homework yet','When your mentor assigns homework, it shows up here.'); hidePop(); return; }
+    HOMEWORK.slice().sort(function(a, b){ var ao = openHomework().indexOf(a) !== -1, bo = openHomework().indexOf(b) !== -1; return ao === bo ? byNewest(a, b) : (ao ? -1 : 1); }).forEach(function(hw){
+      var key = 'hw:' + hw.id, sub = hw.sub || null, st = sub ? sub.status : 'none';
+      var card = el('article','hw' + (st === 'approved' ? ' done' : ''));
+      var head = el('button','hw-h'); head.type = 'button'; head.setAttribute('aria-expanded', hwOpen[hw.id] ? 'true' : 'false');
+      var ht = el('div'); ht.appendChild(el('h3',null,hw.title));
+      var meta = el('div','meta');
+      if (hw.chapter && hw.chapter !== 'General') meta.appendChild(el('span','tagx',hw.chapter));
+      if (hw.due) meta.appendChild(el('span',null,'Due ' + hw.due));
+      (hw.lessonTitles || []).forEach(function(t){ meta.appendChild(el('span','tagx lt', t)); });
+      ht.appendChild(meta); head.appendChild(ht);
+      head.appendChild(el('span','chip' + (st==='approved' ? ' ok' : st==='returned' ? ' warn' : st==='submitted' ? ' wait' : ''),
+        st==='approved' ? 'Approved' : st==='returned' ? 'Sent back' : st==='submitted' ? 'Handed in' : 'To do'));
+      head.addEventListener('click', function(){ hwOpen[hw.id] = !hwOpen[hw.id]; renderHomework(); });
+      card.appendChild(head);
+      if (hwOpen[hw.id]){
+        var it = { key:key, title:hw.title, lesson:{ id:key, title:hw.title, homework: hw.details || '', sub: sub, passed: hw.passed } };
+        card.appendChild(handinPanel(it, true, 'hw'));
+      } else if (hw.details) card.appendChild(el('p','hw-sum', hw.details));
       list.appendChild(card);
     });
+    showPop();
   }
+  // the reminder in the corner: once per visit, while homework is open
+  var popShown = false;
+  function showPop(){
+    var open = openHomework(), pop = document.getElementById('hw-pop');
+    if (!open.length){ pop.hidden = true; return; }
+    var pv = document.getElementById('portal-view'); if (!pv || pv.hidden || popShown || (location.hash || '') === '#homework') return;
+    if (SESSION && SESSION.isAdmin) return;   // admins see every assignment; the reminder is for members
+    try { if (sessionStorage.getItem('theproject.hwpop') === String(open.length)) return; } catch(e) {}
+    popShown = true;
+    document.getElementById('hw-pop-t').textContent = open.length === 1 ? '1 homework open' : open.length + ' homework open';
+    document.getElementById('hw-pop-s').textContent = open[0].title + (open.length > 1 ? ' and ' + (open.length - 1) + ' more' : '') + (open[0].due ? ' · due ' + open[0].due : '');
+    pop.hidden = false;
+  }
+  function hidePop(){ var pop = document.getElementById('hw-pop'); if (pop) pop.hidden = true; }
+  document.getElementById('hw-pop-x').addEventListener('click', function(){ hidePop(); try { sessionStorage.setItem('theproject.hwpop', String(openHomework().length)); } catch(e) {} });
+  document.getElementById('hw-pop-go').addEventListener('click', function(){ hidePop(); });
 
   /* ---------- profile + header ---------- */
   function setAvatar(node, u){
@@ -1750,13 +1957,19 @@ img,video{-webkit-user-drag:none;user-drag:none}
     });
   }
   /* ---------- certificates + promotion (Profile tab) ---------- */
-  var ME = { certs: [], promo: null, loaded: false };
+  var ME = { certs: [], promo: null, journal: null, entries: [], loaded: false };
+  var demoJournal = null, demoEntries = [];
+  try { demoJournal = JSON.parse(localStorage.getItem('theproject.demoJournal') || 'null'); demoEntries = JSON.parse(localStorage.getItem('theproject.demoEntries') || '[]') || []; } catch(e) {}
   var demoCerts = []; try { demoCerts = JSON.parse(localStorage.getItem('theproject.demoCerts') || '[]') || []; } catch(e) {}
   function memberPost(payload){
     if (DEMO_MODE){
       var now = new Date().toISOString();
       if (payload.action === 'cert-add'){ demoCerts.unshift({ id:'c' + Date.now().toString(36), kind:payload.kind, file:payload.file, note:payload.note || '', uploadedAt:now }); }
       else if (payload.action === 'cert-delete'){ demoCerts = demoCerts.filter(function(c){ return c.id !== payload.id; }); }
+      else if (payload.action === 'journal-create' || payload.action === 'journal-rules'){ demoJournal = { rules: payload.rules.map(function(t, i){ return { id:'r' + (i+1), text:t }; }), createdAt: (demoJournal && demoJournal.createdAt) || now, updatedAt: now };
+        try { localStorage.setItem('theproject.demoJournal', JSON.stringify(demoJournal)); } catch(e) {} }
+      else if (payload.action === 'journal-add'){ demoEntries.unshift(Object.assign({ id:'j' + Date.now().toString(36), createdAt: now, void:false }, payload.entry)); try { localStorage.setItem('theproject.demoEntries', JSON.stringify(demoEntries)); } catch(e) {} }
+      else if (payload.action === 'journal-delete'){ demoEntries = demoEntries.filter(function(e){ return e.id !== payload.id; }); try { localStorage.setItem('theproject.demoEntries', JSON.stringify(demoEntries)); } catch(e) {} }
       else if (payload.action === 'promote-request'){ demoPromo = { status:'requested', certId:payload.certId, requestedAt:now }; try { localStorage.setItem('theproject.demoPromo', JSON.stringify(demoPromo)); } catch(e) {} }
       try { localStorage.setItem('theproject.demoCerts', JSON.stringify(demoCerts)); } catch(e) {}
       return Promise.resolve({});
@@ -1765,10 +1978,10 @@ img,video{-webkit-user-drag:none;user-drag:none}
       .then(function(r){ return r.json().then(function(j){ if (!r.ok) throw new Error(j && j.error || r.status); return j; }); });
   }
   function loadMe(){
-    if (DEMO_MODE){ ME = { certs: demoCerts, promo: demoPromo, loaded: true }; return Promise.resolve(); }
+    if (DEMO_MODE){ ME = { certs: demoCerts, promo: demoPromo, journal: demoJournal, entries: demoEntries.map(function(e){ return Object.assign({}, e, { points: entryPoints(e) }); }), loaded: true }; return Promise.resolve(); }
     if (!BACKEND || !SESSION) return Promise.resolve();
     return fetch('/api/member', { credentials:'same-origin' }).then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(j){ if (j){ ME = { certs: j.certs || [], promo: j.promo || null, loaded: true }; } }).catch(function(){});
+      .then(function(j){ if (j){ ME = { certs: j.certs || [], promo: j.promo || null, journal: j.journal || null, entries: j.entries || [], loaded: true }; } }).catch(function(){});
   }
   var CERT_ERR = { need_payout:'Pick a payout certificate.', not_ready:'Finish every lesson first.', already_requested:'You\'ve already asked. An admin will review it.',
     in_use:'That certificate is attached to your promotion request.', bad_file:'That file didn\'t upload properly. Try again.', no_storage:'Certificates need Upstash Redis connected in Vercel.' };
@@ -1824,6 +2037,176 @@ img,video{-webkit-user-drag:none;user-drag:none}
         .catch(function(e){ go.disabled = false; toast(CERT_ERR[e && e.message] || 'Couldn\'t send that. Try again.'); }); });
     row.appendChild(pick); row.appendChild(go); box.appendChild(row); host.appendChild(box);
   }
+  /* ---------- journal ---------- */
+  // points on the psych leaderboard: rules followed + TP = 3, followed + SL/BE = 1, followed + no trades = 1, not followed = 0
+  function entryPoints(e){ if (!e || e.void || !e.followed) return 0; if (e.kind === 'none') return 1; return e.outcome === 'tp' ? 3 : 1; }
+  var JR = { kind:'trade', draft:{ files:[] }, editing:false };
+  var OUT = { tp:'TP', sl:'SL', be:'BE' };
+  function money(n){ n = +n || 0; return (n < 0 ? '−$' : '$') + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+  function todayYmd(){ var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  function rulesEditor(rules, onSave, label){
+    var box = el('div','jr-rules-ed'), list = el('ol','jr-rl'), arr = (rules && rules.length ? rules.map(function(r){ return r.text; }) : ['', '', '']);
+    function draw(){ list.textContent = '';
+      arr.forEach(function(t, i){ var li = el('li'), inp = inputEl('text', t, i === 0 ? 'e.g. Only trade the New York open' : i === 1 ? 'e.g. Max 2 trades a day' : 'Another rule'); inp.maxLength = 300;
+        inp.addEventListener('input', function(){ arr[i] = inp.value; }); li.appendChild(inp);
+        if (arr.length > 1){ var x = el('button','hf-x','×'); x.type = 'button'; x.setAttribute('aria-label','Remove rule'); x.addEventListener('click', function(){ arr.splice(i,1); draw(); }); li.appendChild(x); }
+        list.appendChild(li); }); }
+    draw(); box.appendChild(list);
+    var add = el('button','btn-s','+ Add a rule'); add.type = 'button'; add.addEventListener('click', function(){ if (arr.length < 25){ arr.push(''); draw(); list.lastChild.querySelector('input').focus(); } });
+    var go = el('button','btn-s pri', label); go.type = 'button';
+    go.addEventListener('click', function(){ var clean = arr.map(function(t){ return t.trim(); }).filter(function(t){ return t.length >= 3; }); if (!clean.length){ toast('Write at least one rule.'); return; } go.disabled = true; onSave(clean).catch(function(){ go.disabled = false; }); });
+    var row = el('div','jr-acts'); row.appendChild(add); row.appendChild(go); box.appendChild(row);
+    return box;
+  }
+  function seg(options, value, onPick){
+    var wrap = el('div','seg2'); wrap.setAttribute('role','radiogroup');
+    options.forEach(function(o){ var b = el('button','seg-b' + (value === o[0] ? ' on' : ''), o[1]); b.type = 'button'; b.setAttribute('role','radio'); b.setAttribute('aria-checked', value === o[0] ? 'true' : 'false');
+      b.addEventListener('click', function(){ onPick(o[0]); }); wrap.appendChild(b); });
+    return wrap;
+  }
+  function renderJournal(){
+    var host = document.getElementById('jr'); if (!host) return;
+    loadMe().then(function(){ drawJournal(host); });
+  }
+  function drawJournal(host){
+    host.textContent = '';
+    if (!ME.journal){
+      var c = el('section','jr-create'); c.appendChild(el('h3',null,'Create your journal'));
+      c.appendChild(el('p',null,'Start by writing your trading rules. They sit next to every entry, and each entry asks whether you followed them. Following your rules is what scores on the psych leaderboard.'));
+      c.appendChild(rulesEditor(null, function(rules){ return memberPost({ action:'journal-create', rules:rules }).then(function(){ toast('Journal created.'); return loadMe(); }).then(function(){ drawJournal(host); })
+        .catch(function(e){ toast('Couldn\'t create it: ' + (e && e.message)); throw e; }); }, 'Create journal'));
+      host.appendChild(c); return;
+    }
+    var grid = el('div','jr-grid'), side = el('aside','jr-side'), main = el('div','jr-main');
+    // rules, always next to the form
+    side.appendChild(el('h4',null,'Your rules'));
+    if (JR.editing) side.appendChild(rulesEditor(ME.journal.rules, function(rules){ return memberPost({ action:'journal-rules', rules:rules }).then(function(){ JR.editing = false; toast('Rules updated.'); return loadMe(); }).then(function(){ drawJournal(host); }); }, 'Save rules'));
+    else { var ol = el('ol','jr-rl show'); ME.journal.rules.forEach(function(r){ ol.appendChild(el('li',null,r.text)); }); side.appendChild(ol);
+      var ed = el('button','lnk','Edit rules'); ed.type = 'button'; ed.addEventListener('click', function(){ JR.editing = true; drawJournal(host); }); side.appendChild(ed); }
+    // stats
+    var ents = ME.entries || [], month = todayYmd().slice(0,7), mEnts = ents.filter(function(e){ return String(e.date).slice(0,7) === month && !e.void; });
+    var trades = mEnts.filter(function(e){ return e.kind === 'trade'; }), wins = trades.filter(function(e){ return e.outcome === 'tp'; }).length;
+    var st = el('div','jr-stats');
+    [['Points this month', mEnts.reduce(function(t, e){ return t + entryPoints(e); }, 0)],
+     ['Rules followed', mEnts.length ? Math.round(mEnts.filter(function(e){ return e.followed; }).length / mEnts.length * 100) + '%' : '—'],
+     ['Win rate', trades.length ? Math.round(wins / trades.length * 100) + '%' : '—'],
+     ['Net P&L', trades.length ? money(trades.reduce(function(t, e){ return t + (+e.pnl || 0); }, 0)) : '—']].forEach(function(x){
+      var d = el('div'); d.appendChild(el('b',null,String(x[1]))); d.appendChild(el('span',null,x[0])); st.appendChild(d); });
+    side.appendChild(st);
+    // new entry
+    var f = el('section','jr-form'); f.appendChild(el('h3',null,'New entry'));
+    f.appendChild(seg([['trade','Trade'],['none','No trades today']], JR.kind, function(k){ JR.kind = k; drawJournal(host); }));
+    var D = JR.draft; if (!D.date) D.date = todayYmd();
+    var grid2 = el('div','jr-fields');
+    function field(label, ctl, wide){ var w = fld(label, ctl); if (wide) w.classList.add('wide'); grid2.appendChild(w); return ctl; }
+    function txt(name, type, ph, list){ var i = inputEl(type, D[name], ph); i.addEventListener('input', function(){ D[name] = i.value; preview(); }); if (list){ i.setAttribute('list', list); } return i; }
+    function sel(name, opts){ var x = el('select'); x.appendChild(el('option',null,'Choose…')).value = ''; opts.forEach(function(o){ var op = el('option',null,o); op.value = o; x.appendChild(op); }); x.value = D[name] || ''; x.addEventListener('change', function(){ D[name] = x.value; }); return x; }
+    var SESSIONS = ['Asia','London','New York AM','New York PM'];
+    if (JR.kind === 'trade'){
+      field('Pair', txt('pair','text','NQ, ES, EURUSD…','jr-pairs'));
+      field('Account type', sel('account', ['Evaluation','Funded','Personal / live','Demo']));
+      field('Session', sel('session', SESSIONS));
+      field('Trade date', txt('date','date'));
+      field('Time', txt('time','time'));
+      var ct = txt('contracts','number','1'); ct.min = '0'; ct.step = 'any'; field('Contracts', ct);
+      field('Outcome', seg([['tp','TP'],['sl','SL'],['be','BE']], D.outcome, function(v){ D.outcome = v; drawJournal(host); }));
+      var pn = txt('pnl','number','e.g. 640 or -200'); pn.step = 'any'; field('Trade P&L ($)', pn);
+      field('Entry model', txt('model','text','e.g. AMD + order block','jr-models'));
+      var ov = txt('overview','textarea','What you saw, why you took it, how you managed it'); ov.rows = 4; field('Trade overview', ov, true);
+      // screenshots
+      var fb = el('div','hi-up'), chips = el('div'), busy = 0;
+      var drawF = function(){ chips.textContent = ''; chips.appendChild(fileChips(D.files, function(i){ D.files.splice(i,1); drawF(); })); };
+      drawF(); fb.appendChild(chips);
+      var pl2 = el('label','btn-s up-file','+ Add screenshots (up to 4)'), fi = el('input'); fi.type = 'file'; fi.multiple = true; fi.accept = FILE_TYPES; pl2.appendChild(fi);
+      var un = el('small','adm-note','At least one screenshot is needed to post.');
+      fi.addEventListener('change', function(){ var list = Array.prototype.slice.call(fi.files || []).slice(0, Math.max(0, 4 - D.files.length)); fi.value = '';
+        list.forEach(function(file){ if (!/^(image\/|application\/pdf)/.test(file.type || '')){ toast(file.name + ' isn\'t an image or PDF.'); return; }
+          busy++; un.textContent = 'Uploading ' + file.name + '…'; JR.busy = busy;
+          uploadFile(file, 'members/' + (user().id || 'demo') + '/journal/' + safeName(file.name), function(pc){ un.textContent = 'Uploading ' + file.name + '… ' + Math.round(pc) + '%'; })
+            .then(function(r){ D.files.push(r); drawF(); }).catch(function(e){ toast('Upload failed: ' + String((e && e.message) || e)); })
+            .then(function(){ busy--; JR.busy = busy; if (!busy) un.textContent = 'At least one screenshot is needed to post.'; }); }); });
+      fb.appendChild(pl2); fb.appendChild(un);
+      var sw = el('div','fld wide'); sw.appendChild(document.createTextNode('Screenshots')); sw.appendChild(fb); grid2.appendChild(sw);
+    } else {
+      field('Date', txt('date','date'));
+      field('Session', sel('session', SESSIONS));
+      var ov2 = txt('overview','textarea','Why you didn\'t trade: what you were waiting for'); ov2.rows = 3; field('Overview', ov2, true);
+    }
+    f.appendChild(grid2);
+    var fr = el('div','jr-follow'); fr.appendChild(el('b',null,'Did you follow your rules?'));
+    fr.appendChild(seg([['yes','Yes'],['no','No']], D.followed === true ? 'yes' : D.followed === false ? 'no' : '', function(v){ D.followed = v === 'yes'; drawJournal(host); }));
+    f.appendChild(fr);
+    var pv = el('p','jr-pts'); f.appendChild(pv);
+    function preview(){ var pts = entryPoints({ kind: JR.kind, outcome: D.outcome, followed: D.followed }); pv.textContent = D.followed === undefined ? '' : 'This entry scores ' + pts + (pts === 1 ? ' point' : ' points') + ' on the psych leaderboard.'; }
+    preview();
+    var post = el('button','pbtn pri','Post entry'); post.type = 'button';
+    post.addEventListener('click', function(){
+      if (JR.busy){ toast('Wait for your screenshots to finish uploading.'); return; }
+      var need = [];
+      if (JR.kind === 'trade'){
+        [['pair','Pair'],['account','Account type'],['session','Session'],['date','Trade date'],['time','Time'],['contracts','Contracts'],['outcome','Outcome'],['pnl','Trade P&L'],['model','Entry model']].forEach(function(x){ if (D[x[0]] === undefined || String(D[x[0]]).trim() === '') need.push(x[1]); });
+        if (String(D.overview || '').trim().length < 20) need.push('Trade overview (a few sentences)');
+        if (!D.files.length) need.push('a screenshot');
+      } else { if (!D.date) need.push('Date'); if (!D.session) need.push('Session'); if (String(D.overview || '').trim().length < 10) need.push('Overview'); }
+      if (D.followed === undefined) need.push('whether you followed your rules');
+      if (need.length){ toast('Still needed: ' + need.join(', ') + '.'); return; }
+      var entry = JR.kind === 'trade' ? { kind:'trade', pair:D.pair, account:D.account, session:D.session, date:D.date, time:D.time, contracts:+D.contracts, outcome:D.outcome, pnl:+D.pnl, model:D.model, overview:D.overview, files:D.files, followed:D.followed }
+        : { kind:'none', date:D.date, session:D.session, overview:D.overview, followed:D.followed };
+      post.disabled = true;
+      memberPost({ action:'journal-add', entry:entry }).then(function(){ toast('Entry posted · ' + entryPoints(entry) + (entryPoints(entry) === 1 ? ' point' : ' points') + '.'); JR.draft = { files:[] }; return loadMe(); })
+        .then(function(){ drawJournal(host); })
+        .catch(function(e){ post.disabled = false; var m = e && e.message; toast(m === 'none_exists' ? 'You already logged a no-trade day for that date.' : m === 'need_files' ? 'Add at least one screenshot.' : m === 'missing' ? 'Some fields are missing.' : 'Couldn\'t post it: ' + m); });
+    });
+    f.appendChild(post);
+    main.appendChild(f);
+    // entries
+    main.appendChild(el('h3','jr-h','Entries · ' + ents.length));
+    if (!ents.length) main.appendChild(el('p','pf-none','No entries yet. Your first one shows up here.'));
+    ents.forEach(function(e){
+      var card = el('article','jr-e' + (e.void ? ' void' : '')), top = el('div','jr-e-top');
+      var tt = el('div'); tt.appendChild(el('b',null, e.kind === 'none' ? 'No trades' : (e.pair + ' · ' + (OUT[e.outcome] || '') + ' · ' + money(e.pnl))));
+      tt.appendChild(el('small',null, fmtDay(e.date) + (e.time ? ' ' + e.time : '') + ' · ' + (e.session || '') + (e.kind === 'trade' ? ' · ' + e.account + ' · ' + e.contracts + (+e.contracts === 1 ? ' contract' : ' contracts') + ' · ' + e.model : '')));
+      top.appendChild(tt);
+      var tags = el('div','jr-tags'); tags.appendChild(el('span','chip' + (e.followed ? ' ok' : ' warn'), e.followed ? 'Rules followed' : 'Rules broken'));
+      tags.appendChild(el('span','chip pts', (e.void ? 'Void · ' : '') + (e.points || 0) + ' pts')); top.appendChild(tags); card.appendChild(top);
+      if (e.overview) card.appendChild(el('p',null,e.overview));
+      if (e.files && e.files.length) card.appendChild(fileChips(e.files));
+      if (Date.now() - Date.parse(e.createdAt) < 7 * 864e5) card.appendChild(delBtn(function(){ memberPost({ action:'journal-delete', id:e.id }).then(loadMe).then(function(){ toast('Entry removed.'); drawJournal(host); }).catch(function(){ toast('Couldn\'t remove it.'); }); }));
+      main.appendChild(card);
+    });
+    grid.appendChild(side); grid.appendChild(main); host.appendChild(grid);
+    if (!document.getElementById('jr-pairs')){ var dl = el('datalist'); dl.id = 'jr-pairs'; ['NQ','MNQ','ES','MES','YM','RTY','GC','CL','EURUSD','GBPUSD','XAUUSD'].forEach(function(x){ var o = el('option'); o.value = x; dl.appendChild(o); }); document.body.appendChild(dl);
+      var dm = el('datalist'); dm.id = 'jr-models'; ['AMD','Order block','Breaker','SMT divergence','Displacement + FVG','Liquidity sweep'].forEach(function(x){ var o = el('option'); o.value = x; dm.appendChild(o); }); document.body.appendChild(dm); }
+  }
+
+  /* ---------- psych leaderboard ---------- */
+  var BOARD = { period:'week' };
+  function renderBoard(){
+    var host = document.getElementById('lb'); if (!host) return; host.textContent = '';
+    var head = el('div','lb-head');
+    head.appendChild(seg([['week','This week'],['month','This month'],['all','All time']], BOARD.period, function(p){ BOARD.period = p; renderBoard(); }));
+    host.appendChild(head);
+    var rules = el('div','lb-rules'); rules.appendChild(el('b',null,'How points work'));
+    var ul = el('ul'); [['Rules followed + TP','3'],['Rules followed + SL or BE','1'],['Rules followed + no trades that day','1'],['Rules not followed','0']].forEach(function(r){ var li = el('li'); li.appendChild(el('span',null,r[0])); li.appendChild(el('b',null,r[1] + (r[1] === '1' ? ' pt' : ' pts'))); ul.appendChild(li); });
+    rules.appendChild(ul); host.appendChild(rules);
+    var list = el('div','lb-list'); list.appendChild(el('p','adm-note','Loading…')); host.appendChild(list);
+    var got = DEMO_MODE ? loadMe().then(function(){ var pts = (ME.entries || []).reduce(function(t, e){ return t + entryPoints(e); }, 0);
+        return { rows: ME.journal ? [{ rank:1, name: user().displayName, username: user().username, points: pts, entries: ME.entries.length, followedPct: ME.entries.length ? Math.round(ME.entries.filter(function(e){ return e.followed; }).length / ME.entries.length * 100) : 0, me:true }] : [] }; })
+      : fetch('/api/member?board=' + BOARD.period, { credentials:'same-origin' }).then(function(r){ return r.ok ? r.json() : { rows:[] }; });
+    got.then(function(d){
+      list.textContent = '';
+      if (!d.rows.length){ emptyState(list, 'No points yet', 'Create your journal and post your first entry to get on the board.'); return; }
+      d.rows.forEach(function(r){
+        var row = el('div','lb-row' + (r.me ? ' me' : '') + (r.rank <= 3 ? ' top' + r.rank : ''));
+        row.appendChild(el('span','lb-rank', '#' + r.rank));
+        var av = el('span','av'); setAvatar(av, { avatar:r.avatar, displayName:r.name, username:r.username, id:r.id }); row.appendChild(av);
+        var nm = el('div','lb-nm'); nm.appendChild(el('b',null, r.name + (r.me ? ' (you)' : ''))); nm.appendChild(el('small',null, r.entries + (r.entries === 1 ? ' entry' : ' entries') + ' · rules followed ' + r.followedPct + '%')); row.appendChild(nm);
+        row.appendChild(el('span','lb-pts', r.points + ' pts'));
+        list.appendChild(row);
+      });
+    }).catch(function(){ list.textContent = ''; emptyState(list, 'Couldn\'t load the leaderboard', 'Refresh to try again.'); });
+  }
+
   function renderProfileExtras(){ loadMe().then(function(){ renderCerts(); renderPromo(); }); }
 
   function renderProfileAccess(){
@@ -1985,6 +2368,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       cfg.fields.forEach(function(f){
         var ctl;
         if (f.type === 'video') ctl = videoField(draft[f.name], cfg.folder, function(v){ draft[f.name] = v; });
+        else if (f.type === 'lessons'){ if (!Array.isArray(draft[f.name])) draft[f.name] = []; ctl = lessonPicker(draft[f.name]); }
         else if (f.type === 'select'){ ctl = el('select'); var opts = typeof f.options === 'function' ? f.options() : f.options;
           opts.forEach(function(o){ var v = Array.isArray(o) ? o[0] : o, t = Array.isArray(o) ? o[1] : o; var op = el('option',null,t); op.value = v; ctl.appendChild(op); });
           var first = Array.isArray(opts[0]) ? opts[0][0] : opts[0];
@@ -2001,7 +2385,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       e.preventDefault();
       var missing = cfg.fields.filter(function(f){ return f.required && !String(draft[f.name] || '').trim(); });
       if (missing.length){ toast(missing[0].label + ' is required.'); return; }
-      var item = {}; cfg.fields.forEach(function(f){ item[f.name] = String(draft[f.name] || '').trim(); });
+      var item = {}; cfg.fields.forEach(function(f){ item[f.name] = Array.isArray(draft[f.name]) ? draft[f.name].slice() : String(draft[f.name] || '').trim(); });
       if (item.expires) item.expires = new Date(item.expires + 'T23:59:59').toISOString();
       if (cfg.prepare){ var why = cfg.prepare(item); if (why){ toast(why); return; } }
       if (editing){ var i = list.findIndex(function(x){ return x.id === editing; }); if (i >= 0) list[i] = Object.assign({}, list[i], item); }
@@ -2025,6 +2409,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
           drawForm(); form.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block:'start' });
         });
         acts.appendChild(eb);
+        if (cfg.extra) cfg.extra(it, acts);
         acts.appendChild(delBtn(function(){ var i = list.findIndex(function(x){ return x.id === it.id; }); if (i >= 0) list.splice(i,1); admSave(cfg.noun.charAt(0).toUpperCase() + cfg.noun.slice(1) + ' deleted.'); }));
         row.appendChild(acts); side.appendChild(row);
       });
@@ -2038,6 +2423,21 @@ img,video{-webkit-user-drag:none;user-drag:none}
     return t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0'); }
   function thisMonday(){ return mondayOf(new Date().toISOString().slice(0,10)); }
   function todayKey(){ return ['mon','mon','tue','wed','thu','fri','fri'][new Date().getDay()]; }
+  // tick the lectures an assignment goes with (members see it once one of them is open for them)
+  function lessonPicker(picked){
+    var box = el('div','lp'), cur = adm.content.curriculum || [];
+    cur.forEach(function(ch){
+      var g = el('details','lp-ch'); var sm = el('summary',null, ch.name); g.appendChild(sm);
+      var n = el('span','lp-n'); sm.appendChild(n);
+      var upd = function(){ var c = ch.lessons.filter(function(l){ return picked.indexOf(l.id) !== -1; }).length; n.textContent = c ? ' · ' + c + ' picked' : ''; };
+      ch.lessons.forEach(function(l, li){ var lab = el('label','lp-i'), cb = el('input'); cb.type = 'checkbox'; cb.checked = picked.indexOf(l.id) !== -1;
+        cb.addEventListener('change', function(){ var i = picked.indexOf(l.id); if (cb.checked && i === -1) picked.push(l.id); if (!cb.checked && i !== -1) picked.splice(i,1); upd(); });
+        lab.appendChild(cb); lab.appendChild(document.createTextNode((li+1) + '. ' + l.title)); g.appendChild(lab); });
+      upd(); if (ch.lessons.some(function(l){ return picked.indexOf(l.id) !== -1; })) g.open = true;
+      box.appendChild(g);
+    });
+    return box;
+  }
   function chapterOptions(){ return ['General'].concat(adm.content.curriculum.map(function(c){ return c.name; })); }
 
   function lecturesEditor(){
@@ -2144,7 +2544,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
     var cur = (adm.content && adm.content.curriculum) || CURRICULUM, a = computeAccess(cur, demoRoles, demoSubs, demoOverrides, demoPromo);
     var bd = computeBdAccess(adminBreakdowns(), a.level, cur.length, demoSubs, demoOverrides);
     return Object.assign({}, user(), { id:'000000000000000000', roles: memberRoles(), lastSeen: new Date().toISOString(), progress: doneSet,
-      subs: demoSubs, overrides: demoOverrides, level: a.level, access: Object.assign({}, a.lessons, bd), flags:{}, certs: demoCerts, promo: demoPromo, canPromote: a.canPromote });
+      subs: demoSubs, overrides: demoOverrides, level: a.level, access: Object.assign({}, a.lessons, bd), flags:{}, certs: demoCerts, promo: demoPromo, canPromote: a.canPromote,
+      journal: demoJournal, entries: demoEntries.map(function(e){ return Object.assign({}, e, { points: entryPoints(e) }); }) });
   }
   function loadMembers(cb, fail){
     if (DEMO_MODE){ cb([demoMemberRow()]); return; }
@@ -2158,6 +2559,12 @@ img,video{-webkit-user-drag:none;user-drag:none}
   function memberAction(payload){
     if (DEMO_MODE){
       if (payload.action === 'review'){ var sb = demoSubs[payload.lessonId]; if (sb){ sb.status = payload.status; sb.feedback = payload.feedback || ''; sb.reviewedAt = new Date().toISOString(); sb.reviewer = user().displayName; } }
+      else if (payload.action === 'bulk'){ if (payload.userIds.indexOf('000000000000000000') !== -1){ var nb = new Date().toISOString();
+          payload.keys.forEach(function(k){ if (payload.op === 'lock') demoOverrides[k] = 'lock'; if (payload.op === 'unlock' || payload.op === 'unlock-done') demoOverrides[k] = 'unlock'; if (payload.op === 'reset') delete demoOverrides[k];
+            if (payload.op === 'done' || payload.op === 'unlock-done'){ demoSubs[k] = Object.assign({ notes:'', homework:'', submittedAt:nb }, demoSubs[k] || {}, { status:'approved', offsite:!demoSubs[k], reviewedAt:nb }); doneSet[k] = nb; }
+            if (payload.op === 'undone'){ delete demoSubs[k]; delete doneSet[k]; } }); saveDone(); } renderCurriculum(); }
+      else if (payload.action === 'clear-handins'){ Object.keys(demoSubs).forEach(function(k){ if (!demoSubs[k].offsite) delete demoSubs[k]; }); renderCurriculum(); }
+      else if (payload.action === 'journal-void'){ demoEntries.forEach(function(e){ if (e.id === payload.entryId) e.void = payload.void; }); try { localStorage.setItem('theproject.demoEntries', JSON.stringify(demoEntries)); } catch(e) {} }
       else if (payload.action === 'promote'){ var nw = new Date().toISOString();
         demoPromo = Object.assign({ certId:null, requestedAt:null }, demoPromo || {}, { status: payload.promote ? 'approved' : 'declined', decidedAt:nw, decidedBy:user().displayName, note:payload.note || '' });
         try { localStorage.setItem('theproject.demoPromo', JSON.stringify(demoPromo)); } catch(e) {} renderCurriculum(); }
@@ -2173,40 +2580,78 @@ img,video{-webkit-user-drag:none;user-drag:none}
   function levelName(lv){ var cur = (adm.content && adm.content.curriculum) || CURRICULUM; return lv ? (cur[lv-1] ? cur[lv-1].name : 'Step ' + lv) : 'No role'; }
 
   /* ---------- Hand-ins: notes + homework waiting for review ---------- */
+  var RV = { member:null, status:'waiting', type:'all', q:'', hw:null };
+  function handinType(k){ return /^bd:/.test(k) ? 'breakdowns' : /^hw:/.test(k) ? 'homework' : 'lessons'; }
   function reviewView(){
     var wrap = el('div','adm-list');
     var setBox = el('div','rv-set'), mode = (adm.content.settings || {}).unlockMode || 'submit';
     var stx = el('div'); stx.appendChild(el('b',null,'When does the next lesson unlock?'));
     stx.appendChild(el('span','adm-note', mode === 'approve' ? 'Only after an admin approves the hand-in.' : 'As soon as the member hands in. You can still review and send work back.'));
     setBox.appendChild(stx);
-    var seg = el('div','seg');
+    var segB = el('div','seg');
     [['submit','On hand-in'],['approve','After I approve']].forEach(function(o){
       var b = el('button','btn-s' + (mode === o[0] ? ' pri' : ''), o[1]); b.type = 'button'; b.setAttribute('aria-pressed', mode === o[0] ? 'true' : 'false');
       b.addEventListener('click', function(){ if (mode === o[0]) return; adm.content.settings = Object.assign({}, adm.content.settings, { unlockMode:o[0] }); SETTINGS = { unlockMode:o[0] }; admSave('Unlock setting saved.'); });
-      seg.appendChild(b);
+      segB.appendChild(b);
     });
-    setBox.appendChild(seg); wrap.appendChild(setBox);
-    var host = el('div','rv-list'); wrap.appendChild(host);
+    setBox.appendChild(segB); wrap.appendChild(setBox);
+    var host = el('div'); wrap.appendChild(host);
     host.appendChild(el('p','adm-note','Loading hand-ins…'));
     loadMembers(function(rows){
       host.textContent = '';
-      var idx = lessonIndex(), waiting = [], reviewed = [];
-      rows.forEach(function(m){ Object.keys(m.subs || {}).forEach(function(k){ var sb = m.subs[k]; if (!sb) return;
-        var row = { m:m, k:k, sb:sb, info: idx[k] || { label:k } }; if (sb.offsite) return; (sb.status === 'submitted' ? waiting : reviewed).push(row); }); });
-      waiting.sort(function(a,b){ return String(a.sb.submittedAt).localeCompare(String(b.sb.submittedAt)); });
-      reviewed.sort(function(a,b){ return String(b.sb.reviewedAt || b.sb.submittedAt).localeCompare(String(a.sb.reviewedAt || a.sb.submittedAt)); });
+      var idx = lessonIndex(), hwT = {}; (adm.content.homework || []).forEach(function(h){ hwT['hw:' + h.id] = 'Homework · ' + h.title; });
+      var all = [];
+      rows.forEach(function(m){ Object.keys(m.subs || {}).forEach(function(k){ var sb = m.subs[k]; if (!sb || sb.offsite) return;
+        all.push({ m:m, k:k, sb:sb, info: idx[k] || (hwT[k] ? { label: hwT[k] } : { label:k }) }); }); });
+      // promotion requests stay on top
       var promos = rows.filter(function(m){ return m.promo && m.promo.status === 'requested'; });
-      if (promos.length){
-        host.appendChild(el('h3','rv-h','Promotion requests · ' + promos.length));
-        promos.forEach(function(m){ host.appendChild(promoCard(m)); });
+      if (promos.length){ host.appendChild(el('h3','rv-h','Promotion requests · ' + promos.length)); promos.forEach(function(m){ host.appendChild(promoCard(m)); }); }
+      // filters
+      var bar = el('div','rv-bar');
+      var q = el('input','side-q'); q.type = 'search'; q.placeholder = 'Find a member'; q.value = RV.q; q.addEventListener('input', function(){ RV.q = q.value.trim().toLowerCase(); drawLists(); }); bar.appendChild(q);
+      var ch1 = el('div','chips'); [['waiting','Waiting'],['reviewed','Reviewed'],['all','All']].forEach(function(o){ var b = el('button','chip-b' + (RV.status === o[0] ? ' on' : ''), o[1]); b.type = 'button'; b.addEventListener('click', function(){ RV.status = o[0]; admRender(); }); ch1.appendChild(b); }); bar.appendChild(ch1);
+      var ch2 = el('div','chips'); [['all','Everything'],['lessons','Lessons'],['breakdowns','Breakdowns'],['homework','Homework']].forEach(function(o){ var b = el('button','chip-b' + (RV.type === o[0] && !RV.hw ? ' on' : ''), o[1]); b.type = 'button'; b.addEventListener('click', function(){ RV.type = o[0]; RV.hw = null; admRender(); }); ch2.appendChild(b); }); bar.appendChild(ch2);
+      if (RV.hw){ var hb = el('button','chip-b on', (hwT['hw:' + RV.hw] || 'Homework') + ' ×'); hb.type = 'button'; hb.addEventListener('click', function(){ RV.hw = null; admRender(); }); bar.appendChild(hb); }
+      var clr = el('button','btn-s warn','Clear all hand-ins'), clrT; clr.type = 'button'; clr.title = 'Deletes every hand-in members submitted. Items you marked done are kept.';
+      clr.addEventListener('click', function(){
+        if (!clr.classList.contains('armed')){ clr.classList.add('armed'); clr.textContent = 'Click again to clear everything'; clrT = setTimeout(function(){ clr.classList.remove('armed'); clr.textContent = 'Clear all hand-ins'; }, 4000); return; }
+        clearTimeout(clrT); clr.disabled = true;
+        memberAction({ action:'clear-handins' }).then(function(){ toast('All hand-ins cleared.'); RV.member = null; admRender(); }).catch(function(){ clr.disabled = false; toast('Couldn\'t clear them.'); });
+      });
+      bar.appendChild(clr);
+      host.appendChild(bar);
+      var cols = el('div','rv-cols'), left = el('div','rv-people'), right = el('div','rv-items'); cols.appendChild(left); cols.appendChild(right); host.appendChild(cols);
+      function pass(x){
+        if (RV.status === 'waiting' && x.sb.status !== 'submitted') return false;
+        if (RV.status === 'reviewed' && x.sb.status === 'submitted') return false;
+        if (RV.hw) return x.k === 'hw:' + RV.hw;
+        return RV.type === 'all' || handinType(x.k) === RV.type;
       }
-      host.appendChild(el('h3','rv-h','Waiting for review · ' + waiting.length));
-      if (!waiting.length) host.appendChild(el('p','adm-note','Nothing waiting. New hand-ins show up here, oldest first.'));
-      waiting.forEach(function(x){ host.appendChild(handinCard(x, true)); });
-      if (reviewed.length){
-        host.appendChild(el('h3','rv-h','Reviewed · latest ' + Math.min(reviewed.length, 25)));
-        reviewed.slice(0, 25).forEach(function(x){ host.appendChild(handinCard(x, false)); });
+      function drawLists(){
+        left.textContent = ''; right.textContent = '';
+        var items = all.filter(pass), people = {};
+        items.forEach(function(x){ var p = people[x.m.id] || (people[x.m.id] = { m:x.m, n:0, wait:0 }); p.n++; if (x.sb.status === 'submitted') p.wait++; });
+        var plist = Object.keys(people).map(function(k){ return people[k]; }).filter(function(p){ return !RV.q || (String(p.m.displayName || '') + ' ' + String(p.m.username || '')).toLowerCase().indexOf(RV.q) !== -1; })
+          .sort(function(a, b){ return b.wait - a.wait || b.n - a.n; });
+        var allBtn = el('button','rv-person' + (!RV.member ? ' on' : '')); allBtn.type = 'button'; allBtn.appendChild(el('b',null,'Everyone')); allBtn.appendChild(el('span','rv-n', String(items.length)));
+        allBtn.addEventListener('click', function(){ RV.member = null; drawLists(); }); left.appendChild(allBtn);
+        plist.forEach(function(p){
+          var b = el('button','rv-person' + (RV.member === p.m.id ? ' on' : '')); b.type = 'button';
+          var av = el('span','av'); setAvatar(av, p.m); b.appendChild(av);
+          var nm = el('span','rv-pn'); nm.appendChild(el('b',null, p.m.displayName || p.m.username)); nm.appendChild(el('small',null, levelName(p.m.level))); b.appendChild(nm);
+          b.appendChild(el('span','rv-n' + (p.wait ? ' wait' : ''), String(p.wait || p.n)));
+          b.addEventListener('click', function(){ RV.member = p.m.id; drawLists(); });
+          left.appendChild(b);
+        });
+        if (!plist.length) left.appendChild(el('p','adm-note', RV.status === 'waiting' ? 'Nothing waiting. New hand-ins show up here.' : 'No hand-ins match.'));
+        var mine = items.filter(function(x){ return !RV.member || x.m.id === RV.member; })
+          .sort(function(a, b){ return RV.status === 'waiting' ? String(a.sb.submittedAt).localeCompare(String(b.sb.submittedAt)) : String(b.sb.reviewedAt || b.sb.submittedAt).localeCompare(String(a.sb.reviewedAt || a.sb.submittedAt)); });
+        if (RV.member && people[RV.member]){ var pm = people[RV.member].m; right.appendChild(el('h3','rv-h', (pm.displayName || pm.username) + ' · ' + mine.length + (mine.length === 1 ? ' hand-in' : ' hand-ins'))); }
+        else right.appendChild(el('h3','rv-h', (RV.status === 'waiting' ? 'Waiting for review' : RV.status === 'reviewed' ? 'Reviewed' : 'All hand-ins') + ' · ' + mine.length));
+        if (!mine.length) right.appendChild(el('p','adm-note','Nothing here.'));
+        mine.slice(0, 60).forEach(function(x){ right.appendChild(handinCard(x, x.sb.status === 'submitted')); });
       }
+      drawLists();
     }, function(t, line){ host.textContent=''; emptyState(host, t, line); });
     return wrap;
   }
@@ -2246,7 +2691,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     c.appendChild(h);
     c.appendChild(el('p','adm-note','Handed in ' + fmtDay(x.sb.submittedAt) + (x.sb.attempts > 1 ? ' · attempt ' + x.sb.attempts : '') + (x.sb.reviewedAt ? ' · reviewed ' + fmtDay(x.sb.reviewedAt) + (x.sb.reviewer ? ' by ' + x.sb.reviewer : '') : '')));
     var n = el('div','hi-task'); n.appendChild(el('b',null,'Notes')); n.appendChild(document.createTextNode(x.sb.notes || '—')); c.appendChild(n);
-    var w = el('div','hi-task'); w.appendChild(el('b',null,'Homework')); w.appendChild(document.createTextNode(x.sb.homework || '—')); c.appendChild(w);
+    if (x.sb.homework || !(x.sb.files && x.sb.files.length)){ var w = el('div','hi-task'); w.appendChild(el('b',null, /^bd:/.test(x.k) ? 'Mark-ups' : 'Homework')); w.appendChild(document.createTextNode(x.sb.homework || '—')); c.appendChild(w); }
     if (x.sb.files && x.sb.files.length) c.appendChild(fileChips(x.sb.files));
     if (x.sb.link){ var a = el('a','lnk', x.sb.link); a.href = x.sb.link; a.target = '_blank'; a.rel = 'noopener noreferrer'; c.appendChild(a); }
     if (x.sb.feedback && !open){ var fb = el('div','hi-fb'); fb.appendChild(el('b',null,'Your feedback')); fb.appendChild(document.createTextNode(x.sb.feedback)); c.appendChild(fb); }
@@ -2312,13 +2757,18 @@ img,video{-webkit-user-drag:none;user-drag:none}
 
   function membersView(){
     var wrap = el('div','adm-list');
-    wrap.appendChild(el('p','adm-note','Everyone who has signed in, newest first. Open a member to see their lessons, unlock or lock any of them, and see what they finished.'));
+    wrap.appendChild(el('p','adm-note','Everyone who has signed in, newest first. Tick members to change many at once, or open one for their lessons, journal and certificates.'));
     var host = el('div'); wrap.appendChild(host);
     function draw(rows){
       host.textContent = '';
       if (!rows.length){ emptyState(host,'No members yet','Members appear here after they sign in with Discord.'); return; }
       var lessons = Object.keys(lessonIndex());
+      var picked = adm.picked || (adm.picked = {});
+      var bulk = el('div','bulk'); host.appendChild(bulk);
       var tw = el('div','mem-wrap'), t = el('table','mem'), th = el('thead'), hr = el('tr');
+      var thc = el('th'), allCb = el('input'); allCb.type = 'checkbox'; allCb.setAttribute('aria-label','Select all members'); thc.appendChild(allCb); hr.appendChild(thc);
+      allCb.checked = rows.length > 0 && rows.every(function(m){ return picked[m.id]; });
+      allCb.addEventListener('change', function(){ rows.forEach(function(m){ if (allCb.checked) picked[m.id] = true; else delete picked[m.id]; }); tb.querySelectorAll('input.mcb').forEach(function(c){ c.checked = allCb.checked; }); drawBulk(); });
       ['Member','Last seen','Lessons','Hand-ins','Step','Flags',''].forEach(function(x){ hr.appendChild(el('th',null,x)); });
       th.appendChild(hr); t.appendChild(th); var tb = el('tbody'); t.appendChild(tb);
       rows.forEach(function(m){
@@ -2327,7 +2777,10 @@ img,video{-webkit-user-drag:none;user-drag:none}
         var subsN = Object.keys(m.subs || {}).length, waitN = Object.keys(m.subs || {}).filter(function(k){ return m.subs[k] && m.subs[k].status === 'submitted'; }).length;
         var hw = subsN + (waitN ? ' (' + waitN + ' waiting)' : '');
         var chs = m.isAdmin ? 'Admin' : levelName(m.level) + (m.promo && m.promo.status === 'requested' ? ' · promotion requested' : '');
-        var tr = el('tr'), c1 = el('td'), who = el('div','who2'), av = el('span','av'); setAvatar(av, m); who.appendChild(av);
+        var tr = el('tr'), c0 = el('td'), mcb = el('input'); mcb.type = 'checkbox'; mcb.className = 'mcb'; mcb.checked = !!picked[m.id]; mcb.setAttribute('aria-label','Select ' + (m.displayName || m.username));
+        mcb.addEventListener('change', function(){ if (mcb.checked) picked[m.id] = true; else delete picked[m.id]; allCb.checked = rows.every(function(x){ return picked[x.id]; }); drawBulk(); });
+        c0.appendChild(mcb); tr.appendChild(c0);
+        var c1 = el('td'), who = el('div','who2'), av = el('span','av'); setAvatar(av, m); who.appendChild(av);
         var nmw = el('div'); nmw.appendChild(el('b',null, m.displayName || m.username)); nmw.appendChild(el('div','adm-note','@' + (m.username||''))); who.appendChild(nmw); c1.appendChild(who); tr.appendChild(c1);
         tr.appendChild(el('td',null, m.lastSeen ? fmtDay(m.lastSeen) : '—'));
         var c3 = el('td'), pcw = el('div','pc'), bi = el('i'), bb = el('b'); bb.style.width = pc + '%'; bi.appendChild(bb); pcw.appendChild(bi); pcw.appendChild(el('span',null, done + '/' + lessons.length + ' · ' + pc + '%')); c3.appendChild(pcw); tr.appendChild(c3);
@@ -2336,7 +2789,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
         var fl = m.flags || {}, ft = parseInt(fl.total || 0, 10), fc = el('td', ft ? 'flagged' : null, ft ? String(ft) : '0'); if (ft) fc.title = 'Last: ' + (fl.lastKind || '') + ' · ' + fmtDay(fl.last); tr.appendChild(fc);
         var c6 = el('td'), lb = el('button','lnk','Details'); lb.type='button'; c6.appendChild(lb); tr.appendChild(c6);
         tb.appendChild(tr);
-        var det = el('tr','det'); det.hidden = true; var dc = el('td'); dc.colSpan = 7; det.appendChild(dc); tb.appendChild(det);
+        var det = el('tr','det'); det.hidden = true; var dc = el('td'); dc.colSpan = 8; det.appendChild(dc); tb.appendChild(det);
         if (adm.openMember === m.id){ setTimeout(function(){ lb.click(); adm.openMember = null; }, 0); }
         lb.addEventListener('click', function(){
           det.hidden = !det.hidden; tr.classList.toggle('open', !det.hidden); lb.textContent = det.hidden ? 'Details' : 'Hide';
@@ -2367,6 +2820,20 @@ img,video{-webkit-user-drag:none;user-drag:none}
               else pb.appendChild(promoActions(m));
             }
             dc.appendChild(pb);
+            var jb = el('div','acc-promo'); jb.appendChild(el('b',null,'Journal' + ((m.entries || []).length ? ' · ' + m.entries.length + ' entries' : '')));
+            if (!m.journal) jb.appendChild(el('span','adm-note','Not created yet.'));
+            else {
+              var rl = el('ol','jr-rl show'); m.journal.rules.forEach(function(r){ rl.appendChild(el('li',null,r.text)); }); jb.appendChild(rl);
+              (m.entries || []).slice(0, 20).forEach(function(e){
+                var row = el('div','acc-row'), tx = el('span','acc-t', fmtDay(e.date) + ' · ' + (e.kind === 'none' ? 'No trades' : e.pair + ' ' + (OUT[e.outcome] || '') + ' ' + money(e.pnl)) + ' · ' + (e.followed ? 'rules followed' : 'rules broken'));
+                row.appendChild(tx); row.appendChild(el('span','chip' + (e.void ? ' lkd' : ' ok'), (e.void ? 'Void · ' : '') + (e.points || 0) + ' pts'));
+                var vb = el('span','acc-b'), b = el('button','btn-s', e.void ? 'Restore' : 'Void'); b.type = 'button';
+                b.addEventListener('click', function(){ b.disabled = true; memberAction({ action:'journal-void', userId:m.id, entryId:e.id, void:!e.void }).then(function(){ toast(e.void ? 'Entry restored.' : 'Entry voided (0 points).'); adm.openMember = m.id; admRender(); }); });
+                vb.appendChild(b); row.appendChild(vb); jb.appendChild(row);
+                if (e.files && e.files.length) jb.appendChild(fileChips(e.files));
+              });
+            }
+            dc.appendChild(jb);
             dc.appendChild(accessPanel(m, function(){ adm.openMember = m.id; admRender(); }));
             if (!keys.length){ dc.appendChild(el('span','adm-note','No videos finished yet.')); return; }
             dc.appendChild(el('b','acc-sub','Videos finished'));
@@ -2376,6 +2843,45 @@ img,video{-webkit-user-drag:none;user-drag:none}
         });
       });
       tw.appendChild(t); host.appendChild(tw);
+      // bulk: pick items, then one action for every ticked member
+      var chosen = adm.chosenKeys || (adm.chosenKeys = {});
+      function drawBulk(){
+        bulk.textContent = '';
+        var ids = rows.filter(function(m){ return picked[m.id]; }).map(function(m){ return m.id; }), keys = Object.keys(chosen).filter(function(k){ return chosen[k]; });
+        var head = el('div','bulk-h'); head.appendChild(el('b',null, ids.length ? ids.length + (ids.length === 1 ? ' member selected' : ' members selected') : 'Bulk changes'));
+        head.appendChild(el('span','adm-note', ids.length ? 'Pick what to change below, then choose an action.' : 'Tick members in the list, then pick lessons, parts, breakdowns or homework below.'));
+        bulk.appendChild(head);
+        if (!ids.length) return;
+        var pickWrap = el('div','bulk-pick'), cur = (adm.content && adm.content.curriculum) || CURRICULUM;
+        function group(name, list){
+          var g = el('details','lp-ch'), sm = el('summary',null, name), n = el('span','lp-n'); sm.appendChild(n); g.appendChild(sm);
+          var sa = el('label','lp-i all'), sab = el('input'); sab.type = 'checkbox'; sa.appendChild(sab); sa.appendChild(document.createTextNode('Select all in ' + name)); g.appendChild(sa);
+          var boxes = [];
+          var upd = function(){ var c = list.filter(function(x){ return chosen[x.key]; }).length; n.textContent = c ? ' · ' + c + ' picked' : ''; sab.checked = c === list.length && c > 0; };
+          list.forEach(function(x){ var lab = el('label','lp-i'), cb = el('input'); cb.type = 'checkbox'; cb.checked = !!chosen[x.key]; boxes.push(cb);
+            cb.addEventListener('change', function(){ if (cb.checked) chosen[x.key] = true; else delete chosen[x.key]; upd(); countLine(); });
+            lab.appendChild(cb); lab.appendChild(document.createTextNode(x.label)); g.appendChild(lab); });
+          sab.addEventListener('change', function(){ list.forEach(function(x, i){ if (sab.checked) chosen[x.key] = true; else delete chosen[x.key]; boxes[i].checked = sab.checked; }); upd(); countLine(); });
+          upd(); pickWrap.appendChild(g);
+        }
+        cur.forEach(function(ch){ var list = []; ch.lessons.forEach(function(l, li){ if (l.parts && l.parts.length) l.parts.forEach(function(p){ list.push({ key:p.id, label:(li+1) + '. ' + partTitle(l, p) }); }); else list.push({ key:l.id, label:(li+1) + '. ' + l.title }); }); group(ch.name, list); });
+        var bds = adminBreakdowns(); if (bds.length) group('Breakdowns', bds.map(function(b){ return { key:'bd:' + b.id, label: bdSlot(b) + ' · ' + weekLabel(b.week).replace('Week of ','') + ' · ' + (b.title || '') }; }));
+        if ((adm.content.homework || []).length) group('Homework', adm.content.homework.map(function(h){ return { key:'hw:' + h.id, label:h.title }; }));
+        bulk.appendChild(pickWrap);
+        var line = el('p','adm-note'); bulk.appendChild(line);
+        function countLine(){ var k = Object.keys(chosen).filter(function(x){ return chosen[x]; }).length; line.textContent = k + (k === 1 ? ' item' : ' items') + ' × ' + ids.length + (ids.length === 1 ? ' member' : ' members'); }
+        countLine();
+        var acts = el('div','bulk-acts');
+        [['unlock-done','Unlock + mark done','pri'],['unlock','Unlock',''],['done','Mark done',''],['lock','Lock',''],['undone','Undo done',''],['reset','Reset to usual rules','']].forEach(function(o){
+          var b = el('button','btn-s' + (o[2] ? ' ' + o[2] : ''), o[1]); b.type = 'button';
+          b.addEventListener('click', function(){ var ks = Object.keys(chosen).filter(function(x){ return chosen[x]; }); if (!ks.length){ toast('Pick at least one item.'); return; }
+            b.disabled = true; memberAction({ action:'bulk', userIds: ids, keys: ks, op: o[0] })
+              .then(function(){ toast(o[1] + ': ' + ks.length + (ks.length === 1 ? ' item' : ' items') + ' for ' + ids.length + (ids.length === 1 ? ' member.' : ' members.')); admRender(); })
+              .catch(function(){ b.disabled = false; toast('Couldn\'t apply that. Try again.'); }); });
+          acts.appendChild(b); });
+        bulk.appendChild(acts);
+      }
+      drawBulk();
     }
     host.appendChild(el('p','adm-note','Loading members…'));
     loadMembers(draw, function(t, line){ host.textContent=''; emptyState(host, t, line); });
@@ -2394,12 +2900,14 @@ img,video{-webkit-user-drag:none;user-drag:none}
     else if (adm.sec === 'homework') body.appendChild(crud({ key:'homework', noun:'homework', addTitle:'Assign homework', addLabel:'Assign', savedMsg:'Homework assigned.', idPrefix:'hw', bodyField:'details',
       emptyLine:'Homework you assign appears on every member\'s Homework tab.',
       fields:[ { name:'title', label:'Title', type:'text', ph:'Mark 5 AMD cycles before 9:30', required:true }, { name:'chapter', label:'Chapter', type:'select', options: chapterOptions },
-               { name:'due', label:'Due (optional)', type:'text', ph:'Fri 6 Nov' }, { name:'details', label:'Details', type:'textarea', ph:'What to do and how to submit it' } ],
-      meta:function(h){ return (h.chapter || 'General') + (h.due ? ' · due ' + h.due : '') + ' · ' + fmtDay(h.createdAt); } }));
+               { name:'due', label:'Due (optional)', type:'text', ph:'Fri 6 Nov' }, { name:'details', label:'Details', type:'textarea', ph:'What to do and how to hand it in' },
+               { name:'lessons', label:'Goes with these lectures', type:'lessons', hint:'Members see this assignment once one of the ticked lectures is open for them. Tick none to show it to everyone.' } ],
+      extra: function(h, acts){ var rb = el('button','btn-s','Review hand-ins'); rb.type = 'button'; rb.addEventListener('click', function(){ RV.hw = h.id; RV.status = 'all'; adm.sec = 'review'; admRender(); }); acts.appendChild(rb); },
+      meta:function(h){ return (h.chapter || 'General') + (h.due ? ' · due ' + h.due : '') + ((h.lessons || []).length ? ' · ' + h.lessons.length + ((h.lessons || []).length === 1 ? ' lecture' : ' lectures') : ' · everyone') + ' · ' + fmtDay(h.createdAt); } }));
     else if (adm.sec === 'breakdowns') body.appendChild(crud({ key:'breakdowns', noun:'breakdown', addTitle:'Post a breakdown', addLabel:'Post breakdown', savedMsg:'Breakdown posted.', idPrefix:'bd', bodyField:'summary', folder:'breakdowns',
-      emptyLine:'Members work through breakdowns in order: Monday to Friday, then the Weekly Breakdown, then the Weekly Outlook, then the next week. Advanced Breakdowns are their own chain for Enlightened only.',
-      fields:[ { name:'kind', label:'Type', type:'select', options:[['daily','Daily breakdown'],['weekly','Weekly Breakdown (recap of the week)'],['outlook','Weekly Outlook (plan for next week)'],['advanced','Advanced Breakdown (Enlightened only)']] },
-               { name:'week', label:'Week of', type:'date', required:true, def: thisMonday, hint:'Pick any day in that week; it\'s saved as the Monday.' },
+      emptyLine:'Members work through each week in order: the Weekly Outlook first, then Monday to Friday, then the Weekly Breakdown. Advanced Breakdowns are their own chain for Enlightened only.',
+      fields:[ { name:'kind', label:'Type', type:'select', options:[['daily','Daily breakdown'],['outlook','Weekly Outlook (plan for the week, before Monday)'],['weekly','Weekly Breakdown (recap of the week)'],['advanced','Advanced Breakdown (Enlightened only)']] },
+               { name:'week', label:'Week of', type:'date', required:true, def: thisMonday, hint:'Pick any day in the week it\'s for (a Weekly Outlook goes with the week it plans); it\'s saved as the Monday.' },
                { name:'day', label:'Day (daily breakdowns only)', type:'select', options:[['mon','Monday'],['tue','Tuesday'],['wed','Wednesday'],['thu','Thursday'],['fri','Friday']], def: todayKey },
                { name:'title', label:'Title', type:'text', ph:'NQ · New York open', required:true },
                { name:'video', label:'Video', type:'video', hint:'With a video, members have to watch it through before they can hand in.' },
@@ -2422,11 +2930,14 @@ img,video{-webkit-user-drag:none;user-drag:none}
   });
 
   /* ---------- tabs (hash routes) ---------- */
-  var VIEWS = ['lectures','homework','breakdowns','profile','admin'];
+  var VIEWS = ['lectures','homework','breakdowns','journal','leaderboard','profile','admin'];
   function showView(){
     var v = (location.hash||'').replace('#','');
     if (VIEWS.indexOf(v) === -1 || (v === 'admin' && !canAdmin())) v = 'lectures';
     if (v === 'admin' && !adm.content) admLoad();
+    if (v === 'journal') renderJournal();
+    if (v === 'leaderboard') renderBoard();
+    if (v === 'homework') hidePop();
     document.querySelectorAll('[data-view]').forEach(function(m){ m.hidden = m.getAttribute('data-view') !== v; });
     document.querySelectorAll('.tab').forEach(function(t){ if (t.getAttribute('data-tab')===v) t.setAttribute('aria-current','page'); else t.removeAttribute('aria-current'); });
   }
@@ -2454,11 +2965,11 @@ img,video{-webkit-user-drag:none;user-drag:none}
       stamp=document.getElementById('stamp'), enter=document.getElementById('enter'),
       gateV=document.getElementById('gate-view'), portV=document.getElementById('portal-view'), raf, START=1240, C=326.7;
   function fmt(v){ return v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-  function reset(){ cancelAnimationFrame(raf); arc.style.strokeDashoffset=C; bal.textContent='0%'; bal.classList.remove('gone'); bal.removeAttribute('aria-hidden'); stamp.classList.remove('on'); stamp.parentNode.classList.remove('thud'); enter.hidden=true; }
+  function reset(){ cancelAnimationFrame(raf); arc.style.strokeDashoffset=C; bal.textContent='0%'; bal.classList.remove('gone'); bal.parentNode.classList.remove('stamped'); bal.removeAttribute('aria-hidden'); stamp.classList.remove('on'); stamp.parentNode.classList.remove('thud'); enter.hidden=true; }
   function finish(){
     arc.style.strokeDashoffset=0; bal.textContent='100%';
     var sd=document.getElementById('stamp-date'); if(sd) sd.textContent=new Date().toLocaleDateString('en-US',{month:'short',day:'2-digit',year:'numeric'}).replace(',','').toUpperCase();
-    stamp.classList.add('on'); bal.classList.add('gone'); bal.setAttribute('aria-hidden','true'); var md=stamp.parentNode; md.classList.remove('thud'); setTimeout(function(){ md.classList.add('thud'); },300);
+    stamp.classList.add('on'); bal.classList.add('gone'); bal.parentNode.classList.add('stamped'); bal.setAttribute('aria-hidden','true'); var md=stamp.parentNode; md.classList.remove('thud'); setTimeout(function(){ md.classList.add('thud'); },300);
     enter.hidden=false; enter.focus();
   }
   function openPopup(){
@@ -2476,7 +2987,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     if (!booted){ pendingEnter = true; enter.disabled = true; enter.textContent = 'Loading your portal…'; return; }   // account still loading
     scrim.hidden=true; gateV.hidden=true; portV.hidden=false;
     if (VIEWS.indexOf((location.hash||'').replace('#',''))===-1) { try { history.replaceState(null,'','#lectures'); } catch(e) {} }
-    showView(); window.scrollTo(0,0); paintWatermark();
+    showView(); window.scrollTo(0,0); paintWatermark(); setTimeout(showPop, 1200);
   }
   document.getElementById('discord-btn').addEventListener('click', function(){
     if (BACKEND && !SESSION){ window.location.href = '/api/login'; return; }   // real Discord sign-in

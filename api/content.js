@@ -21,7 +21,13 @@ module.exports = async (req, res) => {
   const toSign = [];
   const withSub = (key) => { const sb = subs[key] ? JSON.parse(JSON.stringify(subs[key])) : null; if (sb && sb.files) sb.files.forEach((f) => toSign.push(f)); return sb; };
 
-  const out = { homework: content.homework || [], announcements: [], breakdowns: [] };
+  const out = { announcements: [], breakdowns: [] };
+  // homework: only assignments whose lectures this member has reached, with their own hand-in
+  const lessonTitles = {};
+  (content.curriculum || []).forEach((ch) => (ch.lessons || []).forEach((l) => { lessonTitles[l.id] = l.title; (l.parts || []).forEach((p) => { lessonTitles[p.id] = l.title + ' · ' + p.title; }); }));
+  out.homework = (content.homework || []).filter((h) => access.homework['hw:' + h.id] && access.homework['hw:' + h.id].open).map((h) => Object.assign({}, h, {
+    lessonTitles: (h.lessons || []).filter((id) => A[id] && A[id].open).map((id) => lessonTitles[id]).filter(Boolean),
+    passed: access.homework['hw:' + h.id].passed, sub: withSub('hw:' + h.id) }));
   out.level = access.level;
   out.settings = { unlockMode: content.settings.unlockMode };
   out.promotion = { canRequest: access.canPromote, status: promo ? promo.status : null, note: promo ? promo.note || '' : '' };

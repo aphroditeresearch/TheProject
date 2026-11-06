@@ -180,10 +180,10 @@ Post them from **Admin → Breakdowns**, choosing the type, the week and (for da
 
 - **Daily breakdown**: Monday to Friday
 - **Weekly Breakdown**: the recap of the week
-- **Weekly Outlook**: the plan for next week
+- **Weekly Outlook**: the plan for the week, opens it before Monday (pick the week it plans)
 - **Advanced Breakdown**: a separate chain, only for the Enlightened role
 
-Members work through them in this order: Monday → Tuesday → … → Friday → Weekly Breakdown → Weekly Outlook → next week's Monday.
+Members work through each week in this order: Weekly Outlook (the plan for that week) → Monday → … → Friday → Weekly Breakdown (the recap) → next week's Outlook.
 Each one opens once the previous one's **notes and mark-ups** are handed in (or approved, if Hand-ins is set to "After I approve").
 Anyone who can sign in gets the main chain; Advanced needs the Enlightened level (role or promotion) and isn't shown before that. Locked breakdowns show only their day and are blurred:
 titles, videos and notes never leave the server.
@@ -214,3 +214,36 @@ A lesson, part or breakdown video can be an uploaded MP4 (Admin → Upload) or a
 YouTube videos follow the same rules: no skipping ahead on the first watch, and the lesson completes when it ends.
 Set YouTube videos to **Unlisted** with **Allow embedding** on. Note that anyone who gets an unlisted link can watch it on
 YouTube outside the site, so uploaded MP4s (signed links that expire) are the more locked-down option.
+
+## Journal and the psych leaderboard
+
+**Journal tab**: each member first creates their journal by writing their rules. The rules sit next to the entry form.
+Every trade entry needs: pair, account type, session, trade date & time, contracts, outcome (TP / SL / BE), trade P&L,
+trade overview, entry model, 1–4 screenshots, and "Did you follow your rules?". It won't post without all of them.
+A "No trades today" entry needs the date, session, a short overview and the rules answer (one per day).
+Members can delete their own entries for 7 days. Admins can **Void** an entry (0 points) in Members → Details.
+
+**Leaderboard tab (psych leaderboard)**, by this week / this month / all time:
+
+| Entry | Points |
+|---|---|
+| Rules followed + TP | 3 |
+| Rules followed + SL or BE | 1 |
+| Rules followed + no trades that day | 1 |
+| Rules not followed (or voided) | 0 |
+
+## Homework
+
+Assign it in Admin → Homework. Tick the lectures it goes with: members see it once one of those lectures is open for
+them (tick none to show everyone). Members open an assignment, hand in notes + files, and see your feedback. The Homework
+tab shows a count of open assignments, and a small reminder pops up in the corner once per visit.
+"Review hand-ins" on an assignment opens Admin → Hand-ins filtered to it.
+
+## Admin: hand-ins and bulk changes
+
+**Hand-ins**: members on the left (with how many are waiting), their hand-ins on the right. Filter by Waiting / Reviewed /
+All and by Lessons / Breakdowns / Homework, or search a member. **Clear all hand-ins** deletes every member hand-in
+(items you marked done are kept). All hand-ins were cleared once automatically after this update.
+
+**Members**: tick members (or the select-all box), pick items (each chapter, Breakdowns and Homework have "Select all"),
+then **Unlock + mark done**, Unlock, Mark done, Lock, Undo done or Reset, all at once.

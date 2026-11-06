@@ -10,7 +10,7 @@
 // part by part; each part, or each single lesson, needs its notes and homework handed in (or approved,
 // if the admin chose "After I approve") before the next one opens.
 //
-// BREAKDOWNS run every week, oldest first: Monday → … → Friday → Weekly Breakdown → Weekly Outlook → next
+// BREAKDOWNS run every week, oldest first: Weekly Outlook → Monday → … → Friday → Weekly Breakdown → next
 // week. Each needs notes and mark-ups handed in before the next opens. Any signed-in level gets them;
 // Advanced Breakdowns are their own chain for the top level (Enlightened).
 //
@@ -155,7 +155,7 @@ function accessFor({ curriculum, settings, roles, subs, overrides, promo, admin 
 
 /* ---------- breakdowns ---------- */
 const DAY_RANK = { mon: 1, tue: 2, wed: 3, thu: 4, fri: 5 };
-const KIND_RANK = { weekly: 6, outlook: 7 };
+const KIND_RANK = { outlook: 0, weekly: 6 };   // the Weekly Outlook opens the week, before Monday
 const BD_TASK = {
   daily: 'Mark up today\'s chart the way it was broken down: the range, the liquidity taken, your entry, stop and target. Upload a screenshot of your mark-up.',
   weekly: 'Mark up the week: the weekly range, the key highs and lows, and what each day did. Upload a screenshot of your mark-up.',
@@ -165,7 +165,7 @@ const BD_TASK = {
 function bdKind(b) { return ['daily', 'weekly', 'outlook', 'advanced'].includes(b && b.kind) ? b.kind : 'daily'; }
 function bdOrderKey(b) {
   const k = bdKind(b);
-  const rank = k === 'daily' ? (DAY_RANK[b.day] || 1) : (KIND_RANK[k] || 8);
+  const rank = k === 'daily' ? (DAY_RANK[b.day] || 1) : (k in KIND_RANK ? KIND_RANK[k] : 8);
   return String(b.week || (b.createdAt || '').slice(0, 10) || '0000-00-00') + '|' + rank + '|' + String(b.createdAt || '');
 }
 function bdChains(breakdowns) {
@@ -193,6 +193,44 @@ function accessForBreakdowns({ breakdowns, level, top, settings, subs, overrides
   return out;
 }
 
+/* ---------- homework assignments ----------
+   An assignment can be linked to lectures. Members only see it once one of those lectures is open for them
+   (no lectures linked = everyone sees it). Handing it in works like a lesson hand-in, under the key 'hw:<id>'. */
+function accessForHomework({ homework, lessons, settings, subs, admin }) {
+  const out = {};
+  (homework || []).forEach((h) => {
+    const links = Array.isArray(h.lessons) ? h.lessons : [];
+    const open = !!admin || !links.length || links.some((id) => lessons[id] && lessons[id].open);
+    const key = 'hw:' + h.id;
+    out[key] = { open, passed: open && passes(subs[key], settings), reason: open ? null : 'hidden' };
+  });
+  return out;
+}
+
+/* ---------- journal + psych leaderboard ----------
+   journal:<id>  → { rules:[{ id, text }], createdAt, updatedAt }
+   jentries:<id> → hash entryId → { id, kind:'trade'|'none', date, time, pair, account, session, contracts, outcome:'tp'|'sl'|'be',
+                                    pnl, overview, model, files:[…], followed, createdAt, void }
+   Points (the psych leaderboard):
+     rules followed + TP                 → 3
+     rules followed + SL or BE           → 1
+     rules followed + no trades that day → 1
+     rules not followed                  → 0   (voided by an admin → 0) */
+async function loadJournal(userId) {
+  if (!kvConfigured()) return null;
+  const raw = await kv(['GET', 'journal:' + userId]);
+  try { return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+}
+async function saveJournal(userId, j) { await kv(['SET', 'journal:' + userId, JSON.stringify(j)]); }
+async function loadEntries(userId) { return kvConfigured() ? hashToObj(await kv(['HGETALL', 'jentries:' + userId]), true) : {}; }
+async function saveEntry(userId, e) { await kv(['HSET', 'jentries:' + userId, e.id, JSON.stringify(e)]); }
+async function deleteEntry(userId, id) { await kv(['HDEL', 'jentries:' + userId, id]); }
+function entryPoints(e) {
+  if (!e || e.void || !e.followed) return 0;
+  if (e.kind === 'none') return 1;
+  return e.outcome === 'tp' ? 3 : 1;
+}
+
 /* ---------- everything for one member ---------- */
 async function memberState(userId, roles, admin, content) {
   content = content || await contentWithDefaults();
@@ -201,13 +239,18 @@ async function memberState(userId, roles, admin, content) {
   const access = accessFor(args);
   access.breakdowns = accessForBreakdowns({ breakdowns: content.breakdowns, level: access.level, top: content.curriculum.length,
     settings: content.settings, subs, overrides, admin });
-  access.all = Object.assign({}, access.lessons, access.breakdowns);
+  access.homework = accessForHomework({ homework: content.homework, lessons: access.lessons, settings: content.settings, subs, admin });
+  access.all = Object.assign({}, access.lessons, access.breakdowns, access.homework);
   return { content, subs, overrides, promo, access };
 }
 async function gateFor(session, admin) { return memberState(session.user.id, session.roles || [], admin); }
 
 // a lesson ('ch1-3'), a lesson part ('ch1-7p2') or a breakdown ('bd:abc'), by its key
 function findItem(content, key) {
+  if (/^hw:/.test(key)) {
+    const h = (content.homework || []).find((x) => 'hw:' + x.id === key);
+    return h ? { kind: 'homework', item: h, video: '' } : null;
+  }
   if (/^bd:/.test(key)) {
     const b = (content.breakdowns || []).find((x) => bdKey(x) === key);
     return b ? { kind: 'breakdown', item: b, video: b.video || '' } : null;
@@ -244,5 +287,6 @@ module.exports = {
   loadSubs, saveSub, deleteSub, loadOverrides, setOverride, loadPromo, savePromo, loadCerts, saveCert, deleteCert,
   unitsOf, passes, chapterRoles, roleLevel, promotionStep, levelFor, accessFor,
   bdKind, bdChains, bdKey, bdOrderKey, accessForBreakdowns, BD_TASK,
-  memberState, gateFor, findItem, allKeys, signInBlock,
+  memberState, gateFor, findItem, allKeys, signInBlock, accessForHomework,
+  loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints,
 };

@@ -34,6 +34,8 @@ function clean(c) {
     homework: arr(c.homework, 300).map((h) => ({
       id: id(h && h.id), title: str(h && h.title, 160), chapter: str(h && h.chapter, 80),
       due: str(h && h.due, 40), details: str(h && h.details, 4000), createdAt: date(h && h.createdAt),
+      // the lectures this assignment goes with: members see it once one of them is open for them
+      lessons: (Array.isArray(h && h.lessons) ? h.lessons : []).filter((x) => typeof x === 'string' && /^ch\w{0,24}-\w{1,40}$/.test(x)).slice(0, 80),
     })).filter((h) => h.id && h.title),
     breakdowns: arr(c.breakdowns, 500).map((b) => ({
       id: id(b && b.id), title: str(b && b.title, 160), date: str(b && b.date, 40), summary: str(b && b.summary, 4000),
