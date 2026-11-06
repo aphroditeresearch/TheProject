@@ -43,7 +43,7 @@ module.exports = async (req, res) => {
   if (member.status !== 200) return fail('discord');
 
   // 3. optional gate: require a base member role to get in at all
-  const required = process.env.MEMBER_ROLE_ID;
+  const required = env('MEMBER_ROLE_ID', true);
   if (required && !(member.data.roles || []).includes(required)) return fail('no_access');
 
   // 4. start the session (signed, HttpOnly cookie)

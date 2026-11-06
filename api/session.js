@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
       return json(res, 401, { error: 'not_member' }, [clearCookie(SESSION_COOKIE)]);
     }
     if (member.status === 200) {
-      const required = process.env.MEMBER_ROLE_ID;
+      const required = env('MEMBER_ROLE_ID', true);
       if (required && !(member.data.roles || []).includes(required)) {
         return json(res, 401, { error: 'no_access' }, [clearCookie(SESSION_COOKIE)]);
       }

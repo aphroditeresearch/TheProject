@@ -89,7 +89,7 @@ Sign-in runs on small Vercel functions in the `api` folder. No bot is needed.
 
 1. **Create the Discord app.** Go to https://discord.com/developers/applications → **New Application** → name it "The Project". Open **OAuth2**:
    - Copy the **Client ID**, then **Reset Secret** and copy the **Client Secret**.
-   - Under **Redirects**, add `https://YOUR-DOMAIN/api/callback` and save. (Add your `*.vercel.app` address too if you test there.)
+   - Under **Redirects**, add `https://05project.com/api/callback` and save. (Add your `*.vercel.app` address too if you test there.)
 2. **Copy IDs from Discord.** Turn on User Settings → Advanced → **Developer Mode**. Right-click your server icon → **Copy Server ID**. In Server Settings → Roles, right-click the Illuminated and Enlightened roles → **Copy Role ID**, and paste them into `ROLES` in `index.html`.
 3. **Add environment variables in Vercel** (Project → Settings → Environment Variables), then redeploy:
 

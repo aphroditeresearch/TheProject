@@ -9,8 +9,9 @@ const STATE_COOKIE = 'theproject_oauth_state';
 const SESSION_DAYS = 7;
 const ROLE_REFRESH_MS = 5 * 60 * 1000; // re-check Discord roles at most every 5 minutes
 
+// Values are trimmed: a tab or space pasted along with a value in Vercel would otherwise break sign-in.
 function env(name, optional) {
-  const v = process.env[name];
+  const v = (process.env[name] || '').trim();
   if (!v && !optional) throw new Error('Missing environment variable ' + name);
   return v || '';
 }
@@ -71,7 +72,8 @@ function writeSession(res, data) {
 
 /* ---------- Discord ---------- */
 function redirectUri(req) {
-  if (process.env.DISCORD_REDIRECT_URI) return process.env.DISCORD_REDIRECT_URI;
+  const fixed = env('DISCORD_REDIRECT_URI', true).replace(/\/+$/, '');
+  if (fixed) return /\/api\/callback$/.test(fixed) ? fixed : fixed + '/api/callback';   // "https://site.com" works too
   const proto = (req.headers['x-forwarded-proto'] || 'https').split(',')[0];
   return proto + '://' + req.headers.host + '/api/callback';
 }
@@ -154,7 +156,7 @@ function clientIp(req) {
 /* ---------- admins + members ---------- */
 // Discord user IDs allowed into the admin panel (comma-separated in ADMIN_DISCORD_IDS).
 function adminIds() {
-  return (process.env.ADMIN_DISCORD_IDS || '1313595031466021026').split(',').map((x) => x.trim()).filter(Boolean);
+  return (env('ADMIN_DISCORD_IDS', true) || '1313595031466021026').split(',').map((x) => x.trim()).filter(Boolean);
 }
 function isAdmin(session) { return !!(session && session.user && adminIds().includes(session.user.id)); }
 
