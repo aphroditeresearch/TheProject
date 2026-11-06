@@ -58,3 +58,5 @@ module.exports = async (req, res) => {
 };
 
 module.exports.clean = clean;
+
+module.exports = require('../_lib').guard(module.exports, 'json');

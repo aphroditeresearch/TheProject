@@ -571,6 +571,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
           <h3 id="access-title">Access</h3>
           <span>Demo · stands in for Discord roles</span>
         </div>
+        <label class="tg" for="tg-ch1"><input type="checkbox" id="tg-ch1"><span class="track" aria-hidden="true"><span class="knob"></span></span><span>Awakened role</span></label>
         <label class="tg" for="tg-ch2"><input type="checkbox" id="tg-ch2"><span class="track" aria-hidden="true"><span class="knob"></span></span><span>Illuminated role</span></label>
         <label class="tg" for="tg-ch3"><input type="checkbox" id="tg-ch3"><span class="track" aria-hidden="true"><span class="knob"></span></span><span>Enlightened role</span></label>
       </section>
@@ -895,11 +896,12 @@ img,video{-webkit-user-drag:none;user-drag:none}
      ===================================================================== */
   // Discord role IDs that unlock each chapter (Server Settings > Roles > right-click > Copy Role ID)
   var ROLES = {
-    chapter2: 'DISCORD_ROLE_ID_CHAPTER_2',   // Illuminated
-    chapter3: 'DISCORD_ROLE_ID_CHAPTER_3'    // Enlightened
+    chapter1: '1546326866875646084',   // Awakened
+    chapter2: '1554996401979654165',   // Illuminated
+    chapter3: '1546326926099222538'    // Enlightened
   };
   var CURRICULUM = [
-    { id:'ch1', name:'Awakened', role:null, lessons:[
+    { id:'ch1', name:'Awakened', role:ROLES.chapter1, lessons:[
       'Before You Begin','The Beginning','Candles & Timeframes','Trends','Displacement','Accumulation',
       'Liquidity','Manipulation','Ranges','Internal Manipulation','Confirmation','Continuations',
       'Entries, SL & TP','Sessions','Checklist','Order Blocks','AMD','News','Structure','Entry Triggers',
@@ -921,7 +923,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   // Once you post from the Admin tab, what's saved there replaces the lists above.
 
   /* ---------- content model ---------- */
-  var ROLE_BY_ID = { ch2: ROLES.chapter2, ch3: ROLES.chapter3 };
+  var ROLE_BY_ID = { ch1: ROLES.chapter1, ch2: ROLES.chapter2, ch3: ROLES.chapter3 };
   function normalizeCurriculum(list){
     return (list || []).map(function(ch){
       return { id: ch.id, name: ch.name, role: ch.role || ROLE_BY_ID[ch.id] || null,
@@ -952,7 +954,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   var SESSION = null, BACKEND = false, DEMO_MODE = true;
   var DEMO_USER = { id:'—', username:'member', displayName:'Member', avatar:null, banner:null, joinedAt:null };
   var demoRoles = [];
-  try { demoRoles = JSON.parse(localStorage.getItem('theproject.demoRoles') || '[]'); } catch(e) { demoRoles = []; }
+  try { demoRoles = JSON.parse(localStorage.getItem('theproject.demoRoles') || JSON.stringify([ROLES.chapter1])); } catch(e) { demoRoles = []; }
   /* progress: doneSet maps an item key to the ISO date it was completed; watch keeps how far each video has been watched.
      Stored per user in the browser, and sent to the backend (POST /api/progress) when one is connected. */
   var doneSet = {}, watch = {};
@@ -1538,7 +1540,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     var accessBox = document.getElementById('access');
     document.querySelectorAll('.demo-only').forEach(function(n){ n.hidden = !DEMO_MODE; });
     if (!DEMO_MODE){ accessBox.hidden = true; return; }
-    [['tg-ch2', ROLES.chapter2, 'Illuminated'], ['tg-ch3', ROLES.chapter3, 'Enlightened']].forEach(function(cfg){
+    [['tg-ch1', ROLES.chapter1, 'Awakened'], ['tg-ch2', ROLES.chapter2, 'Illuminated'], ['tg-ch3', ROLES.chapter3, 'Enlightened']].forEach(function(cfg){
       var box = document.getElementById(cfg[0]);
       box.checked = demoRoles.indexOf(cfg[1]) !== -1;
       box.addEventListener('change', function(){
@@ -1611,8 +1613,12 @@ img,video{-webkit-user-drag:none;user-drag:none}
         not_member:'That Discord account isn\'t in The Project server.',
         no_access:'Your Discord account doesn\'t have member access yet.',
         discord:'Discord didn\'t respond. Try again in a moment.',
-        browser:'Sign in from Google Chrome.'
+        browser:'Sign in from Google Chrome.',
+        server:'Something went wrong on our side. Try again in a moment.',
+        setup:'Sign-in isn\'t set up yet. Add the missing setting in Vercel, then redeploy.'
       };
+      var missing = (location.search.match(/[?&]missing=([A-Z_]+)/) || [])[1];
+      if (errMatch[1] === 'setup' && missing) ERRORS.setup = 'Sign-in isn\'t set up yet: add ' + missing + ' in Vercel (Settings → Environment Variables), then redeploy.';
       try { history.replaceState(null,'',location.pathname); } catch(e) {}
       setTimeout(function(){ toast(ERRORS[errMatch[1]] || 'Sign-in didn\'t work. Try again.'); }, reduce ? 0 : 2200);
     }

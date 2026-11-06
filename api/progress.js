@@ -30,3 +30,5 @@ module.exports = async (req, res) => {
     return json(res, 200, { saved: true });
   } catch (e) { return json(res, 502, { error: 'storage' }); }
 };
+
+module.exports = require('./_lib').guard(module.exports, 'json');

@@ -182,7 +182,7 @@ async function loadFlags(userId) {
 
 /* ---------- site content (announcements, homework, breakdowns, lessons) ---------- */
 // Which Discord role unlocks each chapter. Chapters added in the admin panel carry their own role.
-const CHAPTER_ROLES = { ch2: 'DISCORD_ROLE_ID_CHAPTER_2', ch3: 'DISCORD_ROLE_ID_CHAPTER_3' };
+const CHAPTER_ROLES = { ch1: '1546326866875646084' /* Awakened */, ch2: '1554996401979654165' /* Illuminated */, ch3: '1546326926099222538' /* Enlightened */ };
 
 async function loadContent() {
   if (!kvConfigured()) return null;
@@ -211,7 +211,25 @@ function json(res, status, body, cookies) {
   res.end(JSON.stringify(body));
 }
 
+// Wraps a route so a missing Vercel setting or an unexpected error never shows Vercel's
+// "500 FUNCTION_INVOCATION_FAILED" page. Page routes send the member back to the site with a
+// message; data routes answer with JSON. The full error goes to Vercel → Logs.
+function guard(handler, kind) {
+  return async (req, res) => {
+    try {
+      return await handler(req, res);
+    } catch (e) {
+      console.error('[the-project]', req.url, (e && e.stack) || e);
+      const m = /Missing environment variable (\w+)/.exec((e && e.message) || '');
+      if (res.headersSent) { try { res.end(); } catch (_) {} return; }
+      if (kind === 'page') return redirect(res, m ? '/?error=setup&missing=' + m[1] : '/?error=server');
+      return json(res, 500, m ? { error: 'setup', missing: m[1] } : { error: 'server' });
+    }
+  };
+}
+
 module.exports = {
+  guard,
   DISCORD_API, SESSION_COOKIE, STATE_COOKIE, ROLE_REFRESH_MS, SESSION_DAYS,
   env, parseCookies, cookie, clearCookie, sign, verify, readSession, writeSession,
   redirectUri, discord, profileFrom, kvConfigured, kv, loadProgress, saveProgress, redirect, json,

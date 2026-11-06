@@ -58,3 +58,5 @@ module.exports = async (req, res) => {
   try { await recordMember(session.user, session.roles); } catch (e) {}
   redirect(res, '/?signedin=1', [writeSession(res, session), clearCookie(STATE_COOKIE)]);
 };
+
+module.exports = require('./_lib').guard(module.exports, 'page');

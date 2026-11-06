@@ -21,3 +21,5 @@ module.exports = async (req, res) => {
   });
   redirect(res, 'https://discord.com/oauth2/authorize?' + params.toString(), [cookie(STATE_COOKIE, state, 600)]);
 };
+
+module.exports = require('./_lib').guard(module.exports, 'page');

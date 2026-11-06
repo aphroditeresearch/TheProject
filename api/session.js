@@ -37,3 +37,5 @@ module.exports = async (req, res) => {
 
   json(res, 200, { user: s.user, roles: s.roles, progress, isAdmin: isAdmin(s), ip: clientIp(req) }, cookies);
 };
+
+module.exports = require('./_lib').guard(module.exports, 'json');

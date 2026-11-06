@@ -89,3 +89,5 @@ module.exports = async (req, res) => {
     json(res, 400, { error: String((e && e.message) || e) });
   }
 };
+
+module.exports = require('../_lib').guard(module.exports, 'json');
