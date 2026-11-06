@@ -171,7 +171,8 @@ a{color:var(--blue);text-underline-offset:3px}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring .track{stroke:var(--line)}
 .ring .arc{stroke:var(--blue)}
-.ring .count{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--mono);font-size:26px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.ring .count{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--mono);font-size:26px;font-variant-numeric:tabular-nums;color:var(--ink);transition:opacity .18s ease}
+.ring .count.gone{opacity:0}   /* the number clears as the VERIFIED stamp lands */
 /* bank-check rubber stamp: double ink border, blue ink, worn texture */
 .stamp{position:absolute;top:calc(44px + 108px);left:50%;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 22px 9px;color:#19ADA5;
   border:4px solid currentColor;border-radius:10px;box-shadow:inset 0 0 0 3px var(--panel),inset 0 0 0 5px currentColor;
@@ -1575,11 +1576,11 @@ img,video{-webkit-user-drag:none;user-drag:none}
       stamp=document.getElementById('stamp'), enter=document.getElementById('enter'),
       gateV=document.getElementById('gate-view'), portV=document.getElementById('portal-view'), raf, START=1240, C=326.7;
   function fmt(v){ return v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-  function reset(){ cancelAnimationFrame(raf); arc.style.strokeDashoffset=C; bal.textContent='0%'; stamp.classList.remove('on'); stamp.parentNode.classList.remove('thud'); enter.hidden=true; }
+  function reset(){ cancelAnimationFrame(raf); arc.style.strokeDashoffset=C; bal.textContent='0%'; bal.classList.remove('gone'); bal.removeAttribute('aria-hidden'); stamp.classList.remove('on'); stamp.parentNode.classList.remove('thud'); enter.hidden=true; }
   function finish(){
     arc.style.strokeDashoffset=0; bal.textContent='100%';
     var sd=document.getElementById('stamp-date'); if(sd) sd.textContent=new Date().toLocaleDateString('en-US',{month:'short',day:'2-digit',year:'numeric'}).replace(',','').toUpperCase();
-    stamp.classList.add('on'); var md=stamp.parentNode; md.classList.remove('thud'); setTimeout(function(){ md.classList.add('thud'); },300);
+    stamp.classList.add('on'); bal.classList.add('gone'); bal.setAttribute('aria-hidden','true'); var md=stamp.parentNode; md.classList.remove('thud'); setTimeout(function(){ md.classList.add('thud'); },300);
     enter.hidden=false; enter.focus();
   }
   function openPopup(){

@@ -122,7 +122,11 @@ function kvConfigured() {
             (process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN));
 }
 
+// Every key this site writes starts with "theproject:", so it never reads or overwrites 00 Cleared's
+// data (lessons, members, progress), even if both sites end up on the same Upstash database.
+const KEY_PREFIX = 'theproject:';
 async function kv(command) {
+  command = [command[0], KEY_PREFIX + command[1]].concat(command.slice(2));
   const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
   const r = await fetch(url, { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify(command) });
