@@ -145,30 +145,33 @@ These stop casual copying, but nothing running in a browser can stop someone det
 
 The diamond video comes from a third-party wallpaper site. Confirm you have the right to use them commercially, or swap in your own, before the site goes public.
 
-## Who sees what: the ladder
+## Who can sign in, and what they see
 
-Members hold **one** Discord role. That role sets their step, and everything is enforced on the server:
+| Discord role | Sign in? | What they see |
+|---|---|---|
+| Grounded `1546326599119671407` (free) | no: "Grounded is free Discord access" | — |
+| Awakened `1546326866875646084` | yes | Awakened only, one lesson (or lesson part) at a time |
+| Illuminated `1554996401979654165` | yes | Awakened (all open) + Illuminated one at a time |
+| Enlightened `1546326926099222538` | yes | everything below open + Enlightened one at a time |
 
-| Discord role | Awakened | Illuminated | Enlightened |
-|---|---|---|---|
-| none | locked | locked | locked |
-| Awakened `1546326866875646084` | one lesson at a time | locked | locked |
-| Illuminated `1554996401979654165` | all open | one lesson at a time | locked |
-| Enlightened `1546326926099222538` | all open | all open | one lesson at a time |
+Chapters a member hasn't reached aren't sent to their browser at all. In the chapter they're on, the next item
+opens once the current one's **notes and homework** are handed in (homework is uploaded as images or PDFs from their
+computer). If a lesson has a video, it has to be watched to the end first. Locked items are blurred and their titles,
+videos and homework never leave the server.
 
-"One lesson at a time" means each lesson opens once the previous one's **notes and homework** are handed in
-(the form under each video). If a lesson has a video, it has to be watched to the end before handing in.
-Locked lessons are blurred, and their titles, videos and homework never leave the server.
+**Moving up on the site**
+- Finishing the last Awakened lesson opens Illuminated automatically.
+- Finishing the last Illuminated lesson shows a **Promotion** card on the member's Profile. They pick a payout
+  certificate they uploaded and request promotion. It shows at the top of **Admin → Hand-ins**; Promote opens Enlightened.
+  (Chapters marked "Opens only by promotion" in Admin → Lectures work this way.)
+- The site doesn't change Discord roles. After promoting someone, give them the role in Discord too if you want it there.
 
-**Admin → Hand-ins** lists everything waiting for review. Approve it, or send it back with feedback (sent-back
-work doesn't unlock the next lesson until it's handed in again). At the top you choose when the next lesson
-unlocks: **On hand-in** (default) or **After I approve**.
+**Lessons with parts**: Liquidity (2), Manipulation (3), Ranges (2), Sessions (Sessions + Indicator Announcement),
+Order Blocks (4), Start of Many (Start of Many + Breakeven Protocol), Conclusion (Mark Ups + Conclusion). Each part has
+its own video and homework and unlocks on its own. Edit parts in Admin → Lectures ("Split into parts", "+ Add part").
 
-**Admin → Members → Details** shows every lesson for that member with Unlock / Lock / Reset, to open or close
-any single lesson on their behalf.
-
-**Admin → Lectures** edits lesson titles, videos, notes and the homework shown under each video.
-The built-in lessons live in `api/_curriculum.js` (server only); once you save from Lectures, the saved copy is used.
+**Certificates**: every member can upload payout and funded certificates on their Profile (only they and admins see them).
+Uploads go to the Vercel Blob store, so it must be connected to the project (Storage → Blob → connect).
 
 ## Breakdowns: one at a time, every week
 
@@ -181,7 +184,7 @@ Post them from **Admin → Breakdowns**, choosing the type, the week and (for da
 
 Members work through them in this order: Monday → Tuesday → … → Friday → Weekly Breakdown → Weekly Outlook → next week's Monday.
 Each one opens once the previous one's **notes and mark-ups** are handed in (or approved, if Hand-ins is set to "After I approve").
-Anyone with a chapter role gets the main chain; Advanced needs Enlightened. Locked breakdowns show only their day and are blurred:
+Anyone who can sign in gets the main chain; Advanced needs the Enlightened level (role or promotion) and isn't shown before that. Locked breakdowns show only their day and are blurred:
 titles, videos and notes never leave the server.
 
 ## For admins: catching members up

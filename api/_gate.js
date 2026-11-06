@@ -1,32 +1,44 @@
-// Who can open which lesson. Every route that hands out lessons, saves progress or takes a
-// submission asks this file, so the rules live in one place and are enforced on the server.
+// Who can open what. Every route that hands out lessons or breakdowns, saves progress or takes a
+// hand-in asks this file, so the rules live in one place and are enforced on the server.
 //
-// The ladder: chapters run in order (Awakened, Illuminated, Enlightened). A member's level is the
-// highest chapter whose Discord role they hold. Members hold one role, so:
-//   - chapters below their level are fully open (they've already been through them)
-//   - chapters above their level are locked, titles and all
-//   - in their own chapter, lessons open one at a time: the next one opens once this one's notes
-//     and homework are handed in (or approved, if the admin chose "after I approve")
-// Admins can unlock or lock any single lesson for any member, and that beats the rules above.
+// LESSONS. Chapters run in order (Awakened, Illuminated, Enlightened). A member's level is:
+//   - the highest chapter whose Discord role they hold, or the promotion chapter if an admin promoted them
+//   - then, on the site: finishing every lesson in their chapter opens the next chapter, unless the next
+//     chapter needs a promotion (Enlightened). That one opens when an admin approves a payout certificate.
+// Chapters below their level are fully open. Chapters above it aren't sent at all.
+// In their own chapter, lessons open one at a time. A lesson with parts (Liquidity part 1, part 2…) opens
+// part by part; each part, or each single lesson, needs its notes and homework handed in (or approved,
+// if the admin chose "After I approve") before the next one opens.
 //
-// Breakdowns are a second chain that runs every week, oldest first:
-//   Monday → Tuesday → … → Friday (daily breakdowns) → Weekly Breakdown (recap) → Weekly Outlook → next week's Monday
-// Each one opens once the previous one's notes and mark-ups are handed in. Any chapter role gets the chain.
-// Advanced Breakdowns are their own chain, only for the top role (Enlightened), and work the same way.
+// BREAKDOWNS run every week, oldest first: Monday → … → Friday → Weekly Breakdown → Weekly Outlook → next
+// week. Each needs notes and mark-ups handed in before the next opens. Any signed-in level gets them;
+// Advanced Breakdowns are their own chain for the top level (Enlightened).
+//
+// Admins can unlock, lock, or mark done any single item for any member, and that beats the rules above.
 const { kv, kvConfigured, loadContent } = require('./_lib');
-const { CURRICULUM, DEFAULT_SETTINGS } = require('./_curriculum');
+const { CURRICULUM, DEFAULT_SETTINGS, ROLES } = require('./_curriculum');
 
 /* ---------- content with built-in defaults ---------- */
 async function contentWithDefaults() {
-  let c = null;
-  try { c = await loadContent(); } catch (e) { throw e; }
+  let c = await loadContent();
   c = c ? Object.assign({}, c) : { homework: [], breakdowns: [], announcements: [] };
   if (!Array.isArray(c.curriculum) || !c.curriculum.length) c.curriculum = JSON.parse(JSON.stringify(CURRICULUM));
+  else {
+    // lessons saved before parts existed pick up the built-in parts (and the promotion flag)
+    const byId = {};
+    CURRICULUM.forEach((ch) => { byId[ch.id] = ch; ch.lessons.forEach((l) => { byId[l.id] = l; }); });
+    c.curriculum = c.curriculum.map((ch) => Object.assign({}, ch, {
+      promotion: ch.promotion !== undefined ? ch.promotion : !!(byId[ch.id] && byId[ch.id].promotion),
+      lessons: (ch.lessons || []).map((l) => (l.parts === undefined && byId[l.id] && byId[l.id].parts && byId[l.id].title === l.title
+        ? Object.assign({}, l, { parts: JSON.parse(JSON.stringify(byId[l.id].parts)) }) : l)),
+    }));
+  }
   c.settings = Object.assign({}, DEFAULT_SETTINGS, c.settings || {});
+  if (!Array.isArray(c.breakdowns)) c.breakdowns = [];
   return c;
 }
 
-/* ---------- storage: submissions and admin overrides ---------- */
+/* ---------- storage ---------- */
 function hashToObj(flat, parse) {
   const out = {};
   if (Array.isArray(flat)) for (let i = 0; i < flat.length; i += 2) {
@@ -35,93 +47,109 @@ function hashToObj(flat, parse) {
   }
   return out;
 }
-async function loadSubs(userId) {
-  if (!kvConfigured()) return {};
-  return hashToObj(await kv(['HGETALL', 'subs:' + userId]), true);
+async function loadSubs(userId) { return kvConfigured() ? hashToObj(await kv(['HGETALL', 'subs:' + userId]), true) : {}; }
+async function saveSub(userId, key, sub) { await kv(['HSET', 'subs:' + userId, key, JSON.stringify(sub)]); }
+async function deleteSub(userId, key) { await kv(['HDEL', 'subs:' + userId, key]); }
+async function loadOverrides(userId) { return kvConfigured() ? hashToObj(await kv(['HGETALL', 'unlocks:' + userId]), false) : {}; }
+async function setOverride(userId, key, mode) {
+  if (mode === 'unlock' || mode === 'lock') await kv(['HSET', 'unlocks:' + userId, key, mode]);
+  else await kv(['HDEL', 'unlocks:' + userId, key]);
 }
-async function saveSub(userId, lessonId, sub) {
-  await kv(['HSET', 'subs:' + userId, lessonId, JSON.stringify(sub)]);
+// promotion: { status:'requested'|'approved'|'declined', certId, requestedAt, decidedAt, decidedBy, note }
+async function loadPromo(userId) {
+  if (!kvConfigured()) return null;
+  const raw = await kv(['GET', 'promo:' + userId]);
+  try { return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
 }
-async function loadOverrides(userId) {
-  if (!kvConfigured()) return {};
-  return hashToObj(await kv(['HGETALL', 'unlocks:' + userId]), false);
+async function savePromo(userId, promo) {
+  if (promo) await kv(['SET', 'promo:' + userId, JSON.stringify(promo)]);
+  else await kv(['DEL', 'promo:' + userId]);
 }
-async function deleteSub(userId, key) {
-  await kv(['HDEL', 'subs:' + userId, key]);
-}
-async function setOverride(userId, lessonId, mode) {
-  if (mode === 'unlock' || mode === 'lock') await kv(['HSET', 'unlocks:' + userId, lessonId, mode]);
-  else await kv(['HDEL', 'unlocks:' + userId, lessonId]);
-}
+// certificates on a member's profile: { id, kind:'payout'|'funded', file:{url,name,type,size}, note, uploadedAt }
+async function loadCerts(userId) { return kvConfigured() ? hashToObj(await kv(['HGETALL', 'certs:' + userId]), true) : {}; }
+async function saveCert(userId, cert) { await kv(['HSET', 'certs:' + userId, cert.id, JSON.stringify(cert)]); }
+async function deleteCert(userId, id) { await kv(['HDEL', 'certs:' + userId, id]); }
 
-/* ---------- the rules ---------- */
-// 0 = no chapter role, 1 = first chapter's role, ... (the highest role held wins)
-function levelOf(curriculum, roles) {
-  let lvl = 0;
-  (curriculum || []).forEach((ch, i) => { if (ch.role && (roles || []).includes(ch.role)) lvl = i + 1; });
-  return lvl;
+/* ---------- lessons: units are what unlock one at a time (a lesson, or each part of a lesson) ---------- */
+function unitsOf(lesson) {
+  return Array.isArray(lesson.parts) && lesson.parts.length ? lesson.parts : [lesson];
 }
-
 function passes(sub, settings) {
   if (!sub) return false;
   if (sub.status === 'approved') return true;
   return sub.status === 'submitted' && (settings.unlockMode || 'submit') === 'submit';
 }
+function chapterRoles(curriculum) { return (curriculum || []).map((ch) => ch.role).filter(Boolean); }
+// the level the member's Discord role alone gives (0 = none of the chapter roles)
+function roleLevel(curriculum, roles) {
+  let lvl = 0;
+  (curriculum || []).forEach((ch, i) => { if (ch.role && (roles || []).includes(ch.role)) lvl = i + 1; });
+  return lvl;
+}
+function promotionStep(curriculum) {
+  const i = (curriculum || []).findIndex((ch) => ch.promotion);
+  return i === -1 ? 0 : i + 1;
+}
+function chapterDone(ch, subs, overrides, settings) {
+  return (ch.lessons || []).every((l) => unitsOf(l).every((u) => overrides[u.id] !== 'lock' && passes(subs[u.id], settings)));
+}
+// level = role (or promotion), then any chapters finished on the site, stopping before a promotion chapter
+function levelFor({ curriculum, roles, promo, subs, overrides, settings }) {
+  let lvl = roleLevel(curriculum, roles);
+  const pStep = promotionStep(curriculum);
+  if (promo && promo.status === 'approved' && pStep) lvl = Math.max(lvl, pStep);
+  if (lvl < 1) return 0;                                   // no chapter role: nothing (Grounded can't sign in anyway)
+  while (lvl < curriculum.length) {
+    const next = curriculum[lvl];
+    if (next.promotion && !(promo && promo.status === 'approved')) break;
+    if (!chapterDone(curriculum[lvl - 1], subs, overrides, settings)) break;
+    lvl += 1;
+  }
+  return lvl;
+}
 
-// Returns { level, lessons: { [lessonId]: { open, passed, reason } } }
-// reason (when locked): 'level' (chapter above their role), 'order' (finish the previous lesson), 'admin' (locked by an admin)
-function accessFor({ curriculum, settings, roles, subs, overrides, admin }) {
-  const level = levelOf(curriculum, roles);
+// { level, canPromote, lessons: { [unitId or lessonId]: { open, passed, reason } } }
+// reason: 'hidden' (chapter above their level, not sent), 'order' (finish the previous one first), 'admin' (locked by an admin)
+function accessFor({ curriculum, settings, roles, subs, overrides, promo, admin }) {
+  const level = admin ? curriculum.length : levelFor({ curriculum, roles, promo, subs, overrides, settings });
   const out = {};
   (curriculum || []).forEach((ch, ci) => {
-    const chLevel = ci + 1;
+    const step = ci + 1;
     let prevPassed = true;
-    (ch.lessons || []).forEach((l, li) => {
-      const sub = subs[l.id];
-      const ov = overrides[l.id];
-      let open, reason = null, passed;
-      if (admin) { open = true; passed = true; }
-      else if (chLevel < level) { open = true; passed = true; }                       // already through this chapter
-      else if (chLevel > level) { open = false; reason = 'level'; passed = false; }
-      else {                                                                           // their current chapter
-        open = li === 0 || prevPassed;
-        if (!open) reason = 'order';
-        passed = passes(sub, settings);
+    (ch.lessons || []).forEach((l) => {
+      const us = unitsOf(l);
+      us.forEach((u) => {
+        const ov = overrides[u.id];
+        let open, passed, reason = null;
+        if (admin || step < level) { open = true; passed = true; }
+        else if (step > level) { open = false; passed = false; reason = 'hidden'; }
+        else { open = prevPassed; if (!open) reason = 'order'; passed = passes(subs[u.id], settings); }
+        if (!admin && ov === 'unlock' && !open) { open = true; reason = null; }
+        if (!admin && ov === 'lock') { open = false; reason = 'admin'; }
+        out[u.id] = { open, passed: open && passed, reason, override: ov || null };
+        prevPassed = open && passed;
+      });
+      if (us[0] !== l) {   // the parent row of a lesson with parts
+        const ps = us.map((u) => out[u.id]);
+        out[l.id] = { open: ps.some((p) => p.open), passed: ps.every((p) => p.passed), reason: ps.some((p) => p.open) ? null : ps[0].reason, parent: true };
       }
-      if (!admin && ov === 'unlock' && !open) { open = true; reason = null; }
-      if (!admin && ov === 'lock') { open = false; reason = 'admin'; }
-      out[l.id] = { open, passed: open && passed, reason, override: ov || null };
-      prevPassed = open && passed;
     });
   });
-  return { level, lessons: out };
-}
-
-// Everything the gate needs for one member, in one go.
-async function gateFor(session, admin) {
-  const content = await contentWithDefaults();
-  const [subs, overrides] = await Promise.all([loadSubs(session.user.id), loadOverrides(session.user.id)]);
-  const args = { curriculum: content.curriculum, settings: content.settings, roles: session.roles || [], subs, overrides, admin };
-  const access = accessFor(args);
-  access.breakdowns = accessForBreakdowns(Object.assign({ breakdowns: content.breakdowns }, args));
-  // one lookup for anything with a key: lessons and breakdowns
-  access.all = Object.assign({}, access.lessons, access.breakdowns);
-  return { content, subs, overrides, access };
-}
-
-function findLesson(curriculum, lessonId) {
-  for (const ch of curriculum || []) for (const l of ch.lessons || []) if (l.id === lessonId) return { ch, l };
-  return null;
+  const pStep = promotionStep(curriculum);
+  const promoted = !!(promo && promo.status === 'approved');
+  const canPromote = !admin && pStep > 1 && !promoted && level === pStep - 1
+    && chapterDone(curriculum[pStep - 2], subs, overrides, settings);
+  return { level, canPromote, promotionStep: pStep, lessons: out };
 }
 
 /* ---------- breakdowns ---------- */
 const DAY_RANK = { mon: 1, tue: 2, wed: 3, thu: 4, fri: 5 };
 const KIND_RANK = { weekly: 6, outlook: 7 };
 const BD_TASK = {
-  daily: 'Mark up today\'s chart the way it was broken down: the range, the liquidity taken, your entry, stop and target. Add a screenshot or chart link.',
-  weekly: 'Mark up the week: the weekly range, the key highs and lows, and what each day did. Add a screenshot or chart link.',
-  outlook: 'Mark up your plan for next week: key levels, your bias, and what you need to see before you take a trade. Add a screenshot or chart link.',
-  advanced: 'Mark up the chart from this breakdown and explain each step in your own words. Add a screenshot or chart link.',
+  daily: 'Mark up today\'s chart the way it was broken down: the range, the liquidity taken, your entry, stop and target. Upload a screenshot of your mark-up.',
+  weekly: 'Mark up the week: the weekly range, the key highs and lows, and what each day did. Upload a screenshot of your mark-up.',
+  outlook: 'Mark up your plan for next week: key levels, your bias, and what you need to see before you take a trade. Upload a screenshot of your mark-up.',
+  advanced: 'Mark up the chart from this breakdown and explain each step in your own words. Upload a screenshot of your mark-up.',
 };
 function bdKind(b) { return ['daily', 'weekly', 'outlook', 'advanced'].includes(b && b.kind) ? b.kind : 'daily'; }
 function bdOrderKey(b) {
@@ -129,27 +157,22 @@ function bdOrderKey(b) {
   const rank = k === 'daily' ? (DAY_RANK[b.day] || 1) : (KIND_RANK[k] || 8);
   return String(b.week || (b.createdAt || '').slice(0, 10) || '0000-00-00') + '|' + rank + '|' + String(b.createdAt || '');
 }
-// the two chains, each in the order members work through them
 function bdChains(breakdowns) {
   const list = (breakdowns || []).slice().sort((a, b) => bdOrderKey(a).localeCompare(bdOrderKey(b)));
   return { main: list.filter((b) => bdKind(b) !== 'advanced'), advanced: list.filter((b) => bdKind(b) === 'advanced') };
 }
 function bdKey(b) { return 'bd:' + b.id; }
-
-// { [ 'bd:'+id ]: { open, passed, reason } } for both chains
-function accessForBreakdowns({ breakdowns, curriculum, settings, roles, subs, overrides, admin }) {
-  const level = levelOf(curriculum, roles);
-  const top = (curriculum || []).length || 3;
+function accessForBreakdowns({ breakdowns, level, top, settings, subs, overrides, admin }) {
   const out = {};
   const chains = bdChains(breakdowns);
   [['main', level >= 1], ['advanced', level >= top]].forEach(([name, allowed]) => {
     let prevPassed = true;
     chains[name].forEach((b, i) => {
-      const key = bdKey(b), sub = subs[key], ov = overrides[key];
+      const key = bdKey(b), ov = overrides[key];
       let open, passed, reason = null;
       if (admin) { open = true; passed = true; }
-      else if (!allowed) { open = false; passed = false; reason = 'level'; }
-      else { open = i === 0 || prevPassed; if (!open) reason = 'order'; passed = passes(sub, settings); }
+      else if (!allowed) { open = false; passed = false; reason = name === 'advanced' ? 'hidden' : 'level'; }
+      else { open = i === 0 || prevPassed; if (!open) reason = 'order'; passed = passes(subs[key], settings); }
       if (!admin && ov === 'unlock' && !open) { open = true; reason = null; }
       if (!admin && ov === 'lock') { open = false; reason = 'admin'; }
       out[key] = { open, passed: open && passed, reason, override: ov || null };
@@ -159,18 +182,56 @@ function accessForBreakdowns({ breakdowns, curriculum, settings, roles, subs, ov
   return out;
 }
 
-// a lesson ('ch1-3') or a breakdown ('bd:abc') by its key
+/* ---------- everything for one member ---------- */
+async function memberState(userId, roles, admin, content) {
+  content = content || await contentWithDefaults();
+  const [subs, overrides, promo] = await Promise.all([loadSubs(userId), loadOverrides(userId), loadPromo(userId)]);
+  const args = { curriculum: content.curriculum, settings: content.settings, roles: roles || [], subs, overrides, promo, admin };
+  const access = accessFor(args);
+  access.breakdowns = accessForBreakdowns({ breakdowns: content.breakdowns, level: access.level, top: content.curriculum.length,
+    settings: content.settings, subs, overrides, admin });
+  access.all = Object.assign({}, access.lessons, access.breakdowns);
+  return { content, subs, overrides, promo, access };
+}
+async function gateFor(session, admin) { return memberState(session.user.id, session.roles || [], admin); }
+
+// a lesson ('ch1-3'), a lesson part ('ch1-7p2') or a breakdown ('bd:abc'), by its key
 function findItem(content, key) {
   if (/^bd:/.test(key)) {
     const b = (content.breakdowns || []).find((x) => bdKey(x) === key);
     return b ? { kind: 'breakdown', item: b, video: b.video || '' } : null;
   }
-  const f = findLesson(content.curriculum, key);
-  return f ? { kind: 'lesson', item: f.l, video: f.l.video || '' } : null;
+  for (const ch of content.curriculum || []) for (const l of ch.lessons || []) {
+    if (l.id === key && !(l.parts && l.parts.length)) return { kind: 'lesson', item: l, video: l.video || '' };
+    for (const p of l.parts || []) if (p.id === key) return { kind: 'part', item: p, lesson: l, video: p.video || '' };
+  }
+  return null;
+}
+// Can this Discord account use the site? Admins always; members need a chapter role
+// (Awakened, Illuminated or Enlightened). Grounded is free Discord access only.
+// Returns null when they're allowed, or the reason they're not: 'grounded' or 'no_access'.
+async function signInBlock(userId, roles, admin) {
+  if (admin) return null;
+  let curriculum = CURRICULUM;
+  try { curriculum = (await contentWithDefaults()).curriculum; } catch (e) {}
+  const allowed = chapterRoles(curriculum).concat([ROLES.awakened, ROLES.illuminated, ROLES.enlightened]);
+  if ((roles || []).some((r) => allowed.includes(r))) return null;
+  return (roles || []).includes(ROLES.grounded) ? 'grounded' : 'no_access';
+}
+
+// every unit and breakdown key in order (for admin panels)
+function allKeys(content) {
+  const keys = [];
+  (content.curriculum || []).forEach((ch) => ch.lessons.forEach((l) => unitsOf(l).forEach((u) => keys.push(u.id))));
+  const c = bdChains(content.breakdowns);
+  c.main.concat(c.advanced).forEach((b) => keys.push(bdKey(b)));
+  return keys;
 }
 
 module.exports = {
-  contentWithDefaults, loadSubs, saveSub, deleteSub, loadOverrides, setOverride,
-  levelOf, accessFor, gateFor, findLesson, passes,
-  bdKind, bdChains, bdKey, accessForBreakdowns, findItem, BD_TASK,
+  ROLES, contentWithDefaults,
+  loadSubs, saveSub, deleteSub, loadOverrides, setOverride, loadPromo, savePromo, loadCerts, saveCert, deleteCert,
+  unitsOf, passes, chapterRoles, roleLevel, promotionStep, levelFor, accessFor,
+  bdKind, bdChains, bdKey, bdOrderKey, accessForBreakdowns, BD_TASK,
+  memberState, gateFor, findItem, allKeys, signInBlock,
 };

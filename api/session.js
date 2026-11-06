@@ -5,10 +5,15 @@ const {
   readSession, writeSession, clearCookie, SESSION_COOKIE, ROLE_REFRESH_MS,
   env, discord, profileFrom, loadProgress, json, isAdmin, recordMember, clientIp,
 } = require('./_lib');
+const { signInBlock } = require('./_gate');
 
 module.exports = async (req, res) => {
   const s = readSession(req);
   if (!s) return json(res, 401, { error: 'signed_out' });
+
+  // sessions from before a role change: Grounded-only accounts can't use the site
+  const early = await signInBlock(s.user.id, s.roles || [], isAdmin(s));
+  if (early) return json(res, 401, { error: early }, [clearCookie(SESSION_COOKIE)]);
 
   const cookies = [];
   if (Date.now() - (s.rolesAt || 0) > ROLE_REFRESH_MS && s.at) {
@@ -19,9 +24,11 @@ module.exports = async (req, res) => {
     }
     if (member.status === 200) {
       const required = env('MEMBER_ROLE_ID', true);
-      if (required && !(member.data.roles || []).includes(required)) {
+      if (!isAdmin(s) && required && !(member.data.roles || []).includes(required)) {
         return json(res, 401, { error: 'no_access' }, [clearCookie(SESSION_COOKIE)]);
       }
+      const blockedWhy = await signInBlock(s.user.id, member.data.roles || [], isAdmin(s));
+      if (blockedWhy) return json(res, 401, { error: blockedWhy }, [clearCookie(SESSION_COOKIE)]);
       const me = await discord('/users/@me', s.at);
       if (me.status === 200) s.user = profileFrom(me.data, member.data, guildId);
       s.roles = member.data.roles || [];

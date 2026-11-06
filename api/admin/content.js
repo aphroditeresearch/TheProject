@@ -17,10 +17,16 @@ function clean(c) {
   const arr = (v, n) => (Array.isArray(v) ? v.slice(0, n) : []);
   return {
     curriculum: arr(c.curriculum, 30).map((ch) => ({
-      id: id(ch && ch.id), name: str(ch && ch.name, 80), role: role(ch && ch.role),
-      lessons: arr(ch && ch.lessons, 80).map((l) => ({
-        id: id(l && l.id), title: str(l && l.title, 140), video: url(l && l.video), summary: str(l && l.summary, 2000), homework: str(l && l.homework, 4000),
-      })).filter((l) => l.id && l.title),
+      id: id(ch && ch.id), name: str(ch && ch.name, 80), role: role(ch && ch.role), promotion: !!(ch && ch.promotion),
+      lessons: arr(ch && ch.lessons, 80).map((l) => {
+        const out = { id: id(l && l.id), title: str(l && l.title, 140), video: url(l && l.video), summary: str(l && l.summary, 2000), homework: str(l && l.homework, 4000) };
+        // a lesson can branch into parts (Liquidity part 1, part 2…); each part unlocks on its own
+        if (l && Array.isArray(l.parts)) out.parts = arr(l.parts, 12).map((p) => ({
+          id: /^ch\w{1,24}-\w{1,40}$/.test(String(p && p.id)) ? p.id : null,
+          title: str(p && p.title, 140), video: url(p && p.video), summary: str(p && p.summary, 2000), homework: str(p && p.homework, 4000),
+        })).filter((p) => p.id && p.title);
+        return out;
+      }).filter((l) => l.id && l.title),
     })).filter((ch) => ch.id && ch.name),
     homework: arr(c.homework, 300).map((h) => ({
       id: id(h && h.id), title: str(h && h.title, 160), chapter: str(h && h.chapter, 80),

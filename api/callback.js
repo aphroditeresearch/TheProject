@@ -4,6 +4,8 @@ const {
   env, parseCookies, clearCookie, STATE_COOKIE, SESSION_DAYS,
   redirectUri, discord, profileFrom, writeSession, redirect, recordMember,
 } = require('./_lib');
+const { adminIds } = require('./_lib');
+const { signInBlock } = require('./_gate');
 
 module.exports = async (req, res) => {
   const url = new URL(req.url, 'http://x');
@@ -42,9 +44,12 @@ module.exports = async (req, res) => {
   if (member.status === 404) return fail('not_member');                     // not in the server
   if (member.status !== 200) return fail('discord');
 
-  // 3. optional gate: require a base member role to get in at all
+  // 3. who can use the site: admins, and members with Awakened, Illuminated or Enlightened (not Grounded)
   const required = env('MEMBER_ROLE_ID', true);
-  if (required && !(member.data.roles || []).includes(required)) return fail('no_access');
+  const admin = adminIds().includes(me.data.id);
+  if (!admin && required && !(member.data.roles || []).includes(required)) return fail('no_access');
+  const blockedWhy = await signInBlock(me.data.id, member.data.roles || [], admin);
+  if (blockedWhy) return fail(blockedWhy);
 
   // 4. start the session (signed, HttpOnly cookie)
   const expiresMs = Math.min((token.expires_in || SESSION_DAYS * 86400) * 1000, SESSION_DAYS * 864e5);
