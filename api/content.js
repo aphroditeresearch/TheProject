@@ -36,11 +36,11 @@ module.exports = async (req, res) => {
         const ua = A[u.id] || { open: false, reason: 'order' };
         if (!ua.open) return { id: u.id, open: false, reason: ua.reason };
         return { id: u.id, title: u.title, video: u.video || '', summary: u.summary || '', homework: u.homework || '',
-          open: true, passed: ua.passed, sub: withSub(u.id) };
+          notice: u.notice && (u.notice.title || u.notice.body) ? u.notice : null, open: true, passed: ua.passed, sub: withSub(u.id) };
       };
       if (!hasParts) return unit(l);
       const parts = l.parts.map(unit);
-      if (!a.open) return { id: l.id, open: false, reason: a.reason, parts: parts.map((p) => ({ id: p.id, open: false, reason: p.reason })) };
+      if (!a.open) return { id: l.id, open: false, reason: a.reason };                 // locked: not even how many parts it has
       return { id: l.id, title: l.title, open: true, passed: a.passed, parts };
     });
     out.curriculum.push({ id: ch.id, name: ch.name, role: ch.role || null, step: ci + 1, promotion: !!ch.promotion, lessons });

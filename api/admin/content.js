@@ -20,6 +20,9 @@ function clean(c) {
       id: id(ch && ch.id), name: str(ch && ch.name, 80), role: role(ch && ch.role), promotion: !!(ch && ch.promotion),
       lessons: arr(ch && ch.lessons, 80).map((l) => {
         const out = { id: id(l && l.id), title: str(l && l.title, 140), video: url(l && l.video), summary: str(l && l.summary, 2000), homework: str(l && l.homework, 4000) };
+        // optional announcement banner above the video
+        const n = l && l.notice;
+        if (n && (str(n.title, 140) || str(n.body, 2000))) out.notice = { title: str(n.title, 140), body: str(n.body, 2000), link: url(n.link) };
         // a lesson can branch into parts (Liquidity part 1, part 2…); each part unlocks on its own
         if (l && Array.isArray(l.parts)) out.parts = arr(l.parts, 12).map((p) => ({
           id: /^ch\w{1,24}-\w{1,40}$/.test(String(p && p.id)) ? p.id : null,

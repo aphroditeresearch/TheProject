@@ -166,8 +166,9 @@ videos and homework never leave the server.
   (Chapters marked "Opens only by promotion" in Admin → Lectures work this way.)
 - The site doesn't change Discord roles. After promoting someone, give them the role in Discord too if you want it there.
 
-**Lessons with parts**: Liquidity (2), Manipulation (3), Ranges (2), Sessions (Sessions + Indicator Announcement),
-Order Blocks (4), Start of Many (Start of Many + Breakeven Protocol), Conclusion (Mark Ups + Conclusion). Each part has
+**Lessons with parts**: Liquidity (2), Manipulation (3), Ranges (2),
+Order Blocks (4), Start of Many (Start of Many + Breakeven Protocol), Conclusion (Mark Ups + Conclusion).
+Sessions is one video with an "Indicator Announcement" banner above it; any lesson can have a banner (Admin → Lectures → Banner title, message, link). Each part has
 its own video and homework and unlocks on its own. Edit parts in Admin → Lectures ("Split into parts", "+ Add part").
 
 **Certificates**: every member can upload payout and funded certificates on their Profile (only they and admins see them).

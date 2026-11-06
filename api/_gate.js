@@ -16,7 +16,7 @@
 //
 // Admins can unlock, lock, or mark done any single item for any member, and that beats the rules above.
 const { kv, kvConfigured, loadContent } = require('./_lib');
-const { CURRICULUM, DEFAULT_SETTINGS, ROLES } = require('./_curriculum');
+const { CURRICULUM, DEFAULT_SETTINGS, ROLES, SESSIONS_NOTICE } = require('./_curriculum');
 
 /* ---------- content with built-in defaults ---------- */
 async function contentWithDefaults() {
@@ -29,8 +29,19 @@ async function contentWithDefaults() {
     CURRICULUM.forEach((ch) => { byId[ch.id] = ch; ch.lessons.forEach((l) => { byId[l.id] = l; }); });
     c.curriculum = c.curriculum.map((ch) => Object.assign({}, ch, {
       promotion: ch.promotion !== undefined ? ch.promotion : !!(byId[ch.id] && byId[ch.id].promotion),
-      lessons: (ch.lessons || []).map((l) => (l.parts === undefined && byId[l.id] && byId[l.id].parts && byId[l.id].title === l.title
-        ? Object.assign({}, l, { parts: JSON.parse(JSON.stringify(byId[l.id].parts)) }) : l)),
+      lessons: (ch.lessons || []).map((l) => {
+        // Sessions used to be split into "Sessions" + "Indicator Announcement": now it's one video with an announcement banner
+        if (Array.isArray(l.parts) && l.parts.length === 2 && l.parts[1].title === 'Indicator Announcement') {
+          const p = l.parts[0];
+          l = Object.assign({}, l, { video: l.video || p.video || '', summary: l.summary || p.summary || '', homework: l.homework || p.homework || '',
+            notice: l.notice || Object.assign({}, SESSIONS_NOTICE, { link: l.parts[1].video || '' }) });
+          delete l.parts;
+          return l;
+        }
+        if (l.parts === undefined && byId[l.id] && byId[l.id].parts && byId[l.id].title === l.title) return Object.assign({}, l, { parts: JSON.parse(JSON.stringify(byId[l.id].parts)) });
+        if (l.notice === undefined && byId[l.id] && byId[l.id].notice && byId[l.id].title === l.title) return Object.assign({}, l, { notice: Object.assign({}, byId[l.id].notice) });
+        return l;
+      }),
     }));
   }
   c.settings = Object.assign({}, DEFAULT_SETTINGS, c.settings || {});

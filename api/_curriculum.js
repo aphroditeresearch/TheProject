@@ -42,7 +42,7 @@ const CURRICULUM = [
   chapter('ch1', 'Awakened', ROLES.awakened, [
     'Before You Begin', 'The Beginning', 'Candles & Timeframes', 'Trends', 'Displacement', 'Accumulation',
     ['Liquidity', parts(2)], ['Manipulation', parts(3)], ['Ranges', parts(2)], 'Internal Manipulation', 'Confirmation', 'Continuations',
-    'Entries, SL & TP', ['Sessions', ['Sessions', 'Indicator Announcement']], 'Checklist', ['Order Blocks', parts(4)], 'AMD', 'News', 'Structure', 'Entry Triggers',
+    'Entries, SL & TP', 'Sessions', 'Checklist', ['Order Blocks', parts(4)], 'AMD', 'News', 'Structure', 'Entry Triggers',
     'HTF', ['Start of Many', ['Start of Many', 'Breakeven Protocol']], 'Narrative', 'Protection', 'Identification', ['Conclusion', ['Mark Ups', 'Conclusion']],
   ]),
   chapter('ch2', 'Illuminated', ROLES.illuminated, ['AMD V2', 'Entry Models', 'Your Next Steps']),
@@ -51,10 +51,13 @@ const CURRICULUM = [
     'SMT / POI', 'Inducements', 'Orderflow', 'Time IDM', 'NQ', 'News V2', 'Divergence', 'HTF V2', 'SMT V2',
   ], { promotion: true }),
 ];
+// A lesson can carry an announcement banner shown above its video (title, message, optional link).
+const SESSIONS_NOTICE = { title: 'Indicator Announcement', body: 'The indicator that goes with this section is now available. Open the link for the details and how to set it up.', link: '' };
+CURRICULUM[0].lessons.find((l) => l.title === 'Sessions').notice = SESSIONS_NOTICE;
 // The first two lessons are about getting started, so their homework is lighter.
 CURRICULUM[0].lessons[0].homework = 'Write down why you joined The Project and what you want to be able to do by the end of Awakened.';
 CURRICULUM[0].lessons[1].homework = 'Summarise the lesson in your own words: the three ideas you want to remember.';
 
 const DEFAULT_SETTINGS = { unlockMode: 'submit' };   // 'submit' = next opens on hand-in; 'approve' = after an admin approves
 
-module.exports = { ROLES, CURRICULUM, DEFAULT_SETTINGS };
+module.exports = { ROLES, CURRICULUM, DEFAULT_SETTINGS, SESSIONS_NOTICE };
