@@ -5,16 +5,25 @@
 //     notes or homework, so nothing behind a lock ever reaches the member's browser
 // Videos and uploaded files in a private Blob store are handed out as signed links that expire.
 const { readSession, isAdmin, json } = require('./_lib');
-const { gateFor, bdChains, bdKind, bdKey, BD_TASK, unitsOf } = require('./_gate');
+const { gateFor, memberState, contentWithDefaults, bdChains, bdKind, bdKey, BD_TASK, unitsOf } = require('./_gate');
 const { signAll } = require('./_blob');
 
 module.exports = async (req, res) => {
   const s = readSession(req);
   if (!s) return json(res, 401, { error: 'signed_out' });
 
-  const admin = isAdmin(s);
+  let admin = isAdmin(s);
+  // admins can preview the site as a member of one step (?as=1|2|3): same locks and blur, their own hand-ins
+  const asStep = admin ? +((/[?&]as=([1-9])/.exec(req.url || '') || [])[1] || 0) : 0;
   let gate;
-  try { gate = await gateFor(s, admin); } catch (e) { return json(res, 502, { error: 'storage' }); }
+  try {
+    if (asStep) {
+      const content = await contentWithDefaults();
+      const ch = (content.curriculum || [])[asStep - 1];
+      if (ch && ch.role) { admin = false; gate = await memberState(s.user.id, [ch.role], false, content); }
+    }
+    if (!gate) gate = await gateFor(s, admin);
+  } catch (e) { return json(res, 502, { error: 'storage' }); }
   const { content, subs, access, promo } = gate;
   const now = Date.now();
   const A = access.lessons;
@@ -29,6 +38,7 @@ module.exports = async (req, res) => {
     lessonTitles: (h.lessons || []).filter((id) => A[id] && A[id].open).map((id) => lessonTitles[id]).filter(Boolean),
     passed: access.homework['hw:' + h.id].passed, sub: withSub('hw:' + h.id) }));
   out.level = access.level;
+  out.preview = asStep && !admin ? asStep : 0;
   out.settings = { unlockMode: content.settings.unlockMode };
   out.promotion = { canRequest: access.canPromote, status: promo ? promo.status : null, note: promo ? promo.note || '' : '' };
 

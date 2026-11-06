@@ -264,3 +264,12 @@ New journal entries are **pending** until an admin approves them in **Admin → 
 the psych leaderboard. Denying needs a short note, which the member sees. Entries posted before this update count as
 approved. The member's journal opens on a month calendar: green days made money, red days lost it, and clicking a day
 shows its entries.
+
+## Admins: preview as a member
+The **View as** menu in the top bar (admins only) shows the site the way a member on one step sees it: Awakened,
+Illuminated or Enlightened, with the same locks and blur. The Admin tab stays. Your own hand-ins count in the preview, so
+you can test the unlock order. Pick **Admin view** (or "Back to admin view") to see everything again. The choice is
+remembered in that browser.
+
+## Letter rain
+Behind the portal, the letters of THE PROJECT fall faintly in columns, like the Matrix. It pauses when the tab is in the background and is off for anyone who has "reduce motion" turned on.

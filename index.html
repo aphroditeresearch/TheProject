@@ -47,6 +47,9 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 canvas.fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
 #rays{z-index:0}
 #petals{z-index:3}
+#rain{z-index:0;opacity:0;transition:opacity 1.2s ease}
+#rain.on{opacity:1}
+.portal{position:relative;z-index:1}
 .page{position:relative;z-index:2}
 a{color:var(--blue);text-underline-offset:3px}
 
@@ -270,11 +273,18 @@ a{color:var(--blue);text-underline-offset:3px}
 .tab{transition:color .2s,background .25s}
 .tab[aria-current="page"]{color:var(--ink);background:var(--panel)}
 .tab-ink{position:absolute;bottom:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--blue),var(--kana-c));box-shadow:0 0 12px rgba(28,232,190,.55);pointer-events:none;transition:transform .45s cubic-bezier(.2,.9,.25,1.1),width .45s cubic-bezier(.2,.9,.25,1.1)}
+.viewas{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.viewas select{min-height:36px;background:var(--panel);color:var(--ink);border:1px solid var(--line);padding:0 8px;font:500 13px var(--sans)}
+.viewas.on select{border-color:#E8D27A;color:#E8D27A}
+.viewas[hidden]{display:none}
+.pv-bar{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;padding:8px 16px;background:rgba(232,210,122,.10);border-bottom:1px solid #5A4E22;color:#E8D27A;font-size:13px;text-align:center}
+.pv-bar[hidden]{display:none}
 .sess{display:inline-flex;align-items:center;gap:8px;height:30px;padding:0 10px;border:1px solid var(--line);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
 .sess i{width:7px;height:7px;border-radius:50%;background:#59656A}
 .sess.live i{background:var(--kana-c);animation:ping 1.8s ease-out infinite}
 .sess.live b{color:var(--ink)}.sess b{font-weight:600}
 @media (max-width:1100px){.sess{display:none}}
+@media (max-width:1500px){.who:has(.viewas:not([hidden])) .sess{display:none}}
 .tab:focus-visible{outline:2px solid var(--kana-c);outline-offset:2px}
 .who .av{overflow:hidden}
 .who .av img{width:100%;height:100%;object-fit:cover;display:block}
@@ -911,6 +921,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
 </style>
 </head>
 <body>
+<canvas id="rain" class="fx" aria-hidden="true"></canvas>
 <canvas id="petals" class="fx" aria-hidden="true"></canvas>
 
 <div class="page">
@@ -957,11 +968,14 @@ img,video{-webkit-user-drag:none;user-drag:none}
           <span class="sess" id="sess" title="Market session (New York time)"><i aria-hidden="true"></i><b>—</b><small></small></span>
           <span class="av" id="bar-av" aria-hidden="true">M</span>
           <span class="nm" id="bar-name">Member</span>
+          <label class="viewas" id="viewas" hidden title="See the site the way a member on that step does"><select id="viewas-s" aria-label="View the site as">
+            <option value="">Admin view</option><option value="1">As Awakened</option><option value="2">As Illuminated</option><option value="3">As Enlightened</option></select></label>
           <button class="ghost" id="signout" type="button">Sign out</button>
         </div>
       </div>
     </div>
 
+    <div class="pv-bar" id="pv-bar" hidden><span><b id="pv-name">Awakened</b> preview · locked and blurred the way a member on this step sees it. Your own hand-ins count.</span><button class="btn-s" type="button" id="pv-off">Back to admin view</button></div>
     <div class="annc" id="annc" aria-label="Announcements"></div>
 
     <!-- LECTURES -->
@@ -1398,6 +1412,40 @@ img,video{-webkit-user-drag:none;user-drag:none}
   for (var i=0;i<(W<600?14:26);i++) P.push(petal(true));
   if (reduce) P.forEach(drawPetal); else requestAnimationFrame(tick);
 
+  /* ---------- THE PROJECT letter rain behind the portal (faint, like the Matrix) ---------- */
+  var rain = (function(){
+    var c = document.getElementById('rain'), g = c.getContext('2d'), WORD = 'THEPROJECT', cols = [], RW, RH, FS, on = false, last = 0, raf2 = 0;
+    function fit(){
+      var d = Math.min(window.devicePixelRatio || 1, 2); RW = c.clientWidth; RH = c.clientHeight; c.width = RW * d; c.height = RH * d; g.setTransform(d, 0, 0, d, 0, 0);
+      FS = RW < 600 ? 13 : 15; var step = RW < 600 ? 24 : 28, n = Math.ceil(RW / step);
+      cols = []; for (var i = 0; i < n; i++) cols.push(drop(i * step + step / 2, true));
+    }
+    function drop(x, init){ return { x:x, y: init ? Math.random() * -60 : -Math.random() * 30, v: .12 + Math.random() * .22, len: 7 + Math.floor(Math.random() * 12), off: Math.floor(Math.random() * 10), wait: init ? 0 : Math.random() * 240 }; }
+    function frame(ts){
+      raf2 = requestAnimationFrame(frame);
+      if (ts - last < 33) return; last = ts;                      // ~30 fps is plenty
+      g.clearRect(0, 0, RW, RH); g.font = '600 ' + FS + 'px ' + getComputedStyle(document.body).getPropertyValue('--mono');
+      g.textAlign = 'center';
+      var rows = RH / (FS * 1.25);
+      for (var i = 0; i < cols.length; i++){
+        var k = cols[i]; if (k.wait > 0){ k.wait--; continue; }
+        k.y += k.v; var head = Math.floor(k.y);
+        for (var j = 0; j < k.len; j++){
+          var r = head - j; if (r < 0 || r > rows) continue;
+          var a = j === 0 ? .30 : .16 * (1 - j / k.len);
+          g.fillStyle = j === 0 ? 'rgba(190,255,235,' + a + ')' : 'rgba(46,214,170,' + a + ')';
+          g.fillText(WORD[(r + k.off) % 10], k.x, (r + 1) * FS * 1.25);
+        }
+        if (head - k.len > rows) cols[i] = drop(k.x, false);
+      }
+    }
+    function start(){ if (on || reduce) return; on = true; fit(); c.classList.add('on'); last = 0; raf2 = requestAnimationFrame(frame); }
+    function stop(){ on = false; cancelAnimationFrame(raf2); c.classList.remove('on'); }
+    window.addEventListener('resize', function(){ if (on) fit(); });
+    document.addEventListener('visibilitychange', function(){ if (!on) return; if (document.hidden) cancelAnimationFrame(raf2); else { last = 0; raf2 = requestAnimationFrame(frame); } });
+    return { start:start, stop:stop };
+  })();
+
   var tEl = document.getElementById('toast'), tT;
   function toast(msg){ tEl.textContent=msg; tEl.hidden=false; clearTimeout(tT); tT=setTimeout(function(){ tEl.hidden=true; }, Math.max(3200, String(msg).length * 55)); }
   /* =====================================================================
@@ -1461,9 +1509,16 @@ img,video{-webkit-user-drag:none;user-drag:none}
   }
   function unitsOf(l){ return l.parts && l.parts.length ? l.parts : [l]; }
   // after a hand-in or an admin change: fetch this member's lessons again (the server decides what's unlocked)
+  // admins: "View as" a member step (stored in this browser); '' = the normal admin view
+  var PREVIEW = '';
+  function previewKey(){ return 'theproject.preview.' + ((SESSION && SESSION.user && SESSION.user.id) || ''); }
+  function loadPreview(){ PREVIEW = ''; if (!(SESSION && SESSION.isAdmin)) return; try { PREVIEW = localStorage.getItem(previewKey()) || ''; } catch(e) {} if (!/^[1-9]$/.test(PREVIEW)) PREVIEW = ''; }
+  function contentUrl(){ return '/api/content' + (PREVIEW ? '?as=' + PREVIEW : ''); }
+  // true when the admin is looking at the site as admin (not previewing as a member)
+  function adminView(){ return !!(SESSION && SESSION.isAdmin) && !PREVIEW; }
   function refreshContent(){
     if (DEMO_MODE || !BACKEND){ renderContentViews(); return Promise.resolve(); }
-    return fetch('/api/content', { credentials:'same-origin' }).then(function(r){ return r.ok ? r.json() : null; })
+    return fetch(contentUrl(), { credentials:'same-origin' }).then(function(r){ return r.ok ? r.json() : null; })
       .then(function(c){ if (c && c.content) applyContent(c.content); renderContentViews(); }).catch(function(){});
   }
   function liveAnnouncements(){ var now = Date.now(); return ANNOUNCEMENTS.filter(function(a){ return !a.expires || Date.parse(a.expires) > now; }); }
@@ -1547,7 +1602,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
 
   function user(){ return (SESSION && SESSION.user) || DEMO_USER; }
   function memberRoles(){ return DEMO_MODE ? demoRoles : (SESSION.roles || []); }
-  function hasAccess(ch){ return !ch.role || !!(SESSION && SESSION.isAdmin) || memberRoles().indexOf(ch.role) !== -1; }   // works for a chapter or a single lesson
+  function hasAccess(ch){ return !ch.role || adminView() || memberRoles().indexOf(ch.role) !== -1; }   // works for a chapter or a single lesson
   function el(tag, cls, text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
 
   /* ---------- course tracks: lectures + breakdowns share one sidebar/content engine ---------- */
@@ -1668,7 +1723,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   }
   // the Advanced tab is only there for members at the top level (and admins)
   function advOk(){
-    if (SESSION && SESSION.isAdmin) return true;
+    if (adminView()) return true;
     if (BREAKDOWNS.some(function(b){ return bdKind(b) === 'advanced' && b.reason !== 'hidden'; })) return true;
     return LEVEL >= 1 && !NEXT && (DEMO_MODE ? LEVEL >= CURRICULUM.length : true);
   }
@@ -2141,7 +2196,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   }
   function renderHomework(){
     var list = document.getElementById('hw-list'); list.textContent='';
-    var open = openHomework(), badge = document.getElementById('hw-badge'), admin = !!(SESSION && SESSION.isAdmin);
+    var open = openHomework(), badge = document.getElementById('hw-badge'), admin = adminView();
     badge.textContent = open.length; badge.hidden = !open.length; badge.setAttribute('aria-label', open.length + ' homework not handed in');
     if (!HOMEWORK.length){ emptyState(list,'No homework right now','Go chart something. New assignments land here.'); hidePop(); return; }
     // notifications
@@ -2702,7 +2757,24 @@ img,video{-webkit-user-drag:none;user-drag:none}
       box.appendChild(x); host.appendChild(box);
     });
   }
-  function renderContentViews(){ renderCurriculum(); renderHomework(); renderBreakdowns(); renderCompletions(); renderAnnouncements(); renderProfileExtras(); }
+  // the "View as" switch in the top bar (admins only)
+  function paintPreview(){
+    var box = document.getElementById('viewas'), sel = document.getElementById('viewas-s'), bar = document.getElementById('pv-bar');
+    var admin = !!(SESSION && SESSION.isAdmin) && !DEMO_MODE;
+    box.hidden = !admin; bar.hidden = !(admin && PREVIEW);
+    if (!admin) return;
+    sel.value = PREVIEW; box.classList.toggle('on', !!PREVIEW);
+    if (PREVIEW) document.getElementById('pv-name').textContent = sel.options[sel.selectedIndex].text.replace(/^As /,'');
+  }
+  function setPreview(v){
+    PREVIEW = /^[1-9]$/.test(v) ? v : '';
+    try { if (PREVIEW) localStorage.setItem(previewKey(), PREVIEW); else localStorage.removeItem(previewKey()); } catch(e) {}
+    paintPreview(); toast(PREVIEW ? 'Previewing ' + document.getElementById('viewas-s').selectedOptions[0].text.replace(/^As /,'as ') + '.' : 'Back to the admin view.');
+    refreshContent().then(function(){ if ((location.hash || '') === '#advanced' && !advOk()) location.hash = '#lectures'; showView(); });
+  }
+  document.getElementById('viewas-s').addEventListener('change', function(e){ setPreview(e.target.value); });
+  document.getElementById('pv-off').addEventListener('click', function(){ setPreview(''); });
+  function renderContentViews(){ paintPreview(); renderCurriculum(); renderHomework(); renderBreakdowns(); renderCompletions(); renderAnnouncements(); renderProfileExtras(); }
 
   /* ---------- admin panel ---------- */
   function canAdmin(){ return !!(SESSION && SESSION.isAdmin) || DEMO_MODE; }
@@ -3608,7 +3680,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   var booted = false, pendingEnter = false;
   function enterPortal(){
     if (!booted){ pendingEnter = true; enter.disabled = true; enter.textContent = 'Loading your portal…'; return; }   // account still loading
-    scrim.hidden=true; gateV.hidden=true; portV.hidden=false;
+    scrim.hidden=true; gateV.hidden=true; portV.hidden=false; rain.start();
     if (VIEWS.indexOf((location.hash||'').replace('#',''))===-1) { try { history.replaceState(null,'','#lectures'); } catch(e) {} }
     showView(); window.scrollTo(0,0); paintWatermark(); setTimeout(showPop, 1200); setTimeout(moveInk, 350);
   }
@@ -3622,7 +3694,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   enter.addEventListener('click', enterPortal);
   document.getElementById('signout').addEventListener('click', function(){
     if (BACKEND){ window.location.href = '/api/login?out=1'; return; }
-    portV.hidden=true; gateV.hidden=false; try { history.replaceState(null,'',location.pathname); } catch(e) {}
+    portV.hidden=true; gateV.hidden=false; rain.stop(); try { history.replaceState(null,'',location.pathname); } catch(e) {}
     window.scrollTo(0,0); toast('Signed out.');
   });
 
@@ -3678,8 +3750,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
       })
       .then(function(j){
         if (!(j && j.user)) return;
-        SESSION = j;
-        return fetch('/api/content', { credentials:'same-origin' })
+        SESSION = j; loadPreview();
+        return fetch(contentUrl(), { credentials:'same-origin' })
           .then(function(r){ return r.ok ? r.json() : null; })
           .then(function(c){ if (c && c.content) applyContent(c.content); })
           .catch(function(){});
