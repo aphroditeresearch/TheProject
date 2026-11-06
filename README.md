@@ -21,8 +21,9 @@ Without the backend, the page runs in demo mode: the button plays the popup and 
 
 ```
 index.html          the whole page
-diamond.mp4         the floating diamond beside the wordmark, cropped from the 4K source (also the demo lesson clip)
+diamond.mp4         the floating diamond beside the wordmark, cropped from the 4K source 
 diamond.jpg         still frame of the diamond while the video loads
+sample.mp4          widescreen sample clip, only played in the local demo preview
 blueprint.svg       faint candlestick-chart blueprint behind the sign-in scene
 poster.jpg          still frame while the video loads, profile banner and player background
 favicon.svg         browser tab icon (a diamond)
@@ -89,7 +90,7 @@ Sign-in runs on small Vercel functions in the `api` folder. No bot is needed.
 1. **Create the Discord app.** Go to https://discord.com/developers/applications → **New Application** → name it "The Project". Open **OAuth2**:
    - Copy the **Client ID**, then **Reset Secret** and copy the **Client Secret**.
    - Under **Redirects**, add `https://YOUR-DOMAIN/api/callback` and save. (Add your `*.vercel.app` address too if you test there.)
-2. **Copy IDs from Discord.** Turn on User Settings → Advanced → **Developer Mode**. Right-click your server icon → **Copy Server ID**. In Server Settings → Roles, right-click the Chapter 2 and Chapter 3 roles → **Copy Role ID**, and paste them into `ROLES` in `index.html`.
+2. **Copy IDs from Discord.** Turn on User Settings → Advanced → **Developer Mode**. Right-click your server icon → **Copy Server ID**. In Server Settings → Roles, right-click the Illuminated and Enlightened roles → **Copy Role ID**, and paste them into `ROLES` in `index.html`.
 3. **Add environment variables in Vercel** (Project → Settings → Environment Variables), then redeploy:
 
    | Name | Value |

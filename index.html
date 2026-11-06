@@ -297,6 +297,8 @@ a{color:var(--blue);text-underline-offset:3px}
 .main.wide{max-width:1760px}
 .course{display:grid;grid-template-columns:minmax(0,clamp(320px,24vw,420px)) minmax(0,1fr);gap:clamp(20px,2.4vw,40px);align-items:start}
 .side{border:1px solid var(--line);background:color-mix(in srgb,var(--panel) 94%,transparent)}
+/* long chapters (Awakened has 26 lessons): on desktop the lesson list stays beside the player and scrolls on its own */
+@media (min-width:901px){.side{position:sticky;top:84px;max-height:calc(100vh - 104px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--blue-dim) transparent}}
 .side-h{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
 .side-h .wm{font-size:26px}
 .side-h small{color:var(--muted);font-size:14px}
@@ -332,7 +334,7 @@ a{color:var(--blue);text-underline-offset:3px}
 .pane{display:flex;flex-direction:column;gap:18px;min-width:0}
 .pane .kick{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--kana-c)}
 .pane h3{margin:0;font-family:var(--display);font-style:italic;font-weight:900;font-stretch:125%;font-size:clamp(30px,4vw,46px);line-height:1;letter-spacing:-.02em;text-wrap:balance}
-.player{position:relative;width:100%;max-width:min(100%,calc((100vh - 380px) * 16 / 9));aspect-ratio:16/9;border:1px solid var(--line);overflow:hidden;background:#000 url("poster.jpg") 65% 30%/cover no-repeat;display:grid;place-items:center}
+.player{position:relative;width:100%;max-width:min(100%,calc((100vh - 380px) * 16 / 9));aspect-ratio:16/9;border:1px solid var(--line);overflow:hidden;background:#000 url("poster.jpg") 38% 50%/cover no-repeat;display:grid;place-items:center}
 .player::before{content:"";position:absolute;inset:0;background:#12B5A9;mix-blend-mode:color;opacity:.7}
 .player::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(2,9,11,.85),rgba(2,9,11,.15) 55%)}
 .player video{position:relative;z-index:2;width:100%;height:100%;display:block;background:#000}
@@ -569,8 +571,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
           <h3 id="access-title">Access</h3>
           <span>Demo · stands in for Discord roles</span>
         </div>
-        <label class="tg" for="tg-ch2"><input type="checkbox" id="tg-ch2"><span class="track" aria-hidden="true"><span class="knob"></span></span><span>Chapter 2 role</span></label>
-        <label class="tg" for="tg-ch3"><input type="checkbox" id="tg-ch3"><span class="track" aria-hidden="true"><span class="knob"></span></span><span>Chapter 3 role</span></label>
+        <label class="tg" for="tg-ch2"><input type="checkbox" id="tg-ch2"><span class="track" aria-hidden="true"><span class="knob"></span></span><span>Illuminated role</span></label>
+        <label class="tg" for="tg-ch3"><input type="checkbox" id="tg-ch3"><span class="track" aria-hidden="true"><span class="knob"></span></span><span>Enlightened role</span></label>
       </section>
     </main>
 
@@ -633,7 +635,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
           <div class="pf-user" id="pf-user">@member</div>
           <dl class="pf-rows">
             <dt>Status</dt><dd><span class="dot-on" aria-hidden="true"></span><span id="pf-status">Member</span></dd>
-            <dt>Access</dt><dd id="pf-access">Chapter 1</dd>
+            <dt>Access</dt><dd id="pf-access">Awakened</dd>
             <dt>Joined the server</dt><dd id="pf-joined">—</dd>
             <dt>Discord ID</dt><dd class="mono" id="pf-id">—</dd>
           </dl>
@@ -893,17 +895,22 @@ img,video{-webkit-user-drag:none;user-drag:none}
      ===================================================================== */
   // Discord role IDs that unlock each chapter (Server Settings > Roles > right-click > Copy Role ID)
   var ROLES = {
-    chapter2: 'DISCORD_ROLE_ID_CHAPTER_2',
-    chapter3: 'DISCORD_ROLE_ID_CHAPTER_3'
+    chapter2: 'DISCORD_ROLE_ID_CHAPTER_2',   // Illuminated
+    chapter3: 'DISCORD_ROLE_ID_CHAPTER_3'    // Enlightened
   };
   var CURRICULUM = [
-    { id:'ch1', name:'Chapter 1', role:null,           lessons:['OHLC / OLHC','AMD','SMT / POI','Break of Structure'] },
-    { id:'ch2', name:'Chapter 2', role:ROLES.chapter2, lessons:['SMT Divergence','Daily Bias','Key Opens'] },
-    { id:'ch3', name:'Chapter 3', role:ROLES.chapter3, lessons:['Structural Inducement','Protected Structure'] }
+    { id:'ch1', name:'Awakened', role:null, lessons:[
+      'Before You Begin','The Beginning','Candles & Timeframes','Trends','Displacement','Accumulation',
+      'Liquidity','Manipulation','Ranges','Internal Manipulation','Confirmation','Continuations',
+      'Entries, SL & TP','Sessions','Checklist','Order Blocks','AMD','News','Structure','Entry Triggers',
+      'HTF','Start of Many','Narrative','Protection','Identification','Conclusion'] },
+    { id:'ch2', name:'Illuminated', role:ROLES.chapter2, lessons:['AMD V2','Entry Models','Your Next Steps'] },
+    { id:'ch3', name:'Enlightened', role:ROLES.chapter3, lessons:[
+      'SMT / POI','Inducements','Orderflow','Time IDM','NQ','News V2','Divergence','HTF V2','SMT V2'] }
   ];
   // Homework you assign. Newest first. due is optional.
   var HOMEWORK = [
-    // { id:'hw-amd-1', title:'Mark 5 AMD cycles before 9:30', chapter:'Chapter 1 · AMD', due:'Fri 6 Nov',
+    // { id:'hw-amd-1', title:'Mark 5 AMD cycles before 9:30', chapter:'Awakened · AMD', due:'Fri 6 Nov',
     //   details:'On the 1m to 5m, mark the accumulation, manipulation, order block, entry, stop and target for each.' }
   ];
   // Trade breakdowns. link is optional (a video or chart URL).
@@ -1135,7 +1142,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   // Lessons always need a full watch. Breakdowns need one when they have a video; link-only breakdowns are ticked by hand.
   function mustWatch(id, it){ return id === 'lx' || !!it.video; }
   // In demo mode, lessons without a video play the site's sample clip so the watch-to-complete flow can be tried.
-  function videoFor(id, it){ return it.video || (DEMO_MODE && id === 'lx' ? 'diamond.mp4' : ''); }
+  function videoFor(id, it){ return it.video || (DEMO_MODE && id === 'lx' ? 'sample.mp4' : ''); }
   function renderCurriculum(){ renderTrack('lx'); renderProfileAccess(); }
   function renderBreakdowns(){ renderTrack('bx'); }
 
@@ -1531,7 +1538,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     var accessBox = document.getElementById('access');
     document.querySelectorAll('.demo-only').forEach(function(n){ n.hidden = !DEMO_MODE; });
     if (!DEMO_MODE){ accessBox.hidden = true; return; }
-    [['tg-ch2', ROLES.chapter2, 'Chapter 2'], ['tg-ch3', ROLES.chapter3, 'Chapter 3']].forEach(function(cfg){
+    [['tg-ch2', ROLES.chapter2, 'Illuminated'], ['tg-ch3', ROLES.chapter3, 'Enlightened']].forEach(function(cfg){
       var box = document.getElementById(cfg[0]);
       box.checked = demoRoles.indexOf(cfg[1]) !== -1;
       box.addEventListener('change', function(){
