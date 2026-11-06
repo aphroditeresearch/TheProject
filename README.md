@@ -272,4 +272,10 @@ preview, and your own progress is left alone. Pick **Admin view** (or "Back to a
 remembered in that browser.
 
 ## Letter rain
-Behind the portal, the letters of THE PROJECT fall faintly in columns, like the Matrix. It pauses when the tab is in the background and is off for anyone who has "reduce motion" turned on.
+Behind the portal, the letters of THE PROJECT fall faintly in columns, like the Matrix, from the moment the portal opens. Under them: two slow teal glows drifting, a faint chart grid, a soft scan line every ~14 seconds and fine film grain. It pauses when the tab is in the background and is off for anyone who has "reduce motion" turned on.
+
+## Admins: going through journals by day
+**Admin → Journal → By day** lists the days journal entries were uploaded (or switch to **Trade date**), with how many
+are waiting. Pick a day to see everyone's entries from it, then **Walk through on a call**: one entry at a time with big
+screenshots, the trade details and the member's rules next to it. Keys: ← → move, **A** approves, **D** denies (type a
+short note first), **Esc** closes. Dots along the bottom show what you've approved (green) and denied (red).

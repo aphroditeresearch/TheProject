@@ -46,8 +46,29 @@ body{font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smooth
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
 canvas.fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
 #rays{z-index:0}
-#rain{z-index:0;opacity:0;transition:opacity 1.2s ease}
+#rain{z-index:0;opacity:0;transition:opacity .35s ease}
 #rain.on{opacity:1}
+/* portal background: slow aurora, a faint chart grid, an occasional scan line and fine grain */
+.bgfx{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;opacity:0;transition:opacity .35s ease}
+.bgfx.on{opacity:1}
+.bgfx i{position:absolute;display:block}
+.bgfx .aur{width:70vmax;height:70vmax;border-radius:50%;filter:blur(60px);opacity:.5;will-change:transform}
+.bgfx .a1{left:-20vmax;top:-30vmax;background:radial-gradient(circle,rgba(20,163,157,.16),transparent 65%)}
+.bgfx .a2{right:-25vmax;bottom:-35vmax;background:radial-gradient(circle,rgba(46,240,170,.10),transparent 65%)}
+.bgfx .grid{inset:0;background-image:linear-gradient(rgba(141,235,223,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(141,235,223,.035) 1px,transparent 1px);background-size:56px 56px;
+  -webkit-mask-image:radial-gradient(ellipse 80% 70% at 50% 40%,#000 30%,transparent 85%);mask-image:radial-gradient(ellipse 80% 70% at 50% 40%,#000 30%,transparent 85%)}
+.bgfx .scan{left:0;right:0;top:-12vh;height:12vh;background:linear-gradient(to bottom,transparent,rgba(46,240,170,.05),transparent);opacity:0}
+.bgfx .grain{inset:-50%;opacity:.07;background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+@media (prefers-reduced-motion:no-preference){
+  .bgfx .a1{animation:aur1 38s ease-in-out infinite alternate}
+  .bgfx .a2{animation:aur2 46s ease-in-out infinite alternate}
+  .bgfx .scan{animation:scan 14s cubic-bezier(.4,0,.6,1) 2s infinite}
+  .bgfx .grain{animation:grain 1.2s steps(4) infinite}
+}
+@keyframes aur1{to{transform:translate(18vmax,14vmax) scale(1.15)}}
+@keyframes aur2{to{transform:translate(-16vmax,-12vmax) scale(1.1)}}
+@keyframes scan{0%{transform:translateY(0);opacity:0}8%{opacity:1}55%{opacity:1}70%,100%{transform:translateY(125vh);opacity:0}}
+@keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-1%)}100%{transform:translate(1%,3%)}}
 .portal{position:relative;z-index:1}
 .page{position:relative;z-index:2}
 a{color:var(--blue);text-underline-offset:3px}
@@ -452,6 +473,37 @@ a{color:var(--blue);text-underline-offset:3px}
 .lp-i{display:flex;align-items:center;gap:8px;padding:3px 0 3px 14px;font-size:14px;color:var(--ink);cursor:pointer}
 .lp-i.all{color:var(--kana-c);font-weight:600}
 .hi-err{margin:10px 0 0;padding:10px 12px;border:1px solid #6A3A2A;background:rgba(232,120,90,.08);color:#F2B9A6;font-size:14px}
+.jd-strip{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;margin-bottom:6px;scrollbar-width:thin}
+.jd{appearance:none;flex:none;display:flex;flex-direction:column;gap:2px;min-width:118px;padding:10px 12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;text-align:left;cursor:pointer;transition:border-color .2s,background .2s}
+.jd b{font-size:14px}.jd span{font-size:11px;color:var(--muted)}
+.jd.pend{border-color:#5A4E22}.jd.pend span{color:#E8D27A}
+.jd.on{border-color:var(--kana-c);background:rgba(28,232,190,.08)}
+.jd-h{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:10px 0 4px}
+.jd-h h3{margin:0 0 4px;font-size:20px}
+.jd-open{align-self:flex-start}
+.jw{position:fixed;inset:0;z-index:85;background:rgba(1,6,7,.92);backdrop-filter:blur(10px);display:flex;animation:fadein .2s ease}
+.jw-in{flex:1;display:flex;flex-direction:column;min-height:0;max-width:1600px;margin:0 auto;padding:16px 20px 14px;width:100%;box-sizing:border-box}
+.jw-top{display:flex;align-items:center;gap:16px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.jw-top .who2{display:flex;align-items:center;gap:10px}.jw-top small{display:block;color:var(--muted);font-size:12px}
+.jw-count{margin-left:auto;margin-right:52px;font-family:var(--mono);font-size:13px;color:var(--muted)}
+.jw-b{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:20px;padding:16px 0}
+.jw-shots{min-height:0;display:flex;flex-direction:column;gap:10px}
+.jw-big{position:relative;flex:1;min-height:0;display:grid;place-items:center;border:1px solid var(--line);background:#000}
+.jw-big{overflow:hidden}
+.jw-big img{position:absolute;inset:0;margin:auto;max-width:100%;max-height:100%;object-fit:contain;display:block}
+.rv-bar input[type=date]{min-height:40px;padding:0 10px;background:var(--panel);color:var(--ink);border:1px solid var(--line);font:500 14px var(--sans);color-scheme:dark}
+.jw-full{position:absolute;right:10px;bottom:10px;font-size:12px;color:var(--ink);background:rgba(0,0,0,.6);padding:4px 8px;text-decoration:none}
+.jw-th{display:flex;gap:8px}.jw-th button{appearance:none;width:96px;height:60px;padding:0;border:1px solid var(--line);background:var(--panel);cursor:pointer;overflow:hidden;color:var(--muted)}
+.jw-th button img{width:100%;height:100%;object-fit:cover}.jw-th button.on{border-color:var(--kana-c)}
+.jw-side{min-height:0;overflow:auto;display:flex;flex-direction:column;gap:12px;padding-right:4px}
+.jw-side .je{margin:0}.jw-side .je-shots{display:none}
+.jw-rules{border:1px solid var(--line);padding:12px 14px;font-size:14px}.jw-rules b{display:block;margin-bottom:6px;font-size:13px;color:var(--muted)}
+.jw-nav{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-top:12px;border-top:1px solid var(--line)}
+.jw-dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.jw-dot{appearance:none;width:10px;height:10px;border-radius:50%;border:1px solid var(--muted);background:none;padding:0;cursor:pointer}
+.jw-dot.s-approved{background:var(--win);border-color:var(--win)}.jw-dot.s-denied{background:var(--loss);border-color:var(--loss)}.jw-dot.s-pending{border-color:#E8D27A}
+.jw-dot.on{box-shadow:0 0 0 3px rgba(141,235,223,.35)}
+@media (max-width:900px){.jw-b{grid-template-columns:1fr;overflow:auto}.jw-big{min-height:260px}.jw-side{overflow:visible}}
 .jrv-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,460px),1fr));gap:16px;align-items:start;margin-top:14px}
 .jrv{border:1px solid var(--line);background:var(--panel);padding:16px;display:flex;flex-direction:column;gap:12px;transition:opacity .25s,transform .25s}
 .jrv.gone{opacity:0;transform:scale(.97)}
@@ -920,6 +972,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
 </style>
 </head>
 <body>
+<div class="bgfx" id="bgfx" aria-hidden="true"><i class="aur a1"></i><i class="aur a2"></i><i class="grid"></i><i class="scan"></i><i class="grain"></i></div>
 <canvas id="rain" class="fx" aria-hidden="true"></canvas>
 
 <div class="page">
@@ -1413,7 +1466,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       var step = RW < 600 ? 30 : 36, n = Math.ceil(RW / step);
       cols = []; for (var i = 0; i < n; i++) cols.push(drop(i * step + step / 2, true));
     }
-    function drop(x, init){ return { x:x, y: init ? -Math.random() * 50 : -Math.random() * 20, v: .06 + Math.random() * .1, len: 6 + Math.floor(Math.random() * 10), off: Math.floor(Math.random() * 10), wait: init ? Math.random() * 60 : 40 + Math.random() * 260 }; }
+    function drop(x, init){ return { x:x, y: init ? Math.random() * (RH / LH + 16) - 8 : -Math.random() * 12, v: .06 + Math.random() * .1, len: 6 + Math.floor(Math.random() * 10), off: Math.floor(Math.random() * 10), wait: init ? 0 : Math.random() * 25 }; }
     function frame(ts){
       raf2 = requestAnimationFrame(frame);
       if (ts - last < 42) return; last = ts;                      // ~24 fps
@@ -1431,8 +1484,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
       }
       g.globalAlpha = 1;
     }
-    function start(){ if (on || reduce) return; on = true; fit(); c.classList.add('on'); last = 0; raf2 = requestAnimationFrame(frame); }
-    function stop(){ on = false; cancelAnimationFrame(raf2); c.classList.remove('on'); }
+    function start(){ document.getElementById('bgfx').classList.add('on'); if (on || reduce) return; on = true; fit(); c.classList.add('on'); last = 0; raf2 = requestAnimationFrame(frame); }
+    function stop(){ document.getElementById('bgfx').classList.remove('on'); on = false; cancelAnimationFrame(raf2); c.classList.remove('on'); }
     var rt; window.addEventListener('resize', function(){ if (!on) return; clearTimeout(rt); rt = setTimeout(fit, 200); });
     document.addEventListener('visibilitychange', function(){ if (!on) return; if (document.hidden) cancelAnimationFrame(raf2); else { last = 0; raf2 = requestAnimationFrame(frame); } });
     return { start:start, stop:stop };
@@ -3261,7 +3314,10 @@ img,video{-webkit-user-drag:none;user-drag:none}
   }
 
   /* ---------- Journal review: entries count on the leaderboard only once approved ---------- */
-  var JRV = { status:'pending', q:'' };
+  var JRV = { status:'pending', q:'', mode:'day', day:null, basis:'up' };
+  function localDay(iso){ var d = new Date(iso); return isNaN(d) ? '' : ymd(d); }
+  function dayLabel(d){ var t = new Date(d + 'T12:00:00'), today = todayYmd(), y = new Date(); y.setDate(y.getDate() - 1);
+    return d === today ? 'Today' : d === ymd(y) ? 'Yesterday' : t.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' }); }
   function journalReview(){
     var wrap = el('div','adm-list');
     wrap.appendChild(el('p','adm-note','Journal entries count on the psych leaderboard only after you approve them. Deny ones that don\'t hold up (outcome doesn\'t match the screenshot, rules not really followed…). Members see your note.'));
@@ -3270,6 +3326,12 @@ img,video{-webkit-user-drag:none;user-drag:none}
       host.textContent = '';
       var all = []; rows.forEach(function(m){ (m.entries || []).forEach(function(e){ all.push({ m:m, e:e, st: entryStatus(e) }); }); });
       var cnt = { pending:0, approved:0, denied:0 }; all.forEach(function(x){ cnt[x.st]++; });
+      var top = el('div','rv-bar');
+      top.appendChild(seg([['day','By day'],['list','All entries']], JRV.mode, function(v){ JRV.mode = v; admRender(); }));
+      host.appendChild(top);
+      if (JRV.mode === 'day') return drawByDay();
+
+      // ---- all entries, filtered ----
       var bar = el('div','rv-bar'), ch = el('div','chips');
       [['pending','Waiting · ' + cnt.pending],['approved','Approved · ' + cnt.approved],['denied','Denied · ' + cnt.denied],['all','All']].forEach(function(o){
         var b = el('button','chip-b' + (JRV.status === o[0] ? ' on' : ''), o[1]); b.type = 'button'; b.addEventListener('click', function(){ JRV.status = o[0]; admRender(); }); ch.appendChild(b); });
@@ -3283,35 +3345,137 @@ img,video{-webkit-user-drag:none;user-drag:none}
         var shown = all.filter(function(x){ return (JRV.status === 'all' || x.st === JRV.status) && (!v || ((x.m.displayName || '') + ' ' + (x.m.username || '')).toLowerCase().indexOf(v) !== -1); })
           .sort(function(a, b){ return JRV.status === 'pending' ? String(a.e.createdAt).localeCompare(String(b.e.createdAt)) : String(b.e.date + b.e.time).localeCompare(String(a.e.date + a.e.time)); });
         if (!shown.length){ emptyState(list, JRV.status === 'pending' ? 'Nothing waiting' : 'No entries here', JRV.status === 'pending' ? 'New journal entries show up here for you to approve.' : 'Try another filter.'); return; }
-        shown.forEach(function(x){
-          var m = x.m, e = x.e, card = el('article','jrv');
-          var who = el('div','who2'), av = el('span','av'); setAvatar(av, m); who.appendChild(av);
-          var nm = el('div'); nm.appendChild(el('b',null, m.displayName || m.username)); nm.appendChild(el('div','adm-note','@' + (m.username || '') + ' · posted ' + fmtDay(e.createdAt))); who.appendChild(nm);
-          card.appendChild(who);
-          card.appendChild(entryCard(e, null));
-          if (m.journal && m.journal.rules && m.journal.rules.length){ var rd = el('details','jrv-rules'), su = el('summary',null,'Their rules (' + m.journal.rules.length + ')'); rd.appendChild(su);
-            var ol = el('ol','jr-rl show'); m.journal.rules.forEach(function(r){ ol.appendChild(el('li',null,r.text)); }); rd.appendChild(ol); card.appendChild(rd); }
-          var note = inputEl('text', x.st === 'denied' ? (e.reviewNote || '') : '', 'Note for the member (needed to deny)');
-          var acts = el('div','rv-acts'), ok = el('button','btn-s pri','Approve · ' + entryWorth(e) + ' pts'), no = el('button','btn-s warn','Deny'); ok.type = no.type = 'button';
-          if (x.st === 'approved') ok.disabled = true; if (x.st === 'denied') no.disabled = true;
-          function act(status){
-            if (status === 'denied' && note.value.trim().length < 3){ toast('Add a short note so they know why.'); note.focus(); return; }
-            ok.disabled = no.disabled = true;
-            memberAction({ action:'journal-review', userId:m.id, entryId:e.id, status:status, note: note.value.trim() })
-              .then(function(){ toast(status === 'approved' ? 'Approved for the leaderboard.' : status === 'denied' ? 'Denied.' : 'Back to waiting.'); card.classList.add('gone'); setTimeout(admRender, 260); })
-              .catch(function(e){ ok.disabled = no.disabled = false; toast(admFail(e)); });
-          }
-          ok.addEventListener('click', function(){ act('approved'); }); no.addEventListener('click', function(){ act('denied'); });
-          acts.appendChild(ok); acts.appendChild(no);
-          if (x.st !== 'pending'){ var bk = el('button','lnk','Back to waiting'); bk.type = 'button'; bk.addEventListener('click', function(){ act('pending'); }); acts.appendChild(bk); }
-          card.appendChild(fld(x.st === 'pending' ? 'Note (optional when approving)' : 'Change the decision', note)); card.appendChild(acts);
-          list.appendChild(card);
-        });
+        shown.forEach(function(x){ list.appendChild(reviewCard(x)); });
       }
       q.addEventListener('input', function(){ JRV.q = q.value; draw(); });
       draw();
+
+      // ---- by day: pick a day, see everyone's entries from it, walk through them on a call ----
+      function drawByDay(){
+        var key = function(x){ return JRV.basis === 'up' ? localDay(x.e.createdAt) : x.e.date; };
+        var byDay = {}; all.forEach(function(x){ var d = key(x); if (d) (byDay[d] = byDay[d] || []).push(x); });
+        var days = Object.keys(byDay).sort().reverse();
+        if (!JRV.day || !byDay[JRV.day]) JRV.day = days[0] || todayYmd();
+        var bar2 = el('div','rv-bar');
+        bar2.appendChild(seg([['up','Day uploaded'],['trade','Trade date']], JRV.basis, function(v){ JRV.basis = v; JRV.day = null; admRender(); }));
+        var pick = inputEl('date', JRV.day); pick.setAttribute('aria-label','Pick a day'); pick.addEventListener('change', function(){ if (pick.value){ JRV.day = pick.value; admRender(); } });
+        bar2.appendChild(pick); host.appendChild(bar2);
+        // the last days that have entries
+        var strip = el('div','jd-strip');
+        days.slice(0, 21).forEach(function(d){
+          var xs = byDay[d], pend = xs.filter(function(x){ return x.st === 'pending'; }).length;
+          var b = el('button','jd' + (d === JRV.day ? ' on' : '') + (pend ? ' pend' : '')); b.type = 'button';
+          b.appendChild(el('b',null, dayLabel(d))); b.appendChild(el('span',null, xs.length + (xs.length === 1 ? ' entry' : ' entries') + (pend ? ' · ' + pend + ' waiting' : '')));
+          b.addEventListener('click', function(){ JRV.day = d; admRender(); });
+          strip.appendChild(b);
+        });
+        if (!days.length) strip.appendChild(el('p','adm-note','No journal entries yet.'));
+        host.appendChild(strip);
+        var xs = (byDay[JRV.day] || []).slice().sort(function(a, b){ return String(a.m.displayName || a.m.username).localeCompare(String(b.m.displayName || b.m.username)) || String(a.e.time || '').localeCompare(String(b.e.time || '')); });
+        var head = el('div','jd-h'), ht = el('div');
+        ht.appendChild(el('h3',null, new Date(JRV.day + 'T12:00:00').toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' })));
+        var people = {}; xs.forEach(function(x){ people[x.m.id] = 1; });
+        var net = xs.filter(function(x){ return x.e.kind === 'trade'; }).reduce(function(t, x){ return t + (+x.e.pnl || 0); }, 0);
+        ht.appendChild(el('span','adm-note', xs.length + (xs.length === 1 ? ' entry' : ' entries') + ' from ' + Object.keys(people).length + (Object.keys(people).length === 1 ? ' member' : ' members') + ' · net ' + money(net) + ' · ' + xs.filter(function(x){ return x.st === 'pending'; }).length + ' waiting'));
+        head.appendChild(ht);
+        if (xs.length){ var go = el('button','btn-s pri','▶ Walk through on a call'); go.type = 'button'; go.addEventListener('click', function(){ openWalk(xs, 0); }); head.appendChild(go); }
+        host.appendChild(head);
+        var list2 = el('div','jrv-list'); host.appendChild(list2);
+        if (!xs.length) emptyState(list2, 'No entries that day', 'Pick another day above.');
+        xs.forEach(function(x, i){ var c = reviewCard(x); var w = el('button','lnk jd-open','Open in walkthrough'); w.type = 'button'; w.addEventListener('click', function(){ openWalk(xs, i); }); c.appendChild(w); list2.appendChild(c); });
+      }
     }, function(t, line){ host.textContent = ''; emptyState(host, t, line); });
     return wrap;
+  }
+  function reviewEntry(x, status, note){
+    return memberAction({ action:'journal-review', userId:x.m.id, entryId:x.e.id, status:status, note: note || '' })
+      .then(function(){ x.st = status; x.e.status = status; x.e.reviewNote = note || ''; });
+  }
+  // one entry as a review card (list views)
+  function reviewCard(x){
+    var m = x.m, e = x.e, card = el('article','jrv');
+    var who = el('div','who2'), av = el('span','av'); setAvatar(av, m); who.appendChild(av);
+    var nm = el('div'); nm.appendChild(el('b',null, m.displayName || m.username)); nm.appendChild(el('div','adm-note','@' + (m.username || '') + ' · posted ' + fmtDay(e.createdAt) + ' ' + new Date(e.createdAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }))); who.appendChild(nm);
+    card.appendChild(who);
+    card.appendChild(entryCard(e, null));
+    if (m.journal && m.journal.rules && m.journal.rules.length){ var rd = el('details','jrv-rules'), su = el('summary',null,'Their rules (' + m.journal.rules.length + ')'); rd.appendChild(su);
+      var ol = el('ol','jr-rl show'); m.journal.rules.forEach(function(r){ ol.appendChild(el('li',null,r.text)); }); rd.appendChild(ol); card.appendChild(rd); }
+    var note = inputEl('text', x.st === 'denied' ? (e.reviewNote || '') : '', 'Note for the member (needed to deny)');
+    var acts = el('div','rv-acts'), ok = el('button','btn-s pri','Approve · ' + entryWorth(e) + ' pts'), no = el('button','btn-s warn','Deny'); ok.type = no.type = 'button';
+    if (x.st === 'approved') ok.disabled = true; if (x.st === 'denied') no.disabled = true;
+    function act(status){
+      if (status === 'denied' && note.value.trim().length < 3){ toast('Add a short note so they know why.'); note.focus(); return; }
+      ok.disabled = no.disabled = true;
+      reviewEntry(x, status, note.value.trim())
+        .then(function(){ toast(status === 'approved' ? 'Approved for the leaderboard.' : status === 'denied' ? 'Denied.' : 'Back to waiting.'); card.classList.add('gone'); setTimeout(admRender, 260); })
+        .catch(function(e2){ ok.disabled = no.disabled = false; toast(admFail(e2)); });
+    }
+    ok.addEventListener('click', function(){ act('approved'); }); no.addEventListener('click', function(){ act('denied'); });
+    acts.appendChild(ok); acts.appendChild(no);
+    if (x.st !== 'pending'){ var bk = el('button','lnk','Back to waiting'); bk.type = 'button'; bk.addEventListener('click', function(){ act('pending'); }); acts.appendChild(bk); }
+    card.appendChild(fld(x.st === 'pending' ? 'Note (optional when approving)' : 'Change the decision', note)); card.appendChild(acts);
+    return card;
+  }
+  /* ---------- walkthrough: one entry at a time, big screenshots, for going through them live on a call ----------
+     ← → move between entries · A approve · D deny (with a note) · Esc closes */
+  function openWalk(xs, start){
+    var old = document.getElementById('jw'); if (old) old.remove();
+    var i = start || 0, changed = false, sc = el('div','jw'); sc.id = 'jw'; sc.setAttribute('role','dialog'); sc.setAttribute('aria-modal','true'); sc.setAttribute('aria-label','Journal walkthrough');
+    var shell = el('div','jw-in'); sc.appendChild(shell); document.body.appendChild(sc);
+    function close(){ document.removeEventListener('keydown', key); sc.remove(); if (changed) admRender(); }
+    function draw(){
+      var x = xs[i], m = x.m, e = x.e, stt = x.st; shell.textContent = '';
+      // top bar
+      var tb = el('div','jw-top'), who = el('div','who2'), av = el('span','av'); setAvatar(av, m); who.appendChild(av);
+      var nm = el('div'); nm.appendChild(el('b',null, m.displayName || m.username)); nm.appendChild(el('small',null, '@' + (m.username || '') + ' · posted ' + fmtDay(e.createdAt))); who.appendChild(nm); tb.appendChild(who);
+      tb.appendChild(el('span','jw-count', (i + 1) + ' / ' + xs.length));
+      var x2 = el('button','x'); x2.type = 'button'; x2.setAttribute('aria-label','Close'); x2.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+      x2.addEventListener('click', close); tb.appendChild(x2); shell.appendChild(tb);
+      // body: screenshots left, details right
+      var body = el('div','jw-b'), shots = el('div','jw-shots'), side = el('div','jw-side');
+      var files = (e.files || []), big = el('div','jw-big');
+      function show(k){ big.textContent = ''; var f = files[k]; if (!f) { big.appendChild(el('span','adm-note', e.kind === 'none' ? 'No-trade day: no screenshots.' : 'No screenshots.')); return; }
+        if (/^image\//.test(f.type || '')){ var im = el('img'); im.src = f.url; im.alt = f.name || 'Screenshot'; big.appendChild(im); var op = el('a','jw-full','Open full size'); op.href = f.url; op.target = '_blank'; op.rel = 'noopener noreferrer'; big.appendChild(op); }
+        else { var a = el('a','btn-s','Open PDF'); a.href = f.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; big.appendChild(a); }
+        thumbs.querySelectorAll('button').forEach(function(b, j){ b.classList.toggle('on', j === k); }); }
+      var thumbs = el('div','jw-th');
+      files.forEach(function(f, k){ var b = el('button'); b.type = 'button'; if (/^image\//.test(f.type || '')){ var im = el('img'); im.src = f.url; im.alt = ''; b.appendChild(im); } else b.textContent = 'PDF'; b.addEventListener('click', function(){ show(k); }); thumbs.appendChild(b); });
+      shots.appendChild(big); if (files.length > 1) shots.appendChild(thumbs); show(0);
+      side.appendChild(entryCard(e, null));
+      if (m.journal && m.journal.rules){ var rb = el('div','jw-rules'); rb.appendChild(el('b',null,'Their rules')); var ol = el('ol','jr-rl show'); m.journal.rules.forEach(function(r){ ol.appendChild(el('li',null,r.text)); }); rb.appendChild(ol); side.appendChild(rb); }
+      var note = inputEl('text', stt === 'denied' ? (e.reviewNote || '') : '', 'Note for the member (needed to deny)');
+      side.appendChild(fld('Note', note));
+      var acts = el('div','rv-acts'), ok = el('button','btn-s pri','Approve · ' + entryWorth(e) + ' pts  (A)'), no = el('button','btn-s warn','Deny  (D)'); ok.type = no.type = 'button';
+      if (stt === 'approved') ok.disabled = true; if (stt === 'denied') no.disabled = true;
+      function act(status){
+        if (status === 'denied' && note.value.trim().length < 3){ toast('Add a short note so they know why.'); note.focus(); return; }
+        ok.disabled = no.disabled = true;
+        reviewEntry(x, status, note.value.trim()).then(function(){ changed = true; toast(status === 'approved' ? 'Approved.' : 'Denied.'); if (i < xs.length - 1){ i++; draw(); } else draw(); })
+          .catch(function(e2){ ok.disabled = no.disabled = false; toast(admFail(e2)); });
+      }
+      ok.addEventListener('click', function(){ act('approved'); }); no.addEventListener('click', function(){ act('denied'); });
+      acts.appendChild(ok); acts.appendChild(no); side.appendChild(acts);
+      walk.act = act; walk.note = note;
+      body.appendChild(shots); body.appendChild(side); shell.appendChild(body);
+      // prev / next
+      var nav = el('div','jw-nav'), pv = el('button','btn-s','← Previous'), nx = el('button','btn-s','Next →'); pv.type = nx.type = 'button';
+      pv.disabled = i === 0; nx.disabled = i === xs.length - 1;
+      pv.addEventListener('click', function(){ if (i > 0){ i--; draw(); } }); nx.addEventListener('click', function(){ if (i < xs.length - 1){ i++; draw(); } });
+      nav.appendChild(pv); var dots = el('div','jw-dots'); xs.forEach(function(y, j){ var d = el('button','jw-dot s-' + y.st + (j === i ? ' on' : '')); d.type = 'button'; d.setAttribute('aria-label','Entry ' + (j + 1)); d.addEventListener('click', function(){ i = j; draw(); }); dots.appendChild(d); }); nav.appendChild(dots); nav.appendChild(nx);
+      shell.appendChild(nav);
+    }
+    var walk = {};
+    function key(ev){
+      var typing = /^(INPUT|TEXTAREA|SELECT)$/.test((ev.target && ev.target.tagName) || '');
+      if (ev.key === 'Escape'){ if (typing) ev.target.blur(); else close(); return; }
+      if (typing) return;
+      if (ev.key === 'ArrowRight' && i < xs.length - 1){ i++; draw(); }
+      else if (ev.key === 'ArrowLeft' && i > 0){ i--; draw(); }
+      else if ((ev.key === 'a' || ev.key === 'A') && walk.act){ walk.act('approved'); }
+      else if ((ev.key === 'd' || ev.key === 'D') && walk.act){ if (walk.note.value.trim().length < 3){ ev.preventDefault(); walk.note.focus(); toast('Type a short note, then click Deny.'); } else walk.act('denied'); }
+    }
+    document.addEventListener('keydown', key);
+    draw();
   }
 
   /* ---------- Progress: pick members, pick lectures/breakdowns/homework, then one action ----------
