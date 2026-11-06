@@ -1319,7 +1319,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   function inPortal(){ var pv = document.getElementById('portal-view'); return !!(pv && !pv.hidden); }
   function isAdminViewer(){ return !!(typeof SESSION !== 'undefined' && SESSION && SESSION.isAdmin); }
   function paintWatermark(){
-    var d = warnDetails(); if (!d || !inPortal()){ wmEl.hidden = true; return; }
+    var d = warnDetails(); if (!d || !inPortal() || isAdminViewer()){ wmEl.hidden = true; return; }   // admins see no watermark
     var line = (d.username + (d.id ? ' · ' + d.id : '') + ' · ' + new Date().toLocaleDateString('en-GB',{ day:'numeric', month:'short', year:'numeric' })).replace(/[<&>"']/g,'');
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="380"><g transform="rotate(-22 320 190)" font-family="monospace" font-size="14" fill="rgba(255,255,255,0.032)">'
       + '<text x="40" y="140">' + line + '</text><text x="220" y="300">' + line + '</text></g></svg>';
@@ -2066,7 +2066,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
      name tags that keep moving. They stay on in full screen (the player box goes full screen, not the bare video),
      so any recording or phone photo of a lesson shows who it came from. */
   function addVideoMarks(pl){
-    var d = warnDetails(); if (!d) return;
+    var d = warnDetails(); if (!d || isAdminViewer()) return;   // no watermarks on videos for admins
     var line = (d.username + (d.id ? ' · ' + d.id : '') + ' · ' + new Date().toLocaleDateString('en-GB',{ day:'numeric', month:'short', year:'numeric' })).replace(/[<&>"']/g,'');
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="230"><g transform="rotate(-24 210 115)" font-family="monospace" font-size="14" fill="rgba(255,255,255,0.075)">'
       + '<text x="20" y="90">' + line + '</text><text x="120" y="190">' + line + '</text></g></svg>';
