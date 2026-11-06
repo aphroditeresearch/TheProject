@@ -6,19 +6,37 @@
 // POST /api/member { action:'cert-add', kind:'payout'|'funded', file, note } → add a certificate to their profile
 // POST /api/member { action:'cert-delete', id }                            → remove one (not while it's being used for promotion)
 // POST /api/member { action:'promote-request', certId }                     → ask to be promoted to the next level with a payout certificate
+// POST /api/member { action:'flag', kind }                                    → record a blocked action (right-click, dev tools, screenshot…)
 // Files are uploaded straight from the browser to Vercel Blob first (see /api/upload), into members/<their id>/…
 const crypto = require('crypto');
-const { readSession, isAdmin, kvConfigured, loadProgress, json } = require('./_lib');
+const { readSession, isAdmin, kvConfigured, loadProgress, json, kv, clientIp } = require('./_lib');
 const { gateFor, saveSub, findItem, loadCerts, saveCert, deleteCert, loadPromo, savePromo } = require('./_gate');
 const { signAll, cleanFile } = require('./_blob');
 
+const FLAG_KINDS = ['right-click', 'devtools-keys', 'devtools-open', 'save', 'view-source', 'print', 'screenshot'];
 const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
 module.exports = async (req, res) => {
   const s = readSession(req);
   if (!s) return json(res, 401, { error: 'signed_out' });
-  if (!kvConfigured()) return json(res, 503, { error: 'no_storage' });
   const uid = s.user.id;
+
+  // blocked actions, shown against the member in Admin → Members → Flags
+  if (req.method === 'POST') {
+    let fb = req.body;
+    if (typeof fb === 'string') { try { fb = JSON.parse(fb); } catch (e) { fb = null; } }
+    if (fb && fb.action === 'flag') {
+      if (!FLAG_KINDS.includes(fb.kind)) return json(res, 400, { error: 'bad_kind' });
+      const ip = clientIp(req);
+      if (!kvConfigured()) return json(res, 202, { recorded: false, ip });
+      const key = 'flags:' + uid;
+      await kv(['HINCRBY', key, fb.kind, 1]);
+      await kv(['HINCRBY', key, 'total', 1]);
+      await kv(['HSET', key, 'last', new Date().toISOString(), 'lastKind', fb.kind, 'lastIp', ip || '']);
+      return json(res, 200, { recorded: true, ip });
+    }
+  }
+  if (!kvConfigured()) return json(res, 503, { error: 'no_storage' });
 
   if (req.method === 'GET') {
     const [certs, promo] = await Promise.all([loadCerts(uid), loadPromo(uid)]);

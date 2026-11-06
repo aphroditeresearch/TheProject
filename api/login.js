@@ -1,6 +1,6 @@
-// GET /api/login → sends the member to Discord to approve sign-in.
+// GET /api/login → sends the member to Discord to approve sign-in.  GET /api/login?out=1 → signs out.
 const crypto = require('crypto');
-const { env, cookie, STATE_COOKIE, redirectUri, redirect } = require('./_lib');
+const { env, cookie, STATE_COOKIE, redirectUri, redirect, clearCookie, SESSION_COOKIE } = require('./_lib');
 
 // Chrome only. Browsers can fake this header, so it's a second line behind the page's own check.
 function isChrome(ua) {
@@ -9,6 +9,8 @@ function isChrome(ua) {
 }
 
 module.exports = async (req, res) => {
+  // GET /api/login?out=1 → sign out: end the session and go back to the sign-in page
+  if (/[?&]out=1/.test(req.url || '')) return redirect(res, '/', [clearCookie(SESSION_COOKIE)]);
   if (!isChrome(req.headers['user-agent'] || '')) return redirect(res, '/?error=browser');
   const state = crypto.randomBytes(16).toString('hex');
   const params = new URLSearchParams({

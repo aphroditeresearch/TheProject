@@ -906,7 +906,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     if (!warnEl.hidden && now - lastWarn < 1500) return;
     lastWarn = now; showWarning();
     if (typeof SESSION !== 'undefined' && SESSION && SESSION.user && BACKEND){
-      fetch('/api/flag', { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ kind: kind }) })
+      fetch('/api/member', { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ action:'flag', kind: kind }) })
         .then(function(r){ return r.json(); })
         .then(function(j){ if (j && j.ip && !SESSION.ip){ SESSION.ip = j.ip; if (!warnEl.hidden) showWarning(); } })
         .catch(function(){});
@@ -2399,7 +2399,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   document.addEventListener('keydown', function(e){ if(e.key==='Escape' && !scrim.hidden) closePopup(); });
   enter.addEventListener('click', enterPortal);
   document.getElementById('signout').addEventListener('click', function(){
-    if (BACKEND){ window.location.href = '/api/logout'; return; }
+    if (BACKEND){ window.location.href = '/api/login?out=1'; return; }
     portV.hidden=true; gateV.hidden=false; try { history.replaceState(null,'',location.pathname); } catch(e) {}
     window.scrollTo(0,0); toast('Signed out.');
   });
