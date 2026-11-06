@@ -257,7 +257,7 @@ grouped by section. Nobody below the top level sees the tab or its lectures.
 
 ## Homework notifications
 New homework and work that's sent back or approved show as notifications at the top of the Homework tab and as a popup
-in the bottom-right corner. "Watch the lectures for this" opens the videos an assignment is linked to.
+in the bottom-left corner (once per visit, until it’s handed in). The Homework tab shows a red count of homework not handed in yet. "Watch the lectures for this" opens the videos an assignment is linked to.
 
 ## Journal reviews and calendar
 New journal entries are **pending** until an admin approves them in **Admin → Journal**. Only approved entries score on

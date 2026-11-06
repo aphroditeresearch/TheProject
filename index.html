@@ -282,9 +282,6 @@ a{color:var(--blue);text-underline-offset:3px}
 .view-h{display:flex;flex-direction:column;gap:8px}
 .view-h h2{margin:0;font-family:var(--display);font-style:italic;font-weight:900;font-stretch:125%;font-size:clamp(34px,5vw,52px);line-height:1;letter-spacing:-.02em;text-transform:lowercase}
 .view-h p{margin:0;color:var(--muted)}
-/* a strip of tiny candles under each page title */
-.view-h::after{content:"";display:block;height:18px;width:min(260px,70%);margin-top:6px;opacity:.55;
-  background:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='18'%3E%3Cg stroke='%2314A39D' stroke-width='1'%3E%3Cpath d='M4 2v14M14 5v12M24 1v12M34 6v11M44 3v13M54 7v10M64 2v12M74 4v13M84 1v11M94 5v12M104 3v12M114 6v11M124 2v13'/%3E%3C/g%3E%3Cg fill='%2314A39D'%3E%3Crect x='2' y='5' width='4' height='8'/%3E%3Crect x='22' y='3' width='4' height='7'/%3E%3Crect x='42' y='6' width='4' height='7'/%3E%3Crect x='62' y='4' width='4' height='6'/%3E%3Crect x='82' y='3' width='4' height='5'/%3E%3Crect x='102' y='5' width='4' height='6'/%3E%3Crect x='122' y='4' width='4' height='7'/%3E%3C/g%3E%3Cg fill='none' stroke='%238DEBDF'%3E%3Crect x='12.5' y='8.5' width='3' height='6'/%3E%3Crect x='32.5' y='8.5' width='3' height='6'/%3E%3Crect x='52.5' y='9.5' width='3' height='5'/%3E%3Crect x='72.5' y='7.5' width='3' height='7'/%3E%3Crect x='92.5' y='7.5' width='3' height='6'/%3E%3Crect x='112.5' y='8.5' width='3' height='5'/%3E%3C/g%3E%3C/svg%3E") left center/auto 100% repeat-x}
 .cards .hw-notes{grid-column:1/-1}
 .hw > *{grid-column:1/-1}
 .hw-vids{justify-self:start}
@@ -302,10 +299,8 @@ a{color:var(--blue);text-underline-offset:3px}
   .hw,.lb-row{animation:rise .45s cubic-bezier(.2,.8,.25,1) both;animation-delay:calc(var(--i,0) * 45ms)}
   .pane > *{animation:rise .4s cubic-bezier(.2,.8,.25,1) both}
   .pane > :nth-child(2){animation-delay:.04s}.pane > :nth-child(3){animation-delay:.08s}.pane > :nth-child(n+4){animation-delay:.12s}
-  .view-h::after{animation:candles 1s steps(13) both .15s}
 }
 @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-@keyframes candles{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
 @media (prefers-reduced-motion:reduce){.tab-ink{transition:none}}
 /* lessons with a done check */
 .lesson{cursor:default;box-sizing:border-box}
@@ -451,7 +446,7 @@ a{color:var(--blue);text-underline-offset:3px}
 .jrv-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,460px),1fr));gap:16px;align-items:start;margin-top:14px}
 .jrv{border:1px solid var(--line);background:var(--panel);padding:16px;display:flex;flex-direction:column;gap:12px;transition:opacity .25s,transform .25s}
 .jrv.gone{opacity:0;transform:scale(.97)}
-.jrv .jr-e{margin:0;background:var(--panel-2)}
+.jrv .je{margin:0;background:var(--panel-2)}
 .jrv-rules summary{cursor:pointer;font-size:13px;color:var(--muted)}.jrv-rules ol{margin-top:8px;font-size:14px}
 .pg-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:16px;align-items:start}
 .pg-card{border:1px solid var(--line);background:var(--panel);padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
@@ -490,13 +485,13 @@ table.mem td:first-child,table.mem th:first-child{width:34px}
   .side-list::-webkit-scrollbar-thumb{background:var(--blue-dim);border-radius:8px}
 }
 /* homework */
-.badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:4px;border-radius:999px;background:#E8D27A;color:#111;font:700 11px var(--sans);vertical-align:1px}
+.badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:4px;border-radius:999px;background:#E5484D;color:#fff;box-shadow:0 0 0 2px var(--bg),0 0 10px rgba(229,72,77,.55);font:700 11px var(--sans);vertical-align:1px}
 .badge[hidden]{display:none}
 .hw-h{appearance:none;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;width:100%;padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer;font:inherit}
 .hw .tagx.lt{border-color:var(--blue);color:var(--kana-c)}
 .hw-sum{margin:10px 0 0;color:var(--muted);font-size:14px;line-height:1.5}
 .hw .handin{margin-top:16px;max-width:none}
-.hw-pop{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:65;width:min(340px,calc(100% - 40px));box-sizing:border-box;display:flex;flex-direction:column;gap:6px;padding:16px 18px 16px 20px;
+.hw-pop{position:fixed;left:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:65;width:min(340px,calc(100% - 40px));box-sizing:border-box;display:flex;flex-direction:column;gap:6px;padding:16px 18px 16px 20px;
   background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--kana-c);box-shadow:0 18px 40px rgba(0,0,0,.5),0 0 0 1px rgba(28,232,190,.06);animation:popr .5s cubic-bezier(.2,.9,.25,1.15)}
 .hw-pop[hidden]{display:none}
 .hw-pop .hp-eye{font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--kana-c);display:flex;align-items:center;gap:8px}
@@ -509,7 +504,7 @@ table.mem td:first-child,table.mem th:first-child{width:34px}
 .hp-acts{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px}.hp-more{font-size:12px;color:var(--muted)}
 .hw-pop .btn-s{text-decoration:none;display:inline-flex;align-items:center}
 .hw-pop .x{position:absolute;top:6px;right:8px;width:30px;height:30px;border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer}
-@keyframes popr{0%{opacity:0;transform:translate(24px,8px) scale(.97)}100%{opacity:1;transform:none}}
+@keyframes popr{0%{opacity:0;transform:translate(-24px,8px) scale(.97)}100%{opacity:1;transform:none}}
 @keyframes ping{0%{box-shadow:0 0 0 0 rgba(28,232,190,.55)}80%,100%{box-shadow:0 0 0 9px rgba(28,232,190,0)}}
 /* homework notifications */
 .hw-notes{border:1px solid var(--line);background:var(--panel);margin-bottom:18px}
@@ -609,8 +604,29 @@ table.mem td:first-child,table.mem th:first-child{width:34px}
 .lb-pts{font:800 20px var(--sans);color:var(--kana-c)}
 .jr-view{margin-bottom:14px}
 .jr-pend{margin:0;font-size:13px;color:#E8D27A;border-left:2px solid #E8D27A;padding:4px 0 4px 10px}
-.jr-e.s-pending{border-style:dashed}.jr-e.s-denied{opacity:.7}
-.jr-e.win{border-left:3px solid var(--win)}.jr-e.loss{border-left:3px solid var(--loss)}
+.je{position:relative;border:1px solid var(--line);background:var(--panel);padding:14px 16px 12px 18px;display:flex;flex-direction:column;gap:10px;margin-bottom:10px}
+.je::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--line)}
+.je.win::before{background:var(--win)}.je.loss::before{background:var(--loss)}.je.none::before{background:#59656A}
+.je.s-denied{opacity:.6}
+.je-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.je-main{min-width:0;display:flex;flex-direction:column;gap:4px}
+.je-t{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.je-t b{font-size:17px;letter-spacing:-.01em}
+.je-out{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.1em;padding:2px 7px;border:1px solid var(--line)}
+.je-out.o-tp{color:var(--win);border-color:rgba(59,227,143,.4)}.je-out.o-sl{color:var(--loss);border-color:rgba(240,84,84,.4)}.je-out.o-be{color:var(--muted)}
+.je-tag{font-size:12px;color:var(--muted)}
+.je-meta{font-size:12px;color:var(--muted)}
+.je-pnl{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.je.win .je-pnl{color:var(--win)}.je.loss .je-pnl{color:var(--loss)}
+.je-ov{margin:0;font-size:14px;line-height:1.55;color:var(--ink);opacity:.85;white-space:pre-wrap}
+.je-shots .hf{width:96px}.je-shots .hf img{height:60px}.je-shots .hf-n{display:none}
+.je-foot{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--line);font-size:12px}
+.je-rule.ok{color:var(--kana-c)}.je-rule.no{color:var(--loss)}
+.je-st{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+.je-st::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.je-st.st-pending{color:#E8D27A}.je-st.st-approved{color:var(--win)}.je-st.st-denied{color:var(--loss)}
+.je-del{margin-left:auto;appearance:none;border:0;background:none;color:var(--muted);font:500 12px var(--sans);cursor:pointer;padding:4px 0}
+.je-del:hover{color:var(--loss)}
+.je-note{margin:0;font-size:13px;color:#F2B9A6}
 .jr-cal{border:1px solid var(--line);background:var(--panel);padding:18px}
 .cal-h{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .cal-t{margin:0 6px;font-family:var(--display);font-style:italic;font-weight:900;font-stretch:125%;font-size:22px;min-width:9ch;text-align:center}
@@ -1090,10 +1106,6 @@ img,video{-webkit-user-drag:none;user-drag:none}
             <dt>Joined the server</dt><dd id="pf-joined">—</dd>
             <dt>Discord ID</dt><dd class="mono" id="pf-id">—</dd>
           </dl>
-          <section class="pf-log" aria-labelledby="pf-log-h">
-            <div class="pf-log-h"><h4 id="pf-log-h">Completed</h4><span id="pf-log-n">0</span></div>
-            <ol class="pf-list" id="pf-list"></ol>
-          </section>
           <div id="pf-promo"></div>
           <section class="pf-log" aria-labelledby="pf-certs-h">
             <div class="pf-log-h"><h4 id="pf-certs-h">Certificates</h4><span id="pf-certs-n">0</span></div>
@@ -1387,7 +1399,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   if (reduce) P.forEach(drawPetal); else requestAnimationFrame(tick);
 
   var tEl = document.getElementById('toast'), tT;
-  function toast(msg){ tEl.textContent=msg; tEl.hidden=false; clearTimeout(tT); tT=setTimeout(function(){ tEl.hidden=true; },3200); }
+  function toast(msg){ tEl.textContent=msg; tEl.hidden=false; clearTimeout(tT); tT=setTimeout(function(){ tEl.hidden=true; }, Math.max(3200, String(msg).length * 55)); }
   /* =====================================================================
      CONFIG: edit these to run the portal
      ===================================================================== */
@@ -2130,7 +2142,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   function renderHomework(){
     var list = document.getElementById('hw-list'); list.textContent='';
     var open = openHomework(), badge = document.getElementById('hw-badge'), admin = !!(SESSION && SESSION.isAdmin);
-    badge.textContent = open.length; badge.hidden = !open.length || admin;
+    badge.textContent = open.length; badge.hidden = !open.length; badge.setAttribute('aria-label', open.length + ' homework not handed in');
     if (!HOMEWORK.length){ emptyState(list,'No homework right now','Go chart something. New assignments land here.'); hidePop(); return; }
     // notifications
     if (!admin){
@@ -2257,29 +2269,31 @@ img,video{-webkit-user-drag:none;user-drag:none}
     if (first >= 0) pick(first); else main.appendChild(el('p','adm-note','These lectures open as you work through the course.'));
     x.focus();
   }
-  // bottom-right popup: the newest thing about your homework you haven't seen (new, or sent back)
+  // bottom-left reminder: homework you haven't handed in (sent-back work first). Closing it hides it until your next visit.
   var popNote = null;
   function showPop(){
     var pop = document.getElementById('hw-pop');
-    if (SESSION && SESSION.isAdmin){ pop.hidden = true; return; }
-    var pv = document.getElementById('portal-view'); if (!pv || pv.hidden || (location.hash || '') === '#homework') return;
-    var popped = lsGet(hwPopKey());
-    var n = hwNotes().filter(function(x){ return x.unread && x.kind !== 'approved' && !popped[x.id]; })[0];
-    if (!n){ pop.hidden = true; return; }
-    popNote = n;
-    var more = hwNotes().filter(function(x){ return x.unread && x !== n && x.id !== n.id; }).length;
-    pop.classList.toggle('ret', n.kind === 'returned');
-    document.getElementById('hw-pop-e').textContent = n.kind === 'returned' ? 'Homework sent back' : 'New homework';
-    document.getElementById('hw-pop-t').textContent = n.hw.title;
-    document.getElementById('hw-pop-s').textContent = n.kind === 'returned' ? n.line : (n.hw.details || 'Open it to see what to hand in.');
+    var pv = document.getElementById('portal-view'), h = location.hash || '';
+    if (!pv || pv.hidden || h === '#homework' || h === '#admin'){ pop.hidden = true; return; }
+    var open = openHomework(); if (!open.length){ pop.hidden = true; return; }
+    var popped = {}; try { popped = JSON.parse(sessionStorage.getItem('theproject.hwpop2') || '{}') || {}; } catch(e) {}
+    var list = open.slice().sort(function(a, b){ var ar = a.sub && a.sub.status === 'returned', br = b.sub && b.sub.status === 'returned'; return ar === br ? byNewest(a, b) : (ar ? -1 : 1); })
+      .filter(function(x){ return !popped[x.id]; });
+    var hw = list[0]; if (!hw){ pop.hidden = true; return; }
+    var ret = hw.sub && hw.sub.status === 'returned';
+    popNote = { id: (ret ? 'ret:' : 'new:') + hw.id, hw: hw };
+    pop.classList.toggle('ret', !!ret);
+    document.getElementById('hw-pop-e').textContent = ret ? 'Homework sent back' : (open.length === 1 ? 'Homework due' : open.length + ' homework due');
+    document.getElementById('hw-pop-t').textContent = hw.title;
+    document.getElementById('hw-pop-s').textContent = ret ? (hw.sub.feedback || 'Make the changes and hand it in again.') : (hw.details || 'Open it to see what to hand in.');
     var m = document.getElementById('hw-pop-m'); m.textContent = '';
-    if (n.hw.due) m.appendChild(el('span',null,'Due ' + n.hw.due));
-    var lc = hwLectures(n.hw).length; if (lc) m.appendChild(el('span',null, lc + (lc === 1 ? ' lecture' : ' lectures')));
-    document.getElementById('hw-pop-n').textContent = more ? '+' + more + ' more' : '';
-    if (pop.hidden){ pop.hidden = false; }
+    if (hw.due) m.appendChild(el('span',null,'Due ' + hw.due));
+    var lc = hwLectures(hw).length; if (lc) m.appendChild(el('span',null, lc + (lc === 1 ? ' lecture' : ' lectures')));
+    document.getElementById('hw-pop-n').textContent = list.length > 1 ? '+' + (list.length - 1) + ' more' : '';
+    pop.hidden = false;
   }
   function hidePop(){ var pop = document.getElementById('hw-pop'); if (pop) pop.hidden = true; }
-  function popDone(){ if (popNote){ var p = lsGet(hwPopKey()); p[popNote.id] = 1; lsSet(hwPopKey(), p); } hidePop(); }
+  function popDone(){ if (popNote){ var p = {}; try { p = JSON.parse(sessionStorage.getItem('theproject.hwpop2') || '{}') || {}; } catch(e) {} p[popNote.hw.id] = 1; try { sessionStorage.setItem('theproject.hwpop2', JSON.stringify(p)); } catch(e) {} } hidePop(); }
   document.getElementById('hw-pop-x').addEventListener('click', function(){ popDone(); setTimeout(showPop, 400); });
   document.getElementById('hw-pop-go').addEventListener('click', function(e){ e.preventDefault(); var n = popNote; popDone(); if (n){ hwMarkRead([n.id]); openHwCard(n.hw.id); } });
 
@@ -2313,7 +2327,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     BREAKDOWNS.forEach(function(b){ if (b.title) titles['bd:'+b.id] = { t:b.title, k:'Breakdown' }; });
     var rows = Object.keys(doneSet).filter(function(k){ return titles[k]; })
       .sort(function(a,b){ return String(doneSet[b]).localeCompare(String(doneSet[a])); });
-    var list = document.getElementById('pf-list'); list.textContent='';
+    var list = document.getElementById('pf-list'); if (!list) return; list.textContent='';
     document.getElementById('pf-log-n').textContent = rows.length;
     if (!rows.length){ list.appendChild(el('li','pf-none','Nothing completed yet. Finished lessons show up here with the day you completed them.')); return; }
     rows.forEach(function(k){
@@ -2546,17 +2560,29 @@ img,video{-webkit-user-drag:none;user-drag:none}
   function shortMoney(n){ n = +n || 0; var a = Math.abs(n), t = a >= 10000 ? (a/1000).toFixed(a >= 100000 ? 0 : 1) + 'k' : a.toLocaleString('en-US', { maximumFractionDigits: 0 }); return (n < 0 ? '−$' : n > 0 ? '+$' : '$') + t; }
   var STATUS_CHIP = { pending:['Pending review',' wait'], approved:['Approved',' ok'], denied:['Denied',' warn'] };
   function entryCard(e, onChange){
-    var stt = entryStatus(e), card = el('article','jr-e s-' + stt + (e.kind === 'trade' ? (+e.pnl > 0 ? ' win' : +e.pnl < 0 ? ' loss' : '') : ' none')), top = el('div','jr-e-top');
-    var tt = el('div'); tt.appendChild(el('b',null, e.kind === 'none' ? 'No trades' : (e.pair + ' · ' + (OUT[e.outcome] || '') + ' · ' + money(e.pnl))));
-    tt.appendChild(el('small',null, (e.time ? e.time + ' · ' : '') + (e.session || '') + (e.kind === 'trade' ? ' · ' + e.account + ' · ' + e.contracts + (+e.contracts === 1 ? ' contract' : ' contracts') + ' · ' + e.model : '')));
-    top.appendChild(tt);
-    var tags = el('div','jr-tags'); tags.appendChild(el('span','chip' + (e.followed ? ' ok' : ' warn'), e.followed ? 'Rules followed' : 'Rules broken'));
-    var sc = STATUS_CHIP[stt]; tags.appendChild(el('span','chip' + sc[1], stt === 'approved' ? 'Approved · ' + entryPoints(e) + ' pts' : stt === 'pending' ? sc[0] + ' · ' + entryWorth(e) + ' pts' : sc[0]));
-    top.appendChild(tags); card.appendChild(top);
-    if (stt === 'denied' && e.reviewNote) card.appendChild(el('p','hi-fb','Not counted: ' + e.reviewNote));
-    if (e.overview) card.appendChild(el('p',null,e.overview));
-    if (e.files && e.files.length) card.appendChild(fileChips(e.files));
-    if (onChange && stt !== 'approved' && Date.now() - Date.parse(e.createdAt) < 7 * 864e5) card.appendChild(delBtn(function(){ memberPost({ action:'journal-delete', id:e.id }).then(loadMe).then(function(){ toast('Entry removed.'); onChange(); }).catch(function(){ toast('Couldn\'t remove it.'); }); }));
+    var stt = entryStatus(e), trade = e.kind === 'trade', pnl = +e.pnl || 0;
+    var card = el('article','je s-' + stt + (trade ? (pnl > 0 ? ' win' : pnl < 0 ? ' loss' : ' flat') : ' none'));
+    var row = el('div','je-row'), mn = el('div','je-main'), t = el('div','je-t');
+    if (trade){ t.appendChild(el('b',null, e.pair)); t.appendChild(el('span','je-out o-' + e.outcome, OUT[e.outcome] || '')); if (e.model) t.appendChild(el('span','je-tag', e.model)); }
+    else t.appendChild(el('b',null,'No trades'));
+    mn.appendChild(t);
+    mn.appendChild(el('div','je-meta', [e.time, e.session, trade ? e.account : '', trade ? e.contracts + (+e.contracts === 1 ? ' contract' : ' contracts') : ''].filter(Boolean).join(' · ')));
+    row.appendChild(mn);
+    if (trade) row.appendChild(el('div','je-pnl', (pnl > 0 ? '+' : '') + money(pnl)));
+    card.appendChild(row);
+    if (e.overview) card.appendChild(el('p','je-ov', e.overview));
+    if (e.files && e.files.length){ var sh = fileChips(e.files); sh.classList.add('je-shots'); card.appendChild(sh); }
+    var ft = el('div','je-foot');
+    ft.appendChild(el('span','je-rule' + (e.followed ? ' ok' : ' no'), e.followed ? '✓ Rules followed' : '✕ Rules broken'));
+    ft.appendChild(el('span','je-st st-' + stt, stt === 'approved' ? 'Approved · ' + entryPoints(e) + (entryPoints(e) === 1 ? ' pt' : ' pts') : stt === 'pending' ? 'Waiting for review · ' + entryWorth(e) + (entryWorth(e) === 1 ? ' pt' : ' pts') : 'Not counted'));
+    if (onChange && stt !== 'approved' && Date.now() - Date.parse(e.createdAt) < 7 * 864e5){
+      var del = el('button','je-del','Remove'); del.type = 'button';
+      del.addEventListener('click', function(){ if (!confirmInline(del, 'Remove?')) return; del.disabled = true;
+        memberPost({ action:'journal-delete', id:e.id }).then(loadMe).then(function(){ toast('Entry removed.'); onChange(); }).catch(function(){ del.disabled = false; toast('Couldn\'t remove it.'); }); });
+      ft.appendChild(del);
+    }
+    card.appendChild(ft);
+    if (stt === 'denied' && e.reviewNote) card.appendChild(el('p','je-note','Not counted: ' + e.reviewNote));
     return card;
   }
   // month calendar: green days made money, red days lost it; click a day to see its entries
@@ -3025,8 +3051,14 @@ img,video{-webkit-user-drag:none;user-drag:none}
       saveDemoGate(); renderCurriculum(); return Promise.resolve(true);
     }
     return fetch('/api/admin/members', { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) })
-      .then(function(r){ if (!r.ok) throw new Error(r.status); return true; });
+      .then(function(r){ if (r.ok) return true;
+        return r.json().catch(function(){ return {}; }).then(function(j){ var e = new Error((j && j.error) || String(r.status)); e.status = r.status; e.code = (j && j.error) || ''; throw e; }); });
   }
+  // why an admin action failed, in words
+  var ADM_ERR = { no_submission:'That hand-in isn\'t there any more (it may have been cleared or deleted). Refresh the page.', signed_out:'You\'ve been signed out. Sign in again.',
+    not_admin:'This account isn\'t an admin.', no_storage:'Upstash Redis isn\'t connected in Vercel.', bad_status:'That action isn\'t allowed.', bad_target:'That member or item wasn\'t recognised. Refresh the page.',
+    no_entry:'That journal entry isn\'t there any more. Refresh the page.', server:'The server hit an error. Open Vercel → Logs to see it, then send it to me.' };
+  function admFail(e){ var c = e && (e.code || e.message); return 'Couldn\'t save that: ' + (ADM_ERR[c] || ('error ' + (c || 'network') + '. Refresh and try again.')); }
   function levelName(lv){ var cur = (adm.content && adm.content.curriculum) || CURRICULUM; return lv ? (cur[lv-1] ? cur[lv-1].name : 'Step ' + lv) : 'No role'; }
 
   /* ---------- Hand-ins: notes + homework waiting for review ---------- */
@@ -3127,7 +3159,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       yes.disabled = no.disabled = true;
       memberAction({ action:'promote', userId:m.id, promote:promote, note:note.value.trim() })
         .then(function(){ toast(promote ? 'Promoted. ' + promoName() + ' is open for them now. Remember to give them the role in Discord too.' : 'Declined with your note.'); adm.openMember = m.id; admRender(); })
-        .catch(function(){ yes.disabled = no.disabled = false; toast('Couldn\'t save that. Try again.'); });
+        .catch(function(e){ yes.disabled = no.disabled = false; toast(admFail(e)); });
     }
     yes.addEventListener('click', function(){ go(true); }); no.addEventListener('click', function(){ go(false); });
     wrap.appendChild(fld('Note (optional when promoting)', note)); acts.appendChild(yes); acts.appendChild(no); wrap.appendChild(acts);
@@ -3155,7 +3187,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       ok.disabled = back.disabled = true;
       memberAction({ action:'review', userId:x.m.id, lessonId:x.k, status:status, feedback:fbI.value.trim() })
         .then(function(){ toast(status === 'approved' ? 'Approved.' : 'Sent back with your feedback.'); admRender(); })
-        .catch(function(){ ok.disabled = back.disabled = false; toast('Couldn\'t save that. Try again.'); });
+        .catch(function(e){ ok.disabled = back.disabled = false; toast(admFail(e)); });
     }
     ok.addEventListener('click', function(){ act('approved'); }); back.addEventListener('click', function(){ act('returned'); });
     c.appendChild(fld(open ? 'Feedback (optional when approving)' : 'Change the decision', fbI)); acts.appendChild(ok); acts.appendChild(back); c.appendChild(acts);
@@ -3201,7 +3233,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
             ok.disabled = no.disabled = true;
             memberAction({ action:'journal-review', userId:m.id, entryId:e.id, status:status, note: note.value.trim() })
               .then(function(){ toast(status === 'approved' ? 'Approved for the leaderboard.' : status === 'denied' ? 'Denied.' : 'Back to waiting.'); card.classList.add('gone'); setTimeout(admRender, 260); })
-              .catch(function(){ ok.disabled = no.disabled = false; toast('Couldn\'t save that. Try again.'); });
+              .catch(function(e){ ok.disabled = no.disabled = false; toast(admFail(e)); });
           }
           ok.addEventListener('click', function(){ act('approved'); }); no.addEventListener('click', function(){ act('denied'); });
           acts.appendChild(ok); acts.appendChild(no);
@@ -3495,7 +3527,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     if (v === 'admin' && !adm.content) admLoad();
     if (v === 'journal') renderJournal();
     if (v === 'leaderboard') renderBoard();
-    if (v === 'homework') hidePop();
+    if (v === 'homework' || v === 'admin') hidePop(); else if (typeof showPop === 'function') setTimeout(showPop, 300);
     document.querySelectorAll('[data-view]').forEach(function(m){
       var on = m.getAttribute('data-view') === v, was = !m.hidden; m.hidden = !on;
       if (on && !was){ Array.prototype.forEach.call(m.children, function(c, i){ c.style.setProperty('--k', i); }); m.classList.remove('entering'); void m.offsetWidth; m.classList.add('entering');
