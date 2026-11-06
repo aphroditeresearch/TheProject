@@ -4,7 +4,7 @@
 // out as signed links that stop working after a few hours.
 const { issueSignedToken, presignUrl } = require('@vercel/blob');
 const { readSession, isAdmin, json } = require('./_lib');
-const { gateFor } = require('./_gate');
+const { gateFor, bdChains, bdKind, bdKey, BD_TASK } = require('./_gate');
 
 const PRIVATE_HOST = /^https:\/\/[a-z0-9]+\.private\.blob\.vercel-storage\.com\//i;
 const LINK_HOURS = 6;
@@ -55,7 +55,15 @@ module.exports = async (req, res) => {
     return { id: ch.id, name: ch.name, role: ch.role || null, step: ci + 1,
       locked: lessons.every((l) => !l.open), lessons };
   });
-  out.breakdowns = (content.breakdowns || []).map((b) => Object.assign({}, b));
+  // breakdowns, in the order members work through them. Locked ones keep only their slot (type, week, day)
+  const chains = bdChains(content.breakdowns);
+  out.breakdowns = chains.main.concat(chains.advanced).map((b) => {
+    const key = bdKey(b), a = access.breakdowns[key] || { open: false, reason: 'level' };
+    const slot = { id: b.id, kind: bdKind(b), week: b.week || '', day: b.day || '' };
+    if (!a.open) return Object.assign(slot, { open: false, reason: a.reason });
+    return Object.assign(slot, { title: b.title, date: b.date || '', summary: b.summary || '', video: b.video || '', link: b.link || '',
+      homework: b.homework || BD_TASK[slot.kind], createdAt: b.createdAt || '', open: true, passed: a.passed, sub: subs[key] || null });
+  });
   out.announcements = (content.announcements || []).filter((a) => !a.expires || Date.parse(a.expires) > now);
 
   // sign private video links (only for the lessons this member can open)

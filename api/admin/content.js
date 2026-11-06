@@ -8,6 +8,8 @@ const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 const id = (v) => (typeof v === 'string' && /^[\w-]{1,64}$/.test(v) ? v : null);
 const url = (v) => { const s = str(v, 2000); return /^https:\/\/[^\s"'<>]+$/.test(s) ? s : ''; };
 const date = (v) => { const s = str(v, 40); return s && !isNaN(Date.parse(s)) ? s : ''; };
+// any date → the Monday of its week (YYYY-MM-DD)
+const monday = (d) => { const t = new Date(d + 'T12:00:00Z'); const back = (t.getUTCDay() + 6) % 7; t.setUTCDate(t.getUTCDate() - back); return t.toISOString().slice(0, 10); };
 const role = (v) => (typeof v === 'string' && /^\d{5,25}$/.test(v.trim()) ? v.trim() : null);
 
 function clean(c) {
@@ -27,6 +29,10 @@ function clean(c) {
     breakdowns: arr(c.breakdowns, 500).map((b) => ({
       id: id(b && b.id), title: str(b && b.title, 160), date: str(b && b.date, 40), summary: str(b && b.summary, 4000),
       video: url(b && b.video), link: url(b && b.link), createdAt: date(b && b.createdAt),
+      kind: ['daily', 'weekly', 'outlook', 'advanced'].includes(b && b.kind) ? b.kind : 'daily',
+      week: /^\d{4}-\d{2}-\d{2}$/.test(str(b && b.week, 10)) ? monday(str(b && b.week, 10)) : '',
+      day: ['mon', 'tue', 'wed', 'thu', 'fri'].includes(b && b.day) ? b.day : '',
+      homework: str(b && b.homework, 4000),
     })).filter((b) => b.id && b.title),
     announcements: arr(c.announcements, 100).map((a) => ({
       id: id(a && a.id), title: str(a && a.title, 140), body: str(a && a.body, 2000),

@@ -2,7 +2,7 @@
 // the signed-in member, so it shows in the admin Members view. Signed-out visitors aren't recorded.
 const { readSession, kvConfigured, kv, json, clientIp } = require('./_lib');
 
-const KINDS = ['right-click', 'devtools-keys', 'devtools-open', 'save', 'view-source', 'print'];
+const KINDS = ['right-click', 'devtools-keys', 'devtools-open', 'save', 'view-source', 'print', 'screenshot'];
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return json(res, 405, { error: 'method' }); }

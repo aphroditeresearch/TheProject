@@ -169,3 +169,37 @@ any single lesson on their behalf.
 
 **Admin → Lectures** edits lesson titles, videos, notes and the homework shown under each video.
 The built-in lessons live in `api/_curriculum.js` (server only); once you save from Lectures, the saved copy is used.
+
+## Breakdowns: one at a time, every week
+
+Post them from **Admin → Breakdowns**, choosing the type, the week and (for dailies) the day:
+
+- **Daily breakdown**: Monday to Friday
+- **Weekly Breakdown**: the recap of the week
+- **Weekly Outlook**: the plan for next week
+- **Advanced Breakdown**: a separate chain, only for the Enlightened role
+
+Members work through them in this order: Monday → Tuesday → … → Friday → Weekly Breakdown → Weekly Outlook → next week's Monday.
+Each one opens once the previous one's **notes and mark-ups** are handed in (or approved, if Hand-ins is set to "After I approve").
+Anyone with a chapter role gets the main chain; Advanced needs Enlightened. Locked breakdowns show only their day and are blurred:
+titles, videos and notes never leave the server.
+
+## For admins: catching members up
+
+**Admin → Members → Details** lists every lesson and breakdown for that member with:
+- **Unlock / Lock**: open or close that one item for them
+- **Mark done / Undo done**: for work they already did off site (counts as approved, so the next item opens)
+- **Mark done through…**: pick an item and mark everything up to it done in one go
+- **Reset**: drop your unlock/lock and go back to the usual rules
+
+Both admin accounts (`1313595031466021026`, `484654761757507584`) have all of this, see every lesson and breakdown, and aren't covered by the focus shield.
+
+## Recording deterrents (and their limits)
+
+A website can't detect screen-recording software, so the portal makes recordings traceable and awkward instead:
+- a faint, drifting watermark with the member's @username, Discord ID and the date across the whole portal and the moving name tag on the video;
+- lessons cover over and videos pause whenever the window loses focus (most snipping and capture tools take focus);
+- PrintScreen, Win+Shift+S and Cmd+Shift+3/4/5/6 blank the page, try to clear the clipboard, and are logged against the member (Members → Flags).
+
+A recorder running in the background (like OBS) can still capture the screen, which is why the watermark matters. Only
+DRM video (Widevine, via a host such as Mux or Bunny Stream) makes the video itself record as black.

@@ -26,10 +26,10 @@ module.exports = async (req, res) => {
 
   if (!kvConfigured()) return json(res, 202, { saved: false, reason: 'no_storage' });
   // a lesson can only be completed once it's unlocked for this member
-  if (/^ch/.test(key)) {
+  if (/^(ch|bd:)/.test(key)) {
     try {
       const { access } = await gateFor(s, isAdmin(s));
-      if (access.lessons[key] && !access.lessons[key].open) return json(res, 403, { error: 'locked' });
+      if (access.all[key] && !access.all[key].open) return json(res, 403, { error: 'locked' });
     } catch (e) { return json(res, 502, { error: 'storage' }); }
   }
   try {

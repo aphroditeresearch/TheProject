@@ -1,8 +1,9 @@
-// POST /api/submit { lessonId, notes, homework, link } → hand in notes and homework for a lesson.
+// POST /api/submit { lessonId, notes, homework, link } → hand in notes and homework for a lesson,
+// or notes and mark-ups for a breakdown (lessonId 'bd:<id>').
 // The lesson has to be unlocked for this member, and its video watched to the end first.
 // Depending on the admin's setting, the next lesson opens straight away or once an admin approves.
 const { readSession, isAdmin, kvConfigured, loadProgress, json } = require('./_lib');
-const { gateFor, saveSub, findLesson } = require('./_gate');
+const { gateFor, saveSub, findItem } = require('./_gate');
 
 const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
@@ -24,12 +25,12 @@ module.exports = async (req, res) => {
 
   const admin = isAdmin(s);
   const { content, subs, access } = await gateFor(s, admin);
-  const found = findLesson(content.curriculum, lessonId);
+  const found = findItem(content, lessonId);
   if (!found) return json(res, 404, { error: 'no_lesson' });
-  if (!access.lessons[lessonId] || !access.lessons[lessonId].open) return json(res, 403, { error: 'locked' });
+  if (!access.all[lessonId] || !access.all[lessonId].open) return json(res, 403, { error: 'locked' });
 
   // the video (if there is one) has to be finished first
-  if (found.l.video && !admin) {
+  if (found.video && !admin) {
     const prog = await loadProgress(s.user.id);
     if (!prog[lessonId]) return json(res, 409, { error: 'watch_first' });
   }
