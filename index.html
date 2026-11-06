@@ -293,6 +293,33 @@ a{color:var(--blue);text-underline-offset:3px}
 .tab{transition:color .2s,background .25s}
 .tab[aria-current="page"]{color:var(--ink);background:var(--panel)}
 .tab-ink{position:absolute;bottom:0;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--blue),var(--kana-c));box-shadow:0 0 12px rgba(28,232,190,.55);pointer-events:none;transition:transform .45s cubic-bezier(.2,.9,.25,1.1),width .45s cubic-bezier(.2,.9,.25,1.1)}
+.bell-w{position:relative}
+.bell{position:relative;width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.bell:hover,.bell[aria-expanded="true"]{border-color:var(--kana-c)}
+.bell[hidden]{display:none}
+.bell .badge{position:absolute;top:-7px;right:-8px;margin:0}
+.bell.ring svg{animation:bellring .9s ease}
+@keyframes bellring{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}}
+.ntf{position:fixed;right:16px;top:72px;z-index:60;width:min(400px,calc(100vw - 24px));max-height:min(70vh,620px);overflow:auto;background:var(--panel);border:1px solid var(--line);box-shadow:0 24px 60px rgba(0,0,0,.55);animation:vmin .25s ease}
+.ntf[hidden]{display:none}
+.ntf-h{position:sticky;top:0;display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--panel);border-bottom:1px solid var(--line);z-index:1}
+.ntf-h b{font-size:15px}.ntf-h .lnk{margin-left:auto;font-size:13px}
+.ntf-w{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.ntf-w button{appearance:none;border:1px solid var(--line);background:none;color:var(--ink);font:500 12px var(--sans);padding:5px 9px;cursor:pointer}
+.ntf-w button.has{border-color:#5A4E22;color:#E8D27A}
+.ntf-i{appearance:none;width:100%;display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;align-items:start;padding:11px 14px;border:0;border-bottom:1px solid var(--line);background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.ntf-i:hover{background:var(--panel-2)}
+.ntf-i.new{background:rgba(28,232,190,.05)}.ntf-i.new .ntf-t b::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--kana-c);margin-left:6px;vertical-align:2px}
+.ntf-ic{width:30px;height:30px;display:grid;place-items:center;font-size:14px;border:1px solid var(--line)}
+.ntf-ic.handin{color:var(--kana-c)}.ntf-ic.journal{color:#E8D27A}.ntf-ic.cert{color:var(--win)}.ntf-ic.promo{color:#C9A2FF}
+.ntf-t{display:flex;flex-direction:column;gap:2px;min-width:0}.ntf-t span{font-size:13px;color:var(--ink);opacity:.85}.ntf-t small{font-size:11px;color:var(--muted)}
+.ntf-none{padding:20px 14px;color:var(--muted);font-size:14px}
+.ntf-pops{position:fixed;top:76px;right:20px;z-index:66;display:flex;flex-direction:column;gap:8px;width:min(340px,calc(100% - 40px));pointer-events:none}
+.ntf-pop{pointer-events:auto;display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;align-items:center;padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--kana-c);box-shadow:0 14px 34px rgba(0,0,0,.5);cursor:pointer;animation:popr2 .4s cubic-bezier(.2,.9,.25,1.15)}
+.ntf-pop.out{opacity:0;transform:translateX(16px);transition:opacity .3s,transform .3s}
+@keyframes popr2{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+.adm-nav .nb{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:8px;border-radius:999px;background:#E5484D;color:#fff;font:700 11px var(--sans)}
+.adm-nav .nb[hidden]{display:none}
 .viewas{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
 .viewas select{min-height:36px;background:var(--panel);color:var(--ink);border:1px solid var(--line);padding:0 8px;font:500 13px var(--sans)}
 .viewas.on select{border-color:#E8D27A;color:#E8D27A}
@@ -304,7 +331,8 @@ a{color:var(--blue);text-underline-offset:3px}
 .sess.live i{background:var(--kana-c);animation:ping 1.8s ease-out infinite}
 .sess.live b{color:var(--ink)}.sess b{font-weight:600}
 @media (max-width:1100px){.sess{display:none}}
-@media (max-width:1500px){.who:has(.viewas:not([hidden])) .sess{display:none}}
+@media (min-width:901px){.bar-in{flex-wrap:nowrap}.who{flex:none}}
+@media (max-width:1500px){.who:has(.viewas:not([hidden])) .sess{display:none}.who:has(.viewas:not([hidden])) .nm{display:none}.who:has(.viewas:not([hidden])) ~ * .tab,.tabs:has(#admin-tab:not([hidden])) .tab{padding:0 11px}}
 .tab:focus-visible{outline:2px solid var(--kana-c);outline-offset:2px}
 .who .av{overflow:hidden}
 .who .av img{width:100%;height:100%;object-fit:cover;display:block}
@@ -473,6 +501,8 @@ a{color:var(--blue);text-underline-offset:3px}
 .lp-i{display:flex;align-items:center;gap:8px;padding:3px 0 3px 14px;font-size:14px;color:var(--ink);cursor:pointer}
 .lp-i.all{color:var(--kana-c);font-weight:600}
 .hi-err{margin:10px 0 0;padding:10px 12px;border:1px solid #6A3A2A;background:rgba(232,120,90,.08);color:#F2B9A6;font-size:14px}
+.pay-img{display:block;border:1px solid var(--line);background:#000;max-height:320px;overflow:hidden}.pay-img img{display:block;width:100%;max-height:320px;object-fit:contain}
+.pay-info{font-size:14px;color:var(--muted)}.pay-info b{color:var(--win);font-size:16px}
 .jd-strip{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;margin-bottom:6px;scrollbar-width:thin}
 .jd{appearance:none;flex:none;display:flex;flex-direction:column;gap:2px;min-width:118px;padding:10px 12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;text-align:left;cursor:pointer;transition:border-color .2s,background .2s}
 .jd b{font-size:14px}.jd span{font-size:11px;color:var(--muted)}
@@ -651,7 +681,11 @@ table.mem td:first-child,table.mem th:first-child{width:34px}
 .jr-tags{display:flex;gap:6px;align-items:flex-start}
 .chip.pts{color:var(--ink);border-color:var(--blue)}
 /* leaderboard */
-.lb-head{margin-bottom:16px}
+.lb-head{margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px}
+.lb-row.pay .lb-pts{color:var(--win)}
+.cert-pay{display:grid;grid-template-columns:repeat(2,minmax(0,200px));gap:10px;margin:10px 0}
+.cert-pay[hidden]{display:none}
+.cert-amt{font-size:16px;color:var(--win);font-variant-numeric:tabular-nums}
 .lb-rules{border:1px solid var(--line);background:var(--panel);padding:14px 18px;margin-bottom:18px;max-width:520px}
 .lb-rules ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:14px}
 .lb-rules li{display:flex;justify-content:space-between;gap:12px;color:var(--muted)}
@@ -1019,6 +1053,10 @@ img,video{-webkit-user-drag:none;user-drag:none}
           <span class="sess" id="sess" title="Market session (New York time)"><i aria-hidden="true"></i><b>—</b><small></small></span>
           <span class="av" id="bar-av" aria-hidden="true">M</span>
           <span class="nm" id="bar-name">Member</span>
+          <div class="bell-w"><button class="bell" id="bell" type="button" hidden aria-label="Notifications" aria-expanded="false">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            <span class="badge" id="bell-n" hidden>0</span></button>
+            <div class="ntf" id="ntf" hidden role="dialog" aria-label="Notifications"></div></div>
           <label class="viewas" id="viewas" hidden title="See the site the way a member on that step does"><select id="viewas-s" aria-label="View the site as">
             <option value="">Admin view</option><option value="1">As Awakened</option><option value="2">As Illuminated</option><option value="3">As Enlightened</option></select></label>
           <button class="ghost" id="signout" type="button">Sign out</button>
@@ -1084,7 +1122,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     <main class="main" data-view="leaderboard" hidden>
       <div class="view-h">
         <h2>leaderboard</h2>
-        <p>The <b>psych leaderboard</b>: points for discipline, not profit. It's built from journal entries.</p>
+        <p><b>Psych</b>: points for discipline, built from approved journal entries. <b>Payouts</b>: payouts an admin has certified, added up per member.</p>
       </div>
       <div id="lb"></div>
     </main>
@@ -1148,8 +1186,9 @@ img,video{-webkit-user-drag:none;user-drag:none}
         <button type="button" data-sec="lectures" aria-pressed="false">Lectures</button>
         <button type="button" data-sec="breakdowns" aria-pressed="false">Breakdowns</button>
         <button type="button" data-sec="advanced" aria-pressed="false">Advanced</button>
-        <button type="button" data-sec="review" aria-pressed="false">Hand-ins</button>
-        <button type="button" data-sec="journal" aria-pressed="false">Journal</button>
+        <button type="button" data-sec="review" aria-pressed="false">Hand-ins<span class="nb" data-w="handins" hidden></span></button>
+        <button type="button" data-sec="journal" aria-pressed="false">Journal<span class="nb" data-w="journal" hidden></span></button>
+        <button type="button" data-sec="payouts" aria-pressed="false">Payouts<span class="nb" data-w="payouts" hidden></span></button>
         <button type="button" data-sec="progress" aria-pressed="false">Progress</button>
         <button type="button" data-sec="members" aria-pressed="false">Members</button>
       </nav>
@@ -1251,6 +1290,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
 </div>
 
 <div class="toast" id="toast" role="status" hidden></div>
+<div class="ntf-pops" id="ntf-pops" aria-live="polite"></div>
 <div class="hw-pop" id="hw-pop" role="status" hidden>
   <button class="x" type="button" id="hw-pop-x" aria-label="Hide">×</button>
   <span class="hp-eye" id="hw-pop-e">New homework</span>
@@ -1644,7 +1684,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   }
   function markDone(key){ var at = new Date().toISOString(); doneSet[key] = at; saveDone(); syncProgress(key, at); return at; }
   function unmark(key){ delete doneSet[key]; saveDone(); syncProgress(key, null); }
-  function fmtDay(iso){ var d = iso ? new Date(iso) : null; return (d && !isNaN(d)) ? d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : ''; }
+  function fmtDay(iso){ var d = iso ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso + 'T12:00:00' : iso) : null; return (d && !isNaN(d)) ? d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : ''; }
 
   function user(){ return (SESSION && SESSION.user) || DEMO_USER; }
   function memberRoles(){ return DEMO_MODE ? demoRoles : (SESSION.roles || []); }
@@ -2468,32 +2508,41 @@ img,video{-webkit-user-drag:none;user-drag:none}
       .then(function(j){ if (j){ ME = { certs: j.certs || [], promo: j.promo || null, journal: j.journal || null, entries: j.entries || [], loaded: true }; } }).catch(function(){});
   }
   var CERT_ERR = { need_payout:'Pick a payout certificate.', not_ready:'Finish every lesson first.', already_requested:'You\'ve already asked. An admin will review it.',
-    in_use:'That certificate is attached to your promotion request.', bad_file:'That file didn\'t upload properly. Try again.', no_storage:'Certificates need Upstash Redis connected in Vercel.' };
+    in_use:'That certificate is attached to your promotion request.', need_amount:'Enter the payout amount.', certified:'Certified payouts stay on your record.', bad_file:'That file didn\'t upload properly. Try again.', no_storage:'Certificates need Upstash Redis connected in Vercel.' };
   function renderCerts(){
     var host = document.getElementById('pf-certs'); if (!host) return; host.textContent = '';
     document.getElementById('pf-certs-n').textContent = ME.certs.length;
     var up = el('div','cert-up'), kind = el('select'); [['payout','Payout certificate'],['funded','Funded certificate']].forEach(function(o){ var op = el('option',null,o[1]); op.value = o[0]; kind.appendChild(op); });
     var note = inputEl('text', '', 'Note (optional), e.g. firm and account size'); note.maxLength = 300;
+    var amt = inputEl('number', '', 'Payout amount ($)'); amt.min = '0'; amt.step = '0.01'; amt.setAttribute('aria-label','Payout amount in dollars');
+    var paid = inputEl('date', todayYmd()); paid.setAttribute('aria-label','Day of the payout');
+    var payBox = el('div','cert-pay'); payBox.appendChild(fld('Payout amount ($)', amt)); payBox.appendChild(fld('Paid on', paid));
+    kind.addEventListener('change', function(){ payBox.hidden = kind.value !== 'payout'; });
     var lab = el('label','btn-s pri up-file','Upload certificate'), fi = el('input'); fi.type = 'file'; fi.accept = FILE_TYPES; lab.appendChild(fi);
     var st = el('small','adm-note','');
     fi.addEventListener('change', function(){
       var f = fi.files && fi.files[0]; fi.value = ''; if (!f) return;
-      if (!/^(image\/|application\/pdf)/.test(f.type || '')){ toast('Upload an image or a PDF.'); return; }
+      var ft = fileType(f); if (!ft){ toast('Upload an image or a PDF.'); return; } if (ft !== f.type) f = new File([f], f.name, { type: ft });
+      if (kind.value === 'payout' && !(+amt.value > 0)){ toast('Enter the payout amount first.'); amt.focus(); return; }
       if (f.size > 25 * 1024 * 1024){ toast('That file is over 25 MB.'); return; }
       st.textContent = 'Uploading…';
       uploadFile(f, 'members/' + (user().id || 'demo') + '/certs/' + safeName(f.name), function(pc){ st.textContent = 'Uploading… ' + Math.round(pc) + '%'; })
-        .then(function(file){ return memberPost({ action:'cert-add', kind: kind.value, file: file, note: note.value.trim() }); })
-        .then(function(){ toast('Certificate added.'); return loadMe(); }).then(function(){ renderCerts(); renderPromo(); })
+        .then(function(file){ return memberPost({ action:'cert-add', kind: kind.value, file: file, note: note.value.trim(), amount: kind.value === 'payout' ? +amt.value : undefined, paidAt: paid.value }); })
+        .then(function(){ toast(kind.value === 'payout' ? 'Payout added. It goes on the payout leaderboard once an admin certifies it.' : 'Certificate added.'); return loadMe(); }).then(function(){ renderCerts(); renderPromo(); })
         .catch(function(e){ st.textContent = ''; toast(CERT_ERR[e && e.message] || 'Upload failed: ' + String((e && e.message) || e).replace(/^Vercel Blob:\s*/,'')); });
     });
-    up.appendChild(kind); up.appendChild(note); up.appendChild(lab); host.appendChild(up); host.appendChild(st);
+    up.appendChild(kind); up.appendChild(note); up.appendChild(lab); host.appendChild(up); host.appendChild(payBox); host.appendChild(st);
     if (!ME.certs.length){ host.appendChild(el('p','pf-none','No certificates yet.')); return; }
     var grid = el('div','cert-grid');
     ME.certs.forEach(function(c){
       var card = el('div','cert'); card.appendChild(fileChips([c.file]));
       var meta = el('div','cert-m'); meta.appendChild(el('span','chip' + (c.kind === 'payout' ? ' ok' : ''), c.kind === 'payout' ? 'Payout' : 'Funded'));
-      meta.appendChild(el('small',null, fmtDay(c.uploadedAt) + (c.note ? ' · ' + c.note : ''))); card.appendChild(meta);
-      var inUse = ME.promo && ME.promo.certId === c.id && ME.promo.status !== 'declined';
+      if (c.kind === 'payout'){ var rv = c.review || { status:'pending' };
+        meta.appendChild(el('b','cert-amt', money(rv.status === 'approved' && rv.amount ? rv.amount : c.amount || 0)));
+        meta.appendChild(el('span','je-st st-' + rv.status, rv.status === 'approved' ? 'Certified' : rv.status === 'denied' ? 'Not certified' : 'Waiting for an admin')); }
+      meta.appendChild(el('small',null, (c.paidAt ? 'Paid ' + fmtDay(c.paidAt) : fmtDay(c.uploadedAt)) + (c.note ? ' · ' + c.note : ''))); card.appendChild(meta);
+      if (c.review && c.review.status === 'denied' && c.review.note) card.appendChild(el('p','je-note', c.review.note));
+      var inUse = (ME.promo && ME.promo.certId === c.id && ME.promo.status !== 'declined') || (c.review && c.review.status === 'approved');
       if (!inUse) card.appendChild(delBtn(function(){ memberPost({ action:'cert-delete', id:c.id }).then(loadMe).then(function(){ renderCerts(); renderPromo(); toast('Certificate removed.'); })
         .catch(function(e){ toast(CERT_ERR[e && e.message] || 'Couldn\'t remove it.'); }); }));
       grid.appendChild(card);
@@ -2750,12 +2799,14 @@ img,video{-webkit-user-drag:none;user-drag:none}
   }
 
   /* ---------- psych leaderboard ---------- */
-  var BOARD = { period:'week' };
+  var BOARD = { period:'week', kind:'psych' };
   function renderBoard(){
     var host = document.getElementById('lb'); if (!host) return; host.textContent = '';
     var head = el('div','lb-head');
+    head.appendChild(seg([['psych','Psych'],['payout','Payouts']], BOARD.kind, function(k){ BOARD.kind = k; renderBoard(); }));
     head.appendChild(seg([['week','This week'],['month','This month'],['all','All time']], BOARD.period, function(p){ BOARD.period = p; renderBoard(); }));
     host.appendChild(head);
+    if (BOARD.kind === 'payout') return renderPayoutBoard(host);
     var rules = el('div','lb-rules'); rules.appendChild(el('b',null,'How points work'));
     rules.appendChild(el('p','adm-note','Only journal entries an admin has approved count.'));
     var ul = el('ul'); [['Rules followed + TP','3'],['Rules followed + SL or BE','1'],['Rules followed + no trades that day','1'],['Rules not followed','0']].forEach(function(r){ var li = el('li'); li.appendChild(el('span',null,r[0])); li.appendChild(el('b',null,r[1] + (r[1] === '1' ? ' pt' : ' pts'))); ul.appendChild(li); });
@@ -2779,6 +2830,27 @@ img,video{-webkit-user-drag:none;user-drag:none}
     }).catch(function(){ list.textContent = ''; emptyState(list, 'Couldn\'t load the leaderboard', 'Refresh to try again.'); });
   }
 
+  // payouts certified by an admin, added up per member
+  function renderPayoutBoard(host){
+    var info = el('div','lb-rules'); info.appendChild(el('b',null,'Payout board'));
+    info.appendChild(el('p','adm-note','Payouts members upload on their Profile, once an admin certifies the certificate. Counted by the day of the payout.'));
+    host.appendChild(info);
+    var list = el('div','lb-list'); list.appendChild(el('p','adm-note','Loading…')); host.appendChild(list);
+    var got = DEMO_MODE ? Promise.resolve({ rows: [] }) : fetch('/api/member?board=' + BOARD.period + '&kind=payout', { credentials:'same-origin' }).then(function(r){ return r.ok ? r.json() : { rows:[] }; });
+    got.then(function(d){
+      list.textContent = '';
+      if (!d.rows.length){ emptyState(list, 'No certified payouts yet', 'Upload a payout certificate on your Profile. It shows here once an admin certifies it.'); return; }
+      d.rows.forEach(function(r){
+        var row = el('div','lb-row pay' + (r.me ? ' me' : '') + (r.rank <= 3 ? ' top' + r.rank : '')); row.style.setProperty('--i', r.rank - 1);
+        row.appendChild(el('span','lb-rank', '#' + r.rank));
+        var av = el('span','av'); setAvatar(av, { avatar:r.avatar, displayName:r.name, username:r.username, id:r.id }); row.appendChild(av);
+        var nm = el('div','lb-nm'); nm.appendChild(el('b',null, r.name + (r.me ? ' (you)' : ''))); nm.appendChild(el('small',null, r.payouts + (r.payouts === 1 ? ' payout' : ' payouts') + (r.lastAt ? ' · latest ' + fmtDay(r.lastAt) : ''))); row.appendChild(nm);
+        var amt = el('span','lb-pts', money(reduce ? r.total : 0)); row.appendChild(amt);
+        if (!reduce && r.total){ (function(n){ var t0 = null; function st(ts){ if (!t0) t0 = ts; var k = Math.min(1, (ts - t0) / 800); amt.textContent = money(Math.round(n * (1 - Math.pow(1 - k, 3)))); if (k < 1) requestAnimationFrame(st); else amt.textContent = money(n); } requestAnimationFrame(st); })(r.total); }
+        list.appendChild(row);
+      });
+    }).catch(function(){ list.textContent = ''; emptyState(list, 'Couldn\'t load the payout board', 'Refresh to try again.'); });
+  }
   function renderProfileExtras(){ loadMe().then(function(){ renderCerts(); renderPromo(); }); }
 
   function renderProfileAccess(){
@@ -2821,6 +2893,87 @@ img,video{-webkit-user-drag:none;user-drag:none}
   }
   document.getElementById('viewas-s').addEventListener('change', function(e){ setPreview(e.target.value); });
   document.getElementById('pv-off').addEventListener('click', function(){ setPreview(''); });
+  /* ---------- admin notifications: what members hand in (checked every 45 seconds while the portal is open) ---------- */
+  var NTF = { events:[], waiting:{}, first:true, timer:0, open:false };
+  function ntfSeenKey(){ return 'theproject.ntfseen.' + uid(); }
+  function ntfSeen(){ try { return localStorage.getItem(ntfSeenKey()) || ''; } catch(e) { return ''; } }
+  function ago(iso){ var s2 = (Date.now() - Date.parse(iso)) / 1000; if (s2 < 60) return 'just now'; if (s2 < 3600) return Math.floor(s2 / 60) + 'm ago'; if (s2 < 86400) return Math.floor(s2 / 3600) + 'h ago'; return fmtDay(iso); }
+  var NTF_IC = { handin:'✎', journal:'◷', cert:'$', promo:'▲' };
+  function ntfText(e){
+    if (e.type === 'handin') return (e.again ? 'handed in again: ' : 'handed in ') + (e.what === 'homework' ? 'homework · ' : e.what === 'breakdown' ? 'breakdown · ' : e.what === 'advanced' ? '' : '') + e.label;
+    if (e.type === 'journal') return 'posted a journal entry: ' + e.label;
+    if (e.type === 'cert') return e.kind === 'payout' ? 'uploaded a payout: ' + e.label.replace(/^Payout /,'') : 'uploaded a funded certificate';
+    if (e.type === 'promo') return 'asked for promotion';
+    return e.label || '';
+  }
+  function ntfGo(e){
+    closeNtf();
+    if (e.type === 'handin' || e.type === 'promo'){ RV.member = e.uid; RV.status = 'waiting'; RV.type = 'all'; RV.hw = null; adm.sec = 'review'; }
+    else if (e.type === 'journal'){ JRV.mode = 'day'; JRV.basis = 'up'; JRV.day = localDay(e.at); adm.sec = 'journal'; }
+    else if (e.type === 'cert'){ PRV.status = 'pending'; adm.sec = e.kind === 'payout' ? 'payouts' : 'members'; }
+    if ((location.hash || '') !== '#admin') location.hash = '#admin'; else if (adm.content) admRender();
+    window.scrollTo(0, 0);
+  }
+  function paintNtf(){
+    var bell = document.getElementById('bell'), n = document.getElementById('bell-n'), seen = ntfSeen();
+    var unseen = NTF.events.filter(function(e){ return e.at > seen; }).length;
+    n.textContent = unseen > 99 ? '99+' : unseen; n.hidden = !unseen;
+    document.querySelectorAll('#adm-nav .nb').forEach(function(b){ var c = NTF.waiting[b.dataset.w] || 0; if (b.dataset.w === 'handins') c += NTF.waiting.promotions || 0; b.textContent = c; b.hidden = !c; });
+    if (!NTF.open) return;
+    var box = document.getElementById('ntf'); box.textContent = '';
+    var h = el('div','ntf-h'); h.appendChild(el('b',null,'Activity'));
+    var mr = el('button','lnk','Mark all read'); mr.type = 'button'; mr.addEventListener('click', function(){ markNtfSeen(); paintNtf(); }); h.appendChild(mr); box.appendChild(h);
+    var w = el('div','ntf-w'), W = NTF.waiting || {};
+    [['handins','review', (W.handins || 0) + ' hand-ins waiting'], ['promotions','review', (W.promotions || 0) + ' promotion requests'], ['journal','journal', (W.journal || 0) + ' journal entries'], ['payouts','payouts', (W.payouts || 0) + ' payouts']].forEach(function(o){
+      if (o[0] === 'promotions' && !W.promotions) return;
+      var b = el('button', W[o[0]] ? 'has' : '', o[2]); b.type = 'button'; b.addEventListener('click', function(){ closeNtf(); if (o[1] === 'review'){ RV.member = null; RV.status = 'waiting'; } if (o[1] === 'journal'){ JRV.mode = 'list'; JRV.status = 'pending'; } if (o[1] === 'payouts') PRV.status = 'pending'; adm.sec = o[1]; if ((location.hash || '') !== '#admin') location.hash = '#admin'; else if (adm.content) admRender(); });
+      w.appendChild(b); });
+    box.appendChild(w);
+    if (!NTF.events.length){ box.appendChild(el('div','ntf-none','Nothing yet. When members hand in work, post journal entries or upload payouts, it shows up here.')); return; }
+    NTF.events.slice(0, 60).forEach(function(e){
+      var it = el('button','ntf-i' + (e.at > (NTF.seenAtOpen || '') ? ' new' : '')); it.type = 'button';
+      it.appendChild(el('span','ntf-ic ' + e.type, NTF_IC[e.type] || '•'));
+      var t = el('span','ntf-t'); t.appendChild(el('b',null, e.name)); t.appendChild(el('span',null, ntfText(e))); t.appendChild(el('small',null, ago(e.at))); it.appendChild(t);
+      it.addEventListener('click', function(){ ntfGo(e); });
+      box.appendChild(it);
+    });
+  }
+  function markNtfSeen(){ var top = NTF.events[0]; if (top) try { localStorage.setItem(ntfSeenKey(), top.at); } catch(e) {} }
+  function closeNtf(){ NTF.open = false; document.getElementById('ntf').hidden = true; document.getElementById('bell').setAttribute('aria-expanded','false'); }
+  document.getElementById('bell').addEventListener('click', function(ev){
+    ev.stopPropagation();
+    if (NTF.open){ closeNtf(); return; }
+    NTF.open = true; NTF.seenAtOpen = ntfSeen(); document.getElementById('ntf').hidden = false; this.setAttribute('aria-expanded','true');
+    paintNtf(); markNtfSeen(); var n = document.getElementById('bell-n'); n.hidden = true;
+  });
+  document.addEventListener('click', function(ev){ if (NTF.open && !ev.target.closest('.bell-w')) closeNtf(); });
+  document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape' && NTF.open) closeNtf(); });
+  // a small card in the top-right corner for anything new since the last check
+  function ntfPop(e){
+    var host = document.getElementById('ntf-pops'), c = el('div','ntf-pop');
+    c.appendChild(el('span','ntf-ic ' + e.type, NTF_IC[e.type] || '•'));
+    var t = el('span','ntf-t'); t.appendChild(el('b',null, e.name)); t.appendChild(el('span',null, ntfText(e))); c.appendChild(t);
+    c.addEventListener('click', function(){ c.remove(); ntfGo(e); });
+    host.appendChild(c); while (host.children.length > 3) host.firstChild.remove();
+    setTimeout(function(){ c.classList.add('out'); setTimeout(function(){ c.remove(); }, 320); }, 7000);
+  }
+  function pollNtf(){
+    clearTimeout(NTF.timer);
+    if (!(SESSION && SESSION.isAdmin) || DEMO_MODE || !BACKEND) return;
+    document.getElementById('bell').hidden = false;
+    var next = function(){ NTF.timer = setTimeout(pollNtf, 45000); };
+    if (document.hidden || portV.hidden){ next(); return; }
+    fetch('/api/admin/members?activity=1', { credentials:'same-origin' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      if (!j) return;
+      var known = {}; NTF.events.forEach(function(e){ known[e.id] = 1; });
+      var fresh = NTF.first ? [] : j.events.filter(function(e){ return !known[e.id] && e.uid !== uid(); });
+      NTF.events = j.events || []; NTF.waiting = j.waiting || {}; NTF.first = false;
+      paintNtf();
+      if (fresh.length){ fresh.slice(0, 3).reverse().forEach(ntfPop); var b = document.getElementById('bell'); b.classList.remove('ring'); void b.offsetWidth; b.classList.add('ring');
+        if ((location.hash || '') === '#admin' && adm.content && ['review','journal','payouts'].indexOf(adm.sec) !== -1 && !document.querySelector('#adm-body :focus')) admRender(); }
+    }).catch(function(){}).then(next);
+  }
+  document.addEventListener('visibilitychange', function(){ if (!document.hidden && SESSION && SESSION.isAdmin) pollNtf(); });
   function renderContentViews(){ paintPreview(); renderCurriculum(); renderHomework(); renderBreakdowns(); renderCompletions(); renderAnnouncements(); renderProfileExtras(); }
 
   /* ---------- admin panel ---------- */
@@ -3176,7 +3329,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   // why an admin action failed, in words
   var ADM_ERR = { no_submission:'That hand-in isn\'t there any more (it may have been cleared or deleted). Refresh the page.', signed_out:'You\'ve been signed out. Sign in again.',
     not_admin:'This account isn\'t an admin.', no_storage:'Upstash Redis isn\'t connected in Vercel.', bad_status:'That action isn\'t allowed.', bad_target:'That member or item wasn\'t recognised. Refresh the page.',
-    no_entry:'That journal entry isn\'t there any more. Refresh the page.', server:'The server hit an error. Open Vercel → Logs to see it, then send it to me.' };
+    no_entry:'That journal entry isn\'t there any more. Refresh the page.', no_cert:'That certificate isn\'t there any more. Refresh the page.', need_amount:'Enter the amount to certify.', server:'The server hit an error. Open Vercel → Logs to see it, then send it to me.' };
   function admFail(e){ var c = e && (e.code || e.message); return 'Couldn\'t save that: ' + (ADM_ERR[c] || ('error ' + (c || 'network') + '. Refresh and try again.')); }
   function levelName(lv){ var cur = (adm.content && adm.content.curriculum) || CURRICULUM; return lv ? (cur[lv-1] ? cur[lv-1].name : 'Step ' + lv) : 'No role'; }
 
@@ -3314,6 +3467,60 @@ img,video{-webkit-user-drag:none;user-drag:none}
   }
 
   /* ---------- Journal review: entries count on the leaderboard only once approved ---------- */
+  /* ---------- Payouts: certify payout certificates for the payout leaderboard ---------- */
+  var PRV = { status:'pending' };
+  function payoutReview(){
+    var wrap = el('div','adm-list');
+    wrap.appendChild(el('p','adm-note','Check each payout certificate, confirm the amount, and certify it. Certified payouts are added to that member\'s total on the payout leaderboard.'));
+    var host = el('div'); wrap.appendChild(host); host.appendChild(el('p','adm-note','Loading payouts…'));
+    loadMembers(function(rows){
+      host.textContent = '';
+      var all = []; rows.forEach(function(m){ (m.certs || []).forEach(function(c){ if (c.kind === 'payout') all.push({ m:m, c:c, st: (c.review && c.review.status) || 'pending' }); }); });
+      var cnt = { pending:0, approved:0, denied:0 }; all.forEach(function(x){ cnt[x.st]++; });
+      var total = all.filter(function(x){ return x.st === 'approved'; }).reduce(function(t, x){ return t + (+x.c.review.amount || 0); }, 0);
+      var bar = el('div','rv-bar'), ch = el('div','chips');
+      [['pending','Waiting · ' + cnt.pending],['approved','Certified · ' + cnt.approved],['denied','Denied · ' + cnt.denied],['all','All']].forEach(function(o){
+        var b = el('button','chip-b' + (PRV.status === o[0] ? ' on' : ''), o[1]); b.type = 'button'; b.addEventListener('click', function(){ PRV.status = o[0]; admRender(); }); ch.appendChild(b); });
+      bar.appendChild(ch); bar.appendChild(el('span','adm-note','Certified so far: ' + money(total)));
+      host.appendChild(bar);
+      var list = el('div','jrv-list'); host.appendChild(list);
+      var shown = all.filter(function(x){ return PRV.status === 'all' || x.st === PRV.status; }).sort(function(a, b){ return String(b.c.uploadedAt).localeCompare(String(a.c.uploadedAt)); });
+      if (!shown.length){ emptyState(list, PRV.status === 'pending' ? 'Nothing waiting' : 'Nothing here', PRV.status === 'pending' ? 'Payout certificates members upload show up here.' : 'Try another filter.'); return; }
+      shown.forEach(function(x){
+        var m = x.m, c = x.c, card = el('article','jrv');
+        var who = el('div','who2'), av = el('span','av'); setAvatar(av, m); who.appendChild(av);
+        var nm = el('div'); nm.appendChild(el('b',null, m.displayName || m.username)); nm.appendChild(el('div','adm-note','@' + (m.username || '') + ' · uploaded ' + fmtDay(c.uploadedAt))); who.appendChild(nm); card.appendChild(who);
+        var big = el('a','pay-img'); big.href = c.file.url; big.target = '_blank'; big.rel = 'noopener noreferrer';
+        if (/^image\//.test(c.file.type || '')){ var im = el('img'); im.src = c.file.url; im.alt = 'Payout certificate'; big.appendChild(im); } else big.appendChild(el('span','btn-s','Open PDF'));
+        card.appendChild(big);
+        var info = el('div','pay-info');
+        info.appendChild(el('span',null,'They entered: ')); info.appendChild(el('b',null, c.amount ? money(c.amount) : 'no amount'));
+        info.appendChild(el('span',null, ' · paid ' + fmtDay(c.paidAt || c.uploadedAt) + (c.note ? ' · ' + c.note : '')));
+        card.appendChild(info);
+        if (x.st !== 'pending') card.appendChild(el('p','adm-note', (x.st === 'approved' ? 'Certified ' + money(c.review.amount) : 'Denied') + ' by ' + (c.review.by || 'an admin') + ' on ' + fmtDay(c.review.at) + (c.review.note ? ' · ' + c.review.note : '')));
+        var amt = inputEl('number', (c.review && c.review.amount) || c.amount || '', 'Amount to certify ($)'); amt.min = '0'; amt.step = '0.01';
+        var note = inputEl('text', (c.review && c.review.note) || '', 'Note (needed to deny)');
+        var row2 = el('div','cert-pay'); row2.appendChild(fld('Amount to certify ($)', amt)); row2.appendChild(fld('Note', note)); card.appendChild(row2);
+        var acts = el('div','rv-acts'), ok = el('button','btn-s pri','Certify'), no = el('button','btn-s warn','Deny'); ok.type = no.type = 'button';
+        if (x.st === 'approved') ok.textContent = 'Update amount';
+        if (x.st === 'denied') no.disabled = true;
+        function act(status){
+          if (status === 'approved' && !(+amt.value > 0)){ toast('Enter the amount to certify.'); amt.focus(); return; }
+          if (status === 'denied' && note.value.trim().length < 3){ toast('Add a short note so they know why.'); note.focus(); return; }
+          ok.disabled = no.disabled = true;
+          memberAction({ action:'cert-review', userId:m.id, certId:c.id, status:status, amount: +amt.value, note: note.value.trim() })
+            .then(function(){ toast(status === 'approved' ? 'Certified: ' + money(+amt.value) + ' added to ' + (m.displayName || m.username) + '\'s payouts.' : status === 'denied' ? 'Denied.' : 'Back to waiting.'); card.classList.add('gone'); setTimeout(admRender, 260); })
+            .catch(function(e){ ok.disabled = no.disabled = false; toast(admFail(e)); });
+        }
+        ok.addEventListener('click', function(){ act('approved'); }); no.addEventListener('click', function(){ act('denied'); });
+        acts.appendChild(ok); acts.appendChild(no);
+        if (x.st !== 'pending'){ var bk = el('button','lnk','Back to waiting'); bk.type = 'button'; bk.addEventListener('click', function(){ act('pending'); }); acts.appendChild(bk); }
+        card.appendChild(acts);
+        list.appendChild(card);
+      });
+    }, function(t, line){ host.textContent = ''; emptyState(host, t, line); });
+    return wrap;
+  }
   var JRV = { status:'pending', q:'', mode:'day', day:null, basis:'up' };
   function localDay(iso){ var d = new Date(iso); return isNaN(d) ? '' : ymd(d); }
   function dayLabel(d){ var t = new Date(d + 'T12:00:00'), today = todayYmd(), y = new Date(); y.setDate(y.getDate() - 1);
@@ -3740,6 +3947,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     else if (adm.sec === 'review') body.appendChild(reviewView());
     else if (adm.sec === 'progress') body.appendChild(progressView());
     else if (adm.sec === 'journal') body.appendChild(journalReview());
+    else if (adm.sec === 'payouts') body.appendChild(payoutReview());
     else body.appendChild(membersView());
   }
   document.querySelectorAll('#adm-nav button').forEach(function(b){
@@ -3840,7 +4048,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     if (!booted){ pendingEnter = true; enter.disabled = true; enter.textContent = 'Loading your portal…'; return; }   // account still loading
     scrim.hidden=true; gateV.hidden=true; portV.hidden=false; rain.start();
     if (VIEWS.indexOf((location.hash||'').replace('#',''))===-1) { try { history.replaceState(null,'','#lectures'); } catch(e) {} }
-    showView(); window.scrollTo(0,0); paintWatermark(); setTimeout(showPop, 1200); setTimeout(moveInk, 350);
+    showView(); window.scrollTo(0,0); paintWatermark(); setTimeout(showPop, 1200); setTimeout(moveInk, 350); setTimeout(pollNtf, 800);
   }
   document.getElementById('discord-btn').addEventListener('click', function(){
     if (BACKEND && !SESSION){ window.location.href = '/api/login'; return; }   // real Discord sign-in

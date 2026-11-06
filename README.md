@@ -279,3 +279,15 @@ Behind the portal, the letters of THE PROJECT fall faintly in columns, like the 
 are waiting. Pick a day to see everyone's entries from it, then **Walk through on a call**: one entry at a time with big
 screenshots, the trade details and the member's rules next to it. Keys: ← → move, **A** approves, **D** denies (type a
 short note first), **Esc** closes. Dots along the bottom show what you've approved (green) and denied (red).
+
+## Payout leaderboard
+Members add payouts on their **Profile** (payout certificate + amount + the day it was paid). An admin checks them in
+**Admin → Payouts**, confirms or corrects the amount, and **Certifies** it (or denies it with a note). The Leaderboard has
+two boards: **Psych** (journal points) and **Payouts** (certified payouts added up per member, this week / month / all
+time). Certified payouts can't be deleted by the member.
+
+## Admin notifications
+Admins get a bell in the top bar. It checks every 45 seconds (and whenever you come back to the tab) for new hand-ins,
+journal entries, payout or funded certificates and promotion requests. New ones pop up in the top-right corner and the
+bell shows how many you haven't seen; click one to jump straight to it. The panel also shows how much is waiting, and the
+Hand-ins, Journal and Payouts buttons in Admin carry red counts.

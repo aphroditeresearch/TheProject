@@ -256,6 +256,18 @@ async function memberState(userId, roles, admin, content, fresh) {
 async function gateFor(session, admin) { return memberState(session.user.id, session.roles || [], admin); }
 
 // a lesson ('ch1-3'), a lesson part ('ch1-7p2') or a breakdown ('bd:abc'), by its key
+/* ---------- activity: what members hand in, for the admins' notifications (newest first, last 300 kept) ---------- */
+async function logActivity(user, ev) {
+  if (!kvConfigured()) return;
+  const e = Object.assign({ id: 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), at: new Date().toISOString(),
+    uid: user.id, name: user.displayName || user.username || 'A member', username: user.username || '', avatar: user.avatar || null }, ev);
+  try { await kv(['LPUSH', 'activity', JSON.stringify(e)]); await kv(['LTRIM', 'activity', 0, 299]); } catch (err) {}
+}
+async function loadActivity(n) {
+  if (!kvConfigured()) return [];
+  const raw = (await kv(['LRANGE', 'activity', 0, (n || 80) - 1])) || [];
+  return raw.map((x) => { try { return JSON.parse(x); } catch (e) { return null; } }).filter(Boolean);
+}
 function findItem(content, key) {
   if (/^hw:/.test(key)) {
     const h = (content.homework || []).find((x) => 'hw:' + x.id === key);
@@ -296,7 +308,7 @@ module.exports = {
   ROLES, contentWithDefaults,
   loadSubs, saveSub, deleteSub, loadOverrides, setOverride, loadPromo, savePromo, loadCerts, saveCert, deleteCert,
   unitsOf, passes, chapterRoles, roleLevel, promotionStep, levelFor, accessFor,
-  bdKind, bdChains, bdKey, bdOrderKey, accessForBreakdowns, BD_TASK, entryStatus, basePoints,
+  bdKind, bdChains, bdKey, bdOrderKey, accessForBreakdowns, BD_TASK, entryStatus, basePoints, logActivity, loadActivity,
   memberState, gateFor, findItem, allKeys, signInBlock, accessForHomework,
   loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints,
 };

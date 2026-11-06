@@ -12,10 +12,12 @@
 // POST { action:'bulk', userIds:[…], keys:[…], op:'unlock'|'lock'|'reset'|'done'|'undone'|'unlock-done' }
 //      → the same change for many members and many items at once
 // POST { action:'clear-handins' } → delete every hand-in members submitted (items an admin marked done are kept)
+// POST { action:'cert-review', userId, certId, status:'approved'|'denied'|'pending', amount, note } → certify a payout (it then
+//      counts on the payout leaderboard, with the amount you confirm), or deny it
 // POST { action:'journal-review', userId, entryId, status:'approved'|'denied'|'pending', note } → approve a journal entry for the
 //      leaderboard, deny it (0 points), or put it back to pending
 const { readSession, isAdmin, adminIds, kvConfigured, kv, listMembers, loadProgress, saveProgress, loadFlags, json } = require('../_lib');
-const { contentWithDefaults, memberState, loadSubs, saveSub, deleteSub, setOverride, loadCerts, loadPromo, savePromo, findItem, loadJournal, loadEntries, saveEntry, entryPoints, entryStatus, basePoints } = require('../_gate');
+const { loadActivity, saveCert, contentWithDefaults, memberState, loadSubs, saveSub, deleteSub, setOverride, loadCerts, loadPromo, savePromo, findItem, loadJournal, loadEntries, saveEntry, entryPoints, entryStatus, basePoints } = require('../_gate');
 const { signAll } = require('../_blob');
 
 const ID = /^\d{5,25}$/;
@@ -82,6 +84,19 @@ module.exports = async (req, res) => {
 
     if (!ID.test(String(userId || ''))) return json(res, 400, { error: 'bad_target' });
 
+    if (body.action === 'cert-review') {
+      const certs = await loadCerts(userId);
+      const c = certs[String(body.certId || '')];
+      if (!c || c.kind !== 'payout') return json(res, 404, { error: 'no_cert' });
+      const status = body.status;
+      if (!['approved', 'denied', 'pending'].includes(status)) return json(res, 400, { error: 'bad_status' });
+      const amount = Math.round(Number(body.amount !== undefined && body.amount !== '' ? body.amount : c.amount) * 100) / 100;
+      if (status === 'approved' && !(amount > 0 && amount < 10000000)) return json(res, 400, { error: 'need_amount' });
+      c.review = { status, amount: status === 'approved' ? amount : (c.review && c.review.amount) || null, by: status === 'pending' ? null : who,
+        at: status === 'pending' ? null : new Date().toISOString(), note: typeof body.note === 'string' ? body.note.trim().slice(0, 300) : '' };
+      await saveCert(userId, c);
+      return json(res, 200, { saved: true, cert: c });
+    }
     if (body.action === 'journal-review' || body.action === 'journal-void') {
       const entries = await loadEntries(userId);
       const e = entries[String(body.entryId || '')];
@@ -136,6 +151,21 @@ module.exports = async (req, res) => {
   }
 
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET, POST'); return json(res, 405, { error: 'method' }); }
+  // notifications: the latest things members handed in, and how much is waiting in each admin section
+  if (/[?&]activity=1/.test(req.url || '')) {
+    try {
+      const events = await loadActivity(80);
+      const waiting = { handins: 0, journal: 0, payouts: 0, promotions: 0 };
+      await Promise.all((await listMembers()).map(async (m) => {
+        const [subs, entries, certs, promo] = await Promise.all([loadSubs(m.id), loadEntries(m.id), loadCerts(m.id), loadPromo(m.id)]);
+        waiting.handins += Object.values(subs).filter((x) => x && x.status === 'submitted').length;
+        waiting.journal += Object.values(entries).filter((e) => entryStatus(e) === 'pending').length;
+        waiting.payouts += Object.values(certs).filter((c) => c.kind === 'payout' && !(c.review && c.review.status !== 'pending')).length;
+        if (promo && promo.status === 'requested') waiting.promotions++;
+      }));
+      return json(res, 200, { events, waiting });
+    } catch (e) { return json(res, 502, { error: 'storage' }); }
+  }
   try {
     const content = await contentWithDefaults();
     const members = await listMembers();

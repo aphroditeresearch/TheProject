@@ -13,7 +13,7 @@
 // Files are uploaded straight from the browser to Vercel Blob first (see /api/upload), into members/<their id>/…
 const crypto = require('crypto');
 const { readSession, isAdmin, kvConfigured, loadProgress, json, kv, clientIp } = require('./_lib');
-const { gateFor, saveSub, findItem, loadCerts, saveCert, deleteCert, loadPromo, savePromo, loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints, entryStatus, basePoints } = require('./_gate');
+const { logActivity, gateFor, saveSub, findItem, loadCerts, saveCert, deleteCert, loadPromo, savePromo, loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints, entryStatus, basePoints } = require('./_gate');
 const { listMembers } = require('./_lib');
 const { signAll, cleanFile } = require('./_blob');
 
@@ -39,6 +39,24 @@ async function leaderboard(period, me) {
   rows.sort((a, b) => b.points - a.points || b.followedPct - a.followedPct || a.name.localeCompare(b.name));
   rows.forEach((r, i) => { r.rank = i + 1; });
   return { period, from, rows };
+}
+// The payout leaderboard: payouts an admin has certified, added up per member (by the day of the payout)
+async function payoutBoard(period, me) {
+  const today = new Date(); const ymd = (d) => d.toISOString().slice(0, 10);
+  let from = '0000-00-00';
+  if (period === 'week') { const d = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); from = ymd(d); }
+  if (period === 'month') from = ymd(today).slice(0, 8) + '01';
+  const rows = [];
+  await Promise.all((await listMembers()).map(async (m) => {
+    const paid = Object.values(await loadCerts(m.id)).filter((c) => c.kind === 'payout' && c.review && c.review.status === 'approved' && String(c.paidAt || c.uploadedAt).slice(0, 10) >= from);
+    if (!paid.length) return;
+    const total = paid.reduce((t, c) => t + (+c.review.amount || +c.amount || 0), 0);
+    const lastAt = paid.map((c) => String(c.paidAt || '')).sort().pop();
+    rows.push({ id: m.id, name: m.displayName || m.username, username: m.username, avatar: m.avatar || null, total: Math.round(total * 100) / 100, payouts: paid.length, lastAt, me: m.id === me });
+  }));
+  rows.sort((a, b) => b.total - a.total || b.payouts - a.payouts || a.name.localeCompare(b.name));
+  rows.forEach((r, i) => { r.rank = i + 1; });
+  return { period, from, kind: 'payout', rows };
 }
 const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
@@ -66,6 +84,7 @@ module.exports = async (req, res) => {
 
   if (req.method === 'GET') {
     const board = /[?&]board=(week|month|all)/.exec(req.url || '');
+    if (board && /[?&]kind=payout/.test(req.url || '')) return json(res, 200, await payoutBoard(board[1], uid));
     if (board) return json(res, 200, await leaderboard(board[1], uid));
     const [certs, promo, journal, entries] = await Promise.all([loadCerts(uid), loadPromo(uid), loadJournal(uid), loadEntries(uid)]);
     const list = Object.values(certs).sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt)));
@@ -114,6 +133,8 @@ module.exports = async (req, res) => {
       feedback: prev && prev.status === 'returned' ? prev.feedback || '' : '', reviewedAt: null, reviewer: null,
     };
     await saveSub(uid, lessonId, sub);
+    const it = found.item || {}, label = found.kind === 'part' ? (found.lesson.title + ' · ' + it.title) : found.kind === 'breakdown' && it.kind === 'advanced' ? 'Advanced · ' + it.title : it.title;
+    await logActivity(s.user, { type: 'handin', key: lessonId, what: found.kind === 'homework' ? 'homework' : found.kind === 'breakdown' ? (it.kind === 'advanced' ? 'advanced' : 'breakdown') : 'lesson', label: label || lessonId, again: !!prev });
     return json(res, 200, { saved: true, sub, unlockMode: content.settings.unlockMode });
   }
 
@@ -158,6 +179,7 @@ module.exports = async (req, res) => {
       if (!entry.files.length || entry.files.some((f) => !f)) return json(res, 400, { error: 'need_files' });
     }
     await saveEntry(uid, entry);
+    await logActivity(s.user, { type: 'journal', key: entry.id, date: entry.date, label: kind === 'none' ? 'No-trade day' : entry.pair + ' ' + (entry.outcome || '').toUpperCase() + ' ' + (entry.pnl >= 0 ? '+$' : '−$') + Math.abs(entry.pnl) });
     return json(res, 200, { saved: true, entry: Object.assign({}, entry, { points: entryPoints(entry), worth: basePoints(entry) }) });
   }
   if (action === 'journal-delete') {
@@ -179,13 +201,23 @@ module.exports = async (req, res) => {
     const certs = await loadCerts(uid);
     if (Object.keys(certs).length >= 60) return json(res, 409, { error: 'too_many' });
     const cert = { id: 'c' + crypto.randomBytes(6).toString('hex'), kind, file, note: str(body.note, 300), uploadedAt: new Date().toISOString() };
+    if (kind === 'payout') {
+      // the amount and day of the payout; an admin certifies it before it counts on the payout leaderboard
+      const amount = Math.round(Number(body.amount) * 100) / 100;
+      if (!(amount > 0 && amount < 10000000)) return json(res, 400, { error: 'need_amount' });
+      const paidAt = /^\d{4}-\d{2}-\d{2}$/.test(str(body.paidAt, 10)) ? str(body.paidAt, 10) : new Date().toISOString().slice(0, 10);
+      Object.assign(cert, { amount, paidAt, review: { status: 'pending' } });
+    }
     await saveCert(uid, cert);
+    await logActivity(s.user, { type: 'cert', key: cert.id, kind, label: kind === 'payout' ? 'Payout $' + cert.amount.toLocaleString('en-US') : 'Funded certificate' });
     return json(res, 200, { saved: true, cert });
   }
   if (action === 'cert-delete') {
     const id = String(body.id || '');
     const promo = await loadPromo(uid);
     if (promo && promo.certId === id && promo.status !== 'declined') return json(res, 409, { error: 'in_use' });
+    const mine = (await loadCerts(uid))[id];
+    if (mine && mine.review && mine.review.status === 'approved') return json(res, 409, { error: 'certified' });   // certified payouts stay on the record
     await deleteCert(uid, id);
     return json(res, 200, { saved: true });
   }
@@ -201,6 +233,7 @@ module.exports = async (req, res) => {
     if (prev && prev.status === 'requested') return json(res, 409, { error: 'already_requested' });
     const promo = { status: 'requested', certId: cert.id, requestedAt: new Date().toISOString(), decidedAt: null, decidedBy: null, note: '' };
     await savePromo(uid, promo);
+    await logActivity(s.user, { type: 'promo', key: cert.id, label: 'Promotion request' });
     return json(res, 200, { saved: true, promo });
   }
 
