@@ -292,5 +292,3 @@ journal entries, payout or funded certificates and promotion requests. New ones 
 bell shows how many you haven't seen; click one to jump straight to it. The panel also shows how much is waiting, and the
 Hand-ins, Journal and Payouts buttons in Admin carry red counts.
 
-## Launch page diamond
-On a computer the diamond leans toward the mouse and the candlestick blueprint drifts slightly the other way for depth. On phones it sways slowly by itself. Every few seconds a glint runs across the facets, sometimes with a small star. All of it is off for anyone with "reduce motion" turned on.

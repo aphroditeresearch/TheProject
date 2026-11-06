@@ -10,7 +10,7 @@ This repo is The Project member site (built from the 00 Cleared engine). Everyth
 | Wordmark text | every `class="wm-t"` | PROJECT |
 | Number mark | every `class="wm-n"` | stacked T / H / E |
 | Japanese text | `.kana-v` and `wm-k` | プロジェクト |
-| Tagline under the wordmark | `.word .tag` | the work starts here |
+| Tagline under the wordmark | `.word .tag` | discipline compounds. |
 | Greeting | `.hi-sub` | Welcome to THE PROJECT. |
 | Sign-in popup stamp | `#stamp` | THE PROJECT · MEMBER / VERIFIED / date |
 | Popup countdown | `START` in the popup script | 0% counting up to 100% |
