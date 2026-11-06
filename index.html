@@ -104,6 +104,21 @@ a{color:var(--blue);text-underline-offset:3px}
 .moon video{--vt:translate(0,0);position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;max-width:none;transform:var(--vt);
   filter:hue-rotate(-44deg) saturate(1.2) contrast(1.25) brightness(.98);
   -webkit-mask-image:radial-gradient(ellipse 44% 40% at 50% 47%,#000 45%,transparent 100%);mask-image:radial-gradient(ellipse 44% 40% at 50% 47%,#000 45%,transparent 100%)}
+/* the diamond leans toward the cursor; a glint runs across it now and then */
+.hero{perspective:700px}
+.moon{rotate:var(--tx,0) var(--ty,1) 0 var(--ta,0deg);transform-style:preserve-3d}
+.blueprint{translate:var(--bx,0) var(--by,0) ;scale:1.03}
+.moon .glint{position:absolute;inset:0;z-index:2;pointer-events:none;mix-blend-mode:screen;opacity:0;
+  background:linear-gradient(115deg,transparent 40%,rgba(220,255,245,.0) 44%,rgba(220,255,245,.55) 50%,rgba(220,255,245,0) 56%,transparent 60%) no-repeat;background-size:260% 100%;background-position:120% 0;
+  -webkit-mask-image:radial-gradient(ellipse 26% 22% at 50% 46%,#000 40%,transparent 100%);mask-image:radial-gradient(ellipse 26% 22% at 50% 46%,#000 40%,transparent 100%)}
+.moon .glint.go{animation:glint 1.1s cubic-bezier(.4,0,.2,1)}
+@keyframes glint{0%{opacity:0;background-position:120% 0}15%{opacity:1}85%{opacity:1}100%{opacity:0;background-position:-20% 0}}
+.moon .spark{position:absolute;z-index:3;width:14%;aspect-ratio:1;pointer-events:none;opacity:0;translate:-50% -50%;
+  background:radial-gradient(circle,rgba(255,255,255,.95) 0 6%,rgba(190,255,235,.5) 12%,transparent 40%),
+    linear-gradient(90deg,transparent 46%,rgba(220,255,245,.9) 50%,transparent 54%),linear-gradient(0deg,transparent 46%,rgba(220,255,245,.9) 50%,transparent 54%);
+  -webkit-mask-image:radial-gradient(circle,#000 20%,transparent 70%);mask-image:radial-gradient(circle,#000 20%,transparent 70%)}
+.moon .spark.go{animation:spark .9s ease-out}
+@keyframes spark{0%{opacity:0;scale:.3;rotate:0deg}35%{opacity:1;scale:1}100%{opacity:0;scale:.6;rotate:45deg}}
 /* soft glow behind the diamond */
 .moon::before{content:"";position:absolute;inset:-20%;z-index:-1;pointer-events:none;
   background:radial-gradient(ellipse 30% 26% at 50% 47%,rgba(46,240,170,.18),transparent 72%)}
@@ -298,22 +313,28 @@ a{color:var(--blue);text-underline-offset:3px}
 .bell:hover,.bell[aria-expanded="true"]{border-color:var(--kana-c)}
 .bell[hidden]{display:none}
 .bell .badge{position:absolute;top:-7px;right:-8px;margin:0}
-.bell.ring svg{animation:bellring .9s ease}
+.bell.ringing svg{animation:bellring .9s ease}
 @keyframes bellring{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}}
 .ntf{position:fixed;right:16px;top:72px;z-index:60;width:min(400px,calc(100vw - 24px));max-height:min(70vh,620px);overflow:auto;background:var(--panel);border:1px solid var(--line);box-shadow:0 24px 60px rgba(0,0,0,.55);animation:vmin .25s ease}
 .ntf[hidden]{display:none}
 .ntf-h{position:sticky;top:0;display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--panel);border-bottom:1px solid var(--line);z-index:1}
-.ntf-h b{font-size:15px}.ntf-h .lnk{margin-left:auto;font-size:13px}
+.ntf-h b{font-size:15px}.ntf-h .lnk{margin-left:auto;font:600 13px var(--sans);background:none;border:0;padding:4px 0;color:var(--kana-c);cursor:pointer}
 .ntf-w{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;border-bottom:1px solid var(--line)}
 .ntf-w button{appearance:none;border:1px solid var(--line);background:none;color:var(--ink);font:500 12px var(--sans);padding:5px 9px;cursor:pointer}
 .ntf-w button.has{border-color:#5A4E22;color:#E8D27A}
-.ntf-i{appearance:none;width:100%;display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;align-items:start;padding:11px 14px;border:0;border-bottom:1px solid var(--line);background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.ntf-i{position:relative;box-sizing:border-box;width:100%;display:flex;gap:12px;align-items:flex-start;transition:opacity .2s,transform .2s;padding:11px 14px;border:0;border-bottom:1px solid var(--line);background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
 .ntf-i:hover{background:var(--panel-2)}
 .ntf-i.new{background:rgba(28,232,190,.05)}.ntf-i.new .ntf-t b::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--kana-c);margin-left:6px;vertical-align:2px}
 .ntf-ic{width:30px;height:30px;display:grid;place-items:center;font-size:14px;border:1px solid var(--line)}
-.ntf-ic.handin{color:var(--kana-c)}.ntf-ic.journal{color:#E8D27A}.ntf-ic.cert{color:var(--win)}.ntf-ic.promo{color:#C9A2FF}
+.ntf-ic{flex:none}.ntf-ic.k-handin{color:var(--kana-c)}.ntf-ic.k-journal{color:#E8D27A}.ntf-ic.k-cert{color:var(--win)}.ntf-ic.k-promo{color:#C9A2FF}
 .ntf-t{display:flex;flex-direction:column;gap:2px;min-width:0}.ntf-t span{font-size:13px;color:var(--ink);opacity:.85}.ntf-t small{font-size:11px;color:var(--muted)}
 .ntf-none{padding:20px 14px;color:var(--muted);font-size:14px}
+.ntf-i.gone{opacity:0;transform:translateX(12px)}
+.ntf-i .ntf-t{flex:1;padding-right:22px}
+.ntf-x{position:absolute;top:8px;right:8px;width:26px;height:26px;border:0;background:none;color:var(--muted);font-size:17px;line-height:1;cursor:pointer}
+.ntf-x:hover{color:var(--ink)}
+.ntf-c{font-family:var(--mono);font-size:11px;color:var(--bg);background:var(--kana-c);padding:2px 7px;border-radius:999px}
+.ntf-pop{display:flex !important}.ntf-pop .ntf-t{flex:1}
 .ntf-pops{position:fixed;top:76px;right:20px;z-index:66;display:flex;flex-direction:column;gap:8px;width:min(340px,calc(100% - 40px));pointer-events:none}
 .ntf-pop{pointer-events:auto;display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;align-items:center;padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--kana-c);box-shadow:0 14px 34px rgba(0,0,0,.5);cursor:pointer;animation:popr2 .4s cubic-bezier(.2,.9,.25,1.15)}
 .ntf-pop.out{opacity:0;transform:translateX(16px);transition:opacity .3s,transform .3s}
@@ -1020,7 +1041,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       <div class="impact" aria-hidden="true"></div>
       <div class="hero">
       <h1 class="wm" aria-label="The Project"><span class="wm-n" aria-hidden="true"><span>T</span><span>H</span><span>E</span></span><span class="wm-t" aria-hidden="true">PROJECT</span></h1>
-        <div class="moon"><video src="diamond.mp4" poster="diamond.jpg" autoplay muted loop playsinline preload="auto" aria-label="A glowing diamond turning slowly in the dark."></video></div>
+        <div class="moon"><video src="diamond.mp4" poster="diamond.jpg" autoplay muted loop playsinline preload="auto" aria-label="A glowing diamond turning slowly in the dark."></video><i class="glint" aria-hidden="true"></i><i class="spark" aria-hidden="true"></i></div>
       </div>
       <span class="tag">the work starts here</span>
     </div>
@@ -1489,6 +1510,44 @@ img,video{-webkit-user-drag:none;user-drag:none}
 
   function layout(){ placeLaser(); }
   layout(); window.addEventListener('resize', layout);
+
+  /* ---------- launch page: the diamond leans toward the cursor, the blueprint drifts behind it, and it glints ---------- */
+  (function(){
+    var moon = document.querySelector('#gate-view .moon'), bp = document.querySelector('#gate-view .blueprint'), gate = document.getElementById('gate-view');
+    if (!moon || reduce) return;
+    var tx = 0, ty = 0, cx = 0, cy = 0, run = false;
+    function loop(){
+      cx += (tx - cx) * .08; cy += (ty - cy) * .08;
+      var ang = Math.min(1, Math.hypot(cx, cy)) * 16;
+      moon.style.setProperty('--tx', (-cy).toFixed(3)); moon.style.setProperty('--ty', cx.toFixed(3)); moon.style.setProperty('--ta', ang.toFixed(2) + 'deg');
+      if (bp){ bp.style.setProperty('--bx', (-cx * 14).toFixed(1) + 'px'); bp.style.setProperty('--by', (-cy * 9).toFixed(1) + 'px'); }
+      if (Math.abs(tx - cx) + Math.abs(ty - cy) > .002 && !gate.hidden) requestAnimationFrame(loop); else run = false;
+    }
+    function kick(){ if (!run){ run = true; requestAnimationFrame(loop); } }
+    if (window.matchMedia('(pointer:fine)').matches){
+      window.addEventListener('pointermove', function(e){
+        if (gate.hidden) return;
+        var r = moon.getBoundingClientRect(), mx = r.left + r.width / 2, my = r.top + r.height / 2;
+        tx = Math.max(-1, Math.min(1, (e.clientX - mx) / (window.innerWidth * .45)));
+        ty = Math.max(-1, Math.min(1, (e.clientY - my) / (window.innerHeight * .45))); kick();
+      }, { passive:true });
+      document.addEventListener('pointerleave', function(){ tx = 0; ty = 0; kick(); });
+    } else {
+      // phones: a slow sway instead
+      (function sway(t){ if (!gate.hidden){ tx = Math.sin(t / 2600) * .45; ty = Math.cos(t / 3400) * .25; kick(); } requestAnimationFrame(sway); })(0);
+    }
+    // a glint across the facets every few seconds, sometimes with a little star
+    var glint = moon.querySelector('.glint'), spark = moon.querySelector('.spark');
+    function shine(){
+      if (!gate.hidden && !document.hidden){
+        glint.classList.remove('go'); void glint.offsetWidth; glint.classList.add('go');
+        if (Math.random() < .7) setTimeout(function(){ spark.style.left = (40 + Math.random() * 22) + '%'; spark.style.top = (38 + Math.random() * 14) + '%';
+          spark.classList.remove('go'); void spark.offsetWidth; spark.classList.add('go'); }, 380);
+      }
+      setTimeout(shine, 4200 + Math.random() * 3200);
+    }
+    setTimeout(shine, 2600);
+  })();
 
   /* ---------- THE PROJECT letter rain behind the portal (faint, like the Matrix) ---------- */
   var rain = (function(){
@@ -2897,6 +2956,10 @@ img,video{-webkit-user-drag:none;user-drag:none}
   var NTF = { events:[], waiting:{}, first:true, timer:0, open:false };
   function ntfSeenKey(){ return 'theproject.ntfseen.' + uid(); }
   function ntfSeen(){ try { return localStorage.getItem(ntfSeenKey()) || ''; } catch(e) { return ''; } }
+  function ntfReadKey(){ return 'theproject.ntfread.' + uid(); }
+  function ntfRead(){ try { return JSON.parse(localStorage.getItem(ntfReadKey()) || '{}') || {}; } catch(e) { return {}; } }
+  function ntfMarkRead(ids){ var r = ntfRead(); ids.forEach(function(i){ r[i] = 1; }); var keep = {}; NTF.events.forEach(function(e){ if (r[e.id]) keep[e.id] = 1; }); try { localStorage.setItem(ntfReadKey(), JSON.stringify(keep)); } catch(e) {} }
+  function ntfUnread(){ var seen = ntfSeen(), r = ntfRead(); return NTF.events.filter(function(e){ return e.at > seen && !r[e.id] && e.uid !== uid(); }); }
   function ago(iso){ var s2 = (Date.now() - Date.parse(iso)) / 1000; if (s2 < 60) return 'just now'; if (s2 < 3600) return Math.floor(s2 / 60) + 'm ago'; if (s2 < 86400) return Math.floor(s2 / 3600) + 'h ago'; return fmtDay(iso); }
   var NTF_IC = { handin:'✎', journal:'◷', cert:'$', promo:'▲' };
   function ntfText(e){
@@ -2915,45 +2978,51 @@ img,video{-webkit-user-drag:none;user-drag:none}
     window.scrollTo(0, 0);
   }
   function paintNtf(){
-    var bell = document.getElementById('bell'), n = document.getElementById('bell-n'), seen = ntfSeen();
-    var unseen = NTF.events.filter(function(e){ return e.at > seen; }).length;
+    var bell = document.getElementById('bell'), n = document.getElementById('bell-n'), list = ntfUnread();
+    var unseen = list.length;
     n.textContent = unseen > 99 ? '99+' : unseen; n.hidden = !unseen;
     document.querySelectorAll('#adm-nav .nb').forEach(function(b){ var c = NTF.waiting[b.dataset.w] || 0; if (b.dataset.w === 'handins') c += NTF.waiting.promotions || 0; b.textContent = c; b.hidden = !c; });
     if (!NTF.open) return;
     var box = document.getElementById('ntf'); box.textContent = '';
     var h = el('div','ntf-h'); h.appendChild(el('b',null,'Activity'));
-    var mr = el('button','lnk','Mark all read'); mr.type = 'button'; mr.addEventListener('click', function(){ markNtfSeen(); paintNtf(); }); h.appendChild(mr); box.appendChild(h);
+    if (unseen){ h.appendChild(el('span','ntf-c', unseen + ' new'));
+      var mr = el('button','lnk','Mark all read'); mr.type = 'button'; mr.addEventListener('click', function(){ markNtfSeen(); paintNtf(); }); h.appendChild(mr); }
+    box.appendChild(h);
     var w = el('div','ntf-w'), W = NTF.waiting || {};
-    [['handins','review', (W.handins || 0) + ' hand-ins waiting'], ['promotions','review', (W.promotions || 0) + ' promotion requests'], ['journal','journal', (W.journal || 0) + ' journal entries'], ['payouts','payouts', (W.payouts || 0) + ' payouts']].forEach(function(o){
+    [['handins','review', (W.handins || 0) + ((W.handins || 0) === 1 ? ' hand-in' : ' hand-ins') + ' waiting'], ['promotions','review', (W.promotions || 0) + ((W.promotions || 0) === 1 ? ' promotion request' : ' promotion requests')], ['journal','journal', (W.journal || 0) + ((W.journal || 0) === 1 ? ' journal entry' : ' journal entries')], ['payouts','payouts', (W.payouts || 0) + ((W.payouts || 0) === 1 ? ' payout' : ' payouts')]].forEach(function(o){
       if (o[0] === 'promotions' && !W.promotions) return;
       var b = el('button', W[o[0]] ? 'has' : '', o[2]); b.type = 'button'; b.addEventListener('click', function(){ closeNtf(); if (o[1] === 'review'){ RV.member = null; RV.status = 'waiting'; } if (o[1] === 'journal'){ JRV.mode = 'list'; JRV.status = 'pending'; } if (o[1] === 'payouts') PRV.status = 'pending'; adm.sec = o[1]; if ((location.hash || '') !== '#admin') location.hash = '#admin'; else if (adm.content) admRender(); });
       w.appendChild(b); });
     box.appendChild(w);
-    if (!NTF.events.length){ box.appendChild(el('div','ntf-none','Nothing yet. When members hand in work, post journal entries or upload payouts, it shows up here.')); return; }
-    NTF.events.slice(0, 60).forEach(function(e){
-      var it = el('button','ntf-i' + (e.at > (NTF.seenAtOpen || '') ? ' new' : '')); it.type = 'button';
-      it.appendChild(el('span','ntf-ic ' + e.type, NTF_IC[e.type] || '•'));
+    if (!list.length){ box.appendChild(el('div','ntf-none','You\'re all caught up. New hand-ins, journal entries and payouts show up here.')); return; }
+    list.slice(0, 60).forEach(function(e){
+      var it = el('div','ntf-i new'); it.setAttribute('role','button'); it.tabIndex = 0;
+      it.addEventListener('keydown', function(ev){ if (ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); it.click(); } });
+      var x = el('button','ntf-x','×'); x.type = 'button'; x.setAttribute('aria-label','Mark as read');
+      x.addEventListener('click', function(ev){ ev.stopPropagation(); ntfMarkRead([e.id]); it.classList.add('gone'); setTimeout(paintNtf, 200); });
+      it.appendChild(el('span','ntf-ic k-' + e.type, NTF_IC[e.type] || '•'));
       var t = el('span','ntf-t'); t.appendChild(el('b',null, e.name)); t.appendChild(el('span',null, ntfText(e))); t.appendChild(el('small',null, ago(e.at))); it.appendChild(t);
-      it.addEventListener('click', function(){ ntfGo(e); });
+      it.appendChild(x);
+      it.addEventListener('click', function(){ ntfMarkRead([e.id]); ntfGo(e); paintNtf(); });
       box.appendChild(it);
     });
   }
-  function markNtfSeen(){ var top = NTF.events[0]; if (top) try { localStorage.setItem(ntfSeenKey(), top.at); } catch(e) {} }
+  function markNtfSeen(){ var top = NTF.events[0]; if (top) try { localStorage.setItem(ntfSeenKey(), top.at); } catch(e) {} try { localStorage.removeItem(ntfReadKey()); } catch(e) {} }
   function closeNtf(){ NTF.open = false; document.getElementById('ntf').hidden = true; document.getElementById('bell').setAttribute('aria-expanded','false'); }
   document.getElementById('bell').addEventListener('click', function(ev){
     ev.stopPropagation();
     if (NTF.open){ closeNtf(); return; }
     NTF.open = true; NTF.seenAtOpen = ntfSeen(); document.getElementById('ntf').hidden = false; this.setAttribute('aria-expanded','true');
-    paintNtf(); markNtfSeen(); var n = document.getElementById('bell-n'); n.hidden = true;
+    paintNtf();
   });
   document.addEventListener('click', function(ev){ if (NTF.open && !ev.target.closest('.bell-w')) closeNtf(); });
   document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape' && NTF.open) closeNtf(); });
   // a small card in the top-right corner for anything new since the last check
   function ntfPop(e){
     var host = document.getElementById('ntf-pops'), c = el('div','ntf-pop');
-    c.appendChild(el('span','ntf-ic ' + e.type, NTF_IC[e.type] || '•'));
+    c.appendChild(el('span','ntf-ic k-' + e.type, NTF_IC[e.type] || '•'));
     var t = el('span','ntf-t'); t.appendChild(el('b',null, e.name)); t.appendChild(el('span',null, ntfText(e))); c.appendChild(t);
-    c.addEventListener('click', function(){ c.remove(); ntfGo(e); });
+    c.addEventListener('click', function(){ c.remove(); ntfMarkRead([e.id]); ntfGo(e); paintNtf(); });
     host.appendChild(c); while (host.children.length > 3) host.firstChild.remove();
     setTimeout(function(){ c.classList.add('out'); setTimeout(function(){ c.remove(); }, 320); }, 7000);
   }
@@ -2969,7 +3038,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       var fresh = NTF.first ? [] : j.events.filter(function(e){ return !known[e.id] && e.uid !== uid(); });
       NTF.events = j.events || []; NTF.waiting = j.waiting || {}; NTF.first = false;
       paintNtf();
-      if (fresh.length){ fresh.slice(0, 3).reverse().forEach(ntfPop); var b = document.getElementById('bell'); b.classList.remove('ring'); void b.offsetWidth; b.classList.add('ring');
+      if (fresh.length){ fresh.slice(0, 3).reverse().forEach(ntfPop); var b = document.getElementById('bell'); b.classList.remove('ringing'); void b.offsetWidth; b.classList.add('ringing');
         if ((location.hash || '') === '#admin' && adm.content && ['review','journal','payouts'].indexOf(adm.sec) !== -1 && !document.querySelector('#adm-body :focus')) admRender(); }
     }).catch(function(){}).then(next);
   }
