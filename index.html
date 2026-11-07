@@ -2721,7 +2721,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     if (JR.view === 'stats'){
       JR.per = JR.per || 'all';
       main.appendChild(seg([['week','This week'],['month','This month'],['30','30 days'],['90','90 days'],['year','This year'],['all','All time']], JR.per, function(v){ JR.per = v; drawJournal(host); }));
-      var fromS = periodFrom(JR.per); main.appendChild(statsView(ents.filter(function(e){ return e.date >= fromS && entryStatus(e) !== 'denied'; })));
+      var fromS = periodFrom(JR.per); main.appendChild(statsView(ents.filter(function(e){ return e.date >= fromS && countsInStats(e); })));
       grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return;
     }
     if (JR.view === 'cal'){ main.appendChild(journalCalendar(ents, host)); grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return; }
@@ -2953,6 +2953,10 @@ img,video{-webkit-user-drag:none;user-drag:none}
   var DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   function periodFrom(p){ var t = new Date(); if (p === 'week'){ var d = new Date(t.getFullYear(), t.getMonth(), t.getDate()); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return ymd(d); } if (p === '30'){ var d2 = new Date(); d2.setDate(d2.getDate() - 29); return ymd(d2); } if (p === 'month') return ymd(t).slice(0, 8) + '01'; if (p === '90'){ var d3 = new Date(); d3.setDate(d3.getDate() - 89); return ymd(d3); } if (p === 'year') return ymd(t).slice(0, 4) + '-01-01'; return '0000-00-00'; }
   function pct(a, b){ return b ? Math.round(a / b * 100) : 0; }
+  // Stats only count real-account trades: Funded and Evaluation. Paper, demo and personal trades stay in the journal
+  // (and the leaderboard) but are left out of every stat. No-trade days always count.
+  var STAT_ACCOUNTS = /^(funded|evaluation)$/i;
+  function countsInStats(e){ return !!e && entryStatus(e) !== 'denied' && (e.kind !== 'trade' || STAT_ACCOUNTS.test(String(e.account || '').trim())); }
   // Days are calendar days: 12 people trading on Friday is 1 trading day with 12 trades.
   // A no-trade log counts when that student didn't also log a trade that date.
   function journalStats(ents){
@@ -3030,6 +3034,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
   function statsView(ents, opts){
     opts = opts || {};
     var S = journalStats(ents), wrap = el('div','st view-in'), T = S.trades.length;
+    wrap.appendChild(el('p','adm-note st-scope','Funded and evaluation trades only. Paper, demo and personal trades are left out.'));
     var wins = S.w, losses = S.l, multi = Object.keys(S.people).length > 1;
     var dj = Object.keys(S.days).length, td = Object.keys(S.tradeDays).length, nt = S.none.length, ci = Object.keys(S.checkins).length;
     wrap.appendChild(statTiles([
@@ -3318,18 +3323,18 @@ img,video{-webkit-user-drag:none;user-drag:none}
     people.forEach(function(p){ (p.entries || []).forEach(function(e){ var x = Object.assign({ _u: p.id, _who: p.name }, e); (x.kind === 'trade' ? trades : nones).push(x); }); });
     var byDate = function(a, b){ return String(a.date + (a.time || '')).localeCompare(String(b.date + (b.time || ''))); };
     trades.sort(byDate); nones.sort(byDate);
-    var counted = trades.filter(function(e){ return entryStatus(e) !== 'denied'; }); numberTrades(counted);
+    var counted = trades.filter(countsInStats); numberTrades(counted);
     var tCols = [['Student','s',18],['Date','d',12],['Weekday','s',9],['Entry time','s',10],['Exit time','s',10],['Time zone','s',18],['Entry time (NY)','s',14],['Hold (min)','n',10],['Trade # that day','n',14],
       ['Session','s',14],['Instrument','s',11],['Direction','s',10],['Account','s',14],['Paper / demo','s',12],['Contracts','n',10],['Entry model','s',14],['Entry type','s',10],
       ['Bias timeframe','s',14],['HTF bias','s',10],['Bias vs direction','s',16],['Entry timeframe','s',14],['Liquidity swept','s',28],['Confluence','s',28],['Setup grade','s',11],['Emotion','s',11],
       ['Entry price','n',12],['Stop price','n',12],['Target price','n',12],['Exit price','n',12],['Risk ($)','$',11],['Planned R','r',10],['R multiple','r',11],['Max against (pts)','n',15],['Max in favour (pts)','n',16],
-      ['Outcome','s',9],['Win','n',6],['P&L','$',12],['Trade management','s',26],['Mistakes','s',26],['News day','s',9],['Which news','s',14],['Rules followed','s',13],['Status','s',10],['Points','n',8],['Overview','s',60],['Screenshots','n',11]];
+      ['Outcome','s',9],['Win','n',6],['P&L','$',12],['Trade management','s',26],['Mistakes','s',26],['News day','s',9],['Which news','s',14],['Rules followed','s',13],['Status','s',10],['Points','n',8],['Overview','s',60],['Screenshots','n',11],['Counted in stats','s',15]];
     var tRows = trades.map(function(e){ return [e._who, e.date, /^\d{4}-\d{2}-\d{2}$/.test(e.date) ? DOW[new Date(e.date + 'T12:00:00').getDay()] : '', e.time, e.exitTime, e.tz, nyTime(e), holdMin(e), e._n,
       e.session, e.pair, cap(e.dir), e.account, isPaper(e) ? 'Yes' : 'No', +e.contracts, e.model, e.entryType,
       e.htf, cap(e.bias), alignOf(e), e.ltf, join(e.swept), join(e.confl), e.grade, e.emotion,
       e.pEntry, e.pStop, e.pTarget, e.pExit, e.risk, plannedR(e), rOf(e), e.mae, e.mfe,
       (e.outcome || '').toUpperCase(), e.outcome === 'tp' ? 1 : 0, +e.pnl || 0, join(e.manage), join(e.mistakes), e.news === 'yes' ? 'Yes' : e.news === 'no' ? 'No' : '', e.newsWhat,
-      e.followed ? 'Yes' : 'No', cap(entryStatus(e)), entryPoints(e), e.overview, (e.files || []).length]; });
+      e.followed ? 'Yes' : 'No', cap(entryStatus(e)), entryPoints(e), e.overview, (e.files || []).length, countsInStats(e) ? 'Yes' : 'No (' + (entryStatus(e) === 'denied' ? 'denied' : (e.account || 'no account')) + ')']; });
     var nCols = [['Student','s',18],['Date','d',12],['Weekday','s',9],['Session','s',14],['News day','s',9],['Which news','s',14],['Rules followed','s',13],['Status','s',10],['Points','n',8],['Overview','s',60],['Screenshots','n',11]];
     var nRows = nones.map(function(e){ return [e._who, e.date, /^\d{4}-\d{2}-\d{2}$/.test(e.date) ? DOW[new Date(e.date + 'T12:00:00').getDay()] : '', e.session, e.news === 'yes' ? 'Yes' : e.news === 'no' ? 'No' : '', e.newsWhat, e.followed ? 'Yes' : 'No', cap(entryStatus(e)), entryPoints(e), e.overview, (e.files || []).length]; });
     var eCols = [['Factor','s',22],['Condition','s',30],['Trades','n',8],['Wins (TP)','n',10],['Losses (SL)','n',11],['Break-even','n',11],['Win rate','p',9],['Reliable WR','p',12],['Avg R','r',8],['Trades with R','n',13],['Profit factor','r',12],['P&L','$',12]];
@@ -3339,7 +3344,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     combos.sort(function(a, b){ return b.lo - a.lo || b.n - a.n; });
     var sheets = [{ name:'Trades', cols:tCols, rows:tRows }, { name:'No-trade days', cols:nCols, rows:nRows },
       { name:'What works', cols:eCols, rows:singles.map(eRow) }, { name:'Combinations', cols:eCols, rows:combos.map(eRow) }];
-    var okAll = []; people.forEach(function(p){ (p.entries || []).forEach(function(e){ if (entryStatus(e) !== 'denied') okAll.push(Object.assign({ _u: p.id }, e)); }); });
+    var okAll = []; people.forEach(function(p){ (p.entries || []).forEach(function(e){ if (countsInStats(e)) okAll.push(Object.assign({ _u: p.id }, e)); }); });
     var SD = journalStats(okAll), multiP = people.length > 1;
     var dCols = [['Date','d',12],['Weekday','s',9]].concat(multiP ? [['Students','n',10]] : []).concat([['Trades','n',8],['Wins','n',7],['Losses','n',8],['Break-even','n',11],['No-trade','n',10],['W / L / NT','s',22],['Win rate','p',9],['P&L','$',12],['No-trade with news','n',18]]);
     var dRows = Object.keys(SD.days).sort().map(function(d){ var x = SD.days[d];
@@ -3349,7 +3354,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     if (people.length > 1){
       var sCols = [['Student','s',18],['Days journaled','n',14],['Trade days','n',11],['No-trade days','n',13],['Trades','n',8],['W / L / NT','s',20],['Win rate','p',9],['Avg R','r',8],['Rules followed','p',13],['P&L','$',12],['Points','n',8]];
       sheets.push({ name:'By student', cols:sCols, rows:people.filter(function(p){ return (p.entries || []).length; }).map(function(p){
-        var ok = p.entries.filter(function(e){ return entryStatus(e) !== 'denied'; }), q = journalStats(ok), td = Object.keys(q.tradeDays).length, nd = Object.keys(q.noneDays).length;
+        var ok = p.entries.filter(countsInStats), q = journalStats(ok), td = Object.keys(q.tradeDays).length, nd = Object.keys(q.noneDays).length;
         var w = q.trades.filter(function(e){ return e.outcome === 'tp'; }).length, rs = q.trades.map(rOf).filter(isNum);
         return [p.name, td + nd, td, nd, q.trades.length, ratioText(q.w, q.l, q.be, q.none.length), q.trades.length ? w / q.trades.length : '', rs.length ? r2(rs.reduce(function(a, b){ return a + b; }, 0) / rs.length) : '', q.entries ? q.followed / q.entries : '', q.pnl, p.entries.reduce(function(t, e){ return t + entryPoints(e); }, 0)]; }) });
     }
@@ -3378,7 +3383,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     xb.addEventListener('click', function(){ exportStats(); }); bar.appendChild(xb);
     host.appendChild(bar);
     var body = el('div'); host.appendChild(body);
-    var from = periodFrom(STX.per), keep = function(e){ return e && e.date >= from && entryStatus(e) !== 'denied'; };
+    var from = periodFrom(STX.per), keep = function(e){ return e && e.date >= from && countsInStats(e); };
     var fresh = Date.now() - STX.at < 60000;
     function draw(){
       body.textContent = '';
@@ -3413,7 +3418,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       catch (err){ toast('Couldn\'t build the file: ' + ((err && err.message) || err)); }
     }
     var need = [];
-    if (STX.who === 'me' && !ME.loaded) need.push(loadMe());
+    if (STX.who === 'me' && (!ME.loaded || Date.now() - (STX.meAt || 0) > 60000)) need.push(loadMe().then(function(){ STX.meAt = Date.now(); }));
     if (STX.who !== 'me' && !fresh){
       if (admin) need.push(new Promise(function(res){ loadMembers(function(rows){ STX.rows = rows; STX.at = Date.now(); res(); }, function(){ res(); }); }));
       else if (DEMO_MODE) need.push(loadMe().then(function(){ STX.data = { entries: ME.entries || [], members: 1 }; STX.at = Date.now(); }));

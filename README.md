@@ -375,3 +375,10 @@ journal. Screenshot links aren't included because they expire; the sheet shows h
   each time, so nothing is lost or rolled up, and the numbers stay right as months of data build up.
 - New entries default to the last trading day: before 5am counts as the day before, and weekends go back to Friday.
   Dating a trade on a Saturday asks for confirmation first.
+
+## Which trades the stats count
+Stats (the Stats tab, Journal → Stats, and the analysis sheets in the Excel export) only count **Funded** and
+**Evaluation** trades. Paper, demo and personal / live trades stay in the journal and on the leaderboard but are left out
+of every stat. No-trade days always count. The export's Trades sheet still lists every trade, with a "Counted in stats"
+column. To change which accounts count, edit `STAT_ACCOUNTS` in `index.html` and the matching line in
+`communityStats()` in `api/member.js`.

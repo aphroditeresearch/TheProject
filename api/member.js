@@ -76,7 +76,8 @@ async function communityStats() {
   try { const c = await kv(['GET', 'stats-cache']); if (c) return JSON.parse(c); } catch (e) {}
   const out = []; let members = 0;
   await Promise.all((await listMembers()).map(async (m, i) => {
-    const ents = Object.values(await loadEntries(m.id)).filter((e) => entryStatus(e) !== 'denied');
+    // stats only count Funded / Evaluation trades (no-trade days always count); same rule as countsInStats() in index.html
+    const ents = Object.values(await loadEntries(m.id)).filter((e) => entryStatus(e) !== 'denied' && (e.kind !== 'trade' || /^(funded|evaluation)$/i.test(String(e.account || '').trim())));
     if (ents.length) members++;
     // _u: a number per journal so each student's days count separately (not who it is)
     ents.forEach((e) => { const x = { _u: i }; STAT_FIELDS.forEach((k) => { if (e[k] !== undefined) x[k] = e[k]; }); out.push(x); });
