@@ -61,7 +61,8 @@ function verify(token) {
 }
 
 function readSession(req) {
-  return verify(parseCookies(req)[SESSION_COOKIE]);
+  const s = verify(parseCookies(req)[SESSION_COOKIE]);
+  return s && s.user && s.user.id ? s : null;   // only real sessions (not other signed tokens)
 }
 
 function writeSession(res, data) {

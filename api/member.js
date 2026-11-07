@@ -87,6 +87,8 @@ async function communityStats() {
   try { await kv(['SET', 'stats-cache', JSON.stringify(data), 'EX', 120]); } catch (e) {}
   return data;
 }
+// screenshots / files per hand-in or journal entry (index.html uses the same number)
+const MAX_FILES = 12;
 const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
 module.exports = async (req, res) => {
@@ -138,7 +140,7 @@ module.exports = async (req, res) => {
     // files: new uploads in the member's folder, or ones already in their earlier hand-in (those come back as signed links)
     const prevFiles = ((subs[lessonId] || {}).files || []);
     const files = [], badNames = [];
-    (Array.isArray(body.files) ? body.files : []).slice(0, 8).forEach((f) => {
+    (Array.isArray(body.files) ? body.files : []).slice(0, MAX_FILES).forEach((f) => {
       const ok = cleanFile(f, uid, 'homework')
         || prevFiles.find((p) => f && p.url && typeof f.url === 'string' && f.url.split('?')[0] === p.url)
         || prevFiles.find((p) => f && p.name && p.name === f.name && (+p.size || 0) === (+f.size || 0));
@@ -198,13 +200,13 @@ module.exports = async (req, res) => {
       if (!entry.session) return json(res, 400, { error: 'need_session' });
       if (Object.values(entries).some((x) => x.kind === 'none' && x.date === date)) return json(res, 409, { error: 'none_exists' });
       // screenshots are optional on a no-trade day (mark-ups / price action)
-      entry.files = (Array.isArray(e.files) ? e.files : []).slice(0, 4).map((f) => cleanFile(f, uid, 'journal'));
+      entry.files = (Array.isArray(e.files) ? e.files : []).slice(0, MAX_FILES).map((f) => cleanFile(f, uid, 'journal'));
       if (entry.files.some((f) => !f)) return json(res, 400, { error: 'bad_file' });
     } else {
       Object.assign(entry, {
         time: /^\d{2}:\d{2}$/.test(str(e.time, 5)) ? str(e.time, 5) : '', pair: str(e.pair, 40), account: str(e.account, 40),
         contracts: Number(e.contracts), outcome: ['tp', 'sl', 'be'].includes(e.outcome) ? e.outcome : '', pnl: Number(e.pnl), model: ['BOS', 'MITIGATION', 'Chained OBs', 'DIV + OB'].includes(e.model) ? e.model : '',
-        files: (Array.isArray(e.files) ? e.files : []).slice(0, 4).map((f) => cleanFile(f, uid, 'journal')),
+        files: (Array.isArray(e.files) ? e.files : []).slice(0, MAX_FILES).map((f) => cleanFile(f, uid, 'journal')),
       });
       // optional trade data (for the stats and the research export); anything left blank is simply not stored
       const num = (v) => { if (v === '' || v === null || v === undefined) return undefined; const n = Number(v); return isFinite(n) && Math.abs(n) < 1e9 ? n : undefined; };

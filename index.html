@@ -180,13 +180,15 @@ a{color:var(--blue);text-underline-offset:3px}
   .scene{min-height:100svh;justify-content:center}
   .blueprint{object-position:30% 50%}
   .word{transform:none}
-  .kana-v{position:absolute;top:44px;left:max(10px,env(safe-area-inset-left,0px));font-size:24px}
+  .kana-v{position:relative;align-self:flex-start;writing-mode:horizontal-tb;text-orientation:mixed;font-size:clamp(16px,4.6vw,24px);letter-spacing:.32em;line-height:1;margin:0 0 -18px}
   .laser{display:none}
   .word .tag{padding-left:0}
   .word{align-self:stretch;align-items:flex-start;margin-top:32px}
   .word .hero{font-size:clamp(40px,11.5vw,104px)}
   .card{width:100%;max-width:420px;box-shadow:10px 10px 0 var(--blue)}
 }
+.card-err{margin:0 0 4px;padding:10px 12px;border:1px solid rgba(232,120,96,.45);background:rgba(232,120,96,.08);color:#F4C2B3;font-size:14px;line-height:1.4}
+.card-err[hidden]{display:none}
 
 
 /* ---------- popup ---------- */
@@ -1162,6 +1164,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     <section class="card" aria-labelledby="signin-title">
       <h2 id="signin-title">Sign in</h2>
       <p>Use the Discord account that holds your member role.</p>
+      <p class="card-err" id="signin-err" role="alert" hidden></p>
       <button class="cta" id="discord-btn" type="button">Continue with Discord</button>
       <p class="fine">Lessons play in Google Chrome on your computer or phone.<br><a href="terms.html">Terms of sale</a> · <a href="privacy.html">Privacy policy</a></p>
     </section>
@@ -2309,6 +2312,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
 
   /* ---------- notes + homework hand-in (under each lesson's video) ---------- */
   function draftKey(lid){ return 'theproject.draft.' + uid() + '.' + lid; }
+  var MAX_FILES = 12;   // screenshots / files per hand-in or journal entry (api/member.js uses the same number)
   function handinPanel(it, watched, track){
     var bd = track === 'bx', hwk = track === 'hw', key = it.key, word = bd ? 'mark-ups' : 'homework', unit = bd ? 'breakdown' : track === 'ax' ? 'lecture' : 'lesson';
     var l = it.lesson, sub = l.sub || null, st = sub ? sub.status : 'none', approve = SETTINGS.unlockMode === 'approve';
@@ -2341,10 +2345,11 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     function drawFiles(){ chipsHost.textContent = ''; chipsHost.appendChild(fileChips(files, locked ? null : function(i){ files.splice(i,1); saveDraft(); drawFiles(); })); }
     drawFiles(); fileBox.appendChild(chipsHost);
     if (!locked){
-      var pickL = el('label','btn-s up-file', bd ? '+ Upload mark-up screenshots' : '+ Upload files'), fi = el('input'); fi.type = 'file'; fi.multiple = true; fi.accept = FILE_TYPES; pickL.appendChild(fi);
+      var pickL = el('label','btn-s up-file', bd ? '+ Upload mark-up screenshots (up to ' + MAX_FILES + ')' : '+ Upload files (up to ' + MAX_FILES + ')'), fi = el('input'); fi.type = 'file'; fi.multiple = true; fi.accept = FILE_TYPES; pickL.appendChild(fi);
       var upNote = el('small','adm-note','Photos, screenshots or PDFs from your phone or computer, up to 25 MB each.');
       fi.addEventListener('change', function(){
-        var list = Array.prototype.slice.call(fi.files || []).slice(0, Math.max(0, 8 - files.length)); fi.value = '';
+        var picked = Array.prototype.slice.call(fi.files || []), list = picked.slice(0, Math.max(0, MAX_FILES - files.length)); fi.value = '';
+        if (picked.length > list.length) toast('Up to ' + MAX_FILES + ' files per hand-in. ' + (picked.length - list.length) + (picked.length - list.length === 1 ? ' wasn\'t' : ' weren\'t') + ' added.');
         list.forEach(function(f){
           var ftype = fileType(f); if (!ftype){ say(f.name + ' isn\'t an image or PDF.'); return; }
           if (ftype !== f.type) f = new File([f], f.name, { type: ftype });
@@ -2898,9 +2903,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var fb = el('div','hi-up'), chips = el('div'), busy = 0;
       var drawF = function(){ chips.textContent = ''; chips.appendChild(fileChips(D.files, function(i){ D.files.splice(i,1); drawF(); })); };
       drawF(); fb.appendChild(chips);
-      var pl2 = el('label','btn-s up-file','+ Add screenshots (up to 4)'), fi = el('input'); fi.type = 'file'; fi.multiple = true; fi.accept = FILE_TYPES; pl2.appendChild(fi);
+      var pl2 = el('label','btn-s up-file','+ Add screenshots (up to ' + MAX_FILES + ')'), fi = el('input'); fi.type = 'file'; fi.multiple = true; fi.accept = FILE_TYPES; pl2.appendChild(fi);
       var noteTx = required ? 'At least one screenshot is needed to post.' : 'Optional: your mark-ups and the price action you watched.'; var un = el('small','adm-note', noteTx);
-      fi.addEventListener('change', function(){ var list = Array.prototype.slice.call(fi.files || []).slice(0, Math.max(0, 4 - D.files.length)); fi.value = '';
+      fi.addEventListener('change', function(){ var picked = Array.prototype.slice.call(fi.files || []), list = picked.slice(0, Math.max(0, MAX_FILES - D.files.length)); fi.value = '';
+        if (picked.length > list.length) toast('Up to ' + MAX_FILES + ' screenshots per entry. ' + (picked.length - list.length) + (picked.length - list.length === 1 ? ' wasn\'t' : ' weren\'t') + ' added.');
         list.forEach(function(file){ var ft = fileType(file); if (!ft){ toast(file.name + ' isn\'t an image or PDF.'); return; } if (ft !== file.type) file = new File([file], file.name, { type: ft });
           busy++; un.textContent = 'Uploading ' + file.name + '…'; JR.busy = busy;
           uploadFile(file, 'members/' + (user().id || 'demo') + '/journal/' + safeName(file.name), function(pc){ un.textContent = 'Uploading ' + file.name + '… ' + Math.round(pc) + '%'; })
@@ -5088,13 +5094,16 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     renderUser(); renderContentViews(); wireDemo();
     document.getElementById('admin-tab').hidden = !canAdmin();
     var btn = document.getElementById('discord-btn');
+    // sign-in problems show inside the card (a floating message covered the card on phones)
+    function signinErr(m){ var e = document.getElementById('signin-err'); if (!e) { toast(m); return; } e.textContent = m; e.hidden = false; }
+    btn.addEventListener('click', function(){ var e = document.getElementById('signin-err'); if (e) e.hidden = true; });
     if (SESSION){ btn.textContent = 'Continue as ' + (user().displayName || user().username); }
     // sign-in problems sent back from Discord
     var errMatch = location.search.match(/[?&]error=([a-z_]+)/);
     if (errMatch){
       var ERRORS = {
         denied:'Sign-in was cancelled.',
-        expired:'That sign-in link expired. Try again.',
+        expired:'Sign-in timed out. Tap the button below to try again.',
         not_member:'That Discord account isn\'t in The Project server.',
         no_access:'Your Discord account doesn\'t have member access yet.',
         discord:'Discord didn\'t respond. Try again in a moment.',
@@ -5106,10 +5115,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var missing = (location.search.match(/[?&]missing=([A-Z_]+)/) || [])[1];
       if (errMatch[1] === 'setup' && missing) ERRORS.setup = 'Sign-in isn\'t set up yet: add ' + missing + ' in Vercel (Settings → Environment Variables), then redeploy.';
       try { history.replaceState(null,'',location.pathname); } catch(e) {}
-      setTimeout(function(){ toast(ERRORS[errMatch[1]] || 'Sign-in didn\'t work. Try again.'); }, reduce ? 0 : 2200);
+      signinErr(ERRORS[errMatch[1]] || 'Sign-in didn\'t work. Try again.');
     }
     booted = true;
-    if (RETURNING && !SESSION){ closePopup(); toast('Sign-in didn\'t finish. Try again.'); }
+    if (RETURNING && !SESSION){ closePopup(); signinErr('Sign-in didn\'t finish. Tap the button below to try again.'); }
     if (pendingEnter){ pendingEnter = false; enter.disabled = false; enter.textContent = 'Enter the portal'; if (SESSION || !BACKEND) enterPortal(); }
   }
   // Coming back from Discord: skip the intro, open the countdown + stamp straight away,

@@ -221,7 +221,7 @@ YouTube outside the site, so uploaded MP4s (signed links that expire) are the mo
 
 **Journal tab**: each member first creates their journal by writing their rules. The rules sit next to the entry form.
 Every trade entry needs: pair, account type, session, trade date & time, contracts, outcome (TP / SL / BE), trade P&L,
-trade overview, entry model (BOS, MITIGATION, Chained OBs or DIV + OB), 1–4 screenshots, and "Did you follow your rules?". It won't post without all of them.
+trade overview, entry model (BOS, MITIGATION, Chained OBs or DIV + OB), 1–12 screenshots, and "Did you follow your rules?". It won't post without all of them.
 A "No trades today" entry needs the date, session, a short overview and the rules answer (one per day).
 Members can delete their own entries for 7 days. Admins can **Void** an entry (0 points) in Members → Details.
 
@@ -316,7 +316,7 @@ P&L, rules followed, the times trades are taken (30-minute buckets), a weekday t
 on no-trade days (and which news), and breakdowns by session, entry model and account. Admins also get a per-student table.
 
 ## No-trade days and news
-No-trade entries can carry up to 4 screenshots (optional) for mark-ups and price action, and every entry asks whether
+No-trade entries can carry up to 12 screenshots (optional) for mark-ups and price action, and every entry asks whether
 there was high-impact news that day (and which: CPI, FOMC, NFP…). Older entries without this simply show as "not said".
 
 ## Breakdowns and playback speed
@@ -438,3 +438,12 @@ or uploading, so nothing they're doing is interrupted. The code is `pollUnlocks(
   (optional; needed to deny)". On approved entries the member sees it as "Mentor: …".
 - Updates arrive on their own: hand-in reviews within about 45 seconds, journal and certificate reviews within about 2
   minutes, or straight away when the member opens the bell. The code is `fbItems()` / `paintFb()` in `index.html`.
+
+## Sign-in on phones, and 12 attachments
+- The sign-in `state` sent to Discord is now signed and valid for 15 minutes, so `/api/callback` accepts it even when the
+  phone dropped the state cookie (iPhone browsers can lose cookies set on a redirect, and a double tap on Sign in
+  replaced it). Both cases used to show "expired". A state this site didn't sign is still refused.
+- Sign-in errors show inside the sign-in card instead of a floating message.
+- On phones and tablets the Japanese wordmark sits on its own line above PROJECT instead of overlapping it.
+- Hand-ins, breakdown mark-ups, and journal entries (trade and no-trade) take up to **12** screenshots or files each
+  (`MAX_FILES` in `index.html` and `api/member.js`). If a student picks more, they're told how many weren't added.

@@ -1,7 +1,7 @@
 // GET /api/callback → Discord sends the member back here after they approve.
 // Swaps the one-time code for a token, reads their profile and server roles, and starts a session.
 const {
-  env, parseCookies, clearCookie, STATE_COOKIE, SESSION_DAYS,
+  env, parseCookies, clearCookie, verify, STATE_COOKIE, SESSION_DAYS,
   redirectUri, discord, profileFrom, writeSession, redirect, recordMember,
 } = require('./_lib');
 const { adminIds } = require('./_lib');
@@ -14,7 +14,10 @@ module.exports = async (req, res) => {
   const fail = (reason) => redirect(res, '/?error=' + reason, [clearCookie(STATE_COOKIE)]);
 
   if (url.searchParams.get('error')) return fail('denied');               // they pressed Cancel on Discord
-  if (!code || !state || parseCookies(req)[STATE_COOKIE] !== state) return fail('expired');
+  // the state must match the cookie, or (when the phone lost the cookie) be one this site signed in the last 15 minutes
+  const signed = verify(state);
+  const stateOk = !!state && (parseCookies(req)[STATE_COOKIE] === state || (signed && signed.t === 'oauth'));
+  if (!code || !stateOk) return fail('expired');
 
   // 1. code → access token
   let token;
