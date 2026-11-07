@@ -491,3 +491,21 @@ Admin → **Backups**.
   - course progress and hand-ins waiting
   - the last 10 journal entries, with screenshots
   - every piece of written feedback you've given them
+
+## Wins: testimonials + payouts (with Discord feeds)
+- **Wins tab:**
+  - **Testimonials:** students submit a star rating, a review and an optional result line. After an admin approves it,
+    it shows here with the average rating.
+  - **Payouts:** a feed of certified payouts that students chose to share.
+- **Admin → Testimonials:** approve, deny (with a reason the student sees) or take down. Admins can't edit what a
+  student wrote. The bell and the tab show how many are waiting.
+- **Discord feeds:** two Vercel settings, each the URL of a channel webhook (Channel → Edit → Integrations → Webhooks →
+  New Webhook → Copy URL):
+  - `DISCORD_TESTIMONIAL_WEBHOOK`: approved reviews are posted with stars, text, name and picture.
+  - `DISCORD_PAYOUT_WEBHOOK`: certifying a payout posts "💸 Certified payout: $X" with the student's note and payout date.
+    The certificate image is attached only if the student ticked "Include my certificate image".
+
+  Each item posts once, @mentions are switched off, and the Testimonials screen shows whether each channel is
+  connected.
+- **Student consent:** when uploading a payout certificate, students choose whether to share it (on by default) and
+  whether the image goes to Discord (off by default). Unshared payouts never leave the site's admin screens.

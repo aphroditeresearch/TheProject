@@ -339,8 +339,53 @@ function lastWorkOf(subs, entries, progress) {
   return last;
 }
 
+/* ---------- testimonials + Discord feeds ---------- */
+async function loadTestimonials() {
+  const flat = await kv(['HGETALL', 'testimonials']); const out = {};
+  const put = (k, v) => { try { out[k] = JSON.parse(v); } catch (e) {} };
+  if (Array.isArray(flat)) for (let i = 0; i < flat.length; i += 2) put(flat[i], flat[i + 1]);
+  else if (flat && typeof flat === 'object') Object.keys(flat).forEach((k) => put(k, flat[k]));
+  return out;
+}
+async function saveTestimonial(t) { await kv(['HSET', 'testimonials', t.id, JSON.stringify(t)]); }
+async function deleteTestimonial(id) { await kv(['HDEL', 'testimonials', id]); }
+const WEBHOOK = /^https:\/\/(discord\.com|discordapp\.com|ptb\.discord\.com|canary\.discord\.com)\/api\/webhooks\/\d+\/[\w-]+$/;
+const hookReady = (h) => WEBHOOK.test(String(h || '').trim());
+// post a message (and optionally one file) to a Discord channel webhook. Never throws.
+async function discordPost(hook, payload, file) {
+  hook = String(hook || '').trim();
+  if (!hookReady(hook)) return { ok: false, error: 'not_set' };
+  try {
+    const fd = new FormData();
+    fd.append('payload_json', JSON.stringify(Object.assign({ allowed_mentions: { parse: [] } }, payload)));
+    if (file) fd.append('files[0]', new Blob([file.buf], { type: file.type }), file.name);
+    const r = await fetch(hook + (hook.includes('?') ? '&' : '?') + 'wait=true', { method: 'POST', body: fd });
+    if (!r.ok) return { ok: false, error: 'discord_' + r.status };
+    return { ok: true };
+  } catch (e) { return { ok: false, error: String((e && e.message) || e).slice(0, 120) }; }
+}
+const stars = (n) => '★'.repeat(n) + '☆'.repeat(5 - n);
+function testimonialPayload(t) {
+  return { embeds: [{
+    author: { name: t.name, icon_url: /^https:\/\//.test(t.avatar || '') ? t.avatar : undefined },
+    title: stars(t.rating), description: '“' + t.text + '”' + (t.result ? '\n\n**' + t.result + '**' : ''),
+    color: 0x1CE8BE, footer: { text: 'THE PROJECT · student review' }, timestamp: t.createdAt,
+  }] };
+}
+function payoutPayload(name, avatar, c, imageName) {
+  const amt = Number((c.review && c.review.amount) || c.amount || 0);
+  const day = c.paidAt ? new Date(c.paidAt + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : '';
+  return { embeds: [{
+    author: { name, icon_url: /^https:\/\//.test(avatar || '') ? avatar : undefined },
+    title: '💸 Certified payout: $' + amt.toLocaleString('en-US', { maximumFractionDigits: 2 }),
+    description: [c.note || '', day ? 'Paid ' + day : ''].filter(Boolean).join('\n') || undefined,
+    color: 0x3DDC84, image: imageName ? { url: 'attachment://' + imageName } : undefined,
+    footer: { text: 'THE PROJECT · verified by a mentor' }, timestamp: new Date().toISOString(),
+  }] };
+}
+
 module.exports = {
-  streakOf, nyToday, lastWorkOf,
+  streakOf, nyToday, lastWorkOf, loadTestimonials, saveTestimonial, deleteTestimonial, hookReady, discordPost, testimonialPayload, payoutPayload,
   ROLES, contentWithDefaults,
   loadSubs, saveSub, deleteSub, loadOverrides, setOverride, loadPromo, savePromo, loadCerts, saveCert, deleteCert,
   unitsOf, passes, chapterRoles, roleLevel, promotionStep, levelFor, accessFor,

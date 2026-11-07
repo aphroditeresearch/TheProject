@@ -1109,6 +1109,28 @@ img,video{-webkit-user-drag:none;user-drag:none}
 .jrr-f{margin:0;font-size:13px;padding:10px 12px;background:rgba(28,232,190,.06);border-left:2px solid var(--kana-c)}.jrr-f b{color:var(--kana-c)}
 .lb-fire{margin-left:8px;font-size:12px;font-weight:700;color:#FFB070;white-space:nowrap}
 .ntf-ic.k-recap{color:#FFD27A}
+/* wins */
+#wins .seg2{margin-bottom:16px}
+.win-sum{display:flex;align-items:baseline;gap:12px;margin:4px 0 16px}.win-sum b{font:900 34px/1 var(--display);font-style:italic;color:var(--kana-c)}.win-sum span{color:var(--muted)}
+.win-form{border:1px solid var(--blue);background:var(--panel);padding:18px;display:flex;flex-direction:column;gap:10px;margin-bottom:20px;max-width:720px}
+.win-form h3{margin:0;font-size:17px}
+.win-form textarea,.win-form input[type=text],.tsv input[type=text]{width:100%;box-sizing:border-box;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--ink);padding:11px 12px;font:15px/1.5 var(--sans);border-radius:0}
+.win-form textarea:focus,.win-form input[type=text]:focus,.tsv input[type=text]:focus{outline:none;border-color:var(--kana-c)}
+.win-form textarea::placeholder,.win-form input::placeholder{color:var(--muted)}
+.win-stars{display:flex;gap:4px}.win-stars button{background:none;border:0;font-size:30px;line-height:1;color:#3A4A4C;cursor:pointer;padding:2px}.win-stars button.on{color:#FFC94A}
+.win-wall{columns:3 300px;column-gap:16px}
+.win-card{break-inside:avoid;margin:0 0 16px;border:1px solid var(--line);background:var(--panel);padding:16px;display:flex;flex-direction:column;gap:8px}
+.win-card.mine{border-color:var(--blue)}
+.win-top{display:flex;gap:10px;align-items:center}.win-top .av{width:38px;height:38px}.win-top div{display:flex;flex-direction:column}
+.win-st{color:#FFC94A;font-size:13px;letter-spacing:1px}
+.win-tx{margin:0;white-space:pre-line;line-height:1.55}.win-res{margin:0;font-weight:700;color:var(--kana-c)}
+.win-card small{color:var(--muted);font-size:12px}
+.win-pays{display:flex;flex-direction:column;gap:8px;max-width:760px}
+.win-pay{display:flex;gap:12px;align-items:center;border:1px solid var(--line);background:var(--panel);padding:12px 14px}.win-pay .av{width:38px;height:38px}
+.win-pay div{display:flex;flex-direction:column;flex:1;min-width:0}.win-pay div span{font-size:13px;color:var(--muted)}
+.win-pay strong{font:900 22px var(--display);font-style:italic;color:var(--win)}
+label.chk{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--ink);cursor:pointer}label.chk input{margin-top:2px}
+.tsv{display:flex;flex-direction:column;gap:10px}
 /* snippets + report */
 .snips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 10px}
 .snip{border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--ink);font:500 12px var(--sans);padding:6px 10px;cursor:pointer;text-align:left;max-width:100%}
@@ -1224,6 +1246,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
           <a class="tab" href="#journal" data-tab="journal">Journal</a>
           <a class="tab" href="#leaderboard" data-tab="leaderboard">Leaderboard</a>
           <a class="tab" href="#stats" data-tab="stats">Stats</a>
+          <a class="tab" href="#wins" data-tab="wins">Wins</a>
           <a class="tab" href="#profile" data-tab="profile">Profile</a>
           <a class="tab" href="#admin" data-tab="admin" id="admin-tab" hidden>Admin</a>
         </nav>
@@ -1305,6 +1328,15 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       <div id="lb"></div>
     </main>
 
+    <!-- WINS -->
+    <main class="main" data-view="wins" hidden>
+      <div class="view-h">
+        <h2>wins</h2>
+        <p>Reviews from students and payouts certified by a mentor. Share yours: approved reviews show here and in the Discord.</p>
+      </div>
+      <div id="wins"></div>
+    </main>
+
     <!-- STATS -->
     <main class="main" data-view="stats" hidden>
       <div class="view-h">
@@ -1376,6 +1408,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         <button type="button" data-sec="review" aria-pressed="false">Hand-ins<span class="nb" data-w="handins" hidden></span></button>
         <button type="button" data-sec="journal" aria-pressed="false">Journal<span class="nb" data-w="journal" hidden></span></button>
         <button type="button" data-sec="payouts" aria-pressed="false">Payouts<span class="nb" data-w="payouts" hidden></span></button>
+        <button type="button" data-sec="testimonials" aria-pressed="false">Testimonials<span class="nb" data-w="testimonials" hidden></span></button>
         <button type="button" data-sec="progress" aria-pressed="false">Progress</button>
         <button type="button" data-sec="members" aria-pressed="false">Members<span class="nb" data-w="quiet" hidden></span></button>
         <button type="button" data-sec="backups" aria-pressed="false">Backups</button>
@@ -2805,6 +2838,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var paid = inputEl('date', todayYmd()); paid.setAttribute('aria-label','Day of the payout');
     var payBox = el('div','cert-pay'); payBox.appendChild(fld('Payout amount ($)', amt)); payBox.appendChild(fld('Paid on', paid));
     kind.addEventListener('change', function(){ payBox.hidden = kind.value !== 'payout'; });
+    var shr = el('label','chk'), shc = el('input'); shc.type = 'checkbox'; shc.checked = true; shr.appendChild(shc); shr.appendChild(document.createTextNode(' Share it on the Wins tab and in the Discord payouts channel once a mentor certifies it'));
+    var shi = el('label','chk'), sic = el('input'); sic.type = 'checkbox'; shi.appendChild(sic); shi.appendChild(document.createTextNode(' Include my certificate image in Discord (cover account numbers first)'));
+    shc.addEventListener('change', function(){ shi.hidden = !shc.checked; if (!shc.checked) sic.checked = false; });
+    payBox.appendChild(shr); payBox.appendChild(shi);
     var lab = el('label','btn-s pri up-file','Upload certificate'), fi = el('input'); fi.type = 'file'; fi.accept = FILE_TYPES; lab.appendChild(fi);
     var st = el('small','adm-note','');
     fi.addEventListener('change', function(){
@@ -2814,7 +2851,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       if (f.size > 25 * 1024 * 1024){ toast('That file is over 25 MB.'); return; }
       st.textContent = 'Uploading…';
       uploadFile(f, 'members/' + (user().id || 'demo') + '/certs/' + safeName(f.name), function(pc){ st.textContent = 'Uploading… ' + Math.round(pc) + '%'; })
-        .then(function(file){ return memberPost({ action:'cert-add', kind: kind.value, file: file, note: note.value.trim(), amount: kind.value === 'payout' ? +amt.value : undefined, paidAt: paid.value }); })
+        .then(function(file){ return memberPost({ action:'cert-add', kind: kind.value, file: file, note: note.value.trim(), amount: kind.value === 'payout' ? +amt.value : undefined, paidAt: paid.value, share: kind.value === 'payout' ? shc.checked : undefined, shareImage: kind.value === 'payout' && shc.checked && sic.checked }); })
         .then(function(){ toast(kind.value === 'payout' ? 'Payout added. It goes on the payout leaderboard once an admin certifies it.' : 'Certificate added.'); return loadMe(); }).then(function(){ renderCerts(); renderPromo(); })
         .catch(function(e){ st.textContent = ''; toast(CERT_ERR[e && e.message] || 'Upload failed: ' + String((e && e.message) || e).replace(/^Vercel Blob:\s*/,'')); });
     });
@@ -3750,12 +3787,13 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function ntfMarkRead(ids){ var r = ntfRead(); ids.forEach(function(i){ r[i] = 1; }); var keep = {}; NTF.events.forEach(function(e){ if (r[e.id]) keep[e.id] = 1; }); try { localStorage.setItem(ntfReadKey(), JSON.stringify(keep)); } catch(e) {} }
   function ntfUnread(){ var seen = ntfSeen(), r = ntfRead(); return NTF.events.filter(function(e){ return e.at > seen && !r[e.id] && e.uid !== uid(); }); }
   function ago(iso){ var s2 = (Date.now() - Date.parse(iso)) / 1000; if (s2 < 60) return 'just now'; if (s2 < 3600) return Math.floor(s2 / 60) + 'm ago'; if (s2 < 86400) return Math.floor(s2 / 3600) + 'h ago'; return fmtDay(iso); }
-  var NTF_IC = { handin:'✎', journal:'◷', cert:'$', promo:'▲' };
+  var NTF_IC = { handin:'✎', journal:'◷', cert:'$', promo:'▲', review:'★' };
   function ntfText(e){
     if (e.type === 'handin') return (e.again ? 'handed in again: ' : 'handed in ') + (e.what === 'homework' ? 'homework · ' : e.what === 'breakdown' ? 'breakdown · ' : e.what === 'advanced' ? '' : '') + e.label;
     if (e.type === 'journal') return 'posted a journal entry: ' + e.label;
     if (e.type === 'cert') return e.kind === 'payout' ? 'uploaded a payout: ' + e.label.replace(/^Payout /,'') : 'uploaded a funded certificate';
     if (e.type === 'promo') return 'asked for promotion';
+    if (e.type === 'review') return 'wrote a testimonial ' + (e.label || '').replace(/^Testimonial /, '');
     return e.label || '';
   }
   function ntfGo(e){
@@ -3763,6 +3801,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     if (e.type === 'handin' || e.type === 'promo'){ RV.member = e.uid; RV.status = 'waiting'; RV.type = 'all'; RV.hw = null; adm.sec = 'review'; }
     else if (e.type === 'journal'){ JRV.mode = 'day'; JRV.basis = 'up'; JRV.day = localDay(e.at); adm.sec = 'journal'; }
     else if (e.type === 'cert'){ PRV.status = 'pending'; adm.sec = e.kind === 'payout' ? 'payouts' : 'members'; }
+    else if (e.type === 'review'){ adm.sec = 'testimonials'; }
     if ((location.hash || '') !== '#admin') location.hash = '#admin'; else if (adm.content) admRender();
     window.scrollTo(0, 0);
   }
@@ -3778,7 +3817,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var mr = el('button','lnk','Mark all read'); mr.type = 'button'; mr.addEventListener('click', function(){ markNtfSeen(); paintNtf(); }); h.appendChild(mr); }
     box.appendChild(h);
     var w = el('div','ntf-w'), W = NTF.waiting || {};
-    [['handins','review', (W.handins || 0) + ((W.handins || 0) === 1 ? ' hand-in' : ' hand-ins') + ' waiting'], ['promotions','review', (W.promotions || 0) + ((W.promotions || 0) === 1 ? ' promotion request' : ' promotion requests')], ['journal','journal', (W.journal || 0) + ((W.journal || 0) === 1 ? ' journal entry' : ' journal entries')], ['payouts','payouts', (W.payouts || 0) + ((W.payouts || 0) === 1 ? ' payout' : ' payouts')], ['quiet','members', (W.quiet || 0) + ((W.quiet || 0) === 1 ? ' student quiet 5+ days' : ' students quiet 5+ days')]].forEach(function(o){
+    [['handins','review', (W.handins || 0) + ((W.handins || 0) === 1 ? ' hand-in' : ' hand-ins') + ' waiting'], ['promotions','review', (W.promotions || 0) + ((W.promotions || 0) === 1 ? ' promotion request' : ' promotion requests')], ['journal','journal', (W.journal || 0) + ((W.journal || 0) === 1 ? ' journal entry' : ' journal entries')], ['payouts','payouts', (W.payouts || 0) + ((W.payouts || 0) === 1 ? ' payout' : ' payouts')], ['quiet','members', (W.quiet || 0) + ((W.quiet || 0) === 1 ? ' student quiet 5+ days' : ' students quiet 5+ days')], ['testimonials','testimonials', (W.testimonials || 0) + ((W.testimonials || 0) === 1 ? ' testimonial to review' : ' testimonials to review')]].forEach(function(o){
       if (o[0] === 'promotions' && !W.promotions) return;
       var b = el('button', W[o[0]] ? 'has' : '', o[2]); b.type = 'button'; b.addEventListener('click', function(){ closeNtf(); if (o[1] === 'review'){ RV.member = null; RV.status = 'waiting'; } if (o[1] === 'journal'){ JRV.mode = 'list'; JRV.status = 'pending'; } if (o[1] === 'payouts') PRV.status = 'pending'; adm.sec = o[1]; if ((location.hash || '') !== '#admin') location.hash = '#admin'; else if (adm.content) admRender(); });
       w.appendChild(b); });
@@ -4005,6 +4044,117 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function renderContentViews(){ paintPreview(); renderCurriculum(); renderHomework(); renderBreakdowns(); renderCompletions(); renderAnnouncements(); renderProfileExtras(); paintFb(); }
 
 
+
+  /* ---------- admin requests that need the server's answer back ---------- */
+  function adminPost(payload){
+    return fetch('/api/admin/members', { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) })
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok) throw new Error(j.error || ('error ' + r.status)); return j; }); });
+  }
+
+  /* ---------- Wins: student testimonials + certified payouts ---------- */
+  var WINS = { tab:'reviews', data:null, at:0, draft:{ rating:0, text:'', result:'' } };
+  var starStr = function(n){ return '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n); };
+  function winAv(o){ var av = el('span','av'); setAvatar(av, { avatar:o.avatar, displayName:o.name, username:o.name }); return av; }
+  function renderWins(force){
+    var host = document.getElementById('wins'); if (!host) return;
+    if (!WINS.data || force || Date.now() - WINS.at > 60000){
+      if (!WINS.data) host.textContent = 'Loading…';
+      fetch('/api/member?wins=1', { credentials:'same-origin', cache:'no-store' }).then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(j){ WINS.data = j || { testimonials:[], mine:[], payouts:[] }; WINS.at = Date.now(); drawWins(host); }).catch(function(){ host.textContent = 'Couldn\'t load. Refresh to try again.'; });
+      if (WINS.data) drawWins(host);
+      return;
+    }
+    drawWins(host);
+  }
+  function drawWins(host){
+    var D = WINS.data; host.textContent = '';
+    var T = D.testimonials || [], P = D.payouts || [];
+    host.appendChild(seg([['reviews','Testimonials (' + T.length + ')'],['payouts','Payouts (' + P.length + ')']], WINS.tab, function(v){ WINS.tab = v; drawWins(host); }));
+    if (WINS.tab === 'payouts'){
+      var tot = P.reduce(function(t, p){ return t + (+p.amount || 0); }, 0);
+      var hd = el('div','win-sum'); hd.appendChild(el('b',null, money(tot))); hd.appendChild(el('span',null,'certified across ' + P.length + (P.length === 1 ? ' payout' : ' payouts') + ' (latest 60)')); host.appendChild(hd);
+      if (!P.length){ emptyState(host, 'No certified payouts yet', 'Upload your payout certificate in your Profile. Once a mentor certifies it, it shows here.'); return; }
+      var g = el('div','win-pays');
+      P.forEach(function(p){ var c = el('article','win-pay'); c.appendChild(winAv(p)); var t = el('div'); t.appendChild(el('b',null,p.name)); t.appendChild(el('span',null, (p.note ? p.note + ' · ' : '') + (p.paidAt ? 'paid ' + fmtDay(p.paidAt) : ''))); c.appendChild(t); c.appendChild(el('strong',null, money(+p.amount))); g.appendChild(c); });
+      host.appendChild(g); return;
+    }
+    // reviews
+    if (T.length){ var avg = T.reduce(function(t, x){ return t + x.rating; }, 0) / T.length;
+      var hs = el('div','win-sum'); hs.appendChild(el('b',null, avg.toFixed(1) + ' ★')); hs.appendChild(el('span',null, 'from ' + T.length + (T.length === 1 ? ' student review' : ' student reviews'))); host.appendChild(hs); }
+    host.appendChild(testimonialForm(host));
+    if (!T.length){ emptyState(host, 'No reviews yet', 'Be the first to share how the program is going for you.'); return; }
+    var wall = el('div','win-wall');
+    T.forEach(function(t){ var c = el('article','win-card' + (t.mine ? ' mine' : ''));
+      var top = el('div','win-top'); top.appendChild(winAv(t)); var nm = el('div'); nm.appendChild(el('b',null, t.name + (t.mine ? ' (you)' : ''))); nm.appendChild(el('span','win-st', starStr(t.rating))); top.appendChild(nm); c.appendChild(top);
+      c.appendChild(el('p','win-tx', t.text)); if (t.result) c.appendChild(el('p','win-res', t.result)); c.appendChild(el('small',null, fmtDay(t.createdAt)));
+      wall.appendChild(c); });
+    host.appendChild(wall);
+  }
+  function testimonialForm(host){
+    var D = WINS.data, mine = D.mine || [], box = el('section','win-form'), W = WINS.draft;
+    var pend = mine.filter(function(t){ return t.status === 'pending'; })[0], den = mine.filter(function(t){ return t.status === 'denied'; })[0];
+    if (pend){ box.appendChild(el('h3',null,'Your review is waiting for a mentor')); box.appendChild(el('p','adm-note', starStr(pend.rating) + ' · “' + pend.text.slice(0, 160) + (pend.text.length > 160 ? '…' : '') + '”'));
+      var del = el('button','lnk','Withdraw it'); del.type = 'button'; del.addEventListener('click', function(){ memberPost({ action:'testimonial-delete', id:pend.id }).then(function(){ toast('Withdrawn.'); renderWins(true); }); }); box.appendChild(del); return box; }
+    box.appendChild(el('h3',null, mine.some(function(t){ return t.status === 'approved'; }) ? 'Share another update' : 'Share your experience'));
+    if (den && den.note) box.appendChild(el('p','adm-note','Your last review wasn\'t approved: ' + den.note));
+    var sr = el('div','win-stars'); sr.setAttribute('role','radiogroup'); sr.setAttribute('aria-label','Your rating');
+    [1,2,3,4,5].forEach(function(n){ var b = el('button', n <= W.rating ? 'on' : '', '★'); b.type = 'button'; b.setAttribute('aria-label', n + (n === 1 ? ' star' : ' stars')); b.setAttribute('role','radio'); b.setAttribute('aria-checked', W.rating === n ? 'true' : 'false');
+      b.addEventListener('click', function(){ W.rating = n; drawWins(host); }); sr.appendChild(b); });
+    box.appendChild(sr);
+    var tx = inputEl('textarea', W.text, 'How has the program helped you? What changed in your trading?'); tx.rows = 4; tx.maxLength = 1200; tx.addEventListener('input', function(){ W.text = tx.value; });
+    var rs = inputEl('text', W.result, 'Your result, optional (e.g. Passed my first eval · First $2,400 payout)'); rs.maxLength = 120; rs.addEventListener('input', function(){ W.result = rs.value; });
+    box.appendChild(tx); box.appendChild(rs);
+    var go = el('button','btn-s pri','Submit for review'); go.type = 'button';
+    go.addEventListener('click', function(){
+      if (!W.rating){ toast('Pick a star rating.'); return; }
+      if (W.text.trim().length < 30){ toast('Write a little more (at least 30 characters).'); tx.focus(); return; }
+      go.disabled = true;
+      memberPost({ action:'testimonial-add', rating:W.rating, text:W.text.trim(), result:W.result.trim() }).then(function(){ WINS.draft = { rating:0, text:'', result:'' }; toast('Thanks! A mentor will review it, then it shows here and in the Discord.'); renderWins(true); })
+        .catch(function(e){ go.disabled = false; var m = String((e && e.message) || e); toast(/pending_exists/.test(m) ? 'You already have a review waiting.' : /too_many/.test(m) ? 'You\'ve shared 5 reviews already.' : 'Couldn\'t send it. Try again.'); });
+    });
+    box.appendChild(go);
+    box.appendChild(el('small','adm-note','Approved reviews show here and are posted in the Discord testimonials channel with your name and picture. A mentor approves them as written; nothing is edited.'));
+    return box;
+  }
+
+  /* ---------- admin: testimonials ---------- */
+  var TSV = { status:'pending' };
+  function testimonialsAdmin(){
+    var wrap = el('div','adm-sec'), host = el('div'); wrap.appendChild(host); host.textContent = 'Loading…';
+    fetch('/api/admin/members?testimonials=1', { credentials:'same-origin', cache:'no-store' }).then(function(r){ return r.json(); }).then(function(j){
+      host.textContent = '';
+      var H = j.hooks || {}, hk = el('section','adm-card'); hk.appendChild(el('h3',null,'Discord feeds'));
+      [['testimonials','DISCORD_TESTIMONIAL_WEBHOOK','Testimonials channel','Approved reviews are posted here.'],['payouts','DISCORD_PAYOUT_WEBHOOK','Payouts channel','Certified payouts are posted here (only when the student allowed sharing).']].forEach(function(x){
+        hk.appendChild(el('p', H[x[0]] ? 'bk-ok' : 'bk-warn', (H[x[0]] ? '✓ ' : '⚠ ') + x[2] + (H[x[0]] ? ' connected. ' : ' not connected yet. ') + x[3])); });
+      if (!H.testimonials || !H.payouts){ var ol = el('ol','bk-steps');
+        ['In Discord, open the channel (e.g. #testimonials or #payouts) → Edit Channel → Integrations → Webhooks → New Webhook → Copy Webhook URL.',
+         'In Vercel → Settings → Environment Variables, add DISCORD_TESTIMONIAL_WEBHOOK and/or DISCORD_PAYOUT_WEBHOOK with that URL.',
+         'Redeploy. Anything you approve after that is posted automatically.'].forEach(function(t){ ol.appendChild(el('li',null,t)); }); hk.appendChild(ol); }
+      host.appendChild(hk);
+      var all = j.testimonials || [], cnt = { pending:0, approved:0, denied:0 }; all.forEach(function(t){ if (cnt[t.status] !== undefined) cnt[t.status]++; });
+      host.appendChild(seg([['pending','Waiting (' + cnt.pending + ')'],['approved','Approved (' + cnt.approved + ')'],['denied','Denied (' + cnt.denied + ')']], TSV.status, function(v){ TSV.status = v; admRender(); }));
+      var list = all.filter(function(t){ return t.status === TSV.status; });
+      if (!list.length) emptyState(host, TSV.status === 'pending' ? 'Nothing waiting' : 'Nothing here', TSV.status === 'pending' ? 'New reviews from students land here.' : '');
+      list.forEach(function(t){
+        var c = el('article','rv-card tsv'), top = el('div','win-top'); top.appendChild(winAv(t)); var nm = el('div'); nm.appendChild(el('b',null,t.name)); nm.appendChild(el('span','win-st', starStr(t.rating) + ' · ' + fmtDay(t.createdAt))); top.appendChild(nm); c.appendChild(top);
+        c.appendChild(el('p','win-tx', t.text)); if (t.result) c.appendChild(el('p','win-res', t.result));
+        if (t.posted) c.appendChild(el('p','adm-note','✓ Posted to Discord ' + fmtDay(t.postedAt) + '.'));
+        var acts = el('div','rv-acts'), pc = null;
+        if (t.status !== 'approved' || !t.posted){ var pl = el('label','chk'); pc = el('input'); pc.type = 'checkbox'; pc.checked = !!H.testimonials; pc.disabled = !H.testimonials; pl.appendChild(pc); pl.appendChild(document.createTextNode(' Post to the Discord testimonials channel' + (H.testimonials ? '' : ' (not connected)'))); c.appendChild(pl); }
+        var note = inputEl('text', t.note || '', 'Reason, if you deny it (they\'ll see it)');
+        function act(status){ if (status === 'denied' && note.value.trim().length < 3){ toast('Add a short reason so they know why.'); note.focus(); return; }
+          adminPost({ action:'testimonial-review', id:t.id, status:status, post: !!(pc && pc.checked), note:note.value.trim() }).then(function(rj){ var d = rj.discord;
+            toast(status === 'approved' ? 'Approved. It shows on the Wins tab' + (d ? (d.ok ? ' and was posted to Discord.' : ', but Discord said: ' + d.error + '.') : '.') : status === 'denied' ? 'Denied.' : 'Back to waiting.'); admRender(); })
+            .catch(function(e){ toast('Couldn\'t save: ' + e.message); }); }
+        if (t.status !== 'approved'){ var ok = el('button','btn-s pri','Approve'); ok.type = 'button'; ok.addEventListener('click', function(){ act('approved'); }); acts.appendChild(ok); }
+        else if (!t.posted && H.testimonials){ var rp = el('button','btn-s','Post to Discord'); rp.type = 'button'; rp.addEventListener('click', function(){ act('approved'); }); acts.appendChild(rp); }
+        if (t.status !== 'denied'){ var no = el('button','btn-s warn', t.status === 'approved' ? 'Take down' : 'Deny'); no.type = 'button'; no.addEventListener('click', function(){ act('denied'); }); acts.appendChild(no); }
+        c.appendChild(note);
+        c.appendChild(acts); host.appendChild(c);
+      });
+    }).catch(function(){ host.textContent = 'Couldn\'t load. Refresh to try again.'; });
+    return wrap;
+  }
   /* ---------- backups (admin) ---------- */
   function backupDownload(btn){
     if (btn) btn.disabled = true;
@@ -4683,13 +4833,18 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         var row2 = el('div','cert-pay'); row2.appendChild(fld('Amount to certify ($)', amt)); row2.appendChild(fld('Note', note)); card.appendChild(row2);
         var acts = el('div','rv-acts'), ok = el('button','btn-s pri','Certify'), no = el('button','btn-s warn','Deny'); ok.type = no.type = 'button';
         if (x.st === 'approved') ok.textContent = 'Update amount';
+        var pdc = null;
+        if (c.share === false) card.appendChild(el('p','adm-note','They chose not to share this payout, so it won\'t be posted to Discord or the Wins tab.'));
+        else if (c.posted) card.appendChild(el('p','adm-note','✓ Posted to the Discord payouts channel ' + fmtDay(c.postedAt) + '.'));
+        else { var pdl = el('label','chk'); pdc = el('input'); pdc.type = 'checkbox'; pdc.checked = true; pdl.appendChild(pdc);
+          pdl.appendChild(document.createTextNode(' Post to the Discord payouts channel when I certify it' + (c.shareImage ? ' (with their certificate image)' : ''))); card.appendChild(pdl); }
         if (x.st === 'denied') no.disabled = true;
         function act(status){
           if (status === 'approved' && !(+amt.value > 0)){ toast('Enter the amount to certify.'); amt.focus(); return; }
           if (status === 'denied' && note.value.trim().length < 3){ toast('Add a short note so they know why.'); note.focus(); return; }
           ok.disabled = no.disabled = true;
-          memberAction({ action:'cert-review', userId:m.id, certId:c.id, status:status, amount: +amt.value, note: note.value.trim() })
-            .then(function(){ toast(status === 'approved' ? 'Certified: ' + money(+amt.value) + ' added to ' + (m.displayName || m.username) + '\'s payouts.' : status === 'denied' ? 'Denied.' : 'Back to waiting.'); card.classList.add('gone'); setTimeout(admRender, 260); })
+          adminPost({ action:'cert-review', userId:m.id, certId:c.id, status:status, amount: +amt.value, note: note.value.trim(), post: !!(pdc && pdc.checked) })
+            .then(function(rj){ var d = rj && rj.discord; toast(status === 'approved' ? 'Certified: ' + money(+amt.value) + ' added to ' + (m.displayName || m.username) + '\'s payouts.' + (d ? (d.ok ? ' Posted to Discord.' : d.error === 'not_set' ? ' (Discord payouts channel isn\'t connected yet.)' : ' Couldn\'t post to Discord: ' + d.error + '.') : '') : status === 'denied' ? 'Denied.' : 'Back to waiting.'); card.classList.add('gone'); setTimeout(admRender, 260); })
             .catch(function(e){ ok.disabled = no.disabled = false; toast(admFail(e)); });
         }
         ok.addEventListener('click', function(){ act('approved'); }); no.addEventListener('click', function(){ act('denied'); });
@@ -5319,6 +5474,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     else if (adm.sec === 'journal') body.appendChild(journalReview());
     else if (adm.sec === 'payouts') body.appendChild(payoutReview());
     else if (adm.sec === 'backups') body.appendChild(backupsView());
+    else if (adm.sec === 'testimonials') body.appendChild(testimonialsAdmin());
     else body.appendChild(membersView());
   }
   document.querySelectorAll('#adm-nav button').forEach(function(b){
@@ -5329,7 +5485,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   });
 
   /* ---------- tabs (hash routes) ---------- */
-  var VIEWS = ['lectures','homework','breakdowns','advanced','journal','leaderboard','stats','profile','admin'];
+  var VIEWS = ['lectures','homework','breakdowns','advanced','journal','leaderboard','stats','wins','profile','admin'];
   function showView(){
     var v = (location.hash||'').replace('#','');
     if (VIEWS.indexOf(v) === -1 || (v === 'admin' && !canAdmin()) || (v === 'advanced' && !advOk())){ if (v) try { history.replaceState(null, '', '#lectures'); } catch(e) {} v = 'lectures'; }
@@ -5337,6 +5493,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     if (v === 'journal') renderJournal();
     if (v === 'leaderboard') renderBoard();
     if (v === 'stats') renderStatsTab();
+    if (v === 'wins') renderWins();
     if (v === 'homework' || v === 'admin') hidePop(); else if (typeof showPop === 'function') setTimeout(showPop, 300);
     document.querySelectorAll('[data-view]').forEach(function(m){
       var on = m.getAttribute('data-view') === v, was = !m.hidden; m.hidden = !on;

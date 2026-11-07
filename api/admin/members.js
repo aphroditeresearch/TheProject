@@ -20,13 +20,18 @@
 // GET  ?backup=status → when the last automatic backup ran, and whether a Discord backup channel is set up
 // GET  ?cron=backup → the daily automatic backup (Vercel Cron, needs CRON_SECRET): posts a compressed copy to the private
 //                     Discord channel in DISCORD_BACKUP_WEBHOOK
+// GET  ?testimonials=1 → every testimonial (any status) + whether the Discord channels are connected
+// POST { action:'testimonial-review', id, status:'approved'|'denied'|'pending', post:true|false, note } → approve (shows on the
+//      Wins tab; posts to DISCORD_TESTIMONIAL_WEBHOOK unless post is false) or deny. Admins can't edit what a member wrote.
+// POST { action:'testimonial-remove', id } → take a testimonial down
+// Certifying a payout (cert-review approved) posts it to DISCORD_PAYOUT_WEBHOOK when the member allowed sharing (post:false skips)
 // GET  ?snippets=1 / POST { action:'snippets', snippets:[…] } → the saved feedback lines admins tap into reviews
 // POST { action:'restore', keys:{…}, mode:'missing'|'all', confirm:'RESTORE' } → put keys from a backup file back
 const { kvPipeline, KEY_PREFIX } = require('../_lib');
 const zlib = require('zlib');
 const { readSession, isAdmin, adminIds, kvConfigured, kv, listMembers, loadProgress, saveProgress, loadFlags, json } = require('../_lib');
-const { loadActivity, saveCert, contentWithDefaults, memberState, loadSubs, saveSub, deleteSub, setOverride, loadCerts, loadPromo, savePromo, findItem, loadJournal, loadEntries, saveEntry, entryPoints, lastWorkOf, entryStatus, basePoints } = require('../_gate');
-const { signAll } = require('../_blob');
+const { loadActivity, saveCert, contentWithDefaults, memberState, loadSubs, saveSub, deleteSub, setOverride, loadCerts, loadPromo, savePromo, findItem, loadJournal, loadEntries, saveEntry, entryPoints, lastWorkOf, loadTestimonials, saveTestimonial, deleteTestimonial, hookReady, discordPost, testimonialPayload, payoutPayload, entryStatus, basePoints } = require('../_gate');
+const { signAll, makeSigner } = require('../_blob');
 
 const ID = /^\d{5,25}$/;
 const KEY = /^(bd:|hw:)?[\w-]{1,64}$/;
@@ -62,7 +67,7 @@ async function clearHandins() {
 
 /* ---------- backups ----------
    Every key under this site's prefix, with its type and value. Caches (they rebuild themselves) are left out. */
-const SKIP = /^(waiting-cache|stats-cache)$/;
+const SKIP = /^(waiting-cache|stats-cache|wins-cache)$/;
 // feedback lines an admin can drop into any review with one tap (until the admins save their own list)
 const DEFAULT_SNIPPETS = [
   'Great work. Clean execution and you followed your rules.',
@@ -176,6 +181,21 @@ module.exports = async (req, res) => {
     let body = req.body;
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = null; } }
     if (!body || typeof body !== 'object') return json(res, 400, { error: 'bad_body' });
+    if (body.action === 'testimonial-review') {
+      const t = (await loadTestimonials())[String(body.id || '')];
+      if (!t) return json(res, 404, { error: 'not_found' });
+      if (!['approved', 'denied', 'pending'].includes(body.status)) return json(res, 400, { error: 'bad_status' });
+      t.status = body.status; t.reviewedAt = body.status === 'pending' ? null : new Date().toISOString(); t.reviewedBy = body.status === 'pending' ? null : who;
+      t.note = body.status === 'denied' && typeof body.note === 'string' ? body.note.trim().slice(0, 300) : '';
+      let discord = null;
+      if (t.status === 'approved' && body.post !== false && !t.posted) {
+        discord = await discordPost(process.env.DISCORD_TESTIMONIAL_WEBHOOK, testimonialPayload(t));
+        if (discord.ok) { t.posted = true; t.postedAt = new Date().toISOString(); }
+      }
+      await saveTestimonial(t);
+      return json(res, 200, { saved: true, testimonial: t, discord });
+    }
+    if (body.action === 'testimonial-remove') { await deleteTestimonial(String(body.id || '')); return json(res, 200, { saved: true }); }
     if (body.action === 'snippets') {   // saved feedback lines, shared by every admin
       const list = (Array.isArray(body.snippets) ? body.snippets : []).map((x) => String(x || '').trim().slice(0, 300)).filter(Boolean).slice(0, 40);
       await kv(['SET', 'snippets', JSON.stringify(list)]);
@@ -220,8 +240,23 @@ module.exports = async (req, res) => {
       if (status === 'approved' && !(amount > 0 && amount < 10000000)) return json(res, 400, { error: 'need_amount' });
       c.review = { status, amount: status === 'approved' ? amount : (c.review && c.review.amount) || null, by: status === 'pending' ? null : who,
         at: status === 'pending' ? null : new Date().toISOString(), note: typeof body.note === 'string' ? body.note.trim().slice(0, 300) : '' };
+      // certified: post it to the Discord payouts channel (once), if the member allowed sharing
+      let discord = null;
+      if (status === 'approved' && body.post !== false && c.share !== false && !c.posted) {
+        const ms = (await listMembers()).find((x) => x.id === userId) || {};
+        let file = null, imgName = '';
+        if (c.shareImage && c.file && /^image\/(png|jpeg|webp|gif)$/.test(c.file.type || '') && (c.file.size || 0) < 9.5 * 1024 * 1024) {
+          try {
+            const sign = await makeSigner(req); const url = sign ? await sign(c.file.url) : c.file.url;
+            const r = await fetch(url); if (r.ok) { const buf = Buffer.from(await r.arrayBuffer()); if (buf.length < 9.5 * 1024 * 1024) { imgName = 'payout.' + (c.file.type.split('/')[1] === 'jpeg' ? 'jpg' : c.file.type.split('/')[1]); file = { buf, type: c.file.type, name: imgName }; } }
+          } catch (e) {}
+        }
+        discord = await discordPost(process.env.DISCORD_PAYOUT_WEBHOOK, payoutPayload(ms.displayName || ms.username || 'A student', ms.avatar, c, imgName), file);
+        if (discord.ok) { c.posted = true; c.postedAt = new Date().toISOString(); }
+      }
       await saveCert(userId, c);
-      return json(res, 200, { saved: true, cert: c });
+      try { await kv(['DEL', 'wins-cache']); } catch (e) {}
+      return json(res, 200, { saved: true, cert: c, discord });
     }
     if (body.action === 'journal-review' || body.action === 'journal-void') {
       const entries = await loadEntries(userId);
@@ -281,6 +316,10 @@ module.exports = async (req, res) => {
 
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET, POST'); return json(res, 405, { error: 'method' }); }
 
+  if (/[?&]testimonials=1\b/.test(req.url || '')) {
+    const list = Object.values(await loadTestimonials()).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+    return json(res, 200, { testimonials: list, hooks: { testimonials: hookReady(process.env.DISCORD_TESTIMONIAL_WEBHOOK), payouts: hookReady(process.env.DISCORD_PAYOUT_WEBHOOK) } });
+  }
   if (/[?&]snippets=1\b/.test(req.url || '')) {
     let list = null; try { list = JSON.parse(await kv(['GET', 'snippets']) || 'null'); } catch (e) {}
     return json(res, 200, { snippets: Array.isArray(list) ? list : DEFAULT_SNIPPETS });
@@ -304,7 +343,8 @@ module.exports = async (req, res) => {
       // the waiting counts read every member, so they're worked out at most once a minute and shared by all admins
       const cached = await kv(['GET', 'waiting-cache']);
       if (cached) { try { return json(res, 200, { events, waiting: JSON.parse(cached) }); } catch (e) {} }
-      const waiting = { handins: 0, journal: 0, payouts: 0, promotions: 0, quiet: 0 };
+      const waiting = { handins: 0, journal: 0, payouts: 0, promotions: 0, quiet: 0, testimonials: 0 };
+      try { waiting.testimonials = Object.values(await loadTestimonials()).filter((t) => t.status === 'pending').length; } catch (e) {}
       const admins = adminIds(), quietBefore = new Date(Date.now() - 5 * 864e5).toISOString();
       await Promise.all((await listMembers()).map(async (m) => {
         const [subs, entries, certs, promo, progress] = await Promise.all([loadSubs(m.id), loadEntries(m.id), loadCerts(m.id), loadPromo(m.id), loadProgress(m.id)]);

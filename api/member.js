@@ -10,12 +10,15 @@
 // POST /api/member { action:'journal-create', rules:[…] } / { action:'journal-rules', rules:[…] } → create the journal / update its rules
 // POST /api/member { action:'journal-add', entry } / { action:'journal-delete', id }             → post / remove a journal entry
 // GET  /api/member?board=week|month|all → the psych leaderboard (points from journal entries)
+// GET  /api/member?wins=1 → approved testimonials (+ your own, any status) and recent certified payouts members chose to share
+// POST { action:'testimonial-add', rating:1-5, text, result } → a review; an admin approves it before it shows (and posts to Discord)
+// POST { action:'testimonial-delete', id } → remove your own review
 // GET  /api/member?stats=1 → every member's Funded/Evaluation trades and no-trade days combined, anonymous and reduced to
 //                          what the Stats tab summary needs (admins get the full detail from /api/admin/members)
 // Files are uploaded straight from the browser to Vercel Blob first (see /api/upload), into members/<their id>/…
 const crypto = require('crypto');
 const { readSession, isAdmin, kvConfigured, loadProgress, json, kv, clientIp } = require('./_lib');
-const { logActivity, gateFor, saveSub, findItem, loadCerts, saveCert, deleteCert, loadPromo, savePromo, loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints, entryStatus, basePoints, streakOf } = require('./_gate');
+const { logActivity, gateFor, saveSub, findItem, loadCerts, saveCert, deleteCert, loadPromo, savePromo, loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints, entryStatus, basePoints, streakOf, loadTestimonials, saveTestimonial, deleteTestimonial } = require('./_gate');
 const { listMembers } = require('./_lib');
 const { signAll, cleanFile } = require('./_blob');
 
@@ -74,6 +77,28 @@ const MISTAKES = ['Entered early', 'Entered late', 'Moved stop', 'Oversized', 'C
 const GRADES = ['A+', 'A', 'B', 'C'];
 const ENTRY_TYPES = ['Limit', 'Market', 'Stop'];
 const EMOTIONS = ['Calm', 'Confident', 'Hesitant', 'FOMO', 'Frustrated', 'Tired'];
+// The Wins tab: approved reviews, and certified payouts (cached 2 minutes; reading every member's certificates)
+async function wins(uid) {
+  const all = Object.values(await loadTestimonials());
+  const pub = (t) => ({ id: t.id, name: t.name, avatar: t.avatar || null, rating: t.rating, text: t.text, result: t.result || '', createdAt: t.createdAt, mine: t.uid === uid });
+  const testimonials = all.filter((t) => t.status === 'approved').sort((a, b) => String(b.reviewedAt || b.createdAt).localeCompare(String(a.reviewedAt || a.createdAt))).map(pub);
+  const mine = all.filter((t) => t.uid === uid).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
+    .map((t) => Object.assign(pub(t), { status: t.status, note: t.status === 'denied' ? t.note || '' : '' }));
+  let payouts = null;
+  try { const c = await kv(['GET', 'wins-cache']); if (c) payouts = JSON.parse(c); } catch (e) {}
+  if (!payouts) {
+    payouts = [];
+    await Promise.all((await listMembers()).map(async (m) => {
+      Object.values(await loadCerts(m.id)).forEach((c) => {
+        if (c.kind !== 'payout' || !c.review || c.review.status !== 'approved' || c.share === false) return;
+        payouts.push({ name: m.displayName || m.username, avatar: m.avatar || null, amount: Number(c.review.amount || c.amount || 0), note: c.note || '', paidAt: c.paidAt || String(c.uploadedAt || '').slice(0, 10), at: c.review.at || '' });
+      });
+    }));
+    payouts.sort((a, b) => String(b.at).localeCompare(String(a.at))); payouts = payouts.slice(0, 60);
+    try { await kv(['SET', 'wins-cache', JSON.stringify(payouts), 'EX', 120]); } catch (e) {}
+  }
+  return { testimonials, mine, payouts };
+}
 async function communityStats() {
   try { const c = await kv(['GET', 'stats-cache']); if (c) return JSON.parse(c); } catch (e) {}
   const out = []; let members = 0;
@@ -119,6 +144,7 @@ module.exports = async (req, res) => {
     if (board && /[?&]kind=payout/.test(req.url || '')) return json(res, 200, await payoutBoard(board[1], uid));
     if (board) return json(res, 200, await leaderboard(board[1], uid));
     if (/[?&]stats=1/.test(req.url || '')) return json(res, 200, await communityStats());
+    if (/[?&]wins=1/.test(req.url || '')) return json(res, 200, await wins(uid));
     const [certs, promo, journal, entries] = await Promise.all([loadCerts(uid), loadPromo(uid), loadJournal(uid), loadEntries(uid)]);
     const list = Object.values(certs).sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt)));
     const ents = Object.values(entries).sort(byEntry).map((e) => Object.assign({}, e, { status: entryStatus(e), points: entryPoints(e), worth: basePoints(e) }));
@@ -248,6 +274,26 @@ module.exports = async (req, res) => {
   }
 
   /* ---------- certificates ---------- */
+  if (action === 'testimonial-add') {
+    const rating = Math.round(Number(body.rating));
+    const text = str(body.text, 1200), result = str(body.result, 120);
+    if (!(rating >= 1 && rating <= 5)) return json(res, 400, { error: 'need_rating' });
+    if (text.length < 30) return json(res, 400, { error: 'too_short' });
+    const mineT = Object.values(await loadTestimonials()).filter((t) => t.uid === uid);
+    if (mineT.some((t) => t.status === 'pending')) return json(res, 409, { error: 'pending_exists' });
+    if (mineT.length >= 5) return json(res, 409, { error: 'too_many' });
+    const t = { id: 't' + crypto.randomBytes(6).toString('hex'), uid, name: s.user.displayName || s.user.username, avatar: s.user.avatar || null,
+      rating, text, result, status: 'pending', createdAt: new Date().toISOString() };
+    await saveTestimonial(t);
+    await logActivity(s.user, { type: 'review', key: t.id, label: 'Testimonial ' + '★'.repeat(rating) });
+    return json(res, 200, { saved: true, testimonial: t });
+  }
+  if (action === 'testimonial-delete') {
+    const t = (await loadTestimonials())[String(body.id || '')];
+    if (!t || t.uid !== uid) return json(res, 404, { error: 'not_found' });
+    await deleteTestimonial(t.id);
+    return json(res, 200, { saved: true });
+  }
   if (action === 'cert-add') {
     const kind = body.kind === 'funded' ? 'funded' : body.kind === 'payout' ? 'payout' : null;
     const file = cleanFile(body.file, uid, 'certs');
@@ -255,7 +301,10 @@ module.exports = async (req, res) => {
     if (!file) return json(res, 400, { error: 'bad_file' });
     const certs = await loadCerts(uid);
     if (Object.keys(certs).length >= 60) return json(res, 409, { error: 'too_many' });
-    const cert = { id: 'c' + crypto.randomBytes(6).toString('hex'), kind, file, note: str(body.note, 300), uploadedAt: new Date().toISOString() };
+    const cert = { id: 'c' + crypto.randomBytes(6).toString('hex'), kind, file, note: str(body.note, 300), uploadedAt: new Date().toISOString(),
+      // payouts: shared on the Wins tab and in the Discord payouts channel once certified, unless the member says no;
+      // the certificate image is only posted if they tick that box (certificates can show account details)
+      share: body.share !== false, shareImage: body.shareImage === true };
     if (kind === 'payout') {
       // the amount and day of the payout; an admin certifies it before it counts on the payout leaderboard
       const amount = Math.round(Number(body.amount) * 100) / 100;
