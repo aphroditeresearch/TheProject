@@ -30,7 +30,7 @@
 const { kvPipeline, KEY_PREFIX } = require('../_lib');
 const zlib = require('zlib');
 const { readSession, isAdmin, adminIds, kvConfigured, kv, listMembers, loadProgress, saveProgress, loadFlags, json } = require('../_lib');
-const { loadActivity, saveCert, contentWithDefaults, memberState, loadSubs, saveSub, deleteSub, setOverride, loadCerts, loadPromo, savePromo, findItem, loadJournal, loadEntries, saveEntry, entryPoints, lastWorkOf, loadTestimonials, saveTestimonial, deleteTestimonial, hookReady, discordPost, testimonialPayload, payoutPayload, entryStatus, basePoints } = require('../_gate');
+const { loadActivity, saveCert, contentWithDefaults, memberState, loadSubs, saveSub, deleteSub, setOverride, loadCerts, loadPromo, savePromo, findItem, loadJournal, loadEntries, saveEntry, entryPoints, lastWorkOf, loadTestimonials, saveTestimonial, deleteTestimonial, hookReady, discordPost, testimonialPayload, payoutPayload, loadFeedSettings, entryStatus, basePoints } = require('../_gate');
 const { signAll, makeSigner } = require('../_blob');
 
 const ID = /^\d{5,25}$/;
@@ -189,11 +189,17 @@ module.exports = async (req, res) => {
       t.note = body.status === 'denied' && typeof body.note === 'string' ? body.note.trim().slice(0, 300) : '';
       let discord = null;
       if (t.status === 'approved' && body.post !== false && !t.posted) {
-        discord = await discordPost(process.env.DISCORD_TESTIMONIAL_WEBHOOK, testimonialPayload(t));
+        discord = await discordPost(process.env.DISCORD_TESTIMONIAL_WEBHOOK, testimonialPayload(t, (await loadFeedSettings()).testimonials));
         if (discord.ok) { t.posted = true; t.postedAt = new Date().toISOString(); }
       }
       await saveTestimonial(t);
       return json(res, 200, { saved: true, testimonial: t, discord });
+    }
+    if (body.action === 'feed-settings') {   // who the Discord feeds tag
+      const ok = (v) => (['none', 'here', 'everyone'].includes(v) || /^\d{5,25}$/.test(String(v || '')) ? String(v) : 'none');
+      const v = { testimonials: ok(body.testimonials), payouts: ok(body.payouts) };
+      await kv(['SET', 'feed-settings', JSON.stringify(v)]);
+      return json(res, 200, { saved: true, feeds: v });
     }
     if (body.action === 'testimonial-remove') { await deleteTestimonial(String(body.id || '')); return json(res, 200, { saved: true }); }
     if (body.action === 'snippets') {   // saved feedback lines, shared by every admin
@@ -245,13 +251,21 @@ module.exports = async (req, res) => {
       if (status === 'approved' && body.post !== false && c.share !== false && !c.posted) {
         const ms = (await listMembers()).find((x) => x.id === userId) || {};
         let file = null, imgName = '';
-        if (c.shareImage && c.file && /^image\/(png|jpeg|webp|gif)$/.test(c.file.type || '') && (c.file.size || 0) < 9.5 * 1024 * 1024) {
+        // the certificate itself: only if the member didn't say no; the admin can leave it out (body.image === false),
+        // and can include it on certificates uploaded before members were asked (shareImage undefined)
+        const withImage = c.shareImage === false ? false : body.image !== undefined ? !!body.image : !!c.shareImage;
+        const kindOk = c.file && /^(image\/(png|jpeg|webp|gif)|application\/pdf)$/.test(c.file.type || '');
+        if (withImage && kindOk && (c.file.size || 0) < 9.5 * 1024 * 1024) {
           try {
             const sign = await makeSigner(req); const url = sign ? await sign(c.file.url) : c.file.url;
-            const r = await fetch(url); if (r.ok) { const buf = Buffer.from(await r.arrayBuffer()); if (buf.length < 9.5 * 1024 * 1024) { imgName = 'payout.' + (c.file.type.split('/')[1] === 'jpeg' ? 'jpg' : c.file.type.split('/')[1]); file = { buf, type: c.file.type, name: imgName }; } }
+            const r = await fetch(url);
+            if (r.ok) { const buf = Buffer.from(await r.arrayBuffer());
+              if (buf.length < 9.5 * 1024 * 1024) { const ext = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif', 'application/pdf': 'pdf' }[c.file.type];
+                file = { buf, type: c.file.type, name: 'payout-certificate.' + ext }; if (ext !== 'pdf') imgName = file.name; } }
           } catch (e) {}
         }
-        discord = await discordPost(process.env.DISCORD_PAYOUT_WEBHOOK, payoutPayload(ms.displayName || ms.username || 'A student', ms.avatar, c, imgName), file);
+        discord = await discordPost(process.env.DISCORD_PAYOUT_WEBHOOK, payoutPayload(ms.displayName || ms.username || 'A student', ms.avatar, c, imgName, (await loadFeedSettings()).payouts), file);
+        if (discord && withImage && !file) discord.note = 'image_skipped';
         if (discord.ok) { c.posted = true; c.postedAt = new Date().toISOString(); }
       }
       await saveCert(userId, c);
@@ -318,7 +332,7 @@ module.exports = async (req, res) => {
 
   if (/[?&]testimonials=1\b/.test(req.url || '')) {
     const list = Object.values(await loadTestimonials()).sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
-    return json(res, 200, { testimonials: list, hooks: { testimonials: hookReady(process.env.DISCORD_TESTIMONIAL_WEBHOOK), payouts: hookReady(process.env.DISCORD_PAYOUT_WEBHOOK) } });
+    return json(res, 200, { testimonials: list, feeds: await loadFeedSettings(), hooks: { testimonials: hookReady(process.env.DISCORD_TESTIMONIAL_WEBHOOK), payouts: hookReady(process.env.DISCORD_PAYOUT_WEBHOOK) } });
   }
   if (/[?&]snippets=1\b/.test(req.url || '')) {
     let list = null; try { list = JSON.parse(await kv(['GET', 'snippets']) || 'null'); } catch (e) {}

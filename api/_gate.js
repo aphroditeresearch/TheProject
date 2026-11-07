@@ -351,6 +351,16 @@ async function saveTestimonial(t) { await kv(['HSET', 'testimonials', t.id, JSON
 async function deleteTestimonial(id) { await kv(['HDEL', 'testimonials', id]); }
 const WEBHOOK = /^https:\/\/(discord\.com|discordapp\.com|ptb\.discord\.com|canary\.discord\.com)\/api\/webhooks\/\d+\/[\w-]+$/;
 const hookReady = (h) => WEBHOOK.test(String(h || '').trim());
+// who a feed tags: 'none' | 'here' | 'everyone' | a role ID. Saved by admins (Admin → Testimonials → Discord feeds).
+async function loadFeedSettings() {
+  let v = null; try { v = JSON.parse(await kv(['GET', 'feed-settings']) || 'null'); } catch (e) {}
+  return Object.assign({ testimonials: 'none', payouts: 'none' }, v || {});
+}
+function mentionParts(tag, line) {
+  if (tag === 'everyone' || tag === 'here') return { content: '@' + tag + ' ' + line, allowed_mentions: { parse: ['everyone'] } };
+  if (/^\d{5,25}$/.test(String(tag || ''))) return { content: '<@&' + tag + '> ' + line, allowed_mentions: { parse: [], roles: [String(tag)] } };
+  return { content: line, allowed_mentions: { parse: [] } };
+}
 // post a message (and optionally one file) to a Discord channel webhook. Never throws.
 async function discordPost(hook, payload, file) {
   hook = String(hook || '').trim();
@@ -365,27 +375,27 @@ async function discordPost(hook, payload, file) {
   } catch (e) { return { ok: false, error: String((e && e.message) || e).slice(0, 120) }; }
 }
 const stars = (n) => '★'.repeat(n) + '☆'.repeat(5 - n);
-function testimonialPayload(t) {
-  return { embeds: [{
+function testimonialPayload(t, tag) {
+  return Object.assign(mentionParts(tag, '⭐ New student review from **' + t.name + '**'), { embeds: [{
     author: { name: t.name, icon_url: /^https:\/\//.test(t.avatar || '') ? t.avatar : undefined },
     title: stars(t.rating), description: '“' + t.text + '”' + (t.result ? '\n\n**' + t.result + '**' : ''),
     color: 0x1CE8BE, footer: { text: 'THE PROJECT · student review' }, timestamp: t.createdAt,
-  }] };
+  }] });
 }
-function payoutPayload(name, avatar, c, imageName) {
+function payoutPayload(name, avatar, c, imageName, tag) {
   const amt = Number((c.review && c.review.amount) || c.amount || 0);
   const day = c.paidAt ? new Date(c.paidAt + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : '';
-  return { embeds: [{
+  return Object.assign(mentionParts(tag, '💸 **' + name + '** just got paid **$' + amt.toLocaleString('en-US', { maximumFractionDigits: 2 }) + '**'), { embeds: [{
     author: { name, icon_url: /^https:\/\//.test(avatar || '') ? avatar : undefined },
     title: '💸 Certified payout: $' + amt.toLocaleString('en-US', { maximumFractionDigits: 2 }),
     description: [c.note || '', day ? 'Paid ' + day : ''].filter(Boolean).join('\n') || undefined,
     color: 0x3DDC84, image: imageName ? { url: 'attachment://' + imageName } : undefined,
     footer: { text: 'THE PROJECT · verified by a mentor' }, timestamp: new Date().toISOString(),
-  }] };
+  }] });
 }
 
 module.exports = {
-  streakOf, nyToday, lastWorkOf, loadTestimonials, saveTestimonial, deleteTestimonial, hookReady, discordPost, testimonialPayload, payoutPayload,
+  streakOf, nyToday, lastWorkOf, loadTestimonials, saveTestimonial, deleteTestimonial, hookReady, discordPost, testimonialPayload, payoutPayload, loadFeedSettings,
   ROLES, contentWithDefaults,
   loadSubs, saveSub, deleteSub, loadOverrides, setOverride, loadPromo, savePromo, loadCerts, saveCert, deleteCert,
   unitsOf, passes, chapterRoles, roleLevel, promotionStep, levelFor, accessFor,

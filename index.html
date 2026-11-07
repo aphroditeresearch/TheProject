@@ -768,8 +768,12 @@ table.mem td:first-child,table.mem th:first-child{width:34px}
 /* leaderboard */
 .lb-head{margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px}
 .lb-row.pay .lb-pts{color:var(--win)}
-.cert-pay{display:grid;grid-template-columns:repeat(2,minmax(0,200px));gap:10px;margin:10px 0}
+.cert-pay{display:grid;grid-template-columns:repeat(2,minmax(0,200px));gap:10px;margin:10px 0;max-width:100%}
 .cert-pay[hidden]{display:none}
+.cert-share{grid-column:1 / -1;display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.cert-share label.tick input{flex:none;width:18px;height:18px;margin:1px 0 0;accent-color:var(--kana-c)}
+.cert-share label.tick[hidden]{display:none}
+.cert-go{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:4px 0 16px}
 .cert-amt{font-size:16px;color:var(--win);font-variant-numeric:tabular-nums}
 .lb-rules{border:1px solid var(--line);background:var(--panel);padding:14px 18px;margin-bottom:18px;max-width:520px}
 .lb-rules ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:14px}
@@ -1129,7 +1133,11 @@ img,video{-webkit-user-drag:none;user-drag:none}
 .win-pay{display:flex;gap:12px;align-items:center;border:1px solid var(--line);background:var(--panel);padding:12px 14px}.win-pay .av{width:38px;height:38px}
 .win-pay div{display:flex;flex-direction:column;flex:1;min-width:0}.win-pay div span{font-size:13px;color:var(--muted)}
 .win-pay strong{font:900 22px var(--display);font-style:italic;color:var(--win)}
-label.chk{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--ink);cursor:pointer}label.chk input{margin-top:2px}
+.feed-tags{display:flex;flex-direction:column;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}.feed-tags h4{margin:0;font-size:14px}
+.feed-row{display:grid;grid-template-columns:150px minmax(0,220px) minmax(0,1fr);gap:10px;align-items:center}.feed-row span{font-size:14px}
+.feed-row select,.feed-row input{min-height:40px;background:rgba(255,255,255,.03);color:var(--ink);border:1px solid var(--line);padding:0 10px;font:14px var(--sans)}
+@media (max-width:640px){.feed-row{grid-template-columns:1fr}}
+label.tick{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.45;color:var(--ink);cursor:pointer;width:auto;height:auto;border:0;border-radius:0;background:none}label.tick input{flex:none;width:16px;height:16px;margin-top:2px;accent-color:var(--kana-c)}
 .tsv{display:flex;flex-direction:column;gap:10px}
 /* snippets + report */
 .snips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 10px}
@@ -2838,10 +2846,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var paid = inputEl('date', todayYmd()); paid.setAttribute('aria-label','Day of the payout');
     var payBox = el('div','cert-pay'); payBox.appendChild(fld('Payout amount ($)', amt)); payBox.appendChild(fld('Paid on', paid));
     kind.addEventListener('change', function(){ payBox.hidden = kind.value !== 'payout'; });
-    var shr = el('label','chk'), shc = el('input'); shc.type = 'checkbox'; shc.checked = true; shr.appendChild(shc); shr.appendChild(document.createTextNode(' Share it on the Wins tab and in the Discord payouts channel once a mentor certifies it'));
-    var shi = el('label','chk'), sic = el('input'); sic.type = 'checkbox'; shi.appendChild(sic); shi.appendChild(document.createTextNode(' Include my certificate image in Discord (cover account numbers first)'));
+    var shr = el('label','tick'), shc = el('input'); shc.type = 'checkbox'; shc.checked = true; shr.appendChild(shc); shr.appendChild(document.createTextNode(' Share it on the Wins tab and in the Discord payouts channel once a mentor certifies it'));
+    var shi = el('label','tick'), sic = el('input'); sic.type = 'checkbox'; sic.checked = true; shi.appendChild(sic); shi.appendChild(document.createTextNode(' Include my certificate picture in Discord (untick it if it shows account numbers or anything private)'));
     shc.addEventListener('change', function(){ shi.hidden = !shc.checked; if (!shc.checked) sic.checked = false; });
-    payBox.appendChild(shr); payBox.appendChild(shi);
+    var shareBox = el('div','cert-share'); shareBox.appendChild(shr); shareBox.appendChild(shi); payBox.appendChild(shareBox);
     var lab = el('label','btn-s pri up-file','Upload certificate'), fi = el('input'); fi.type = 'file'; fi.accept = FILE_TYPES; lab.appendChild(fi);
     var st = el('small','adm-note','');
     fi.addEventListener('change', function(){
@@ -2855,7 +2863,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         .then(function(){ toast(kind.value === 'payout' ? 'Payout added. It goes on the payout leaderboard once an admin certifies it.' : 'Certificate added.'); return loadMe(); }).then(function(){ renderCerts(); renderPromo(); })
         .catch(function(e){ st.textContent = ''; toast(CERT_ERR[e && e.message] || 'Upload failed: ' + String((e && e.message) || e).replace(/^Vercel Blob:\s*/,'')); });
     });
-    up.appendChild(kind); up.appendChild(note); up.appendChild(lab); host.appendChild(up); host.appendChild(payBox); host.appendChild(st);
+    up.appendChild(kind); up.appendChild(note); host.appendChild(up); host.appendChild(payBox);
+    var upRow = el('div','cert-go'); upRow.appendChild(lab); upRow.appendChild(st); host.appendChild(upRow);
     if (!ME.certs.length){ host.appendChild(el('p','pf-none','No certificates yet.')); return; }
     var grid = el('div','cert-grid');
     ME.certs.forEach(function(c){
@@ -4130,6 +4139,26 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         ['In Discord, open the channel (e.g. #testimonials or #payouts) → Edit Channel → Integrations → Webhooks → New Webhook → Copy Webhook URL.',
          'In Vercel → Settings → Environment Variables, add DISCORD_TESTIMONIAL_WEBHOOK and/or DISCORD_PAYOUT_WEBHOOK with that URL.',
          'Redeploy. Anything you approve after that is posted automatically.'].forEach(function(t){ ol.appendChild(el('li',null,t)); }); hk.appendChild(ol); }
+      // who each feed tags
+      var F = j.feeds || { testimonials:'none', payouts:'none' }, tg = el('div','feed-tags'); tg.appendChild(el('h4',null,'Who gets tagged'));
+      var pick = {};
+      [['testimonials','New reviews'],['payouts','Certified payouts']].forEach(function(x){
+        var cur = F[x[0]] || 'none', isRole = /^\d+$/.test(cur), row = el('div','feed-row'); row.appendChild(el('span',null,x[1]));
+        var sel = el('select'); [['none','Nobody'],['here','@here (people online)'],['everyone','@everyone'],['role','A role…']].forEach(function(o){ var op = el('option',null,o[1]); op.value = o[0]; sel.appendChild(op); });
+        sel.value = isRole ? 'role' : cur;
+        var rid = inputEl('text', isRole ? cur : '', 'Role ID (right-click the role → Copy Role ID)'); rid.hidden = sel.value !== 'role';
+        sel.addEventListener('change', function(){ rid.hidden = sel.value !== 'role'; if (!rid.hidden) rid.focus(); });
+        row.appendChild(sel); row.appendChild(rid); tg.appendChild(row); pick[x[0]] = function(){ return sel.value === 'role' ? rid.value.trim() : sel.value; };
+      });
+      var sv = el('button','btn-s pri','Save tagging'); sv.type = 'button';
+      sv.addEventListener('click', function(){
+        var v = { testimonials: pick.testimonials(), payouts: pick.payouts() };
+        if ([v.testimonials, v.payouts].some(function(x){ return x !== 'none' && x !== 'here' && x !== 'everyone' && !/^\d{5,25}$/.test(x); })){ toast('Paste the role ID (a long number). In Discord: Server Settings → Roles → right-click the role → Copy Role ID.'); return; }
+        adminPost(Object.assign({ action:'feed-settings' }, v)).then(function(){ toast('Saved. New posts will tag ' + [v.testimonials, v.payouts].map(function(x){ return x === 'none' ? 'nobody' : /^\d/.test(x) ? 'the role' : '@' + x; }).join(' / ') + '.'); }).catch(function(e){ toast('Couldn\'t save: ' + e.message); });
+      });
+      tg.appendChild(sv);
+      tg.appendChild(el('p','adm-note','Applies to posts from now on. @everyone pings the whole server, so many servers save it for payouts and use @here or nobody for reviews.'));
+      hk.appendChild(tg);
       host.appendChild(hk);
       var all = j.testimonials || [], cnt = { pending:0, approved:0, denied:0 }; all.forEach(function(t){ if (cnt[t.status] !== undefined) cnt[t.status]++; });
       host.appendChild(seg([['pending','Waiting (' + cnt.pending + ')'],['approved','Approved (' + cnt.approved + ')'],['denied','Denied (' + cnt.denied + ')']], TSV.status, function(v){ TSV.status = v; admRender(); }));
@@ -4140,7 +4169,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         c.appendChild(el('p','win-tx', t.text)); if (t.result) c.appendChild(el('p','win-res', t.result));
         if (t.posted) c.appendChild(el('p','adm-note','✓ Posted to Discord ' + fmtDay(t.postedAt) + '.'));
         var acts = el('div','rv-acts'), pc = null;
-        if (t.status !== 'approved' || !t.posted){ var pl = el('label','chk'); pc = el('input'); pc.type = 'checkbox'; pc.checked = !!H.testimonials; pc.disabled = !H.testimonials; pl.appendChild(pc); pl.appendChild(document.createTextNode(' Post to the Discord testimonials channel' + (H.testimonials ? '' : ' (not connected)'))); c.appendChild(pl); }
+        if (t.status !== 'approved' || !t.posted){ var pl = el('label','tick'); pc = el('input'); pc.type = 'checkbox'; pc.checked = !!H.testimonials; pc.disabled = !H.testimonials; pl.appendChild(pc); pl.appendChild(document.createTextNode(' Post to the Discord testimonials channel' + (H.testimonials ? '' : ' (not connected)'))); c.appendChild(pl); }
         var note = inputEl('text', t.note || '', 'Reason, if you deny it (they\'ll see it)');
         function act(status){ if (status === 'denied' && note.value.trim().length < 3){ toast('Add a short reason so they know why.'); note.focus(); return; }
           adminPost({ action:'testimonial-review', id:t.id, status:status, post: !!(pc && pc.checked), note:note.value.trim() }).then(function(rj){ var d = rj.discord;
@@ -4833,18 +4862,23 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         var row2 = el('div','cert-pay'); row2.appendChild(fld('Amount to certify ($)', amt)); row2.appendChild(fld('Note', note)); card.appendChild(row2);
         var acts = el('div','rv-acts'), ok = el('button','btn-s pri','Certify'), no = el('button','btn-s warn','Deny'); ok.type = no.type = 'button';
         if (x.st === 'approved') ok.textContent = 'Update amount';
-        var pdc = null;
+        var pdc = null, pic = null;
         if (c.share === false) card.appendChild(el('p','adm-note','They chose not to share this payout, so it won\'t be posted to Discord or the Wins tab.'));
         else if (c.posted) card.appendChild(el('p','adm-note','✓ Posted to the Discord payouts channel ' + fmtDay(c.postedAt) + '.'));
-        else { var pdl = el('label','chk'); pdc = el('input'); pdc.type = 'checkbox'; pdc.checked = true; pdl.appendChild(pdc);
-          pdl.appendChild(document.createTextNode(' Post to the Discord payouts channel when I certify it' + (c.shareImage ? ' (with their certificate image)' : ''))); card.appendChild(pdl); }
+        else { var pdl = el('label','tick'); pdc = el('input'); pdc.type = 'checkbox'; pdc.checked = true; pdl.appendChild(pdc);
+          pdl.appendChild(document.createTextNode(' Post to the Discord payouts channel when I certify it')); card.appendChild(pdl);
+          if (c.shareImage === false) card.appendChild(el('p','adm-note','They chose not to include their certificate picture, so only the amount is posted.'));
+          else { var pil = el('label','tick'); pic = el('input'); pic.type = 'checkbox'; pic.checked = c.shareImage === true; pil.appendChild(pic);
+            pil.appendChild(document.createTextNode(' Include their certificate ' + (/pdf/.test((c.file && c.file.type) || '') ? '(PDF, attached as a file)' : 'picture') + (c.shareImage === undefined ? ' (uploaded before students were asked)' : '') + '. Untick if it shows account numbers.'));
+            card.appendChild(pil);
+            pdc.addEventListener('change', function(){ pic.disabled = !pdc.checked; }); } }
         if (x.st === 'denied') no.disabled = true;
         function act(status){
           if (status === 'approved' && !(+amt.value > 0)){ toast('Enter the amount to certify.'); amt.focus(); return; }
           if (status === 'denied' && note.value.trim().length < 3){ toast('Add a short note so they know why.'); note.focus(); return; }
           ok.disabled = no.disabled = true;
-          adminPost({ action:'cert-review', userId:m.id, certId:c.id, status:status, amount: +amt.value, note: note.value.trim(), post: !!(pdc && pdc.checked) })
-            .then(function(rj){ var d = rj && rj.discord; toast(status === 'approved' ? 'Certified: ' + money(+amt.value) + ' added to ' + (m.displayName || m.username) + '\'s payouts.' + (d ? (d.ok ? ' Posted to Discord.' : d.error === 'not_set' ? ' (Discord payouts channel isn\'t connected yet.)' : ' Couldn\'t post to Discord: ' + d.error + '.') : '') : status === 'denied' ? 'Denied.' : 'Back to waiting.'); card.classList.add('gone'); setTimeout(admRender, 260); })
+          adminPost({ action:'cert-review', userId:m.id, certId:c.id, status:status, amount: +amt.value, note: note.value.trim(), post: !!(pdc && pdc.checked), image: !!(pic && pic.checked) })
+            .then(function(rj){ var d = rj && rj.discord; toast(status === 'approved' ? 'Certified: ' + money(+amt.value) + ' added to ' + (m.displayName || m.username) + '\'s payouts.' + (d ? (d.ok ? ' Posted to Discord' + (d.note === 'image_skipped' ? ' (the picture was too big to attach).' : '.') : d.error === 'not_set' ? ' (Discord payouts channel isn\'t connected yet.)' : ' Couldn\'t post to Discord: ' + d.error + '.') : '') : status === 'denied' ? 'Denied.' : 'Back to waiting.'); card.classList.add('gone'); setTimeout(admRender, 260); })
             .catch(function(e){ ok.disabled = no.disabled = false; toast(admFail(e)); });
         }
         ok.addEventListener('click', function(){ act('approved'); }); no.addEventListener('click', function(){ act('denied'); });

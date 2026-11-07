@@ -507,5 +507,12 @@ Admin → **Backups**.
 
   Each item posts once, @mentions are switched off, and the Testimonials screen shows whether each channel is
   connected.
-- **Student consent:** when uploading a payout certificate, students choose whether to share it (on by default) and
-  whether the image goes to Discord (off by default). Unshared payouts never leave the site's admin screens.
+- **Student consent:** when uploading a payout certificate, students choose whether to share it and whether the
+  certificate picture goes to Discord (both ticked by default). Unshared payouts never leave the site's admin screens.
+- **Certificate picture in Discord:** when certifying, admins see "Include their certificate picture" and can untick it
+  (e.g. an account number is showing). They can't include a picture a student chose not to share. Certificates uploaded
+  before students were asked can be included by ticking it. Images show inside the post; PDFs are attached as a file.
+  Files over about 9.5 MB are skipped, and the amount still posts.
+- **Tagging:** Admin → Testimonials → Discord feeds → "Who gets tagged" lets you pick, for reviews and payouts
+  separately: Nobody, @here, @everyone, or a role (paste the role ID). The post's first line then pings them, e.g.
+  "@everyone 💸 Ava just got paid $2,400". It's saved in the `feed-settings` key and applies to new posts.
