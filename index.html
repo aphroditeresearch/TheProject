@@ -17,6 +17,7 @@
 html,body{margin:0}
 img,video{max-width:100%}
 [hidden]{display:none!important}
+
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Instrument+Sans:wght@400;500;600;700&family=Archivo:ital,wdth,wght@1,125,200;1,125,900&family=Noto+Sans+JP:wght@900&family=Oswald:wght@700&family=Saira:wdth,wght@125,300&family=JetBrains+Mono:wght@500&display=swap">
@@ -531,6 +532,7 @@ a{color:var(--blue);text-underline-offset:3px}
 .st-t{width:100%;border-collapse:collapse;font-size:13px}.st-t th{text-align:left;font-weight:500;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
 .st-t td{padding:7px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}.st-t td.win{color:var(--win)}.st-t td.loss{color:var(--loss)}
 .st-chips{display:flex;flex-wrap:wrap;gap:6px}
+
 .lb{position:fixed;inset:0;z-index:300;background:rgba(1,5,7,.985);display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;animation:lbIn .16s ease-out}
 @keyframes lbIn{from{opacity:0}to{opacity:1}}
 html.lb-open,html.lb-open body{overflow:hidden}
@@ -839,7 +841,7 @@ button.cal-c:hover{transform:translateY(-2px)}
 .cal-day-p.win{color:var(--win)}.cal-day-p.loss{color:var(--loss)}
 @keyframes calin{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:none}}
 @media (max-width:640px){.cal-c{min-height:56px;padding:4px}.cal-p{font-size:11px}.cal-k{display:none}.cal-sum{grid-template-columns:1fr 1fr}.cal-c.today .cal-n::after{content:""}.cal-g{gap:3px}.cal-c.none .cal-p{font-size:9px}}
-@media (max-width:900px){.jr-grid{grid-template-columns:1fr}.jr-side{position:static}.jr-fields{grid-template-columns:1fr 1fr}}
+@media (max-width:900px){.jr-grid{grid-template-columns:minmax(0,1fr)}.jr-grid>*{min-width:0}.jr-side{position:static}.jr-fields{grid-template-columns:1fr 1fr}}
 @media (max-width:520px){.jr-fields{grid-template-columns:1fr}}
 @keyframes popin{from{transform:translateY(16px);opacity:0}}
 /* lesson parts in the sidebar */
@@ -951,10 +953,10 @@ body.returning .scene::after{opacity:0}
 /* recording deterrents */
 #wmark{position:fixed;inset:-40%;z-index:55;pointer-events:none;background-repeat:repeat;animation:wdrift 120s linear infinite}
 @keyframes wdrift{to{transform:translate(640px,380px)}}
-#shield{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(2,9,11,.94);-webkit-backdrop-filter:blur(28px);backdrop-filter:blur(28px);cursor:pointer;text-align:center;padding:24px}
-#shield[hidden]{display:none}
-#shield b{display:block;font-family:var(--display);font-style:italic;font-weight:900;font-stretch:125%;font-size:34px;margin-bottom:8px;color:var(--ink)}
-#shield span{color:var(--muted);font-size:15px;max-width:34ch;display:inline-block}
+#pshield{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(2,9,11,.94);-webkit-backdrop-filter:blur(28px);backdrop-filter:blur(28px);cursor:pointer;text-align:center;padding:24px}
+#pshield[hidden]{display:none}
+#pshield b{display:block;font-family:var(--display);font-style:italic;font-weight:900;font-stretch:125%;font-size:34px;margin-bottom:8px;color:var(--ink)}
+#pshield span{color:var(--muted);font-size:15px;max-width:34ch;display:inline-block}
 .lnotice{display:flex;align-items:center;gap:16px;flex-wrap:wrap;width:100%;max-width:min(100%,calc((100vh - 380px) * 16 / 9));box-sizing:border-box;margin:0 0 16px;padding:14px 18px;border:1px solid var(--blue);border-left-width:4px;background:color-mix(in srgb,var(--blue) 10%,var(--panel))}
 .lnotice .ann-tag{flex:none;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--kana-c);padding:4px 8px;border:1px solid var(--blue)}
 .lnotice .ann-tx{flex:1 1 260px}
@@ -1083,6 +1085,47 @@ img,video{-webkit-user-drag:none;user-drag:none}
 }
 @media (prefers-reduced-motion:reduce){
   .stamp.on{animation:none;opacity:.92;transform:translate(-50%,-50%) rotate(-13deg)}
+}
+
+/* ---------- phones & tablets ---------- */
+html,body{overflow-x:clip}
+.bgfx{contain:paint}
+img,video{-webkit-touch-callout:none}
+a,button,[role=button],.tab,.seg-b{-webkit-tap-highlight-color:transparent}
+.tabs.fr{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 48px),transparent)}
+.tabs.fl{-webkit-mask-image:linear-gradient(to left,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(to left,#000 calc(100% - 48px),transparent)}
+.tabs.fl.fr{-webkit-mask-image:linear-gradient(to right,transparent,#000 48px,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(to right,transparent,#000 48px,#000 calc(100% - 48px),transparent)}
+.jump-list{display:none}
+.yt.tap-through iframe{pointer-events:auto}
+.yt.tap-through .yt-click,.yt.tap-through .yt-cover{display:none}
+.player.pfs{position:fixed;inset:0;z-index:250;max-width:none;width:100vw;height:100vh;height:100dvh;aspect-ratio:auto;border:0;background:#000;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);box-sizing:border-box}
+.player.pfs::before,.player.pfs::after{display:none}
+html.pfs-open,html.pfs-open body{overflow:hidden}
+.player:-webkit-full-screen{max-width:none;border:0;aspect-ratio:auto}
+@media (hover:none){
+  .yt.playing:not(.show-ctl) .ytc{opacity:0;pointer-events:none}
+  .yt.playing.show-ctl .ytc{opacity:1;pointer-events:auto}
+  .ytb{width:42px;height:42px}
+  .ytbar{height:8px}.ytbar::before{content:"";position:absolute;left:0;right:0;top:-16px;bottom:-16px}
+  .vm-bar{height:8px}
+}
+@media (pointer:coarse){input,select,textarea{font-size:16px !important}}
+@media (max-height:600px) and (orientation:landscape){.player{max-width:min(100%,calc((100dvh - 24px) * 16 / 9))}}
+@media (max-width:900px){
+  .jump-list{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;margin:0 0 12px;min-height:36px;padding:0 12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:500 13px var(--sans);cursor:pointer}
+  .jump-list::before{content:"";width:14px;height:10px;background:linear-gradient(currentColor,currentColor) 0 0/100% 2px no-repeat,linear-gradient(currentColor,currentColor) 0 50%/100% 2px no-repeat,linear-gradient(currentColor,currentColor) 0 100%/100% 2px no-repeat}
+  .side,.pane{scroll-margin-top:150px}
+}
+@media (max-width:640px){
+  .hw-pop{left:10px;right:10px;width:auto;bottom:calc(10px + env(safe-area-inset-bottom,0px));padding:10px 46px 10px 14px;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;row-gap:2px;align-items:center}
+  .hw-pop .hp-s,.hw-pop .hp-meta,.hw-pop .hp-more{display:none}
+  .hw-pop .hp-eye{grid-column:1;font-size:9px}
+  .hw-pop b{grid-column:1;font-size:14px;padding-right:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hw-pop .hp-acts{grid-column:2;grid-row:1 / span 2;margin:0}
+  .hw-pop .hp-acts .btn-s{min-height:36px;padding:0 12px}
+  .hw-pop .x{top:50%;transform:translateY(-50%);right:6px}
+  .ntf-pops{top:auto;bottom:calc(76px + env(safe-area-inset-bottom,0px));right:10px;width:calc(100% - 20px)}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 }
 </style>
 </head>
@@ -1391,7 +1434,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
 </div>
 <!-- recording deterrents: a traceable watermark over the portal, and a cover whenever the window loses focus -->
 <div id="wmark" aria-hidden="true" hidden></div>
-<div id="shield" role="status" hidden><div><b>Paused</b><span>Lessons hide while this window isn't in focus. Click here to keep going.</span></div></div>
+<div id="pshield" role="status" hidden><div><b>Paused</b><span>Lessons hide while this window isn't in focus. Click here to keep going.</span></div></div>
 
 <script>
 (function(){
@@ -1483,7 +1526,11 @@ img,video{-webkit-user-drag:none;user-drag:none}
   document.getElementById('warn-ok').addEventListener('click', function(){ warnEl.hidden = true; });
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !warnEl.hidden){ warnEl.hidden = true; } });
 
-  document.addEventListener('contextmenu', function(e){ e.preventDefault(); blocked('right-click'); }, true);
+  // phones and tablets: a long-press fires "contextmenu" too, so on touch it's quietly ignored instead of counted as a right-click
+  var MOBILE_DEV = /Android|iPhone|iPad|iPod|Mobile|CriOS/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var lastPtr = 'mouse';
+  document.addEventListener('pointerdown', function(e){ lastPtr = e.pointerType || 'mouse'; }, true);
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); if (lastPtr === 'touch' || lastPtr === 'pen' || (MOBILE_DEV && lastPtr !== 'mouse')) return; blocked('right-click'); }, true);
   document.addEventListener('dragstart', function(e){ e.preventDefault(); }, true);
   document.addEventListener('selectstart', function(e){ var t = e.target; if (!(t && t.closest && t.closest('input,textarea,.linkbox'))) e.preventDefault(); }, true);
   document.addEventListener('copy', function(e){ var t = document.activeElement; if (!(t && /INPUT|TEXTAREA/.test(t.tagName)) && !getSelection().toString().match(/^https?:/)) e.preventDefault(); }, true);
@@ -1511,7 +1558,12 @@ img,video{-webkit-user-drag:none;user-drag:none}
      username, Discord ID and the date covers the whole portal, so any recording or photo shows who made it;
      (2) lessons are covered and videos pause whenever the window loses focus (most snipping and capture
      tools take focus); (3) screenshot keys blank the page, clear the clipboard and are logged. */
-  var wmEl = document.getElementById('wmark'), shieldEl = document.getElementById('shield'), shieldT = 0;
+  var wmEl = document.getElementById('wmark'), shieldEl = document.getElementById('pshield'), shieldT = 0;
+  // choosing photos / files opens the phone's picker, which takes focus: that isn't a recording, so don't cover the page
+  var pickUntil = 0;
+  document.addEventListener('click', function(e){ var t = e.target; if (t && t.closest && t.closest('input[type=file]')) pickUntil = Date.now() + 120000; }, true);
+  document.addEventListener('change', function(e){ if (e.target && e.target.type === 'file') pickUntil = Date.now() + 1500; }, true);
+  window.addEventListener('focus', function(){ if (pickUntil > Date.now() + 1500) pickUntil = Date.now() + 1500; });
   function inPortal(){ var pv = document.getElementById('portal-view'); return !!(pv && !pv.hidden); }
   function isAdminViewer(){ return !!(typeof SESSION !== 'undefined' && SESSION && SESSION.isAdmin); }
   function paintWatermark(){
@@ -1523,7 +1575,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     wmEl.hidden = false;
   }
   function pauseAll(){ document.querySelectorAll('#portal-view video').forEach(function(v){ try { v.pause(); } catch(e) {} }); (typeof ytPlayers !== 'undefined' ? ytPlayers : []).forEach(function(p){ try { p.pauseVideo(); } catch(e) {} }); }
-  function shieldOn(){ if (!inPortal() || isAdminViewer()) return; shieldEl.hidden = false; pauseAll(); }
+  function shieldOn(){ if (!inPortal() || isAdminViewer() || Date.now() < pickUntil) return; shieldEl.hidden = false; pauseAll(); }
   function shieldOff(){ if (Date.now() < shieldT) return; shieldEl.hidden = true; }
   function shieldFlash(){ if (!inPortal() || isAdminViewer()) return; shieldT = Date.now() + 2500; shieldOn(); setTimeout(function(){ if (document.hasFocus()) shieldOff(); }, 2600); }
   window.addEventListener('blur', shieldOn);
@@ -1536,7 +1588,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
   // Docked developer tools shrink the page area; pause everything while they're open.
   // Skipped when the page is shown inside another page (a preview), where the sizes don't apply.
   var shield = document.getElementById('shield');
-  if (window.top === window.self){
+  // (skipped on phones and tablets: they have no developer tools, and the keyboard or pinch-zoom changes these sizes)
+  if (window.top === window.self && !MOBILE_DEV){
     setInterval(function(){
       var open = (window.outerWidth - window.innerWidth > 170) || (window.outerHeight - window.innerHeight > 220);
       if (open !== !shield.hidden){
@@ -1684,7 +1737,42 @@ img,video{-webkit-user-drag:none;user-drag:none}
     if (typeof c.level === 'number') LEVEL = c.level;
     if ('next' in c) NEXT = c.next || null;
     if (c.promotion) PROMO = c.promotion;
+    var a = accessSig(c); LAST_SIG = a.sig; LAST_ST = a.st;
   }
+  /* ---------- keep a member's lessons in step with admin reviews ----------
+     Approving a hand-in unlocks the next item on the server straight away. The member's open page checks every 45 seconds
+     (and when they come back to the tab) and updates itself, but never while a video plays, they're typing, or a file uploads. */
+  var LAST_SIG = '', LAST_ST = {}, UPL = 0, lastPoll = 0;
+  function accessSig(c){
+    var parts = [], st = {}, names = {};
+    (function walk(o){ if (!o || typeof o !== 'object') return; if (Array.isArray(o)){ o.forEach(walk); return; }
+      if (o.id && ('open' in o || 'passed' in o)) parts.push(o.id + ':' + o.open + ':' + o.passed);
+      if (o.id && o.sub && typeof o.sub === 'object'){ st[o.id] = o.sub.status || ''; names[o.id] = o.title || ''; }
+      for (var k in o) if (k !== 'files' && k !== 'sub' && o[k] && typeof o[k] === 'object') walk(o[k]);
+    })(c);
+    Object.keys(st).forEach(function(k){ parts.push(k + '~' + st[k]); });
+    return { sig: parts.sort().join('|'), st: st, names: names };
+  }
+  function pollUnlocks(){
+    if (DEMO_MODE || !BACKEND || !SESSION || adminView() || document.hidden || Date.now() - lastPoll < 10000) return;
+    var pv = document.getElementById('portal-view'); if (!pv || pv.hidden) return;
+    lastPoll = Date.now();
+    fetch(contentUrl(), { credentials:'same-origin', cache:'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      if (!j || !j.content || !LAST_SIG) return;
+      var a = accessSig(j.content); if (a.sig === LAST_SIG) return;
+      var ae = document.activeElement, typing = ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
+      if ((typeof HOLD !== 'undefined' && HOLD.video > 0) || typing || UPL > 0) return;   // busy: try again next time
+      var approved = [], returned = [];
+      Object.keys(a.st).forEach(function(id){ if (a.st[id] === LAST_ST[id]) return; if (a.st[id] === 'approved') approved.push(a.names[id]); else if (a.st[id] === 'returned') returned.push(a.names[id]); });
+      var y = window.scrollY; applyContent(j.content); renderContentViews(); window.scrollTo(0, y);
+      if (approved.length) toast('✓ Approved: ' + (approved[0] || 'your hand-in') + (approved.length > 1 ? ' and ' + (approved.length - 1) + ' more' : '') + '. The next one is unlocked.');
+      else if (returned.length) toast((returned[0] || 'A hand-in') + ' was sent back with feedback. Open it to see what to fix.');
+      else toast('Your lessons were updated.');
+    }).catch(function(){});
+  }
+  setInterval(pollUnlocks, 45000);
+  document.addEventListener('visibilitychange', function(){ if (!document.hidden) pollUnlocks(); });
+  window.addEventListener('focus', pollUnlocks);
   function unitsOf(l){ return l.parts && l.parts.length ? l.parts : [l]; }
   // after a hand-in or an admin change: fetch this member's lessons again (the server decides what's unlocked)
   // admins: "View as" a member step (stored in this browser); '' = the normal admin view
@@ -2037,6 +2125,9 @@ img,video{-webkit-user-drag:none;user-drag:none}
     if (!cur && id === 'lx' && LEVEL < 1 && !DEMO_MODE){ emptyState(pane, 'No access yet', 'The site opens with the ' + (CURRICULUM[0] ? CURRICULUM[0].name : 'member') + ' role in Discord.'); return; }
     if (!cur && id === 'lx' && all.length){ emptyState(pane, 'Nothing unlocked yet', (CURRICULUM[0] ? CURRICULUM[0].name : 'The first chapter') + ' unlocks with the ' + (CURRICULUM[0] ? CURRICULUM[0].name : 'member') + ' role in Discord. Ask your mentor if you think you should have it.'); return; }
     if (!cur){ emptyState(pane, id==='bx' ? 'No breakdowns yet' : id==='ax' ? 'No advanced lectures yet' : 'No lessons available', T.empty); return; }
+    var jl = el('button','jump-list', id === 'bx' ? 'All breakdowns' : 'All lessons'); jl.type = 'button';
+    jl.addEventListener('click', function(){ var g = document.getElementById(id + '-groups'); var sd = g && g.closest('.side'); if (sd) sd.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block:'start' }); });
+    pane.appendChild(jl);
     pane.appendChild(el('span','kick',cur.kicker));
     pane.appendChild(el('h3',null,cur.fullTitle || cur.title));
     var nt = cur.lesson && cur.lesson.notice;
@@ -2080,11 +2171,13 @@ img,video{-webkit-user-drag:none;user-drag:none}
       bRate.addEventListener('click', function(){ setSpeed(SPEED === 1 ? 1.5 : 1); bRate.textContent = speedLabel(); if (yt && yt.setPlaybackRate) yt.setPlaybackRate(SPEED); });
       holder.appendChild(yclick); holder.appendChild(ycover); holder.appendChild(ctl); pl.appendChild(holder); pl.classList.add('has-yt');
       var fmtT = function(t){ t = Math.max(0, Math.floor(t || 0)); var h = Math.floor(t/3600), m = Math.floor(t/60) % 60, x = t % 60; return (h ? h + ':' + String(m).padStart(2,'0') : m) + ':' + String(x).padStart(2,'0'); };
-      var toggle = function(){ if (!yt || !yt.getPlayerState) return; if (yplaying) yt.pauseVideo(); else yt.playVideo(); };
-      ycover.addEventListener('click', toggle); yclick.addEventListener('click', toggle); bPlay.addEventListener('click', toggle);
+      var toggle = function(){ if (!yt || !yt.getPlayerState) return; if (yplaying) yt.pauseVideo(); else { yt.playVideo(); ytTapFallback(holder, function(){ return yplaying; }); } };
+      ycover.addEventListener('click', toggle); bPlay.addEventListener('click', toggle);
+      yclick.addEventListener('click', function(){ if (TOUCHY && yplaying && !holder.classList.contains('show-ctl')){ ctlShow(holder); return; } toggle(); });
+      ctl.addEventListener('click', function(){ if (TOUCHY) ctlShow(holder); });
       yclick.addEventListener('dblclick', function(){ bFull.click(); });
       bMute.addEventListener('click', function(){ if (!yt) return; if (yt.isMuted()){ yt.unMute(); bMute.innerHTML = ICON.vol; } else { yt.mute(); bMute.innerHTML = ICON.mute; } });
-      bFull.addEventListener('click', function(){ if (document.fullscreenElement) document.exitFullscreen(); else if (pl.requestFullscreen) pl.requestFullscreen().catch(function(){}); });
+      bFull.addEventListener('click', function(){ fsToggle(pl); });
       bar.addEventListener('click', function(e){
         if (!yt || !ydur) return; var r = bar.getBoundingClientRect(), to = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * ydur;
         if (!free && !doneSet[cur.key] && to > yst.max + 1){ toast('No skipping ahead on your first watch.'); to = yst.max; }
@@ -2103,7 +2196,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
             onStateChange: function(e){
               var was = yplaying; yplaying = e.data === 1 || e.data === 3;
               if (was !== yplaying) HOLD.video = Math.max(0, HOLD.video + (yplaying ? 1 : -1));
-              holder.classList.toggle('playing', yplaying);
+              holder.classList.toggle('playing', yplaying); if (yplaying) ytStarted(holder);
               bPlay.innerHTML = yplaying ? ICON.pause : ICON.play; bPlay.setAttribute('aria-label', yplaying ? 'Pause' : 'Play');
               if (e.data === 0){   // ended
                 var d = yt.getDuration(); yst.pos = 0; saveWatch();
@@ -2114,7 +2207,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
               box.appendChild(el('span',null,'This video won\'t play here. In YouTube Studio, set it to Unlisted (not Private) and turn on "Allow embedding".')); pl.appendChild(box); }
           } });
         var tick = setInterval(function(){
-          if (!holder.isConnected){ clearInterval(tick); if (yplaying) HOLD.video = Math.max(0, HOLD.video - 1); ytPlayers = ytPlayers.filter(function(x){ return x !== yt; }); return; }
+          if (!holder.isConnected){ clearInterval(tick); pfsOff(pl); if (yplaying) HOLD.video = Math.max(0, HOLD.video - 1); ytPlayers = ytPlayers.filter(function(x){ return x !== yt; }); return; }
           if (yt.getPlaybackRate && yt.getPlaybackRate() !== SPEED){ try { yt.setPlaybackRate(SPEED); } catch(e) {} }
           if (!yt.getCurrentTime || !yt.getDuration) return;
           var t = yt.getCurrentTime() || 0, d = yt.getDuration() || 0; ydur = d || ydur;
@@ -2233,7 +2326,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     drawFiles(); fileBox.appendChild(chipsHost);
     if (!locked){
       var pickL = el('label','btn-s up-file', bd ? '+ Upload mark-up screenshots' : '+ Upload files'), fi = el('input'); fi.type = 'file'; fi.multiple = true; fi.accept = FILE_TYPES; pickL.appendChild(fi);
-      var upNote = el('small','adm-note','Images or PDFs from your computer, up to 25 MB each.');
+      var upNote = el('small','adm-note','Photos, screenshots or PDFs from your phone or computer, up to 25 MB each.');
       fi.addEventListener('change', function(){
         var list = Array.prototype.slice.call(fi.files || []).slice(0, Math.max(0, 8 - files.length)); fi.value = '';
         list.forEach(function(f){
@@ -2245,7 +2338,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
             .then(function(r){ files.push(r); saveDraft(); drawFiles(); })
             .then(function(r){ say(''); return r; })
             .catch(function(e){ say('Upload failed (' + f.name + '): ' + String((e && e.message) || e).replace(/^Vercel Blob:\s*/,'')); })
-            .then(function(){ busy--; if (!busy){ upNote.textContent = 'Images or PDFs from your computer, up to 25 MB each.'; go.disabled = locked || !watched || !!PREVIEW; } });
+            .then(function(){ busy--; if (!busy){ upNote.textContent = 'Photos, screenshots or PDFs from your phone or computer, up to 25 MB each.'; go.disabled = locked || !watched || !!PREVIEW; } });
         });
       });
       fileBox.appendChild(pickL); fileBox.appendChild(upNote);
@@ -2451,6 +2544,32 @@ img,video{-webkit-user-drag:none;user-drag:none}
     }); });
     return out;
   }
+  /* ---------- video helpers for phones and tablets ---------- */
+  var TOUCHY = window.matchMedia('(hover: none)').matches || window.matchMedia('(pointer: coarse)').matches;
+  // Phones only start a YouTube video when the tap lands on YouTube's own player. If our play button didn't start it,
+  // let the next tap go straight through to the video; our controls take over again once it's playing.
+  function ytTapFallback(holder, isPlaying){
+    if (!TOUCHY || holder.classList.contains('started')) return;
+    setTimeout(function(){ if (!isPlaying() && holder.isConnected && !holder.classList.contains('started')){ holder.classList.add('tap-through'); toast('Tap the video once more to start it.'); } }, 1200);
+  }
+  function ytStarted(holder){ holder.classList.add('started'); holder.classList.remove('tap-through'); }
+  // full screen: the real thing where the browser allows it (computers, iPad), otherwise fill the screen (iPhone)
+  function fsToggle(pl){
+    var fe = document.fullscreenElement || document.webkitFullscreenElement;
+    if (fe){ var ex = document.exitFullscreen || document.webkitExitFullscreen; if (ex) try { var r0 = ex.call(document); if (r0 && r0.catch) r0.catch(function(){}); } catch(e) {} return; }
+    if (pl.classList.contains('pfs')){ pfsOff(pl); return; }
+    var req = pl.requestFullscreen || pl.webkitRequestFullscreen;
+    if (req){ try { var r = req.call(pl); if (r && r.catch) r.catch(function(){ pfsOn(pl); }); return; } catch(e) {} }
+    pfsOn(pl);
+  }
+  function pfsOn(pl){ pl.classList.add('pfs'); document.documentElement.classList.add('pfs-open');
+    if (window.innerHeight > window.innerWidth) toast('Turn your phone sideways for a bigger picture.'); }
+  function pfsOff(pl){ if (pl) pl.classList.remove('pfs'); if (!document.querySelector('.player.pfs')) document.documentElement.classList.remove('pfs-open'); }
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape'){ var p = document.querySelector('.player.pfs'); if (p) pfsOff(p); } });
+  setInterval(function(){ if (document.documentElement.classList.contains('pfs-open') && !document.querySelector('.player.pfs')) pfsOff(null); }, 1500);
+  // on touch, the first tap on a playing video shows the controls; the next one pauses
+  function ctlShow(holder){ holder.classList.add('show-ctl'); clearTimeout(holder._ct); holder._ct = setTimeout(function(){ holder.classList.remove('show-ctl'); }, 3200); }
+
   // a simple player for rewatching (no completion tracking here: that happens in Lectures)
   function miniPlayer(src){
     var pl = el('div','player');
@@ -2459,14 +2578,14 @@ img,video{-webkit-user-drag:none;user-drag:none}
       var cover = el('button','yt-cover'); cover.type = 'button'; cover.setAttribute('aria-label','Play video'); cover.innerHTML = playSvg;
       var click = el('div','yt-click'), bar = el('div','vm-bar'), fill = el('i'); bar.appendChild(fill);
       holder.appendChild(click); holder.appendChild(cover); holder.appendChild(bar); pl.appendChild(holder); pl.classList.add('has-yt');
-      var yt = null, playing = false, tog = function(){ if (!yt || !yt.getPlayerState) return; if (playing) yt.pauseVideo(); else yt.playVideo(); };
+      var yt = null, playing = false, tog = function(){ if (!yt || !yt.getPlayerState) return; if (playing) yt.pauseVideo(); else { yt.playVideo(); ytTapFallback(holder, function(){ return playing; }); } };
       cover.addEventListener('click', tog); click.addEventListener('click', tog);
       bar.addEventListener('click', function(e){ if (!yt || !yt.getDuration) return; var r = bar.getBoundingClientRect(); yt.seekTo(Math.max(0, (e.clientX - r.left) / r.width) * yt.getDuration(), true); });
       loadYT().then(function(YT){
         if (!h2.isConnected) return;
         yt = new YT.Player(h2, { videoId: ytId(src), width:'100%', height:'100%',
           playerVars: { controls:0, disablekb:1, fs:0, rel:0, modestbranding:1, playsinline:1, iv_load_policy:3, origin: location.origin },
-          events: { onReady: function(){ ytPlayers.push(yt); }, onStateChange: function(e){ playing = e.data === 1 || e.data === 3; holder.classList.toggle('playing', playing); } } });
+          events: { onReady: function(){ ytPlayers.push(yt); }, onStateChange: function(e){ playing = e.data === 1 || e.data === 3; holder.classList.toggle('playing', playing); if (playing) ytStarted(holder); } } });
         var t = setInterval(function(){ if (!holder.isConnected){ clearInterval(t); ytPlayers = ytPlayers.filter(function(x){ return x !== yt; }); try { yt.destroy(); } catch(e) {} return; }
           if (yt.getCurrentTime && yt.getDuration && yt.getDuration()) fill.style.width = (yt.getCurrentTime() / yt.getDuration() * 100) + '%'; }, 500);
       }).catch(function(){ var bx = el('div','perr'); bx.appendChild(el('b',null,'Video unavailable')); pl.appendChild(bx); });
@@ -3707,6 +3826,10 @@ img,video{-webkit-user-drag:none;user-drag:none}
   }
   // Upload a file from the browser straight to Vercel Blob. Resolves to { url, name, type, size }.
   function uploadFile(f, pathname, onProgress){
+    UPL++; var done = function(){ UPL = Math.max(0, UPL - 1); };
+    var pr = uploadFile0(f, pathname, onProgress); pr.then(done, done); return pr;
+  }
+  function uploadFile0(f, pathname, onProgress){
     if (DEMO_MODE) return Promise.resolve({ url: URL.createObjectURL(f), name: f.name, type: f.type, size: f.size });
     return fetch('/api/upload', { credentials:'same-origin' })
       .then(function(r){ return r.json().catch(function(){ return { ready:false, reason:'Upload route answered ' + r.status + '.' }; }); })
@@ -4749,7 +4872,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
         clearTimeout(m._ent); m._ent = setTimeout(function(){ m.classList.remove('entering'); }, 900); }
     });
     document.querySelectorAll('.tab').forEach(function(t){ if (t.getAttribute('data-tab')===v) t.setAttribute('aria-current','page'); else t.removeAttribute('aria-current'); });
-    moveInk();
+    moveInk(); tabsIntoView();
   }
   window.addEventListener('hashchange', function(){ if (!portV.hidden){ showView(); window.scrollTo(0,0); } });
   // the glowing line under the current tab slides between tabs
@@ -4759,6 +4882,12 @@ img,video{-webkit-user-drag:none;user-drag:none}
     ink.style.width = t.offsetWidth + 'px'; ink.style.transform = 'translateX(' + t.offsetLeft + 'px)';
   }
   window.addEventListener('resize', moveInk);
+  // on narrow screens the tabs scroll sideways: centre the current one and fade whichever edge has more tabs
+  function tabFade(){ var tb = document.querySelector('.tabs'); if (!tb) return; tb.classList.toggle('fl', tb.scrollLeft > 4); tb.classList.toggle('fr', tb.scrollLeft + tb.clientWidth < tb.scrollWidth - 4); }
+  function tabsIntoView(){ var tb = document.querySelector('.tabs'), t = document.querySelector('.tab[aria-current="page"]'); if (!tb || !t) return;
+    if (tb.scrollWidth > tb.clientWidth + 4) tb.scrollTo({ left: Math.max(0, t.offsetLeft - (tb.clientWidth - t.offsetWidth) / 2), behavior: reduce ? 'auto' : 'smooth' });
+    setTimeout(tabFade, 400); }
+  (function(){ var tb = document.querySelector('.tabs'); if (tb){ tb.addEventListener('scroll', function(){ tabFade(); moveInk(); }, { passive:true }); window.addEventListener('resize', tabFade); setTimeout(tabFade, 600); } })();
   // the market session right now (New York time), shown in the top bar
   function paintSession(){
     var box = document.getElementById('sess'); if (!box) return;

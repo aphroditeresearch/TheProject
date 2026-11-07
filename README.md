@@ -399,3 +399,30 @@ in a new tab, and Ctrl/Cmd-click does too. PDFs show an "Open PDF" button in the
   works best), like a personal TradeZella dashboard. Nobody can see another student's stats.
 - **Admins, Stats tab:** everything: everyone combined, any single student, yourself, the By student table, all the
   breakdowns, and Export to Excel. When you preview the site "As Awakened" etc., you see the student version.
+
+## Phones and tablets
+Tested at phone (390px) and iPad (820px) widths, signed in as a member and as an admin. Nothing scrolls sideways.
+- **Videos:** phones only start a YouTube video when the tap lands on YouTube's own player. If the play button doesn't
+  start it, the next tap goes straight to the video ("Tap the video once more to start it"), and the site's controls
+  take over once it plays. While a video plays, one tap shows the controls and the next pauses. Full screen fills the
+  screen on iPhone, which can't do real full screen for a page. The player also stays usable when the phone is sideways.
+- **Protections that misfired on touch:**
+  - A long-press no longer counts as a right-click (no alarm, warning or flag).
+  - The developer-tools size check is skipped on phones and tablets (the keyboard and pinch-zoom tripped it).
+  - Opening the photo picker to add screenshots doesn't trigger the "Paused" cover.
+  - The two overlays that both had `id="shield"` are now `#shield` (developer tools) and `#pshield` (focus cover).
+- **Layout:**
+  - The tab bar scrolls sideways with faded edges, and the current tab is kept in view.
+  - The homework pop-up is a slim bar at the bottom.
+  - Text boxes use 16px text so iPhones don't zoom in when you tap them.
+  - Lectures and Breakdowns have an "All lessons" / "All breakdowns" button to jump to the list.
+  - Journal → Stats no longer runs off the side.
+  - Bigger touch targets on the video controls.
+- The phone and tablet rules are in the `phones & tablets` block at the end of the main stylesheet in `index.html`.
+
+## Approving a hand-in unlocks the next one automatically
+Admin → Hand-ins → "When does the next lesson unlock?" → **After I approve**. Approving a hand-in unlocks the next lesson
+or breakdown on the server straight away, with nothing to unlock by hand. A student who has the site open sees it within
+about 45 seconds (or as soon as they come back to the tab), with a message like "✓ Approved: Lesson name. The next one is
+unlocked." Sending a hand-in back shows them a message too. The page waits to update if they're watching a video, typing,
+or uploading, so nothing they're doing is interrupted. The code is `pollUnlocks()` in `index.html`.
