@@ -314,7 +314,33 @@ function allKeys(content) {
   return keys;
 }
 
+// Journaling streak: weekdays (Mon–Fri) in a row with at least one entry that wasn't denied, using New York dates.
+// Today isn't "missed" until it's over; weekends neither count nor break a streak. index.html has the same logic.
+function nyToday() { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date()); }
+function prevWeekday(ymd) { const d = new Date(ymd + 'T12:00:00Z'); do { d.setUTCDate(d.getUTCDate() - 1); } while (d.getUTCDay() === 0 || d.getUTCDay() === 6); return d.toISOString().slice(0, 10); }
+function streakOf(entries, today) {
+  const days = {};
+  (entries || []).forEach((e) => { if (e && /^\d{4}-\d{2}-\d{2}$/.test(e.date || '') && entryStatus(e) !== 'denied') days[e.date] = 1; });
+  let d = today || nyToday(); const wd = new Date(d + 'T12:00:00Z').getUTCDay();
+  if (wd === 0 || wd === 6 || !days[d]) d = prevWeekday(d);
+  let current = 0; while (days[d]) { current++; d = prevWeekday(d); }
+  let best = 0, run = 0, prev = null;
+  Object.keys(days).filter((x) => { const w = new Date(x + 'T12:00:00Z').getUTCDay(); return w > 0 && w < 6; }).sort()
+    .forEach((x) => { run = prev && prevWeekday(x) === prev ? run + 1 : 1; best = Math.max(best, run); prev = x; });
+  return { current, best: Math.max(best, current) };
+}
+
+// The last time a member did real work: a journal entry, a hand-in, or a lecture marked complete. index.html has the same logic.
+function lastWorkOf(subs, entries, progress) {
+  let last = '';
+  Object.values(subs || {}).forEach((x) => { if (x && x.submittedAt && x.submittedAt > last) last = x.submittedAt; });
+  Object.values(entries || {}).forEach((e) => { const t = (e && (e.createdAt || (e.date ? e.date + 'T12:00:00Z' : ''))) || ''; if (t > last) last = t; });
+  Object.values(progress || {}).forEach((t) => { if (typeof t === 'string' && t > last) last = t; });
+  return last;
+}
+
 module.exports = {
+  streakOf, nyToday, lastWorkOf,
   ROLES, contentWithDefaults,
   loadSubs, saveSub, deleteSub, loadOverrides, setOverride, loadPromo, savePromo, loadCerts, saveCert, deleteCert,
   unitsOf, passes, chapterRoles, roleLevel, promotionStep, levelFor, accessFor,

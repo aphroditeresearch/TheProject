@@ -135,6 +135,15 @@ async function kv(command) {
   return (await r.json()).result;
 }
 
+// Raw Redis access for backups: several commands in one request, keys passed exactly as given (no prefix added).
+async function kvPipeline(commands) {
+  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+  const r = await fetch(url.replace(/\/$/, '') + '/pipeline', { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify(commands) });
+  if (!r.ok) throw new Error('KV error ' + r.status);
+  return (await r.json()).map((x) => { if (x && x.error) throw new Error(x.error); return x && x.result; });
+}
+
 async function loadProgress(userId) {
   if (!kvConfigured()) return {};
   const flat = await kv(['HGETALL', 'progress:' + userId]);
@@ -238,7 +247,7 @@ function guard(handler, kind) {
 module.exports = {
   guard,
   DISCORD_API, SESSION_COOKIE, STATE_COOKIE, ROLE_REFRESH_MS, SESSION_DAYS,
-  env, parseCookies, cookie, clearCookie, sign, verify, readSession, writeSession,
+  env, parseCookies, cookie, clearCookie, sign, verify, readSession, writeSession, kvPipeline, KEY_PREFIX,
   redirectUri, discord, profileFrom, kvConfigured, kv, loadProgress, saveProgress, redirect, json,
   adminIds, isAdmin, recordMember, listMembers, CHAPTER_ROLES, loadContent, saveContent, clientIp, loadFlags,
 };

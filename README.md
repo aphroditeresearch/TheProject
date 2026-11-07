@@ -447,3 +447,47 @@ or uploading, so nothing they're doing is interrupted. The code is `pollUnlocks(
 - On phones and tablets the Japanese wordmark sits on its own line above PROJECT instead of overlapping it.
 - Hand-ins, breakdown mark-ups, and journal entries (trade and no-trade) take up to **12** screenshots or files each
   (`MAX_FILES` in `index.html` and `api/member.js`). If a student picks more, they're told how many weren't added.
+
+## Backups
+Admin → **Backups**.
+- **Download backup now:** one JSON file with everything in the database (members, progress, hand-ins, journals, points,
+  payouts, certificates, feedback, content, settings, snippets). Screenshots and videos stay in Blob storage; the backup
+  keeps their links.
+- **Daily automatic backup:** Vercel Cron (`vercel.json`) calls `/api/admin/members?cron=backup` every night at 08:00 UTC
+  (2–3am Chicago time). A gzip of the same file is posted to a private Discord channel, outside Vercel and Upstash, so it
+  survives a problem with either. To set it up:
+  1. In Discord, make a private channel only admins can see.
+  2. Channel settings → Integrations → Webhooks → New Webhook → copy the URL.
+  3. In Vercel, add `DISCORD_BACKUP_WEBHOOK` (the webhook URL) and `CRON_SECRET` (any long random text).
+  4. Redeploy, then press "Send a backup to Discord now" to test it.
+
+  The Backups screen shows when the last one ran, and any error.
+- **Restore:** pick a `.json` (from the download button) or `.json.gz` (from Discord) and type RESTORE. A backup of the site
+  as it is now downloads first, so a restore can be undone.
+  - **"Only add what's missing"** puts back deleted records and deleted entries inside them, e.g. one journal entry or
+    one hand-in, without changing anything that exists.
+  - **"Replace with the backup's version"** overwrites the records in the file.
+
+  Keys that aren't in the file are never touched.
+
+## Streaks, weekly recap, quiet students
+- **Journaling streak:** weekdays in a row with at least one entry that wasn't denied (trade or no-trade), using New York
+  dates. Today isn't missed until it's over, and weekends neither count nor break it. It shows at the top of the
+  member's Journal and as 🔥 N on the leaderboard (2+ days). The logic is `streakOf()` in `api/_gate.js` and `index.html`.
+- **Week in review:** a Journal sidebar card (This week / Last week) with W / L / no-trade, win rate, P&L (Funded and
+  Evaluation only), rules followed, best setup, most common mistake, and one thing to focus on. Every Monday the bell
+  gets "Your week in review".
+- **Quiet students (admins):** Admin → Members starts with students who haven't journaled, handed in or finished a
+  lecture in 3, 5, 7 or 14+ days, with what they last did. "Copy message" copies a friendly check-in DM. The admin bell
+  and the Members tab show how many have been quiet for 5+ days.
+
+## Saved feedback snippets & student report (admins)
+- **Snippets:** every review box (hand-ins, journal entries, the walkthrough) has one-tap feedback lines underneath.
+  Tapping one adds it to the comment. "Edit snippets" changes the list for every admin (stored in the `snippets` key).
+- **Report:** Admin → Members → Report (also on the quiet list). One screen for a 1:1 call:
+  - streak and last work
+  - trading summary (this week / 30 / 90 days / all time)
+  - this week and last week
+  - course progress and hand-ins waiting
+  - the last 10 journal entries, with screenshots
+  - every piece of written feedback you've given them

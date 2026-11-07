@@ -15,7 +15,7 @@
 // Files are uploaded straight from the browser to Vercel Blob first (see /api/upload), into members/<their id>/…
 const crypto = require('crypto');
 const { readSession, isAdmin, kvConfigured, loadProgress, json, kv, clientIp } = require('./_lib');
-const { logActivity, gateFor, saveSub, findItem, loadCerts, saveCert, deleteCert, loadPromo, savePromo, loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints, entryStatus, basePoints } = require('./_gate');
+const { logActivity, gateFor, saveSub, findItem, loadCerts, saveCert, deleteCert, loadPromo, savePromo, loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints, entryStatus, basePoints, streakOf } = require('./_gate');
 const { listMembers } = require('./_lib');
 const { signAll, cleanFile } = require('./_blob');
 
@@ -31,12 +31,13 @@ async function leaderboard(period, me) {
   const rows = [];
   await Promise.all(members.map(async (m) => {
     const j = await loadJournal(m.id); if (!j) return;
-    const ents = Object.values(await loadEntries(m.id)).filter((e) => e.date >= from && entryStatus(e) === 'approved');   // only entries an admin approved
+    const all = Object.values(await loadEntries(m.id));
+    const ents = all.filter((e) => e.date >= from && entryStatus(e) === 'approved');   // only entries an admin approved
     const points = ents.reduce((t, e) => t + entryPoints(e), 0);
     const trades = ents.filter((e) => e.kind === 'trade');
     rows.push({ id: m.id, name: m.displayName || m.username, username: m.username, avatar: m.avatar || null, points,
       entries: ents.length, followedPct: ents.length ? Math.round(ents.filter((e) => e.followed).length / ents.length * 100) : 0,
-      tps: trades.filter((e) => e.outcome === 'tp').length, trades: trades.length, me: m.id === me });
+      tps: trades.filter((e) => e.outcome === 'tp').length, trades: trades.length, me: m.id === me, streak: streakOf(all).current });
   }));
   rows.sort((a, b) => b.points - a.points || b.followedPct - a.followedPct || a.name.localeCompare(b.name));
   rows.forEach((r, i) => { r.rank = i + 1; });

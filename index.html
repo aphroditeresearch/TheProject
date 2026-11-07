@@ -1089,6 +1089,46 @@ img,video{-webkit-user-drag:none;user-drag:none}
   .stamp.on{animation:none;opacity:.92;transform:translate(-50%,-50%) rotate(-13deg)}
 }
 
+/* backups */
+.bk .adm-card{margin-bottom:16px}.bk-ok{color:var(--win)}.bk-warn{color:#E8B07A}
+.bk-steps{margin:8px 0 12px;padding-left:20px;line-height:1.6;color:var(--ink)}.bk-steps li{margin:4px 0}
+.bk-info{display:flex;flex-direction:column;gap:10px;margin-top:12px;max-width:560px}.bk-info p{margin:0}
+.btn-s.danger{border-color:rgba(232,120,96,.6);color:#F4C2B3}.btn-s.danger:hover{background:rgba(232,120,96,.15)}
+/* streak + week in review */
+.jr-streak{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
+.jr-streak.hot{border-color:rgba(255,170,90,.45);background:linear-gradient(135deg,rgba(255,140,60,.10),rgba(255,140,60,0) 60%)}
+.js-big{display:flex;align-items:baseline;gap:8px}.js-big b{font:900 30px/1 var(--display);font-style:italic}.js-big span{font-size:13px;color:var(--muted)}
+.jr-streak small{font-size:12px;color:var(--muted)}
+.jr-recap{display:flex;flex-direction:column;gap:10px;padding-top:14px;border-top:1px solid var(--line)}
+.jrr-h{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.jrr-h .seg-b{min-height:30px;padding:0 10px;font-size:12px}
+.jrr-d{font-size:12px;color:var(--muted)}
+.jrr-r{display:flex;flex-direction:column;gap:6px}.jrr-r .rt-bar{width:100%;height:10px}.jrr-r span{font-size:13px;font-weight:600}
+.jrr-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.jrr-g div{display:flex;flex-direction:column;gap:2px}.jrr-g b{font-size:16px}.jrr-g span{font-size:11px;color:var(--muted)}
+.jrr-g .win b{color:var(--win)}.jrr-g .loss b{color:var(--loss)}
+.jrr-l{margin:0;font-size:13px}.jrr-l.dim{color:var(--muted);font-size:12px}
+.jrr-f{margin:0;font-size:13px;padding:10px 12px;background:rgba(28,232,190,.06);border-left:2px solid var(--kana-c)}.jrr-f b{color:var(--kana-c)}
+.lb-fire{margin-left:8px;font-size:12px;font-weight:700;color:#FFB070;white-space:nowrap}
+.ntf-ic.k-recap{color:#FFD27A}
+/* snippets + report */
+.snips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 10px}
+.snip{border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--ink);font:500 12px var(--sans);padding:6px 10px;cursor:pointer;text-align:left;max-width:100%}
+.snip:hover{border-color:var(--kana-c);background:rgba(28,232,190,.08)}
+.snip-ed{font-size:12px}.snips textarea{width:100%}.snips-ed{display:flex;gap:12px;align-items:center}
+.rpt-scrim{position:fixed;inset:0;z-index:240;background:rgba(1,5,7,.88);overflow:auto;padding:24px 16px}
+.rpt{position:relative;max-width:980px;margin:0 auto;background:var(--panel);border:1px solid var(--line);padding:28px;display:flex;flex-direction:column;gap:18px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.rpt-x{position:absolute;top:14px;right:14px;font-size:22px;line-height:1}
+.rpt-h{display:flex;gap:16px;align-items:center}.rpt-h .av{width:64px;height:64px;font-size:24px}.rpt-h h2{margin:0;font-size:28px}.rpt-h p{margin:4px 0 0}
+.rpt-chips{display:flex;flex-wrap:wrap;gap:8px}.rpt-chip{font-size:12px;padding:5px 10px;border:1px solid var(--line);background:rgba(255,255,255,.03)}.rpt-chip.bad{border-color:rgba(232,120,96,.5);color:#F4C2B3}
+.rpt-s{border-top:1px solid var(--line);padding-top:16px}.rpt-s h3{margin:0 0 10px;font-size:16px}
+.rpt-sh{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}.rpt-sh h3{margin:0}
+.rpt-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.rpt-wk{border:1px solid var(--line);padding:12px 14px}.rpt-wk h4{margin:0 0 6px;font-size:14px}.rpt-wk p{margin:4px 0}
+.rpt-focus{font-size:13px;color:var(--kana-c)}
+.rpt-t td{font-size:13px}.rpt-t td.win{color:var(--win)}.rpt-t td.loss{color:var(--loss)}
+.rpt-fb{padding:10px 0;border-bottom:1px solid var(--line)}.rpt-fb small{margin-left:10px;color:var(--muted);font-size:12px}.rpt-fb p{margin:4px 0 0;font-size:14px}
+@media (max-width:700px){.rpt{padding:20px 14px}.rpt-2{grid-template-columns:1fr}.rpt-h h2{font-size:22px}}
+/* quiet students */
+.quiet{margin-bottom:18px}.quiet-t td.warn{color:#E8B07A}.quiet-t td.loss{color:var(--loss)}
+.quiet-act,.mem-act{white-space:nowrap}.quiet-act .lnk+.lnk,.mem-act .lnk+.lnk{margin-left:12px}
 /* member feedback */
 .ntf-ic.k-ok{color:var(--win)}.ntf-ic.k-back{color:#E8B07A}
 .ntf-t .fb-line{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-line}
@@ -1337,7 +1377,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         <button type="button" data-sec="journal" aria-pressed="false">Journal<span class="nb" data-w="journal" hidden></span></button>
         <button type="button" data-sec="payouts" aria-pressed="false">Payouts<span class="nb" data-w="payouts" hidden></span></button>
         <button type="button" data-sec="progress" aria-pressed="false">Progress</button>
-        <button type="button" data-sec="members" aria-pressed="false">Members</button>
+        <button type="button" data-sec="members" aria-pressed="false">Members<span class="nb" data-w="quiet" hidden></span></button>
+        <button type="button" data-sec="backups" aria-pressed="false">Backups</button>
       </nav>
       <div id="adm-body"></div>
     </main>
@@ -2865,6 +2906,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       host.appendChild(c); return;
     }
     var grid = el('div','jr-grid'), side = el('aside','jr-side'), main = el('div','jr-main');
+    side.appendChild(streakCard(ME.entries || []));
     // rules, always next to the form
     side.appendChild(el('h4',null,'Your rules'));
     if (JR.editing) side.appendChild(rulesEditor(ME.journal.rules, function(rules){ return memberPost({ action:'journal-rules', rules:rules }).then(function(){ JR.editing = false; toast('Rules updated.'); return loadMe(); }).then(function(){ drawJournal(host); }); }, 'Save rules'));
@@ -2880,6 +2922,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
      ['Net P&L', trades.length ? money(trades.reduce(function(t, e){ return t + (+e.pnl || 0); }, 0)) : '—']].forEach(function(x){
       var d = el('div'); d.appendChild(el('b',null,String(x[1]))); d.appendChild(el('span',null,x[0])); st.appendChild(d); });
     side.appendChild(st);
+    side.appendChild(recapCard(ents, host));
     var pend = ents.filter(function(e){ return entryStatus(e) === 'pending'; }).length;
     if (pend) side.appendChild(el('p','jr-pend', pend + (pend === 1 ? ' entry is' : ' entries are') + ' waiting for an admin to approve ' + (pend === 1 ? 'it' : 'them') + ' for the leaderboard.'));
     var vs = el('div','jr-view'); vs.appendChild(seg([['cal','Calendar'],['stats','Stats'],['new','+ New entry']], JR.view, function(v){ JR.view = v; drawJournal(host); }));
@@ -3627,7 +3670,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         var row = el('div','lb-row' + (r.me ? ' me' : '') + (r.rank <= 3 ? ' top' + r.rank : '')); row.style.setProperty('--i', r.rank - 1);
         row.appendChild(el('span','lb-rank', '#' + r.rank));
         var av = el('span','av'); setAvatar(av, { avatar:r.avatar, displayName:r.name, username:r.username, id:r.id }); row.appendChild(av);
-        var nm = el('div','lb-nm'); nm.appendChild(el('b',null, r.name + (r.me ? ' (you)' : ''))); nm.appendChild(el('small',null, r.entries + (r.entries === 1 ? ' entry' : ' entries') + ' · rules followed ' + r.followedPct + '%')); row.appendChild(nm);
+        var nm = el('div','lb-nm'), nb2 = el('b',null, r.name + (r.me ? ' (you)' : '')); if (r.streak >= 2){ var fl = el('span','lb-fire', '🔥 ' + r.streak); fl.title = r.streak + ' weekdays in a row journaled'; nb2.appendChild(fl); } nm.appendChild(nb2); nm.appendChild(el('small',null, r.entries + (r.entries === 1 ? ' entry' : ' entries') + ' · rules followed ' + r.followedPct + '%')); row.appendChild(nm);
         var pts = el('span','lb-pts', (reduce ? r.points : 0) + ' pts'); row.appendChild(pts);
         if (!reduce && r.points){ (function(pts, n){ var t0 = null; function st(ts){ if (!t0) t0 = ts; var k = Math.min(1, (ts - t0) / 700); pts.textContent = Math.round(n * (1 - Math.pow(1 - k, 3))) + ' pts'; if (k < 1) requestAnimationFrame(st); } requestAnimationFrame(st); })(pts, r.points); }
         list.appendChild(row);
@@ -3649,7 +3692,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         var row = el('div','lb-row pay' + (r.me ? ' me' : '') + (r.rank <= 3 ? ' top' + r.rank : '')); row.style.setProperty('--i', r.rank - 1);
         row.appendChild(el('span','lb-rank', '#' + r.rank));
         var av = el('span','av'); setAvatar(av, { avatar:r.avatar, displayName:r.name, username:r.username, id:r.id }); row.appendChild(av);
-        var nm = el('div','lb-nm'); nm.appendChild(el('b',null, r.name + (r.me ? ' (you)' : ''))); nm.appendChild(el('small',null, r.payouts + (r.payouts === 1 ? ' payout' : ' payouts') + (r.lastAt ? ' · latest ' + fmtDay(r.lastAt) : ''))); row.appendChild(nm);
+        var nm = el('div','lb-nm');  nm.appendChild(el('b',null, r.name + (r.me ? ' (you)' : ''))); nm.appendChild(el('small',null, r.payouts + (r.payouts === 1 ? ' payout' : ' payouts') + (r.lastAt ? ' · latest ' + fmtDay(r.lastAt) : ''))); row.appendChild(nm);
         var amt = el('span','lb-pts', money(reduce ? r.total : 0)); row.appendChild(amt);
         if (!reduce && r.total){ (function(n){ var t0 = null; function st(ts){ if (!t0) t0 = ts; var k = Math.min(1, (ts - t0) / 800); amt.textContent = money(Math.round(n * (1 - Math.pow(1 - k, 3)))); if (k < 1) requestAnimationFrame(st); else amt.textContent = money(n); } requestAnimationFrame(st); })(r.total); }
         list.appendChild(row);
@@ -3735,7 +3778,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var mr = el('button','lnk','Mark all read'); mr.type = 'button'; mr.addEventListener('click', function(){ markNtfSeen(); paintNtf(); }); h.appendChild(mr); }
     box.appendChild(h);
     var w = el('div','ntf-w'), W = NTF.waiting || {};
-    [['handins','review', (W.handins || 0) + ((W.handins || 0) === 1 ? ' hand-in' : ' hand-ins') + ' waiting'], ['promotions','review', (W.promotions || 0) + ((W.promotions || 0) === 1 ? ' promotion request' : ' promotion requests')], ['journal','journal', (W.journal || 0) + ((W.journal || 0) === 1 ? ' journal entry' : ' journal entries')], ['payouts','payouts', (W.payouts || 0) + ((W.payouts || 0) === 1 ? ' payout' : ' payouts')]].forEach(function(o){
+    [['handins','review', (W.handins || 0) + ((W.handins || 0) === 1 ? ' hand-in' : ' hand-ins') + ' waiting'], ['promotions','review', (W.promotions || 0) + ((W.promotions || 0) === 1 ? ' promotion request' : ' promotion requests')], ['journal','journal', (W.journal || 0) + ((W.journal || 0) === 1 ? ' journal entry' : ' journal entries')], ['payouts','payouts', (W.payouts || 0) + ((W.payouts || 0) === 1 ? ' payout' : ' payouts')], ['quiet','members', (W.quiet || 0) + ((W.quiet || 0) === 1 ? ' student quiet 5+ days' : ' students quiet 5+ days')]].forEach(function(o){
       if (o[0] === 'promotions' && !W.promotions) return;
       var b = el('button', W[o[0]] ? 'has' : '', o[2]); b.type = 'button'; b.addEventListener('click', function(){ closeNtf(); if (o[1] === 'review'){ RV.member = null; RV.status = 'waiting'; } if (o[1] === 'journal'){ JRV.mode = 'list'; JRV.status = 'pending'; } if (o[1] === 'payouts') PRV.status = 'pending'; adm.sec = o[1]; if ((location.hash || '') !== '#admin') location.hash = '#admin'; else if (adm.content) admRender(); });
       w.appendChild(b); });
@@ -3791,6 +3834,77 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   }
   document.addEventListener('visibilitychange', function(){ if (!document.hidden && SESSION && SESSION.isAdmin) pollNtf(); });
 
+
+  /* ---------- journaling streak + week in review ---------- */
+  // same rules as streakOf() in api/_gate.js: weekdays in a row with an entry (not denied), New York dates
+  function nyToday(){ try { return new Intl.DateTimeFormat('en-CA', { timeZone:'America/New_York' }).format(new Date()); } catch (e) { return todayYmd(); } }
+  function addDays(ymd, n){ var d = new Date(ymd + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+  function wday(ymd){ return new Date(ymd + 'T12:00:00Z').getUTCDay(); }
+  function prevWeekday(ymd){ var d = addDays(ymd, -1); while (wday(d) === 0 || wday(d) === 6) d = addDays(d, -1); return d; }
+  function streakOf(ents, today){
+    var days = {}; (ents || []).forEach(function(e){ if (e && /^\d{4}-\d{2}-\d{2}$/.test(e.date || '') && entryStatus(e) !== 'denied') days[e.date] = 1; });
+    var d = today || nyToday(); if (wday(d) === 0 || wday(d) === 6 || !days[d]) d = prevWeekday(d);
+    var cur = 0; while (days[d]){ cur++; d = prevWeekday(d); }
+    var best = 0, run = 0, prev = null;
+    Object.keys(days).filter(function(x){ var w = wday(x); return w > 0 && w < 6; }).sort().forEach(function(x){ run = prev && prevWeekday(x) === prev ? run + 1 : 1; best = Math.max(best, run); prev = x; });
+    var t = today || nyToday();
+    return { current: cur, best: Math.max(best, cur), today: !!days[t], weekday: wday(t) > 0 && wday(t) < 6 };
+  }
+  function mondayOf(ymd){ var w = wday(ymd); return addDays(ymd, -((w + 6) % 7)); }
+  // the Monday of the current trading week (on weekends: the week that just ended)
+  function curMonday(){ var t = nyToday(), w = wday(t); return w === 0 ? addDays(t, -6) : w === 6 ? addDays(t, -5) : mondayOf(t); }
+  // one week (Mon–Fri) of a member's journal, summed up with something to work on
+  function weekRecap(ents, mon){
+    var fri = addDays(mon, 4), inWk = (ents || []).filter(function(e){ return e.date >= mon && e.date <= fri && entryStatus(e) !== 'denied'; });
+    var trades = inWk.filter(function(e){ return e.kind === 'trade' && countsInStats(e); }), none = inWk.filter(function(e){ return e.kind !== 'trade'; });
+    var R = { mon:mon, fri:fri, entries:inWk.length, days:Object.keys(inWk.reduce(function(o, e){ o[e.date] = 1; return o; }, {})).length,
+      w:0, l:0, be:0, nt:none.length, pnl:0, trades:trades.length, followed:inWk.filter(function(e){ return e.followed; }).length, broke:inWk.filter(function(e){ return e.followed === false; }).length, paper: inWk.filter(function(e){ return e.kind === 'trade' && !countsInStats(e); }).length };
+    var models = {}, mist = {};
+    trades.forEach(function(e){ if (e.outcome === 'tp') R.w++; else if (e.outcome === 'sl') R.l++; else if (e.outcome === 'be') R.be++; R.pnl += +e.pnl || 0;
+      var m = models[e.model || 'Other'] || (models[e.model || 'Other'] = { n:0, w:0 }); m.n++; if (e.outcome === 'tp') m.w++;
+      (e.mistakes || []).forEach(function(x){ mist[x] = (mist[x] || 0) + 1; }); });
+    var bm = Object.keys(models).sort(function(a, b){ return models[b].w - models[a].w || models[b].w / models[b].n - models[a].w / models[a].n; })[0];
+    if (bm && models[bm].w) R.best = bm + ' · ' + models[bm].w + ' of ' + models[bm].n + ' won';
+    var tm = Object.keys(mist).sort(function(a, b){ return mist[b] - mist[a]; })[0]; if (tm) R.mistake = tm + (mist[tm] > 1 ? ' (' + mist[tm] + '×)' : '');
+    R.rules = R.entries ? Math.round(R.followed / R.entries * 100) : 0;
+    R.focus = !R.entries ? 'Journal every trading day, even the days you sit out. That\'s how the streak and your stats build.'
+      : R.broke ? 'Follow your rules on every trade: ' + R.broke + (R.broke === 1 ? ' entry' : ' entries') + ' broke them.'
+      : R.mistake ? 'Watch out for: ' + R.mistake + '.'
+      : R.days < 3 ? 'Journal more days. Sitting out counts too: log it as a no-trade day.'
+      : R.trades >= 3 && R.w / R.trades < 0.4 ? 'Be pickier: only take your A setups next week.'
+      : R.trades && !R.nt && R.days >= 4 ? 'You traded every day you journaled. Sitting out is a position too.'
+      : 'Solid week. Keep doing exactly this.';
+    return R;
+  }
+  function weekRange(mon){ var a = new Date(mon + 'T12:00:00'), b = new Date(addDays(mon, 4) + 'T12:00:00');
+    return a.getDate() + (a.getMonth() !== b.getMonth() ? ' ' + a.toLocaleDateString('en-GB', { month:'short' }) : '') + '–' + b.getDate() + ' ' + b.toLocaleDateString('en-GB', { month:'short' }); }
+  function streakCard(ents){
+    var S = streakOf(ents), box = el('div','jr-streak' + (S.current >= 2 ? ' hot' : ''));
+    var big = el('div','js-big'); big.appendChild(el('b',null, (S.current ? '🔥 ' : '') + S.current)); big.appendChild(el('span',null,'day journaling streak'));
+    box.appendChild(big);
+    var bestT = S.best > 1 ? ' · best ' + S.best : '';
+    box.appendChild(el('small',null, S.today ? '✓ Journaled today' + bestT : S.weekday ? (S.current ? 'Journal today to keep it going' : 'Journal today to start a streak') + bestT : 'Weekends don\'t break it' + bestT));
+    return box;
+  }
+  function recapCard(ents, host){
+    var thisMon = curMonday(), lastMon = addDays(thisMon, -7), today = nyToday();
+    if (!JR.recap){ var lw = weekRecap(ents, lastMon), tw = weekRecap(ents, thisMon); JR.recap = (wday(today) >= 1 && wday(today) <= 2 && lw.entries) || !tw.entries ? 'last' : 'this'; }
+    var R = weekRecap(ents, JR.recap === 'last' ? lastMon : thisMon), box = el('section','jr-recap'); box.id = 'jr-recap';
+    var hd = el('div','jrr-h'); hd.appendChild(el('h4',null,'Week in review'));
+    hd.appendChild(seg([['this','This week'],['last','Last week']], JR.recap, function(v){ JR.recap = v; drawJournal(host); })); box.appendChild(hd);
+    box.appendChild(el('small','jrr-d', weekRange(R.mon) + ' · ' + R.days + ' of 5 days journaled'));
+    if (!R.entries){ box.appendChild(el('p','jrr-f', R.focus)); return box; }
+    var rb = el('div','jrr-r'); rb.appendChild(ratioBar(R.w, R.l, R.be, R.nt)); rb.appendChild(el('span',null, ratioText(R.w, R.l, R.be, R.nt))); box.appendChild(rb);
+    var g = el('div','jrr-g');
+    [[R.trades ? pct(R.w, R.trades) + '%' : '–', 'Win rate'], [R.trades ? money(R.pnl) : '–', 'P&L', R.pnl > 0 ? 'win' : R.pnl < 0 ? 'loss' : ''], [R.rules + '%', 'Rules followed']].forEach(function(x){
+      var d = el('div', x[2] || ''); d.appendChild(el('b',null,x[0])); d.appendChild(el('span',null,x[1])); g.appendChild(d); });
+    box.appendChild(g);
+    if (R.best) box.appendChild(el('p','jrr-l', '★ Best setup: ' + R.best));
+    if (R.mistake) box.appendChild(el('p','jrr-l', '⚠ Most common mistake: ' + R.mistake));
+    if (R.paper) box.appendChild(el('p','jrr-l dim', R.paper + ' paper / demo ' + (R.paper === 1 ? 'trade isn\'t' : 'trades aren\'t') + ' in these numbers.'));
+    var f = el('p','jrr-f'); f.appendChild(el('b',null, JR.recap === 'last' ? 'Focus this week: ' : 'Focus: ')); f.appendChild(document.createTextNode(R.focus)); box.appendChild(f);
+    return box;
+  }
   /* ---------- feedback for members: every approval, send-back and mentor comment in one place (bell + Profile) ---------- */
   function fbReadKey(){ return 'theproject.fbread.' + uid(); }
   function fbSinceKey(){ return 'theproject.fbsince.' + uid(); }
@@ -3813,6 +3927,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     ((ME && ME.certs) || []).forEach(function(c){ var r = c.review; if (c.kind !== 'payout' || !r || !r.at || r.status === 'pending') return;
       out.push({ id:'fb:c:' + c.id + ':' + r.at, where:'profile', title:'Payout certificate', kind: r.status === 'approved' ? 'approved' : 'returned', at:r.at, has:!!r.note,
         line: r.status === 'approved' ? 'Certified' + (r.amount ? ': ' + money(+r.amount) + ' added to the payout board.' : '.') + (r.note ? ' ' + r.note : '') : 'Not certified' + (r.note ? ': ' + r.note : '.') }); });
+    // Monday: last week's review
+    if (ME && ME.entries && ME.entries.length){ var tm = curMonday(), lm = addDays(tm, -7), wr = weekRecap(ME.entries, lm);
+      if (wr.entries) out.push({ id:'recap:' + lm, where:'recap', title:'Your week in review · ' + weekRange(lm), kind:'recap', at: tm + 'T12:00:00Z', has:true,
+        line: ratioText(wr.w, wr.l, wr.be, wr.nt) + ' · rules ' + wr.rules + '% · ' + wr.days + ' of 5 days. ' + wr.focus }); }
     return out.sort(function(a, b){ return String(b.at).localeCompare(String(a.at)); });
   }
   function fbUnread(items){
@@ -3827,6 +3945,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     if (x.where === 'hw'){ openHwCard(x.key.slice(3)); return; }
     if (x.where === 'journal'){ JR.view = 'cal'; JR.month = x.date.slice(0, 7); JR.day = x.date; if ((location.hash || '') === '#journal') showView(); else location.hash = '#journal'; return; }
     if (x.where === 'profile'){ location.hash = '#profile'; return; }
+    if (x.where === 'recap'){ JR.view = 'cal'; JR.recap = 'last'; if ((location.hash || '') === '#journal') showView(); else location.hash = '#journal';
+      setTimeout(function(){ var rc = document.getElementById('jr-recap'); if (rc) rc.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block:'center' }); }, 400); return; }
     var tab = { lx:'lectures', bx:'breakdowns', ax:'advanced' }[x.where];
     current[x.where] = x.key; saveCurrent();
     if ((location.hash || '') === '#' + tab) renderTrack(x.where); else location.hash = '#' + tab;
@@ -3836,9 +3956,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function fbRow(x, unread, onPick){
     var it = el('div','ntf-i' + (unread ? ' new' : '')); it.setAttribute('role','button'); it.tabIndex = 0;
     it.addEventListener('keydown', function(ev){ if (ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); it.click(); } });
-    it.appendChild(el('span','ntf-ic k-' + (x.kind === 'approved' ? 'ok' : 'back'), x.kind === 'approved' ? '✓' : '↩'));
+    it.appendChild(el('span','ntf-ic k-' + (x.kind === 'approved' ? 'ok' : x.kind === 'recap' ? 'recap' : 'back'), x.kind === 'approved' ? '✓' : x.kind === 'recap' ? '★' : '↩'));
     var t = el('span','ntf-t'); t.appendChild(el('b',null, x.title)); t.appendChild(el('span', 'fb-line' + (x.has ? ' said' : ''), x.line));
-    t.appendChild(el('small',null, (x.kind === 'approved' ? 'Approved' : x.where === 'journal' ? 'Not counted' : x.where === 'profile' ? 'Not certified' : 'Sent back') + ' · ' + ago(x.at))); it.appendChild(t);
+    t.appendChild(el('small',null, (x.kind === 'recap' ? 'Weekly recap' : x.kind === 'approved' ? 'Approved' : x.where === 'journal' ? 'Not counted' : x.where === 'profile' ? 'Not certified' : 'Sent back') + ' · ' + ago(x.at))); it.appendChild(t);
     it.addEventListener('click', function(){ fbMarkRead([x.id]); onPick(x); });
     return it;
   }
@@ -3872,7 +3992,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     document.getElementById('pf-fb-n').textContent = items.length;
     host.textContent = '';
     if (!items.length){ host.appendChild(el('p','pf-note','Nothing yet. Every approval, send-back and comment from your mentor will be listed here.')); return; }
-    var groups = [['all','All'],['said','With comments'],['lx','Lectures'],['bx','Breakdowns'],['hw','Homework'],['journal','Journal']];
+    var groups = [['all','All'],['said','With comments'],['lx','Lectures'],['bx','Breakdowns'],['hw','Homework'],['journal','Journal'],['recap','Weekly recaps']];
     var bar = seg(groups.filter(function(g){ return g[0] === 'all' || g[0] === 'said' || items.some(function(x){ return x.where === g[0] || (g[0] === 'bx' && x.where === 'ax'); }); }), FBP.f, function(v){ FBP.f = v; FBP.more = false; renderFbProfile(); });
     host.appendChild(bar);
     var list = items.filter(function(x){ return FBP.f === 'all' || (FBP.f === 'said' ? x.has : FBP.f === 'bx' ? (x.where === 'bx' || x.where === 'ax') : x.where === FBP.f); });
@@ -3884,6 +4004,88 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   }
   function renderContentViews(){ paintPreview(); renderCurriculum(); renderHomework(); renderBreakdowns(); renderCompletions(); renderAnnouncements(); renderProfileExtras(); paintFb(); }
 
+
+  /* ---------- backups (admin) ---------- */
+  function backupDownload(btn){
+    if (btn) btn.disabled = true;
+    return fetch('/api/admin/members?backup=1', { credentials:'same-origin', cache:'no-store' }).then(function(r){ if (!r.ok) throw new Error('error ' + r.status); return r.json(); })
+      .then(function(j){ downloadBlob(new Blob([JSON.stringify(j)], { type:'application/json' }), 'theproject-backup-' + j.at.slice(0, 10) + '-' + j.at.slice(11, 16).replace(':','') + '.json'); return j; })
+      .finally(function(){ if (btn) btn.disabled = false; });
+  }
+  function readBackupFile(f){
+    var gz = /\.gz$/i.test(f.name) || f.type === 'application/gzip';
+    var text = gz && window.DecompressionStream ? new Response(f.stream().pipeThrough(new DecompressionStream('gzip'))).text() : f.text();
+    return text.then(function(t){ var j = JSON.parse(t); if (!j || j.app !== 'theproject' || !j.keys) throw new Error('That isn\'t a backup file from this site.'); return j; });
+  }
+  function backupsView(){
+    var wrap = el('div','adm-sec bk');
+    // 1. download
+    var c1 = el('section','adm-card'); c1.appendChild(el('h3',null,'Download a backup'));
+    c1.appendChild(el('p','adm-note','One file with everything on the site: members, progress, hand-ins, journals, points, payouts, certificates, feedback, content and settings. Screenshots and videos stay in Blob storage; the backup keeps their links.'));
+    var dl = el('button','btn-s pri','Download backup now'); dl.type = 'button';
+    dl.addEventListener('click', function(){ backupDownload(dl).then(function(j){ toast('Backup downloaded: ' + j.count + ' records.'); }).catch(function(e){ toast('Couldn\'t make the backup: ' + e.message); }); });
+    c1.appendChild(dl); wrap.appendChild(c1);
+    // 2. automatic
+    var c2 = el('section','adm-card'); c2.appendChild(el('h3',null,'Daily automatic backup'));
+    var st = el('div','bk-st', 'Checking…'); c2.appendChild(st); wrap.appendChild(c2);
+    fetch('/api/admin/members?backup=status', { credentials:'same-origin', cache:'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      st.textContent = ''; if (!j){ st.textContent = 'Couldn\'t check. Refresh to try again.'; return; }
+      if (j.webhook && j.cron){
+        var l = j.last;
+        st.appendChild(el('p', l && l.ok ? 'bk-ok' : 'bk-warn', !l ? 'Set up. The first automatic backup runs tonight (around 2–3am Chicago time).' :
+          l.ok ? '✓ Last backup ' + fmtDay(l.at) + ' at ' + new Date(l.at).toLocaleTimeString([], { hour:'numeric', minute:'2-digit' }) + ' · ' + l.count + ' records · ' + Math.ceil((l.bytes || 0) / 1024) + ' KB, sent to your Discord backup channel.' :
+          '⚠ The last automatic backup failed (' + fmtDay(l.at) + '): ' + (l.error || 'unknown error') + '. Download one by hand until it\'s fixed.'));
+        var now = el('button','btn-s','Send a backup to Discord now'); now.type = 'button';
+        now.addEventListener('click', function(){ now.disabled = true; fetch('/api/admin/members?backup=now', { credentials:'same-origin' }).then(function(r){ return r.json(); })
+          .then(function(x){ toast(x.ok ? 'Backup sent to your Discord backup channel.' : 'Didn\'t send: ' + (x.error || 'unknown error')); admRender(); }).catch(function(){ toast('Didn\'t send. Try again.'); }).finally(function(){ now.disabled = false; }); });
+        st.appendChild(now);
+      } else {
+        st.appendChild(el('p','bk-warn','Not set up yet. Once it is, every night a compressed copy of everything is posted to a private Discord channel, outside Vercel and Upstash, so it survives even if either has a problem.'));
+        var ol = el('ol','bk-steps');
+        ['In Discord, make a private channel only admins can see (e.g. #site-backups).',
+         'Channel settings → Integrations → Webhooks → New Webhook → Copy Webhook URL.',
+         'In Vercel → your project → Settings → Environment Variables, add DISCORD_BACKUP_WEBHOOK with that URL' + (j.webhook ? ' (done ✓)' : '') + '.',
+         'Add CRON_SECRET with any long random text (e.g. mash the keyboard for 40 characters)' + (j.cron ? ' (done ✓)' : '') + '.',
+         'Redeploy. Come back here and press "Send a backup to Discord now" to test it.'].forEach(function(t){ ol.appendChild(el('li',null,t)); });
+        st.appendChild(ol);
+      }
+    }).catch(function(){ st.textContent = 'Couldn\'t check. Refresh to try again.'; });
+    // 3. restore
+    var c3 = el('section','adm-card'); c3.appendChild(el('h3',null,'Restore from a backup'));
+    c3.appendChild(el('p','adm-note','Use this only if something was lost. Pick a backup file (.json from the download button, or .json.gz from the Discord channel). A fresh backup of the site as it is now downloads first, so a restore can always be undone.'));
+    var B = { file:null, mode:'missing' };
+    var pick = el('label','btn-s up-file','Choose backup file'), fi = el('input'); fi.type = 'file'; fi.accept = '.json,.gz,application/json,application/gzip'; pick.appendChild(fi); c3.appendChild(pick);
+    var info = el('div','bk-info'); c3.appendChild(info);
+    fi.addEventListener('change', function(){ var f = fi.files && fi.files[0]; fi.value = ''; if (!f) return; info.textContent = 'Reading ' + f.name + '…';
+      readBackupFile(f).then(function(j){ B.file = j; drawR(); }).catch(function(e){ B.file = null; info.textContent = String(e.message || e); }); });
+    function drawR(){
+      info.textContent = ''; var j = B.file; if (!j) return;
+      var people = Object.keys(j.keys).filter(function(k){ return /^journal:/.test(k); }).length;
+      info.appendChild(el('p',null,'Backup from ' + fmtDay(j.at) + ' at ' + new Date(j.at).toLocaleTimeString([], { hour:'numeric', minute:'2-digit' }) + ' · ' + j.count + ' records · ' + people + ' journals.'));
+      info.appendChild(seg([['missing','Only add what\'s missing (safe)'],['all','Replace with the backup\'s version']], B.mode, function(v){ B.mode = v; drawR(); }));
+      info.appendChild(el('p','adm-note', B.mode === 'missing' ? 'Puts back anything that was deleted. Nothing that exists now is changed.' : 'Every record in the backup replaces the current one, so changes made since the backup are lost for those records. Records that aren\'t in the backup are left alone.'));
+      var cf = inputEl('text','','Type RESTORE to confirm'); info.appendChild(cf);
+      var go = el('button','btn-s danger','Restore'); go.type = 'button'; info.appendChild(go);
+      go.addEventListener('click', function(){
+        if (cf.value.trim() !== 'RESTORE'){ toast('Type RESTORE to confirm.'); cf.focus(); return; }
+        go.disabled = true; go.textContent = 'Saving a backup of now first…';
+        backupDownload().then(function(){
+          var names = Object.keys(j.keys), done = 0, written = 0, skipped = 0;
+          function next(){
+            if (done >= names.length){ toast('Restored: ' + written + ' records written, ' + skipped + ' left as they were.'); go.textContent = 'Restore'; go.disabled = false; B.file = null; drawR(); info.textContent = 'Done. ' + written + ' records written.'; return; }
+            var part = {}, size = 0, n = 0;
+            while (done < names.length && n < 150){ var k = names[done], v = j.keys[k], sz = JSON.stringify(v).length; if (n && size + sz > 3000000) break; part[k] = v; size += sz; n++; done++; }
+            go.textContent = 'Restoring… ' + Math.round(done / names.length * 100) + '%';
+            return fetch('/api/admin/members', { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ action:'restore', mode:B.mode, confirm:'RESTORE', keys:part }) })
+              .then(function(r){ return r.json().then(function(x){ if (!r.ok) throw new Error(x.detail || x.error || r.status); written += x.written; skipped += x.skipped; }); }).then(next);
+          }
+          return next();
+        }).catch(function(e){ toast('Restore stopped: ' + (e.message || e)); go.textContent = 'Restore'; go.disabled = false; });
+      });
+    }
+    wrap.appendChild(c3);
+    return wrap;
+  }
   /* ---------- admin panel ---------- */
   function canAdmin(){ return !!(SESSION && SESSION.isAdmin) || DEMO_MODE; }
   var adm = { content:null, sec:'announcements', dirty:false, members:null };
@@ -4439,7 +4641,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         .catch(function(e){ ok.disabled = back.disabled = false; toast(admFail(e)); });
     }
     ok.addEventListener('click', function(){ act('approved'); }); back.addEventListener('click', function(){ act('returned'); });
-    c.appendChild(fld(open ? 'Feedback (optional when approving)' : 'Change the decision', fbI)); acts.appendChild(ok); acts.appendChild(back); c.appendChild(acts);
+    c.appendChild(fld(open ? 'Feedback (optional when approving)' : 'Change the decision', fbI)); c.appendChild(snippetBar(fbI)); acts.appendChild(ok); acts.appendChild(back); c.appendChild(acts);
     return c;
   }
 
@@ -4630,7 +4832,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     ok.addEventListener('click', function(){ act('approved'); }); no.addEventListener('click', function(){ act('denied'); });
     acts.appendChild(ok); acts.appendChild(no);
     if (x.st !== 'pending'){ var bk = el('button','lnk','Back to waiting'); bk.type = 'button'; bk.addEventListener('click', function(){ act('pending'); }); acts.appendChild(bk); }
-    card.appendChild(fld(x.st === 'pending' ? 'Note (optional when approving)' : 'Change the decision', note)); card.appendChild(acts);
+    card.appendChild(fld(x.st === 'pending' ? 'Comment (optional when approving)' : 'Change the decision', note)); card.appendChild(snippetBar(note)); card.appendChild(acts);
     return card;
   }
   /* ---------- walkthrough: one entry at a time, big screenshots, for going through them live on a call ----------
@@ -4662,7 +4864,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       side.appendChild(entryCard(e, null));
       if (m.journal && m.journal.rules){ var rb = el('div','jw-rules'); rb.appendChild(el('b',null,'Their rules')); var ol = el('ol','jr-rl show'); m.journal.rules.forEach(function(r){ ol.appendChild(el('li',null,r.text)); }); rb.appendChild(ol); side.appendChild(rb); }
       var note = inputEl('text', e.reviewNote || '', 'Comment for the member (optional; needed to deny)');
-      side.appendChild(fld('Note', note));
+      side.appendChild(fld('Comment', note)); side.appendChild(snippetBar(note));
       var acts = el('div','rv-acts'), ok = el('button','btn-s pri',''), no = el('button','btn-s warn','Deny  (D)'); ok.type = no.type = 'button';
       var pp = ptsPicker(e, function(n){ ok.disabled = false; ok.textContent = 'Approve · ' + n + (n === 1 ? ' pt' : ' pts') + '  (A)'; });
       ok.textContent = 'Approve · ' + pp.get() + (pp.get() === 1 ? ' pt' : ' pts') + '  (A)';
@@ -4825,6 +5027,157 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     return false;
   }
 
+
+
+  /* ---------- saved feedback snippets (admin): tap to add a line to any review ---------- */
+  var SNIPS = { list: null, loading: null, editing: false };
+  function loadSnippets(){
+    if (SNIPS.list) return Promise.resolve(SNIPS.list);
+    if (DEMO_MODE){ SNIPS.list = ['Great work. Clean execution and you followed your rules.','Add a screenshot of your entry timeframe with your mark-ups.']; return Promise.resolve(SNIPS.list); }
+    return SNIPS.loading || (SNIPS.loading = fetch('/api/admin/members?snippets=1', { credentials:'same-origin' }).then(function(r){ return r.ok ? r.json() : { snippets: [] }; })
+      .then(function(j){ SNIPS.list = j.snippets || []; SNIPS.loading = null; return SNIPS.list; }).catch(function(){ SNIPS.loading = null; SNIPS.list = []; return []; }));
+  }
+  function snippetBar(input){
+    var bar = el('div','snips');
+    function draw(){
+      bar.textContent = '';
+      if (SNIPS.editing){
+        var ta = inputEl('textarea', (SNIPS.list || []).join('\n'), 'One feedback line per row'); ta.rows = Math.min(12, Math.max(4, (SNIPS.list || []).length + 1)); bar.appendChild(ta);
+        var sv = el('button','btn-s pri','Save snippets'), cx = el('button','lnk','Cancel'); sv.type = cx.type = 'button';
+        sv.addEventListener('click', function(){ var list = ta.value.split('\n').map(function(x){ return x.trim(); }).filter(Boolean);
+          memberAction({ action:'snippets', snippets:list }).then(function(){ SNIPS.list = list.slice(0, 40); SNIPS.editing = false; toast('Snippets saved for every admin.'); document.querySelectorAll('.snips').forEach(function(b){ b._draw && b._draw(); }); }); });
+        cx.addEventListener('click', function(){ SNIPS.editing = false; draw(); });
+        var r = el('div','snips-ed'); r.appendChild(sv); r.appendChild(cx); bar.appendChild(r); return;
+      }
+      (SNIPS.list || []).forEach(function(t){ var b = el('button','snip', t); b.type = 'button'; b.title = 'Add to the feedback';
+        b.addEventListener('click', function(ev){ ev.preventDefault(); var v = input.value.trim(); input.value = v ? v + (/[.!?]$/.test(v) ? ' ' : '. ') + t : t; input.dispatchEvent(new Event('input', { bubbles:true })); input.focus(); }); bar.appendChild(b); });
+      var ed = el('button','lnk snip-ed', SNIPS.list && SNIPS.list.length ? 'Edit snippets' : '+ Add saved feedback lines'); ed.type = 'button';
+      ed.addEventListener('click', function(){ SNIPS.editing = true; draw(); }); bar.appendChild(ed);
+    }
+    bar._draw = draw; draw(); loadSnippets().then(draw);
+    return bar;
+  }
+
+  /* ---------- one-page student report (admin), for 1:1 calls ---------- */
+  function openReport(m){
+    var old = document.getElementById('rpt'); if (old) old.remove();
+    var scrim = el('div','rpt-scrim'); scrim.id = 'rpt'; scrim.setAttribute('role','dialog'); scrim.setAttribute('aria-modal','true'); scrim.setAttribute('aria-label','Student report');
+    var P = el('div','rpt'); scrim.appendChild(P);
+    var R = { per:'30' };
+    function close(){ scrim.remove(); document.removeEventListener('keydown', esc, true); document.documentElement.classList.remove('lb-open'); }
+    function esc(ev){ if (ev.key === 'Escape' && !document.querySelector('.lb')){ ev.stopPropagation(); close(); } }
+    function draw(){
+      P.textContent = '';
+      var x = el('button','lb-x rpt-x'); x.type = 'button'; x.setAttribute('aria-label','Close'); x.textContent = '×'; x.addEventListener('click', close); P.appendChild(x);
+      // who
+      var hd = el('div','rpt-h'), av = el('span','av'); setAvatar(av, m); hd.appendChild(av);
+      var nm = el('div'); nm.appendChild(el('h2',null, m.displayName || m.username)); var lw = lastWork(m), sk = streakOf(m.entries || []);
+      nm.appendChild(el('p','adm-note', '@' + (m.username || '') + ' · ' + (m.isAdmin ? 'Admin' : levelName(m.level)) + (m.joinedAt ? ' · joined server ' + fmtDay(m.joinedAt) : '') + ' · last seen ' + (m.lastSeen ? fmtDay(m.lastSeen) : '—')));
+      hd.appendChild(nm); P.appendChild(hd);
+      var chips = el('div','rpt-chips');
+      [[(sk.current ? '🔥 ' : '') + sk.current + '-day streak' + (sk.best > sk.current ? ' (best ' + sk.best + ')' : '')],
+       [lw.at ? 'Last work: ' + lw.what + ' · ' + fmtDay(lw.at) : 'No work yet'],
+       [parseInt((m.flags || {}).total || 0, 10) ? 'Blocked actions: ' + (m.flags || {}).total : '', 'bad']].forEach(function(c){ if (c[0]) chips.appendChild(el('span','rpt-chip' + (c[1] ? ' ' + c[1] : ''), c[0])); });
+      P.appendChild(chips);
+      // numbers
+      var sec1 = el('section','rpt-s'), h1 = el('div','rpt-sh'); h1.appendChild(el('h3',null,'Trading'));
+      h1.appendChild(seg([['week','This week'],['30','30 days'],['90','90 days'],['all','All time']], R.per, function(v){ R.per = v; draw(); })); sec1.appendChild(h1);
+      var from = periodFrom(R.per); sec1.appendChild(statsView((m.entries || []).filter(function(e){ return e.date >= from && countsInStats(e); }), { summaryOnly:true })); P.appendChild(sec1);
+      // weeks
+      var sec2 = el('section','rpt-s rpt-2'), tm = curMonday();
+      [['This week', tm], ['Last week', addDays(tm, -7)]].forEach(function(w){ var wr = weekRecap(m.entries || [], w[1]), b = el('div','rpt-wk');
+        b.appendChild(el('h4',null, w[0] + ' · ' + weekRange(w[1])));
+        if (!wr.entries){ b.appendChild(el('p','adm-note','Nothing journaled.')); sec2.appendChild(b); return; }
+        b.appendChild(el('p',null, ratioText(wr.w, wr.l, wr.be, wr.nt) + ' · ' + wr.days + ' of 5 days · rules ' + wr.rules + '% · ' + money(wr.pnl)));
+        if (wr.best) b.appendChild(el('p','adm-note','Best setup: ' + wr.best)); if (wr.mistake) b.appendChild(el('p','adm-note','Most common mistake: ' + wr.mistake));
+        b.appendChild(el('p','rpt-focus', 'Focus: ' + wr.focus)); sec2.appendChild(b); });
+      P.appendChild(sec2);
+      // course progress + open hand-ins
+      var sec3 = el('section','rpt-s'); sec3.appendChild(el('h3',null,'Course'));
+      var lessons = Object.keys(lessonIndex()), prog = m.progress || {}, done = lessons.filter(function(k){ return prog[k]; }).length, subs = m.subs || {};
+      var cnt = { submitted:0, returned:0, approved:0 }; Object.keys(subs).forEach(function(k){ if (subs[k] && cnt[subs[k].status] !== undefined) cnt[subs[k].status]++; });
+      sec3.appendChild(el('p',null, done + ' of ' + lessons.length + ' lectures finished (' + (lessons.length ? Math.round(done / lessons.length * 100) : 0) + '%) · hand-ins: ' + cnt.approved + ' approved, ' + cnt.returned + ' sent back, ' + cnt.submitted + ' waiting'));
+      var waiting = Object.keys(subs).filter(function(k){ return subs[k] && subs[k].status === 'submitted'; });
+      if (waiting.length){ var rv = el('button','btn-s','Review their ' + waiting.length + (waiting.length === 1 ? ' waiting hand-in' : ' waiting hand-ins')); rv.type = 'button';
+        rv.addEventListener('click', function(){ close(); RV.member = m.id; RV.status = 'waiting'; adm.sec = 'review'; if ((location.hash || '') !== '#admin') location.hash = '#admin'; else admRender(); }); sec3.appendChild(rv); }
+      P.appendChild(sec3);
+      // recent journal
+      var sec4 = el('section','rpt-s'); sec4.appendChild(el('h3',null,'Recent journal'));
+      var ents = (m.entries || []).slice(0, 10);
+      if (!ents.length) sec4.appendChild(el('p','adm-note','No journal entries yet.'));
+      else { var t = el('table','mem rpt-t'), hr = el('tr'); ['Day','Entry','Account','Result','Rules','Status',''].forEach(function(h){ hr.appendChild(el('th',null,h)); }); t.appendChild(hr);
+        ents.forEach(function(e){ var tr = el('tr'), st = entryStatus(e);
+          tr.appendChild(el('td',null, shortDay(e.date)));
+          tr.appendChild(el('td',null, e.kind === 'trade' ? (e.pair || 'Trade') + ' · ' + (e.model || '') + (e.time ? ' · ' + e.time : '') : 'No-trade day' + (e.news === 'yes' ? ' · news' : '')));
+          tr.appendChild(el('td',null, e.kind === 'trade' ? (e.account || '') : '—'));
+          tr.appendChild(el('td', e.kind === 'trade' ? (e.outcome === 'tp' ? 'win' : e.outcome === 'sl' ? 'loss' : '') : '', e.kind === 'trade' ? String(e.outcome || '').toUpperCase() + ' · ' + money(+e.pnl || 0) : '—'));
+          tr.appendChild(el('td', e.followed ? '' : 'loss', e.followed ? 'Followed' : 'Broke'));
+          tr.appendChild(el('td',null, st === 'approved' ? 'Approved' + (e.reviewNote ? ' · “' + e.reviewNote + '”' : '') : st === 'denied' ? 'Not counted' + (e.reviewNote ? ' · “' + e.reviewNote + '”' : '') : 'Waiting'));
+          var c7 = el('td'); if ((e.files || []).length){ var sb = el('button','lnk', (e.files.length) + (e.files.length === 1 ? ' shot' : ' shots')); sb.type = 'button'; sb.addEventListener('click', function(){ lightbox(e.files, 0); }); c7.appendChild(sb); } tr.appendChild(c7);
+          t.appendChild(tr); });
+        var tw = el('div','mem-wrap'); tw.appendChild(t); sec4.appendChild(tw); }
+      P.appendChild(sec4);
+      // feedback history
+      var sec5 = el('section','rpt-s'); sec5.appendChild(el('h3',null,'Feedback you\'ve given'));
+      var fb = [];
+      Object.keys(subs).forEach(function(k){ var x2 = subs[k]; if (x2 && x2.feedback && x2.reviewedAt && x2.status !== 'submitted') fb.push({ at:x2.reviewedAt, t:itemTitle(k).replace(/^“|”$/g,''), s:x2.status === 'approved' ? 'Approved' : 'Sent back', f:x2.feedback }); });
+      (m.entries || []).forEach(function(e){ if (e.reviewNote && e.reviewedAt) fb.push({ at:e.reviewedAt, t:'Journal · ' + shortDay(e.date), s: entryStatus(e) === 'denied' ? 'Not counted' : 'Approved', f:e.reviewNote }); });
+      fb.sort(function(a, b){ return String(b.at).localeCompare(String(a.at)); });
+      if (!fb.length) sec5.appendChild(el('p','adm-note','No written feedback yet.'));
+      fb.slice(0, 15).forEach(function(x3){ var r = el('div','rpt-fb'); r.appendChild(el('b',null, x3.t)); r.appendChild(el('small',null, x3.s + ' · ' + fmtDay(x3.at))); r.appendChild(el('p',null, x3.f)); sec5.appendChild(r); });
+      P.appendChild(sec5);
+    }
+    draw();
+    document.body.appendChild(scrim); document.documentElement.classList.add('lb-open'); document.addEventListener('keydown', esc, true);
+    scrim.addEventListener('click', function(ev){ if (ev.target === scrim) close(); });
+  }
+  /* ---------- quiet students (admin): nothing journaled, handed in or finished in N days ---------- */
+  // same as lastWorkOf() in api/_gate.js
+  function lastWork(m){
+    var last = '', what = '';
+    Object.keys(m.subs || {}).forEach(function(k){ var x = m.subs[k]; if (x && x.submittedAt && x.submittedAt > last){ last = x.submittedAt; what = 'Handed in ' + itemTitle(k); } });
+    (m.entries || []).forEach(function(e){ var t = e.createdAt || (e.date ? e.date + 'T12:00:00Z' : ''); if (t > last){ last = t; what = 'Journaled ' + (e.kind === 'trade' ? 'a trade' : 'a no-trade day'); } });
+    Object.keys(m.progress || {}).forEach(function(k){ var t = m.progress[k]; if (typeof t === 'string' && t > last){ last = t; what = 'Finished ' + itemTitle(k); } });
+    return { at: last, what: what };
+  }
+  function itemTitle(k){
+    if (/^hw:/.test(k)){ var h = HOMEWORK.filter(function(x){ return 'hw:' + x.id === k; })[0]; return h ? 'homework “' + h.title + '”' : 'homework'; }
+    if (/^bd:/.test(k)){ var b = BREAKDOWNS.filter(function(x){ return 'bd:' + x.id === k; })[0]; return b ? '“' + b.title + '”' : 'a breakdown'; }
+    var li = lessonIndex()[k]; return li ? '“' + li.label + '”' : 'a lecture';
+  }
+  var QUIET = { days: 5 };
+  function quietCard(rows){
+    var box = el('section','adm-card quiet'); box.appendChild(el('h3',null,'Quiet students'));
+    var host = el('div'); box.appendChild(host);
+    function draw(){
+      host.textContent = '';
+      var bar = el('div','rv-bar'); bar.appendChild(el('span','adm-note','Nothing journaled, handed in or finished in'));
+      bar.appendChild(seg([[3,'3+ days'],[5,'5+ days'],[7,'7+ days'],[14,'14+ days']], QUIET.days, function(v){ QUIET.days = v; draw(); })); host.appendChild(bar);
+      var cut = Date.now() - QUIET.days * 864e5;
+      var list = rows.filter(function(m){ return !m.isAdmin && m.level; }).map(function(m){ var lw = lastWork(m), at = lw.at || m.lastSeen || ''; return { m:m, at:at, what: lw.at ? lw.what : 'Hasn\'t journaled or handed anything in yet', days: at ? Math.floor((Date.now() - new Date(at)) / 864e5) : 999 }; })
+        .filter(function(x){ return x.at && new Date(x.at).getTime() < cut; }).sort(function(a, b){ return b.days - a.days; });
+      if (!list.length){ host.appendChild(el('p','bk-ok','✓ Everyone has done something in the last ' + QUIET.days + ' days.')); return; }
+      host.appendChild(el('p','adm-note', list.length + (list.length === 1 ? ' student' : ' students') + ' to check in with. "Copy message" copies a friendly DM you can paste in Discord.'));
+      var t = el('table','mem quiet-t'), hr = el('tr'); ['Student','Quiet for','Last thing they did','Streak',''].forEach(function(h){ hr.appendChild(el('th',null,h)); }); t.appendChild(hr);
+      list.forEach(function(x){
+        var tr = el('tr'), c1 = el('td'), who = el('div','who2'), av = el('span','av'); setAvatar(av, x.m); who.appendChild(av);
+        var nm = el('div'); nm.appendChild(el('b',null, x.m.displayName || x.m.username)); nm.appendChild(el('div','adm-note', levelName(x.m.level))); who.appendChild(nm); c1.appendChild(who); tr.appendChild(c1);
+        tr.appendChild(el('td', x.days >= 14 ? 'loss' : x.days >= 7 ? 'warn' : '', x.days >= 999 ? '—' : x.days + (x.days === 1 ? ' day' : ' days')));
+        tr.appendChild(el('td',null, x.what + (x.at ? ' · ' + fmtDay(x.at) : '')));
+        var sk = streakOf(x.m.entries || []); tr.appendChild(el('td',null, sk.best ? 'best ' + sk.best : '—'));
+        var c5 = el('td','quiet-act'), rp = el('button','lnk','Report'); rp.type = 'button'; rp.addEventListener('click', function(){ openReport(x.m); });
+        var cp = el('button','lnk','Copy message'); cp.type = 'button';
+        cp.addEventListener('click', function(){
+          var first = String(x.m.displayName || x.m.username || '').split(' ')[0];
+          var msg = 'Hey ' + first + ', haven\'t seen ' + (x.what.indexOf('Journaled') === 0 || x.what.indexOf('Hasn') === 0 ? 'a journal' : 'anything') + ' from you in ' + (x.days >= 999 ? 'a while' : x.days + ' days') + '. Everything good? Even on days you sit out, log a quick no-trade entry so your streak and stats keep building. Let me know if you\'re stuck on anything 🙏';
+          (navigator.clipboard ? navigator.clipboard.writeText(msg) : Promise.reject()).then(function(){ toast('Message copied. Paste it in their Discord DMs.'); }, function(){ window.prompt('Copy this message:', msg); });
+        });
+        c5.appendChild(rp); c5.appendChild(cp); tr.appendChild(c5); t.appendChild(tr);
+      });
+      var tw = el('div','mem-wrap'); tw.appendChild(t); host.appendChild(tw);
+    }
+    draw(); return box;
+  }
   function membersView(){
     var wrap = el('div','adm-list');
     wrap.appendChild(el('p','adm-note','Everyone who has signed in, newest first. Open a member for their journal, certificates and promotion. To unlock or mark lectures done, use Progress.'));
@@ -4832,6 +5185,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     function draw(rows){
       host.textContent = '';
       if (!rows.length){ emptyState(host,'No members yet','Members appear here after they sign in with Discord.'); return; }
+      host.appendChild(quietCard(rows));
       var lessons = Object.keys(lessonIndex());
       var tw = el('div','mem-wrap'), t = el('table','mem'), th = el('thead'), hr = el('tr');
       ['Member','Last seen','Lessons','Hand-ins','Step','Flags',''].forEach(function(x){ hr.appendChild(el('th',null,x)); });
@@ -4850,7 +5204,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         tr.appendChild(el('td',null, String(hw)));
         tr.appendChild(el('td',null, chs || '—'));
         var fl = m.flags || {}, ft = parseInt(fl.total || 0, 10), fc = el('td', ft ? 'flagged' : null, ft ? String(ft) : '0'); if (ft) fc.title = 'Last: ' + (fl.lastKind || '') + ' · ' + fmtDay(fl.last); tr.appendChild(fc);
-        var c6 = el('td'), lb = el('button','lnk','Details'); lb.type='button'; c6.appendChild(lb); tr.appendChild(c6);
+        var c6 = el('td','mem-act'), lb = el('button','lnk','Details'); lb.type='button'; c6.appendChild(lb);
+        var rpb = el('button','lnk','Report'); rpb.type = 'button'; rpb.addEventListener('click', function(){ openReport(m); }); c6.appendChild(rpb); tr.appendChild(c6);
         tb.appendChild(tr);
         var det = el('tr','det'); det.hidden = true; var dc = el('td'); dc.colSpan = 7; det.appendChild(dc); tb.appendChild(det);
         if (adm.openMember === m.id){ setTimeout(function(){ lb.click(); adm.openMember = null; }, 0); }
@@ -4963,6 +5318,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     else if (adm.sec === 'progress') body.appendChild(progressView());
     else if (adm.sec === 'journal') body.appendChild(journalReview());
     else if (adm.sec === 'payouts') body.appendChild(payoutReview());
+    else if (adm.sec === 'backups') body.appendChild(backupsView());
     else body.appendChild(membersView());
   }
   document.querySelectorAll('#adm-nav button').forEach(function(b){
