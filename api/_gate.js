@@ -271,7 +271,7 @@ async function logActivity(user, ev) {
   if (!kvConfigured()) return;
   const e = Object.assign({ id: 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), at: new Date().toISOString(),
     uid: user.id, name: user.displayName || user.username || 'A member', username: user.username || '', avatar: user.avatar || null }, ev);
-  try { await kv(['LPUSH', 'activity', JSON.stringify(e)]); await kv(['LTRIM', 'activity', 0, 299]); await kv(['DEL', 'waiting-cache']); } catch (err) {}
+  try { await kv(['LPUSH', 'activity', JSON.stringify(e)]); await kv(['LTRIM', 'activity', 0, 299]); await kv(['DEL', 'waiting-cache']); await kv(['DEL', 'stats-cache']); } catch (err) {}
 }
 async function loadActivity(n) {
   if (!kvConfigured()) return [];

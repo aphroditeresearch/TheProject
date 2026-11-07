@@ -62,7 +62,7 @@ module.exports = async (req, res) => {
     let body = req.body;
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = null; } }
     if (!body || typeof body !== 'object') return json(res, 400, { error: 'bad_body' });
-    try { await kv(['DEL', 'waiting-cache']); } catch (e) {}   // counts change after any admin action
+    try { await kv(['DEL', 'waiting-cache']); await kv(['DEL', 'stats-cache']); } catch (e) {}   // counts change after any admin action
     const userId = body && body.userId, lessonId = body && body.lessonId;
     const content = await contentWithDefaults();
 

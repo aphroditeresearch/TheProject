@@ -326,3 +326,40 @@ skipped through freely. Lectures still need watching first. Every video has a sp
 ## Performance
 The background is lighter: the letter rain runs at a lower frame rate with fewer columns and pauses while a video plays
 or you scroll, the moving background layers are static, and the top bars no longer blur what's behind them.
+
+## Stats tab
+A **Stats** tab in the top bar puts every student's journal together: trade days vs no-trade days, when trades get taken,
+weekdays, news on no-trade days, sessions, entry models and accounts. Pick a period (this week / month / last 30 days / all
+time).
+- **Members** switch between **Everyone** (all journals combined, with no names, notes or screenshots) and **Me**.
+- **Admins** get a dropdown: everyone combined, yourself, or any one student, plus a "By student" table (click a name to
+  open just that student).
+Denied entries are left out. The combined numbers are cached for up to 2 minutes and refresh as soon as someone posts or an
+admin reviews an entry. Each student's day counts on its own, so two people trading the same Monday is two trade days.
+
+## Trade data (optional fields on every trade)
+The journal's trade form has a **Trade data** section. Everything in it is optional, so students can still post quickly and
+older entries are untouched:
+direction, entry type, which time zone their times are in (converted to New York time for the stats), exit time, entry /
+stop / target / exit prices, risk in $, how far price went against them and in their favour (MAE / MFE, in points), bias
+timeframe and HTF bias, entry timeframe, setup grade, how they felt before entering, liquidity swept, confluence, how they
+managed the trade, and mistakes.
+The site works out the planned R, the R multiple, the hold time, whether the trade was with or against the HTF bias, and
+which trade of the day it was. The choice lists are at the top of the "trade data" block in `index.html` (`TD`) and in
+`api/member.js` (`HTFS`, `SWEPT`, `CONFL`…); keep the two in step when you add an option.
+
+## What works best (Stats tab)
+Ranks every condition (model, session, half-hour of the day in NY time, weekday, direction, bias alignment, timeframes,
+liquidity swept, confluence, grade, emotion, management, mistakes, planned R, hold time, 1st/2nd/3rd trade of the day,
+instrument, account, news, rules) and common pairings (model + session, model + time…) by:
+- **Win rate:** TP ÷ trades.
+- **Reliable WR:** the low end of the 95% range for the true win rate (Wilson). It stops a 3-for-3 condition from outranking
+  45-for-70, so it's the default ranking.
+- **Avg R, profit factor and P&L.**
+You can set the minimum number of trades a condition needs before it's ranked (3 / 5 / 10 / 20). Denied entries are left out.
+
+## Excel export
+Stats tab → **Export to Excel** downloads a real .xlsx built in the browser: Trades (every field, one row per trade),
+No-trade days, What works (every condition), Combinations, and By student when there's more than one student. Admins export
+whatever they're looking at (everyone or one student, for the chosen period) with names. Members can only export their own
+journal. Screenshot links aren't included because they expire; the sheet shows how many screenshots each entry has.

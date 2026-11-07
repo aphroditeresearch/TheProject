@@ -10,6 +10,7 @@
 // POST /api/member { action:'journal-create', rules:[…] } / { action:'journal-rules', rules:[…] } → create the journal / update its rules
 // POST /api/member { action:'journal-add', entry } / { action:'journal-delete', id }             → post / remove a journal entry
 // GET  /api/member?board=week|month|all → the psych leaderboard (points from journal entries)
+// GET  /api/member?stats=1 → every member's journal entries combined, without names, screenshots or notes (for the Stats tab)
 // Files are uploaded straight from the browser to Vercel Blob first (see /api/upload), into members/<their id>/…
 const crypto = require('crypto');
 const { readSession, isAdmin, kvConfigured, loadProgress, json, kv, clientIp } = require('./_lib');
@@ -58,6 +59,32 @@ async function payoutBoard(period, me) {
   rows.forEach((r, i) => { r.rank = i + 1; });
   return { period, from, kind: 'payout', rows };
 }
+// Community stats: only the fields the stats need, nothing that says whose entry it is. Cached for 2 minutes.
+const STAT_FIELDS = ['date', 'time', 'kind', 'outcome', 'pnl', 'session', 'model', 'account', 'followed', 'news', 'newsWhat', 'pair', 'contracts',
+  'dir', 'exitTime', 'risk', 'pEntry', 'pStop', 'pTarget', 'pExit', 'mae', 'mfe', 'htf', 'bias', 'ltf', 'swept', 'confl', 'manage', 'mistakes', 'grade', 'entryType', 'emotion'];
+// choices for the optional trade-data fields (the journal form offers the same lists)
+const HTFS = ['Weekly', 'Daily', '4H', '1H', '15m'];
+const LTFS = ['30s', '1m', '2m', '3m', '5m', '15m'];
+const SWEPT = ['Asia high', 'Asia low', 'London high', 'London low', 'Previous day high', 'Previous day low', 'Equal highs', 'Equal lows', 'Nothing swept'];
+const CONFL = ['FVG', 'Order block', 'Breaker', 'SMT divergence', 'Displacement', 'Premium / discount', 'Killzone', 'Opening range'];
+const MANAGE = ['Held to target / stop', 'Took partials', 'Moved stop to BE', 'Trailed stop', 'Closed early'];
+const MISTAKES = ['Entered early', 'Entered late', 'Moved stop', 'Oversized', 'Chased', 'Traded through news', 'Revenge trade', 'Overtraded'];
+const GRADES = ['A+', 'A', 'B', 'C'];
+const ENTRY_TYPES = ['Limit', 'Market', 'Stop'];
+const EMOTIONS = ['Calm', 'Confident', 'Hesitant', 'FOMO', 'Frustrated', 'Tired'];
+async function communityStats() {
+  try { const c = await kv(['GET', 'stats-cache']); if (c) return JSON.parse(c); } catch (e) {}
+  const out = []; let members = 0;
+  await Promise.all((await listMembers()).map(async (m, i) => {
+    const ents = Object.values(await loadEntries(m.id)).filter((e) => entryStatus(e) !== 'denied');
+    if (ents.length) members++;
+    // _u: a number per journal so each student's days count separately (not who it is)
+    ents.forEach((e) => { const x = { _u: i }; STAT_FIELDS.forEach((k) => { if (e[k] !== undefined) x[k] = e[k]; }); out.push(x); });
+  }));
+  const data = { entries: out, members, at: new Date().toISOString() };
+  try { await kv(['SET', 'stats-cache', JSON.stringify(data), 'EX', 120]); } catch (e) {}
+  return data;
+}
 const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
 module.exports = async (req, res) => {
@@ -86,6 +113,7 @@ module.exports = async (req, res) => {
     const board = /[?&]board=(week|month|all)/.exec(req.url || '');
     if (board && /[?&]kind=payout/.test(req.url || '')) return json(res, 200, await payoutBoard(board[1], uid));
     if (board) return json(res, 200, await leaderboard(board[1], uid));
+    if (/[?&]stats=1/.test(req.url || '')) return json(res, 200, await communityStats());
     const [certs, promo, journal, entries] = await Promise.all([loadCerts(uid), loadPromo(uid), loadJournal(uid), loadEntries(uid)]);
     const list = Object.values(certs).sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt)));
     const ents = Object.values(entries).sort(byEntry).map((e) => Object.assign({}, e, { status: entryStatus(e), points: entryPoints(e), worth: basePoints(e) }));
@@ -176,6 +204,22 @@ module.exports = async (req, res) => {
         contracts: Number(e.contracts), outcome: ['tp', 'sl', 'be'].includes(e.outcome) ? e.outcome : '', pnl: Number(e.pnl), model: ['BOS', 'MITIGATION', 'Chained OBs', 'DIV + OB'].includes(e.model) ? e.model : '',
         files: (Array.isArray(e.files) ? e.files : []).slice(0, 4).map((f) => cleanFile(f, uid, 'journal')),
       });
+      // optional trade data (for the stats and the research export); anything left blank is simply not stored
+      const num = (v) => { if (v === '' || v === null || v === undefined) return undefined; const n = Number(v); return isFinite(n) && Math.abs(n) < 1e9 ? n : undefined; };
+      const pick = (v, list) => (list.includes(v) ? v : undefined);
+      const many = (v, list) => { const a = Array.isArray(v) ? [...new Set(v.filter((x) => list.includes(x)))] : []; return a.length ? a : undefined; };
+      const extra = {
+        dir: pick(e.dir, ['long', 'short']),
+        exitTime: /^\d{2}:\d{2}$/.test(str(e.exitTime, 5)) ? str(e.exitTime, 5) : undefined,
+        tz: /^[A-Za-z_]+(\/[A-Za-z0-9_+-]+){0,2}$/.test(str(e.tz, 60)) ? str(e.tz, 60) : undefined,
+        pEntry: num(e.pEntry), pStop: num(e.pStop), pTarget: num(e.pTarget), pExit: num(e.pExit),
+        risk: num(e.risk) > 0 ? num(e.risk) : undefined,
+        mae: num(e.mae) >= 0 ? num(e.mae) : undefined, mfe: num(e.mfe) >= 0 ? num(e.mfe) : undefined,
+        htf: pick(e.htf, HTFS), bias: pick(e.bias, ['bullish', 'bearish', 'neutral']), ltf: pick(e.ltf, LTFS),
+        swept: many(e.swept, SWEPT), confl: many(e.confl, CONFL), manage: many(e.manage, MANAGE), mistakes: many(e.mistakes, MISTAKES),
+        grade: pick(e.grade, GRADES), entryType: pick(e.entryType, ENTRY_TYPES), emotion: pick(e.emotion, EMOTIONS),
+      };
+      Object.keys(extra).forEach((k) => { if (extra[k] !== undefined) entry[k] = extra[k]; });
       const missing = ['time', 'pair', 'account', 'session', 'outcome', 'model'].filter((k) => !entry[k]);
       if (!(entry.contracts > 0 && entry.contracts <= 10000)) missing.push('contracts');
       if (!isFinite(entry.pnl) || e.pnl === '' || e.pnl === null) missing.push('pnl');
@@ -194,6 +238,7 @@ module.exports = async (req, res) => {
     if (entryStatus(e) === 'approved') return json(res, 409, { error: 'approved' });                    // approved entries stay on the record
     if (Date.now() - Date.parse(e.createdAt) > 7 * 864e5) return json(res, 409, { error: 'too_old' });   // a week to fix mistakes
     await deleteEntry(uid, e.id);
+    try { await kv(['DEL', 'stats-cache']); } catch (err) {}
     return json(res, 200, { saved: true });
   }
 

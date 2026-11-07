@@ -519,6 +519,7 @@ a{color:var(--blue);text-underline-offset:3px}
 .st-tile b{font-size:20px;font-variant-numeric:tabular-nums}.st-tile span{font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase}
 .st-tile.win b{color:var(--win)}.st-tile.loss b{color:var(--loss)}
 .st-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px}
+.st .tbl-wrap{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
 .st-card{border:1px solid var(--line);background:var(--panel);padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
 .st-card.wide{grid-column:1/-1}
 .st-card h4{margin:0 0 4px;font-size:15px}
@@ -530,6 +531,22 @@ a{color:var(--blue);text-underline-offset:3px}
 .st-t{width:100%;border-collapse:collapse;font-size:13px}.st-t th{text-align:left;font-weight:500;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
 .st-t td{padding:7px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}.st-t td.win{color:var(--win)}.st-t td.loss{color:var(--loss)}
 .st-chips{display:flex;flex-wrap:wrap;gap:6px}
+.st h5{margin:10px 0 6px;font-size:13px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.edge .rv-bar{margin:4px 0}.edge .rv-bar h5{margin:0}
+.edge .rv-bar select{min-height:40px;background:var(--panel);color:var(--ink);border:1px solid var(--line);padding:0 10px;font:500 14px var(--sans)}
+.edge-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:16px}
+.edge-t td.ef{color:var(--muted)}.edge-t td.ek{color:var(--ink);font-weight:600;white-space:normal;min-width:120px}
+.edge-t tr.thin td{opacity:.45}
+.xl-btn{margin-left:auto}
+.jr-more{grid-column:1/-1;border:1px solid var(--line);background:rgba(255,255,255,.015);padding:0}
+.jr-more>summary{cursor:pointer;list-style:none;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:14px 16px}
+.jr-more>summary::-webkit-details-marker{display:none}
+.jr-more>summary b{font-size:15px}.jr-more>summary b::before{content:'▸ ';color:var(--muted)}.jr-more[open]>summary b::before{content:'▾ '}
+.jr-more>summary span{font-size:13px;color:var(--muted)}
+.jr-more>.jr-fields{padding:0 16px 16px}
+.seg2.multi{flex-wrap:wrap}.seg2.multi .seg-b{border-bottom:1px solid var(--line);min-height:36px;padding:0 12px;font-size:13px}
+.jr-calc{grid-column:1/-1;margin:0;font:600 13px var(--mono);color:var(--kana-c, var(--ink));min-height:1em}
+.je-td{color:var(--muted);font-size:12px}
 .rv-bar select{min-height:40px;background:var(--panel);color:var(--ink);border:1px solid var(--line);padding:0 10px;font:500 14px var(--sans)}
 @media (max-width:640px){.st-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.st-row{grid-template-columns:84px minmax(0,1fr) auto}}
 .jd-strip{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;margin-bottom:6px;scrollbar-width:thin}
@@ -1077,6 +1094,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
           <a class="tab" href="#advanced" data-tab="advanced" id="adv-tab" hidden>Advanced</a>
           <a class="tab" href="#journal" data-tab="journal">Journal</a>
           <a class="tab" href="#leaderboard" data-tab="leaderboard">Leaderboard</a>
+          <a class="tab" href="#stats" data-tab="stats">Stats</a>
           <a class="tab" href="#profile" data-tab="profile">Profile</a>
           <a class="tab" href="#admin" data-tab="admin" id="admin-tab" hidden>Admin</a>
         </nav>
@@ -1156,6 +1174,15 @@ img,video{-webkit-user-drag:none;user-drag:none}
         <p><b>Psych</b>: points for discipline, built from approved journal entries. <b>Payouts</b>: payouts an admin has certified, added up per member.</p>
       </div>
       <div id="lb"></div>
+    </main>
+
+    <!-- STATS -->
+    <main class="main" data-view="stats" hidden>
+      <div class="view-h">
+        <h2>stats</h2>
+        <p>Every student's journal in one place: when trades get taken, which days people sit out, how news lines up with no-trade days. Switch to <b>Me</b> for your own numbers.</p>
+      </div>
+      <div id="stx"></div>
     </main>
 
     <!-- BREAKDOWNS -->
@@ -2712,6 +2739,46 @@ img,video{-webkit-user-drag:none;user-drag:none}
       fb.appendChild(pl2); fb.appendChild(un);
       var sw = el('div','fld wide'); sw.appendChild(document.createTextNode(required ? 'Screenshots' : 'Screenshots (optional)')); sw.appendChild(fb); grid2.appendChild(sw);
     }
+    // optional trade data: feeds "What works best" and the Excel export
+    function tradeData(){
+      if (!D.tz){ var btz = ''; try { btz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (err) {} D.tz = btz || 'America/New_York'; }
+      var box = el('details','jr-more wide'); if (JR.more !== false) box.open = true;
+      box.addEventListener('toggle', function(){ JR.more = box.open; });
+      var sm = el('summary'); sm.appendChild(el('b',null,'Trade data')); sm.appendChild(el('span',null,'Optional, but the more you fill in, the better the stats get at showing what actually works.')); box.appendChild(sm);
+      var g = el('div','jr-fields'), put = function(label, ctl, wide, hint){ var w = fld(label, ctl, hint); if (wide) w.classList.add('wide'); g.appendChild(w); return ctl; };
+      var num = function(name, ph){ var i = txt(name,'number',ph); i.step = 'any'; i.inputMode = 'decimal'; i.addEventListener('input', calc); return i; };
+      var multi = function(name, opts){ var w = el('div','seg2 multi'); D[name] = D[name] || [];
+        opts.forEach(function(o){ var b = el('button','seg-b' + (D[name].indexOf(o) >= 0 ? ' on' : ''), o); b.type = 'button'; b.setAttribute('aria-pressed', D[name].indexOf(o) >= 0 ? 'true' : 'false');
+          b.addEventListener('click', function(){ var i = D[name].indexOf(o); if (i >= 0) D[name].splice(i, 1); else D[name].push(o);
+            if (name === 'swept' && o === 'Nothing swept' && i < 0) D[name] = ['Nothing swept']; else if (name === 'swept' && i < 0) D[name] = D[name].filter(function(x){ return x !== 'Nothing swept'; });
+            Array.prototype.forEach.call(w.children, function(c){ var on = D[name].indexOf(c.textContent) >= 0; c.classList.toggle('on', on); c.setAttribute('aria-pressed', on ? 'true' : 'false'); }); });
+          w.appendChild(b); }); return w; };
+      var tzs = el('select'); var tzl = TD.TZS.slice(); if (!TD.TZS.some(function(t){ return t[0] === D.tz; })) tzl.push([D.tz, D.tz.replace(/_/g,' ')]);
+      tzl.forEach(function(t){ var o = el('option',null,t[1]); o.value = t[0]; tzs.appendChild(o); }); tzs.value = D.tz; tzs.addEventListener('change', function(){ D.tz = tzs.value; });
+      put('Direction', seg([['long','Long'],['short','Short']], D.dir || '', function(v){ D.dir = v; drawJournal(host); }));
+      put('Entry type', sel('entryType', TD.ENTRY_TYPES));
+      put('Times above are in', tzs, false, 'So everyone’s times line up in New York time.');
+      var xt = txt('exitTime','time'); xt.addEventListener('input', calc); put('Exit time', xt);
+      put('Entry price', num('pEntry','e.g. 21450.25')); put('Stop price', num('pStop'));
+      put('Target price', num('pTarget')); put('Exit price', num('pExit'));
+      put('Risk on the trade ($)', num('risk','e.g. 250'), false, 'What you’d lose at your stop.');
+      put('Most it went against you (pts)', num('mae','e.g. 8')); put('Most it went your way (pts)', num('mfe','e.g. 40'));
+      put('Bias timeframe', sel('htf', TD.HTFS));
+      put('HTF bias', seg([['bullish','Bullish'],['bearish','Bearish'],['neutral','Neutral']], D.bias || '', function(v){ D.bias = v; drawJournal(host); }));
+      put('Entry timeframe', sel('ltf', TD.LTFS));
+      put('Setup grade', seg(TD.GRADES.map(function(x){ return [x, x]; }), D.grade || '', function(v){ D.grade = v; drawJournal(host); }));
+      put('How you felt before entering', sel('emotion', TD.EMOTIONS));
+      put('Liquidity swept before entry', multi('swept', TD.SWEPT), true);
+      put('Confluence', multi('confl', TD.CONFL), true);
+      put('How you managed it', multi('manage', TD.MANAGE), true);
+      put('Mistakes (be honest, it only helps you)', multi('mistakes', TD.MISTAKES), true);
+      var cv = el('p','jr-calc'); g.appendChild(cv);
+      function calc(){ var e = { kind:'trade', dir:D.dir, pnl:+D.pnl, risk:+D.risk || undefined, pEntry:numv(D.pEntry), pStop:numv(D.pStop), pTarget:numv(D.pTarget), pExit:numv(D.pExit), time:D.time, exitTime:D.exitTime };
+        var bits = [], pr = plannedR(e), rr = rOf(e), hm = holdMin(e); if (isNum(pr)) bits.push('Planned ' + pr.toFixed(2) + 'R'); if (isNum(rr)) bits.push('Result ' + fmtRm(rr)); if (isNum(hm)) bits.push('Held ' + hm + ' min');
+        cv.textContent = bits.join(' · '); }
+      calc(); box.appendChild(g); grid2.appendChild(box);
+    }
+    function numv(v){ if (v === undefined || v === null || String(v).trim() === '') return undefined; var n = Number(v); return isFinite(n) ? n : undefined; }
     function txt(name, type, ph, list){ var i = inputEl(type, D[name], ph); i.addEventListener('input', function(){ D[name] = i.value; preview(); }); if (list){ i.setAttribute('list', list); } return i; }
     function sel(name, opts){ var x = el('select'); x.appendChild(el('option',null,'Choose…')).value = ''; opts.forEach(function(o){ var op = el('option',null,o); op.value = o; x.appendChild(op); }); x.value = D[name] || ''; x.addEventListener('change', function(){ D[name] = x.value; }); return x; }
     var SESSIONS = ['Asia','London','New York AM','New York PM'];
@@ -2727,6 +2794,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       field('Entry model', sel('model', ENTRY_MODELS));
       var ov = txt('overview','textarea','What you saw, why you took it, how you managed it'); ov.rows = 4; field('Trade overview', ov, true);
       shotsField(true);
+      tradeData();
     } else {
       field('Date', txt('date','date'));
       field('Session', sel('session', SESSIONS));
@@ -2746,6 +2814,10 @@ img,video{-webkit-user-drag:none;user-drag:none}
     var post = el('button','pbtn pri','Post entry'); post.type = 'button';
     post.addEventListener('click', function(){
       if (JR.busy){ toast('Wait for your screenshots to finish uploading.'); return; }
+      if (JR.kind === 'trade' && D.dir && isNum(numv(D.pEntry)) && isNum(numv(D.pStop))){
+        var en = numv(D.pEntry), sp = numv(D.pStop);
+        if (D.dir === 'long' ? sp >= en : sp <= en){ toast('Your stop price is on the wrong side of your entry for a ' + D.dir + '. Check the prices or the direction.'); return; }
+      }
       var need = [];
       if (JR.kind === 'trade'){
         [['pair','Pair'],['account','Account type'],['session','Session'],['date','Trade date'],['time','Time'],['contracts','Contracts'],['outcome','Outcome'],['pnl','Trade P&L'],['model','Entry model']].forEach(function(x){ if (D[x[0]] === undefined || String(D[x[0]]).trim() === '') need.push(x[1]); });
@@ -2755,7 +2827,9 @@ img,video{-webkit-user-drag:none;user-drag:none}
       if (!D.news) need.push('whether there was high-impact news');
       if (D.followed === undefined) need.push('whether you followed your rules');
       if (need.length){ toast('Still needed: ' + need.join(', ') + '.'); return; }
-      var entry = JR.kind === 'trade' ? { kind:'trade', pair:D.pair, account:D.account, session:D.session, date:D.date, time:D.time, contracts:+D.contracts, outcome:D.outcome, pnl:+D.pnl, model:D.model, overview:D.overview, files:D.files, followed:D.followed }
+      var entry = JR.kind === 'trade' ? { kind:'trade', pair:D.pair, account:D.account, session:D.session, date:D.date, time:D.time, contracts:+D.contracts, outcome:D.outcome, pnl:+D.pnl, model:D.model, overview:D.overview, files:D.files, followed:D.followed,
+          dir:D.dir, entryType:D.entryType, tz:D.tz, exitTime:D.exitTime, pEntry:numv(D.pEntry), pStop:numv(D.pStop), pTarget:numv(D.pTarget), pExit:numv(D.pExit), risk:numv(D.risk), mae:numv(D.mae), mfe:numv(D.mfe),
+          htf:D.htf, bias:D.bias, ltf:D.ltf, grade:D.grade, emotion:D.emotion, swept:D.swept, confl:D.confl, manage:D.manage, mistakes:D.mistakes }
         : { kind:'none', date:D.date, session:D.session, overview:D.overview, files:D.files, followed:D.followed };
       entry.news = D.news; entry.newsWhat = D.news === 'yes' ? String(D.newsWhat || '').trim() : '';
       post.disabled = true;
@@ -2782,6 +2856,9 @@ img,video{-webkit-user-drag:none;user-drag:none}
     else t.appendChild(el('b',null,'No trades'));
     mn.appendChild(t);
     mn.appendChild(el('div','je-meta', [e.time, e.session, trade ? e.account : '', trade ? e.contracts + (+e.contracts === 1 ? ' contract' : ' contracts') : '', e.news === 'yes' ? 'News: ' + (e.newsWhat || 'yes') : ''].filter(Boolean).join(' · ')));
+    if (trade){ var rr = rOf(e), td2 = [cap(e.dir), e.entryType, e.ltf ? e.ltf + ' entry' : '', e.htf || e.bias ? 'Bias ' + [e.htf, e.bias].filter(Boolean).join(' ') : '', isNum(rr) ? fmtRm(rr) : '', e.grade ? 'Grade ' + e.grade : '', e.emotion,
+        e.swept && e.swept.length ? 'Swept: ' + e.swept.join(', ') : '', e.confl && e.confl.length ? e.confl.join(', ') : '', e.mistakes && e.mistakes.length ? 'Mistakes: ' + e.mistakes.join(', ') : ''].filter(Boolean);
+      if (td2.length) mn.appendChild(el('div','je-meta je-td', td2.join(' · '))); }
     row.appendChild(mn);
     if (trade) row.appendChild(el('div','je-pnl', (pnl > 0 ? '+' : '') + money(pnl)));
     card.appendChild(row);
@@ -2873,12 +2950,12 @@ img,video{-webkit-user-drag:none;user-drag:none}
       if (e.followed) S.followed++;
       var dw = DOW[new Date(e.date + 'T12:00:00').getDay()];
       if (e.kind === 'trade'){
-        S.trades.push(e); S.tradeDays[e.date] = 1; S.pnl += +e.pnl || 0;
+        S.trades.push(e); S.tradeDays[(e._u || '') + '|' + e.date] = 1; S.pnl += +e.pnl || 0;
         bump(S.dow, dw, e); bump(S.sess, e.session, e); bump(S.model, e.model, e); bump(S.acct, isPaper(e) ? 'Paper / demo' : (e.account || 'Other'), e);
-        if (/^\d{2}:\d{2}$/.test(e.time || '')){ var hh = +e.time.slice(0,2), mm = +e.time.slice(3,5), b = String(hh).padStart(2,'0') + ':' + (mm < 30 ? '00' : '30'); S.hours[b] = (S.hours[b] || 0) + 1; }
+        var tny = nyTime(e); if (tny){ var hh = +tny.slice(0,2), mm = +tny.slice(3,5), b = String(hh).padStart(2,'0') + ':' + (mm < 30 ? '00' : '30'); S.hours[b] = (S.hours[b] || 0) + 1; }
         if (e.news === 'yes') bump(S.news, 'Trades on news days', e); else if (e.news === 'no') bump(S.news, 'Trades on quiet days', e);
       } else {
-        S.none.push(e); S.noneDays[e.date] = 1; var r = bump(S.dow, dw); r.none++;
+        S.none.push(e); S.noneDays[(e._u || '') + '|' + e.date] = 1; var r = bump(S.dow, dw); r.none++;
         if (e.news === 'yes') r.news++;
       }
     });
@@ -2905,13 +2982,20 @@ img,video{-webkit-user-drag:none;user-drag:none}
       [String(td + nd), 'Days journaled'], [String(td), 'Trade days', 'win'], [String(nd), 'No-trade days'], [pct(nd, td + nd) + '%', 'Days sat out'],
       [String(T), 'Trades'], [pct(wins, T) + '%', 'Win rate (TP)', wins >= losses ? 'win' : 'loss'], [money(S.pnl), 'Net P&L', S.pnl > 0 ? 'win' : S.pnl < 0 ? 'loss' : ''], [pct(S.followed, S.entries) + '%', 'Rules followed']
     ]));
+    var Rs = S.trades.map(rOf).filter(isNum), gw = 0, gl = 0, nw = 0, nl = 0;
+    S.trades.forEach(function(e){ var p = +e.pnl || 0; if (p > 0){ gw += p; nw++; } else if (p < 0){ gl -= p; nl++; } });
+    var avgR = Rs.length ? Rs.reduce(function(a, b){ return a + b; }, 0) / Rs.length : undefined, pfv = gl ? gw / gl : (gw ? Infinity : undefined);
+    wrap.appendChild(statTiles([
+      [fmtRm(avgR), 'Avg R' + (Rs.length && Rs.length < T ? ' (' + Rs.length + ' trades)' : ''), isNum(avgR) ? (avgR > 0 ? 'win' : avgR < 0 ? 'loss' : '') : ''],
+      [fmtPf(pfv), 'Profit factor'], [nw ? money(gw / nw) : '–', 'Avg win', 'win'], [nl ? money(-gl / nl) : '–', 'Avg loss', nl ? 'loss' : '']
+    ]));
     var grid = el('div','st-grid');
     // when trades are taken
     var hk = Object.keys(S.hours).sort(), hmax = 0, hpeak = '';
     hk.forEach(function(k){ if (S.hours[k] > hmax){ hmax = S.hours[k]; hpeak = k; } });
     var endOf = function(k){ var h = +k.slice(0,2), m = +k.slice(3,5) + 30; if (m >= 60){ h++; m -= 60; } return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'); };
     grid.appendChild(statBars('When trades are taken', hk.map(function(k){ return { k: k + '–' + endOf(k), v: S.hours[k], hi: k === hpeak }; }), function(r){ return r.v + (r.v === 1 ? ' trade' : ' trades'); },
-      hpeak ? 'Most trades: ' + hpeak + '–' + endOf(hpeak) + ' (times as logged)' : ''));
+      hpeak ? 'Most trades: ' + hpeak + '–' + endOf(hpeak) + ' New York time' : ''));
     // weekdays
     var days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].filter(function(d){ return S.dow[d]; });
     var dbox = el('section','st-card'); dbox.appendChild(el('h4',null,'By weekday'));
@@ -2919,7 +3003,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     else { var tb = el('table','st-t'), hr = el('tr'); ['Day','Trades','Win rate','P&L','No-trade days','…with news'].forEach(function(h){ hr.appendChild(el('th',null,h)); }); tb.appendChild(hr);
       days.forEach(function(d){ var r = S.dow[d], tr = el('tr'); tr.appendChild(el('td',null,d)); tr.appendChild(el('td',null,String(r.n))); tr.appendChild(el('td',null, r.n ? pct(r.tp || 0, r.n) + '%' : '–'));
         var pc = el('td', r.pnl > 0 ? 'win' : r.pnl < 0 ? 'loss' : '', r.n ? money(r.pnl) : '–'); tr.appendChild(pc); tr.appendChild(el('td',null,String(r.none || 0))); tr.appendChild(el('td',null,String(r.news || 0))); tb.appendChild(tr); });
-      dbox.appendChild(tb); }
+      var dw2 = el('div','tbl-wrap'); dw2.appendChild(tb); dbox.appendChild(dw2); }
     grid.appendChild(dbox);
     // no-trade days and news
     var nbox = el('section','st-card'); nbox.appendChild(el('h4',null,'No-trade days & news'));
@@ -2938,6 +3022,9 @@ img,video{-webkit-user-drag:none;user-drag:none}
     grid.appendChild(statBars('By entry model', rowsOf(S.model), fmtR));
     grid.appendChild(statBars('By account', rowsOf(S.acct), fmtR));
     wrap.appendChild(grid);
+    // what works best: win rate, reliable win rate, R and P&L by every factor logged
+    var tcopy = S.trades.filter(function(e){ return entryStatus(e) !== 'denied'; }).map(function(e){ return Object.assign({}, e); }); numberTrades(tcopy);
+    var eg = el('div','st-grid'); eg.appendChild(edgeCard(tcopy)); wrap.appendChild(eg);
     // admins: one row per student
     if (opts.byMember && opts.byMember.length){
       var mb = el('section','st-card wide'); mb.appendChild(el('h4',null,'By student'));
@@ -2952,6 +3039,317 @@ img,video{-webkit-user-drag:none;user-drag:none}
     }
     if (!ents.length) wrap.insertBefore(el('p','pf-none','No journal entries in this period yet.'), wrap.firstChild);
     return wrap;
+  }
+
+  /* ---------- trade data: the optional fields, what they mean, and the "what works best" analysis ---------- */
+  // same lists as api/member.js
+  var TD = {
+    HTFS: ['Weekly','Daily','4H','1H','15m'], LTFS: ['30s','1m','2m','3m','5m','15m'],
+    SWEPT: ['Asia high','Asia low','London high','London low','Previous day high','Previous day low','Equal highs','Equal lows','Nothing swept'],
+    CONFL: ['FVG','Order block','Breaker','SMT divergence','Displacement','Premium / discount','Killzone','Opening range'],
+    MANAGE: ['Held to target / stop','Took partials','Moved stop to BE','Trailed stop','Closed early'],
+    MISTAKES: ['Entered early','Entered late','Moved stop','Oversized','Chased','Traded through news','Revenge trade','Overtraded'],
+    GRADES: ['A+','A','B','C'], ENTRY_TYPES: ['Limit','Market','Stop'], EMOTIONS: ['Calm','Confident','Hesitant','FOMO','Frustrated','Tired'],
+    TZS: [['America/New_York','New York (ET)'],['America/Chicago','Chicago (CT)'],['America/Denver','Denver (MT)'],['America/Los_Angeles','Los Angeles (PT)'],['Europe/London','London (UK)']]
+  };
+  var isNum = function(v){ return typeof v === 'number' && isFinite(v); };
+  var r2 = function(n){ return Math.round(n * 100) / 100; };
+  // R multiple: P&L ÷ risk when risk is logged, otherwise from the prices
+  function rOf(e){
+    if (!e || e.kind !== 'trade') return undefined;
+    if (isNum(e.risk) && e.risk > 0 && isNum(+e.pnl)) return r2(+e.pnl / e.risk);
+    if (isNum(e.pEntry) && isNum(e.pStop) && isNum(e.pExit) && e.pEntry !== e.pStop && e.dir){
+      var sgn = e.dir === 'short' ? -1 : 1; return r2((e.pExit - e.pEntry) * sgn / Math.abs(e.pEntry - e.pStop)); }
+    return undefined;
+  }
+  function plannedR(e){ return (isNum(e.pEntry) && isNum(e.pStop) && isNum(e.pTarget) && e.pEntry !== e.pStop) ? r2(Math.abs(e.pTarget - e.pEntry) / Math.abs(e.pEntry - e.pStop)) : undefined; }
+  function holdMin(e){ if (!/^\d{2}:\d{2}$/.test(e.time || '') || !/^\d{2}:\d{2}$/.test(e.exitTime || '')) return undefined;
+    var a = +e.time.slice(0,2) * 60 + +e.time.slice(3), b = +e.exitTime.slice(0,2) * 60 + +e.exitTime.slice(3); return b >= a ? b - a : b + 1440 - a; }
+  // the entry time in New York time (when the student said which time zone they logged in); otherwise as logged
+  var TZOFF = {};
+  function tzOffsetMin(tz, ms){
+    try { var key = tz + '|' + Math.floor(ms / 36e5); if (TZOFF[key] !== undefined) return TZOFF[key];
+      var p = {}; new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }).formatToParts(new Date(ms)).forEach(function(x){ p[x.type] = x.value; });
+      var asUtc = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute); return (TZOFF[key] = Math.round((asUtc - ms) / 60000)); }
+    catch (err){ return 0; }
+  }
+  function nyTime(e){
+    if (!/^\d{2}:\d{2}$/.test(e.time || '')) return '';
+    if (!e.tz || e.tz === 'America/New_York' || !/^\d{4}-\d{2}-\d{2}$/.test(e.date || '')) return e.time;
+    var y = +e.date.slice(0,4), m = +e.date.slice(5,7) - 1, d = +e.date.slice(8,10), guess = Date.UTC(y, m, d, +e.time.slice(0,2), +e.time.slice(3));
+    var utc = guess - tzOffsetMin(e.tz, guess) * 60000, ny = utc + tzOffsetMin('America/New_York', utc) * 60000, t = new Date(ny);
+    return String(t.getUTCHours()).padStart(2,'0') + ':' + String(t.getUTCMinutes()).padStart(2,'0');
+  }
+  function halfHour(t){ if (!t) return ''; var h = +t.slice(0,2), m = +t.slice(3,5), s = String(h).padStart(2,'0') + ':' + (m < 30 ? '00' : '30'), eh = m < 30 ? h : (h + 1) % 24, em = m < 30 ? '30' : '00'; return s + '–' + String(eh).padStart(2,'0') + ':' + em; }
+  function alignOf(e){ if (!e.bias || !e.dir) return ''; if (e.bias === 'neutral') return 'Neutral bias'; return (e.bias === 'bullish') === (e.dir === 'long') ? 'With HTF bias' : 'Against HTF bias'; }
+  function bucket(v, edges, labels){ if (!isNum(v)) return ''; for (var i = 0; i < edges.length; i++) if (v < edges[i]) return labels[i]; return labels[labels.length - 1]; }
+  // number each student's trades within a day (1st trade, 2nd…)
+  function numberTrades(trades){
+    var by = {}; trades.forEach(function(e){ var k = (e._u || '') + '|' + e.date; (by[k] = by[k] || []).push(e); });
+    Object.keys(by).forEach(function(k){ by[k].sort(function(a, b){ return String(a.time || '').localeCompare(String(b.time || '')); }).forEach(function(e, i){ e._n = i + 1; }); });
+  }
+  var cap = function(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; };
+  // every factor the analysis splits trades by. f(e) → a value, a list of values, or '' when not logged
+  var FACTORS = [
+    ['Entry model', function(e){ return e.model; }],
+    ['Session', function(e){ return e.session; }],
+    ['Entry time (NY)', function(e){ return halfHour(nyTime(e)); }],
+    ['Weekday', function(e){ return /^\d{4}-\d{2}-\d{2}$/.test(e.date || '') ? DOW[new Date(e.date + 'T12:00:00').getDay()] : ''; }],
+    ['Direction', function(e){ return cap(e.dir); }],
+    ['HTF bias vs direction', alignOf],
+    ['Bias timeframe', function(e){ return e.htf; }],
+    ['Entry timeframe', function(e){ return e.ltf; }],
+    ['Liquidity swept', function(e){ return e.swept || ''; }],
+    ['Confluence', function(e){ return e.confl || ''; }],
+    ['Setup grade', function(e){ return e.grade; }],
+    ['Entry type', function(e){ return e.entryType; }],
+    ['Emotion before entry', function(e){ return e.emotion; }],
+    ['Trade management', function(e){ return e.manage || ''; }],
+    ['Mistakes', function(e){ return e.mistakes || ''; }],
+    ['Planned R', function(e){ return bucket(plannedR(e), [1.5, 2.5, 4], ['Under 1.5R','1.5–2.5R','2.5–4R','4R+']); }],
+    ['Hold time', function(e){ return bucket(holdMin(e), [5, 15, 30, 60, 120], ['Under 5 min','5–15 min','15–30 min','30–60 min','1–2 hours','2+ hours']); }],
+    ['Trade of the day', function(e){ return e._n ? (e._n >= 3 ? '3rd+ trade' : e._n === 1 ? '1st trade' : '2nd trade') : ''; }],
+    ['Instrument', function(e){ return String(e.pair || '').toUpperCase().trim(); }],
+    ['Account', function(e){ return isPaper(e) ? 'Paper / demo' : (e.account || ''); }],
+    ['News day', function(e){ return e.news === 'yes' ? 'News day' : e.news === 'no' ? 'No news' : ''; }],
+    ['Rules followed', function(e){ return e.followed === true ? 'Followed rules' : e.followed === false ? 'Broke rules' : ''; }]
+  ];
+  var COMBOS = [['Entry model','Session'],['Entry model','Entry time (NY)'],['Entry model','HTF bias vs direction'],['Entry model','Liquidity swept'],['Entry model','Weekday'],['Session','Weekday'],['Entry model','Confluence'],['Entry model','Setup grade']];
+  var factorFn = function(name){ for (var i = 0; i < FACTORS.length; i++) if (FACTORS[i][0] === name) return FACTORS[i][1]; return function(){ return ''; }; };
+  var valsOf = function(fn, e){ var v = fn(e); return Array.isArray(v) ? v : v ? [v] : []; };
+  // win rate you can lean on: the low end of the 95% range for the true win rate (small samples get pulled down)
+  function wilson(k, n){ if (!n) return 0; var z = 1.96, p = k / n, den = 1 + z * z / n; return Math.max(0, (p + z * z / (2 * n) - z * Math.sqrt(p * (1 - p) / n + z * z / (4 * n * n))) / den); }
+  function groupRows(trades, keysOf){
+    var g = {};
+    trades.forEach(function(e){ keysOf(e).forEach(function(k){ var r = g[k] || (g[k] = { k:k, n:0, tp:0, sl:0, be:0, pnl:0, rs:0, rn:0, gw:0, gl:0 });
+      r.n++; if (r[e.outcome] !== undefined) r[e.outcome]++; var p = +e.pnl || 0; r.pnl += p; if (p > 0) r.gw += p; else r.gl -= p; var R = rOf(e); if (isNum(R)){ r.rs += R; r.rn++; } }); });
+    return Object.keys(g).map(function(k){ var r = g[k]; r.wr = r.n ? r.tp / r.n : 0; r.lo = wilson(r.tp, r.n); r.avgR = r.rn ? r.rs / r.rn : undefined; r.pf = r.gl ? r.gw / r.gl : (r.gw ? Infinity : undefined); return r; });
+  }
+  function factorRows(trades, name){ var fn = factorFn(name); return groupRows(trades, function(e){ return valsOf(fn, e); }).map(function(r){ r.f = name; return r; }); }
+  function comboRows(trades, a, b){ var fa = factorFn(a), fb = factorFn(b);
+    return groupRows(trades, function(e){ var out = []; valsOf(fa, e).forEach(function(x){ valsOf(fb, e).forEach(function(y){ out.push(x + ' + ' + y); }); }); return out; }).map(function(r){ r.f = a + ' + ' + b; return r; }); }
+  var SORTS = { lo: function(r){ return r.lo; }, wr: function(r){ return r.wr; }, r: function(r){ return isNum(r.avgR) ? r.avgR : -1e9; }, pnl: function(r){ return r.pnl; } };
+  var EDGE = { min: 5, sort: 'lo', factor: 'Entry model' };
+  var fmtRm = function(v){ return isNum(v) ? (v > 0 ? '+' : '') + v.toFixed(2) + 'R' : '–'; };
+  var fmtPf = function(v){ return v === Infinity ? '∞' : isNum(v) ? v.toFixed(2) : '–'; };
+  function edgeTable(rows, showFactor){
+    var tw = el('div','tbl-wrap'), t = el('table','st-t edge-t'), hr = el('tr');
+    (showFactor ? ['Factor','Condition'] : ['Condition']).concat(['Trades','Win rate','Reliable WR','Avg R','Profit factor','P&L']).forEach(function(h){ hr.appendChild(el('th',null,h)); }); t.appendChild(hr);
+    rows.forEach(function(r){ var tr = el('tr', r.n < EDGE.min ? 'thin' : '');
+      if (showFactor) tr.appendChild(el('td','ef', r.f)); tr.appendChild(el('td','ek', r.k));
+      tr.appendChild(el('td',null,String(r.n))); tr.appendChild(el('td',null, Math.round(r.wr * 100) + '%'));
+      tr.appendChild(el('td',null, Math.round(r.lo * 100) + '%')); tr.appendChild(el('td', isNum(r.avgR) ? (r.avgR > 0 ? 'win' : r.avgR < 0 ? 'loss' : '') : '', fmtRm(r.avgR)));
+      tr.appendChild(el('td',null, fmtPf(r.pf))); tr.appendChild(el('td', r.pnl > 0 ? 'win' : r.pnl < 0 ? 'loss' : '', money(r.pnl))); t.appendChild(tr); });
+    tw.appendChild(t); return tw;
+  }
+  function edgeCard(trades){
+    var box = el('section','st-card wide edge'); box.appendChild(el('h4',null,'What works best'));
+    function draw(){
+      while (box.childNodes.length > 1) box.removeChild(box.lastChild);
+      var withData = trades.filter(function(e){ return e.dir || e.pEntry !== undefined || e.htf || e.swept || e.confl || e.grade; }).length;
+      box.appendChild(el('p','adm-note', trades.length + ' trades analysed · ' + withData + ' with the extra trade data. “Reliable WR” is the low end of where the true win rate probably sits: it pulls small samples down, so it’s the fairest way to rank. Rows with fewer than ' + EDGE.min + ' trades are hidden from the rankings.'));
+      var ctl = el('div','rv-bar');
+      ctl.appendChild(el('span','adm-note','Min trades')); ctl.appendChild(seg([[3,'3'],[5,'5'],[10,'10'],[20,'20']], EDGE.min, function(v){ EDGE.min = v; draw(); }));
+      ctl.appendChild(el('span','adm-note','Rank by')); ctl.appendChild(seg([['lo','Reliable WR'],['wr','Win rate'],['r','Avg R'],['pnl','P&L']], EDGE.sort, function(v){ EDGE.sort = v; draw(); }));
+      box.appendChild(ctl);
+      if (!trades.length){ box.appendChild(el('p','adm-note','No trades in this period yet.')); return; }
+      var key = SORTS[EDGE.sort], desc = function(a, b){ return key(b) - key(a) || b.n - a.n; };
+      var singles = []; FACTORS.forEach(function(f){ singles = singles.concat(factorRows(trades, f[0])); });
+      var usable = function(r){ return r.n >= EDGE.min && (EDGE.sort !== 'r' || isNum(r.avgR)); };
+      var enough = singles.filter(usable);
+      var two = el('div','edge-2');
+      var best = el('div'); best.appendChild(el('h5',null,'Best conditions')); best.appendChild(enough.length ? edgeTable(enough.slice().sort(desc).slice(0, 10), true) : el('p','adm-note','Not enough trades yet at this minimum.'));
+      var worst = el('div'); worst.appendChild(el('h5',null,'Worst conditions')); worst.appendChild(enough.length ? edgeTable(enough.slice().sort(function(a, b){ return desc(b, a); }).slice(0, 10), true) : el('p','adm-note','–'));
+      two.appendChild(best); two.appendChild(worst); box.appendChild(two);
+      var combos = []; COMBOS.forEach(function(c){ combos = combos.concat(comboRows(trades, c[0], c[1])); });
+      var ce = combos.filter(usable).sort(desc).slice(0, 12);
+      box.appendChild(el('h5',null,'Best combinations'));
+      box.appendChild(ce.length ? edgeTable(ce, true) : el('p','adm-note','Combinations need more trades: each pairing needs at least ' + EDGE.min + '.'));
+      // one factor in full
+      var ex = el('div','rv-bar'); ex.appendChild(el('h5',null,'Look at one factor'));
+      var fs = el('select'); fs.setAttribute('aria-label','Factor'); FACTORS.forEach(function(f){ var o = el('option',null,f[0]); o.value = f[0]; fs.appendChild(o); }); fs.value = EDGE.factor;
+      fs.addEventListener('change', function(){ EDGE.factor = fs.value; draw(); }); ex.appendChild(fs); box.appendChild(ex);
+      var fr = factorRows(trades, EDGE.factor).sort(desc);
+      box.appendChild(fr.length ? edgeTable(fr, false) : el('p','adm-note','Nobody has logged ' + EDGE.factor.toLowerCase() + ' yet in this period.'));
+      if (fr.some(function(r){ return r.n < EDGE.min; })) box.appendChild(el('p','adm-note','Faded rows have fewer than ' + EDGE.min + ' trades: too few to trust yet.'));
+    }
+    draw(); return box;
+  }
+
+  /* ---------- Excel export (a real .xlsx, built in the browser) ---------- */
+  var CRC = (function(){ var t = []; for (var n = 0; n < 256; n++){ var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function crc32(b){ var c = 0xFFFFFFFF; for (var i = 0; i < b.length; i++) c = CRC[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function zipStore(files){   // files: [[name, Uint8Array]] → stored (uncompressed) zip
+    var enc = new TextEncoder(), parts = [], central = [], off = 0, now = new Date();
+    var dt = ((now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1)) & 0xFFFF, dd = (((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate()) & 0xFFFF;
+    files.forEach(function(f){
+      var name = enc.encode(f[0]), data = f[1], crc = crc32(data), h = new DataView(new ArrayBuffer(30));
+      h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true); h.setUint16(10, dt, true); h.setUint16(12, dd, true);
+      h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true); h.setUint16(26, name.length, true); h.setUint16(28, 0, true);
+      parts.push(new Uint8Array(h.buffer), name, data);
+      var c = new DataView(new ArrayBuffer(46));
+      c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true); c.setUint16(12, dt, true); c.setUint16(14, dd, true);
+      c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true); c.setUint16(28, name.length, true); c.setUint32(42, off, true);
+      central.push(new Uint8Array(c.buffer), name);
+      off += 30 + name.length + data.length;
+    });
+    var cdSize = central.reduce(function(t, p){ return t + p.length; }, 0), end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true); end.setUint32(12, cdSize, true); end.setUint32(16, off, true);
+    return new Blob(parts.concat(central, [new Uint8Array(end.buffer)]), { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  }
+  var xesc = function(s){ return String(s).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '').slice(0, 32000).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+  var colName = function(i){ var s = ''; i++; while (i){ var m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
+  // sheets: [{ name, cols:[[header, type, width]], rows:[[…]] }]; type: s text, n number, d date (YYYY-MM-DD), p percent (0–1), $ money, r 2 decimals
+  function xlsxBlob(sheets){
+    var enc = new TextEncoder(), NS = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main', RNS = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+    var STY = { s:0, n:0, d:2, p:3, $:4, r:5 };
+    var files = [], defs = [];
+    sheets.forEach(function(sh, si){
+      var last = colName(sh.cols.length - 1), n = sh.rows.length + 1, x = [];
+      x.push('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="' + NS + '" xmlns:r="' + RNS + '"><sheetViews><sheetView workbookViewId="0"' + (si === 0 ? ' tabSelected="1"' : '') + '><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>');
+      sh.cols.forEach(function(c, i){ x.push('<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + (c[2] || 14) + '" customWidth="1"/>'); });
+      x.push('</cols><sheetData><row r="1">');
+      sh.cols.forEach(function(c, i){ x.push('<c r="' + colName(i) + '1" t="inlineStr" s="1"><is><t>' + xesc(c[0]) + '</t></is></c>'); });
+      x.push('</row>');
+      sh.rows.forEach(function(row, ri){
+        var rn = ri + 2; x.push('<row r="' + rn + '">');
+        row.forEach(function(v, i){
+          if (v === undefined || v === null || v === '') return;
+          var ref = colName(i) + rn, t = sh.cols[i][1] || 's';
+          if (t === 'd' && /^\d{4}-\d{2}-\d{2}$/.test(v)){ var serial = (Date.UTC(+v.slice(0,4), +v.slice(5,7) - 1, +v.slice(8,10)) - Date.UTC(1899, 11, 30)) / 864e5; x.push('<c r="' + ref + '" s="2"><v>' + serial + '</v></c>'); return; }
+          if (t !== 's' && typeof v === 'number' && isFinite(v)){ x.push('<c r="' + ref + '" s="' + STY[t] + '"><v>' + v + '</v></c>'); return; }
+          x.push('<c r="' + ref + '" t="inlineStr"><is><t xml:space="preserve">' + xesc(v) + '</t></is></c>');
+        });
+        x.push('</row>');
+      });
+      x.push('</sheetData><autoFilter ref="A1:' + last + n + '"/><pageMargins left="0.5" right="0.5" top="0.75" bottom="0.75" header="0.3" footer="0.3"/></worksheet>');
+      files.push(['xl/worksheets/sheet' + (si + 1) + '.xml', x.join('')]);
+      defs.push('<definedName name="_xlnm._FilterDatabase" localSheetId="' + si + '" hidden="1">\'' + xesc(sh.name) + '\'!$A$1:$' + last + '$' + n + '</definedName>');
+    });
+    var wb = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="' + NS + '" xmlns:r="' + RNS + '"><bookViews><workbookView/></bookViews><sheets>' +
+      sheets.map(function(sh, i){ return '<sheet name="' + xesc(sh.name) + '" sheetId="' + (i + 1) + '" r:id="rId' + (i + 1) + '"/>'; }).join('') + '</sheets><definedNames>' + defs.join('') + '</definedNames></workbook>';
+    var rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      sheets.map(function(sh, i){ return '<Relationship Id="rId' + (i + 1) + '" Type="' + RNS + '/worksheet" Target="worksheets/sheet' + (i + 1) + '.xml"/>'; }).join('') +
+      '<Relationship Id="rId' + (sheets.length + 1) + '" Type="' + RNS + '/styles" Target="styles.xml"/></Relationships>';
+    var styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="' + NS + '"><numFmts count="2"><numFmt numFmtId="164" formatCode="&quot;$&quot;#,##0.00;[Red]\\-&quot;$&quot;#,##0.00"/><numFmt numFmtId="165" formatCode="0.00"/></numFmts>' +
+      '<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts>' +
+      '<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0F5F5C"/><bgColor indexed="64"/></patternFill></fill></fills>' +
+      '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
+      '<cellXfs count="6"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/>' +
+      '<xf numFmtId="14" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="9" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>' +
+      '<xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="165" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs>' +
+      '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+    var types = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>' +
+      '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
+      sheets.map(function(sh, i){ return '<Override PartName="/xl/worksheets/sheet' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'; }).join('') + '</Types>';
+    var root = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="' + RNS + '/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+    var all = [['[Content_Types].xml', types], ['_rels/.rels', root], ['xl/workbook.xml', wb], ['xl/_rels/workbook.xml.rels', rels], ['xl/styles.xml', styles]].concat(files);
+    return zipStore(all.map(function(f){ return [f[0], enc.encode(f[1])]; }));
+  }
+  // people: [{ name, id, entries }] → the workbook: every trade, every no-trade day, what works, combinations, and (for several students) one row each
+  function journalWorkbook(people){
+    var join = function(a){ return Array.isArray(a) ? a.join(', ') : ''; };
+    var trades = [], nones = [];
+    people.forEach(function(p){ (p.entries || []).forEach(function(e){ var x = Object.assign({ _u: p.id, _who: p.name }, e); (x.kind === 'trade' ? trades : nones).push(x); }); });
+    var byDate = function(a, b){ return String(a.date + (a.time || '')).localeCompare(String(b.date + (b.time || ''))); };
+    trades.sort(byDate); nones.sort(byDate);
+    var counted = trades.filter(function(e){ return entryStatus(e) !== 'denied'; }); numberTrades(counted);
+    var tCols = [['Student','s',18],['Date','d',12],['Weekday','s',9],['Entry time','s',10],['Exit time','s',10],['Time zone','s',18],['Entry time (NY)','s',14],['Hold (min)','n',10],['Trade # that day','n',14],
+      ['Session','s',14],['Instrument','s',11],['Direction','s',10],['Account','s',14],['Paper / demo','s',12],['Contracts','n',10],['Entry model','s',14],['Entry type','s',10],
+      ['Bias timeframe','s',14],['HTF bias','s',10],['Bias vs direction','s',16],['Entry timeframe','s',14],['Liquidity swept','s',28],['Confluence','s',28],['Setup grade','s',11],['Emotion','s',11],
+      ['Entry price','n',12],['Stop price','n',12],['Target price','n',12],['Exit price','n',12],['Risk ($)','$',11],['Planned R','r',10],['R multiple','r',11],['Max against (pts)','n',15],['Max in favour (pts)','n',16],
+      ['Outcome','s',9],['Win','n',6],['P&L','$',12],['Trade management','s',26],['Mistakes','s',26],['News day','s',9],['Which news','s',14],['Rules followed','s',13],['Status','s',10],['Points','n',8],['Overview','s',60],['Screenshots','n',11]];
+    var tRows = trades.map(function(e){ return [e._who, e.date, /^\d{4}-\d{2}-\d{2}$/.test(e.date) ? DOW[new Date(e.date + 'T12:00:00').getDay()] : '', e.time, e.exitTime, e.tz, nyTime(e), holdMin(e), e._n,
+      e.session, e.pair, cap(e.dir), e.account, isPaper(e) ? 'Yes' : 'No', +e.contracts, e.model, e.entryType,
+      e.htf, cap(e.bias), alignOf(e), e.ltf, join(e.swept), join(e.confl), e.grade, e.emotion,
+      e.pEntry, e.pStop, e.pTarget, e.pExit, e.risk, plannedR(e), rOf(e), e.mae, e.mfe,
+      (e.outcome || '').toUpperCase(), e.outcome === 'tp' ? 1 : 0, +e.pnl || 0, join(e.manage), join(e.mistakes), e.news === 'yes' ? 'Yes' : e.news === 'no' ? 'No' : '', e.newsWhat,
+      e.followed ? 'Yes' : 'No', cap(entryStatus(e)), entryPoints(e), e.overview, (e.files || []).length]; });
+    var nCols = [['Student','s',18],['Date','d',12],['Weekday','s',9],['Session','s',14],['News day','s',9],['Which news','s',14],['Rules followed','s',13],['Status','s',10],['Points','n',8],['Overview','s',60],['Screenshots','n',11]];
+    var nRows = nones.map(function(e){ return [e._who, e.date, /^\d{4}-\d{2}-\d{2}$/.test(e.date) ? DOW[new Date(e.date + 'T12:00:00').getDay()] : '', e.session, e.news === 'yes' ? 'Yes' : e.news === 'no' ? 'No' : '', e.newsWhat, e.followed ? 'Yes' : 'No', cap(entryStatus(e)), entryPoints(e), e.overview, (e.files || []).length]; });
+    var eCols = [['Factor','s',22],['Condition','s',30],['Trades','n',8],['Wins (TP)','n',10],['Losses (SL)','n',11],['Break-even','n',11],['Win rate','p',9],['Reliable WR','p',12],['Avg R','r',8],['Trades with R','n',13],['Profit factor','r',12],['P&L','$',12]];
+    var eRow = function(r){ return [r.f, r.k, r.n, r.tp, r.sl, r.be, r.wr, r.lo, r.avgR, r.rn, r.pf === Infinity ? 'No losses' : r.pf, r.pnl]; };
+    var singles = []; FACTORS.forEach(function(f){ singles = singles.concat(factorRows(counted, f[0]).sort(function(a, b){ return b.n - a.n; })); });
+    var combos = []; COMBOS.forEach(function(c){ combos = combos.concat(comboRows(counted, c[0], c[1])); });
+    combos.sort(function(a, b){ return b.lo - a.lo || b.n - a.n; });
+    var sheets = [{ name:'Trades', cols:tCols, rows:tRows }, { name:'No-trade days', cols:nCols, rows:nRows },
+      { name:'What works', cols:eCols, rows:singles.map(eRow) }, { name:'Combinations', cols:eCols, rows:combos.map(eRow) }];
+    if (people.length > 1){
+      var sCols = [['Student','s',18],['Days journaled','n',14],['Trade days','n',11],['No-trade days','n',13],['Trades','n',8],['Win rate','p',9],['Avg R','r',8],['Rules followed','p',13],['P&L','$',12],['Points','n',8]];
+      sheets.push({ name:'By student', cols:sCols, rows:people.filter(function(p){ return (p.entries || []).length; }).map(function(p){
+        var ok = p.entries.filter(function(e){ return entryStatus(e) !== 'denied'; }), q = journalStats(ok), td = Object.keys(q.tradeDays).length, nd = Object.keys(q.noneDays).length;
+        var w = q.trades.filter(function(e){ return e.outcome === 'tp'; }).length, rs = q.trades.map(rOf).filter(isNum);
+        return [p.name, td + nd, td, nd, q.trades.length, q.trades.length ? w / q.trades.length : '', rs.length ? r2(rs.reduce(function(a, b){ return a + b; }, 0) / rs.length) : '', q.entries ? q.followed / q.entries : '', q.pnl, p.entries.reduce(function(t, e){ return t + entryPoints(e); }, 0)]; }) });
+    }
+    return xlsxBlob(sheets);
+  }
+  function downloadBlob(blob, name){ var a = document.createElement('a'), u = URL.createObjectURL(blob); a.href = u; a.download = name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(u); a.remove(); }, 2000); }
+
+  /* ---------- Stats tab: all journals combined (members: everyone or just me; admins: also one student at a time) ---------- */
+  var STX = { who:'all', per:'30', data:null, rows:null, at:0 };
+  function renderStatsTab(){
+    var host = document.getElementById('stx'); if (!host) return; host.textContent = '';
+    var admin = canAdmin(), bar = el('div','rv-bar');
+    var whoOpts = [['all','Everyone'],['me','Me']];
+    if (admin && STX.rows){
+      var sel = el('select'); sel.setAttribute('aria-label','Whose stats');
+      sel.appendChild(el('option',null,'Everyone combined')).value = 'all'; sel.appendChild(el('option',null,'Me')).value = 'me';
+      STX.rows.filter(function(m){ return (m.entries || []).length; }).sort(function(a, b){ return String(a.displayName || a.username).localeCompare(String(b.displayName || b.username)); })
+        .forEach(function(m){ var o = el('option',null, (m.displayName || m.username) + ' (' + m.entries.length + ')'); o.value = m.id; sel.appendChild(o); });
+      sel.value = STX.who; if (sel.value !== STX.who){ STX.who = 'all'; sel.value = 'all'; }
+      sel.addEventListener('change', function(){ STX.who = sel.value; renderStatsTab(); });
+      bar.appendChild(sel);
+    } else bar.appendChild(seg(whoOpts, STX.who === 'me' ? 'me' : 'all', function(v){ STX.who = v; renderStatsTab(); }));
+    bar.appendChild(seg([['week','This week'],['month','This month'],['30','Last 30 days'],['all','All time']], STX.per, function(v){ STX.per = v; renderStatsTab(); }));
+    var xb = el('button','btn-s xl-btn', admin ? 'Export to Excel' : 'Export my journal to Excel'); xb.type = 'button';
+    xb.title = admin ? 'Downloads what you are looking at: ' + (STX.who === 'all' ? 'every student' : 'this student') + ', this period' : 'Downloads your own journal for this period';
+    xb.addEventListener('click', function(){ exportStats(); }); bar.appendChild(xb);
+    host.appendChild(bar);
+    var body = el('div'); host.appendChild(body);
+    var from = periodFrom(STX.per), keep = function(e){ return e && e.date >= from && entryStatus(e) !== 'denied'; };
+    var fresh = Date.now() - STX.at < 60000;
+    function draw(){
+      body.textContent = '';
+      if (STX.who === 'me'){
+        var mine = (ME.entries || []).filter(keep);
+        if (!ME.journal) body.appendChild(el('p','adm-note','You haven\'t started a journal yet. Create one in the Journal tab and your numbers show up here.'));
+        body.appendChild(statsView(mine)); return;
+      }
+      if (admin && STX.rows){
+        var pool = STX.rows.filter(function(m){ return STX.who === 'all' || m.id === STX.who; });
+        var all = []; pool.forEach(function(m){ (m.entries || []).forEach(function(e){ if (keep(e)) all.push(Object.assign({ _u: m.id }, e)); }); });
+        var people = pool.filter(function(m){ return (m.entries || []).some(keep); }).length;
+        if (STX.who === 'all') body.appendChild(el('p','adm-note', people + (people === 1 ? ' student' : ' students') + ' · ' + all.length + (all.length === 1 ? ' entry' : ' entries') + ' in this period. Click a name in “By student” to see just them.'));
+        body.appendChild(statsView(all, STX.who !== 'all' ? {} : { byMember: pool.map(function(m){ return { m:m, ents:(m.entries || []).filter(keep) }; }).filter(function(x){ return x.ents.length; }),
+          pick: function(id){ STX.who = id; renderStatsTab(); window.scrollTo(0, 0); } }));
+        return;
+      }
+      var d = STX.data || { entries: [] }, ents = (d.entries || []).filter(keep);
+      body.appendChild(el('p','adm-note', 'All students combined' + (d.members ? ' (' + d.members + ' journals)' : '') + '. Names, notes and screenshots stay private.'));
+      body.appendChild(statsView(ents));
+    }
+    function exportStats(){
+      if (!(admin && STX.rows && STX.who !== 'me') && !ME.loaded){ loadMe().then(exportStats); return; }
+      var inPer = function(e){ return e && e.date >= from; }, people;
+      if (admin && STX.rows && STX.who !== 'me'){
+        people = STX.rows.filter(function(m){ return STX.who === 'all' || m.id === STX.who; }).map(function(m){ return { id:m.id, name:m.displayName || m.username || m.id, entries:(m.entries || []).filter(inPer) }; });
+      } else people = [{ id:'me', name:(user().displayName || user().username || 'Me'), entries:(ME.entries || []).filter(inPer) }];
+      var count = people.reduce(function(t, p){ return t + p.entries.length; }, 0);
+      if (!count){ toast('No journal entries in this period to export.'); return; }
+      var tag = STX.who === 'all' && admin ? 'all-students' : people.length === 1 ? String(people[0].name).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'journal' : 'journal';
+      try { downloadBlob(journalWorkbook(people), 'the-project-' + tag + '-' + ({ week:'this-week', month:'this-month', '30':'last-30-days', all:'all-time' }[STX.per] || STX.per) + '-' + todayYmd() + '.xlsx'); toast('Exported ' + count + (count === 1 ? ' entry.' : ' entries.')); }
+      catch (err){ toast('Couldn\'t build the file: ' + ((err && err.message) || err)); }
+    }
+    var need = [];
+    if (STX.who === 'me' && !ME.loaded) need.push(loadMe());
+    if (STX.who !== 'me' && !fresh){
+      if (admin) need.push(new Promise(function(res){ loadMembers(function(rows){ STX.rows = rows; STX.at = Date.now(); res(); }, function(){ res(); }); }));
+      else if (DEMO_MODE) need.push(loadMe().then(function(){ STX.data = { entries: ME.entries || [], members: 1 }; STX.at = Date.now(); }));
+      else need.push(fetch('/api/member?stats=1', { credentials:'same-origin' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){ if (j){ STX.data = j; STX.at = Date.now(); } }).catch(function(){}));
+    }
+    if (!need.length) return draw();
+    body.appendChild(el('p','adm-note','Loading stats…'));
+    Promise.all(need).then(function(){ if (admin && STX.rows && !host.querySelector('select')) return renderStatsTab(); draw(); });
   }
 
   /* ---------- psych leaderboard ---------- */
@@ -4160,13 +4558,14 @@ img,video{-webkit-user-drag:none;user-drag:none}
   });
 
   /* ---------- tabs (hash routes) ---------- */
-  var VIEWS = ['lectures','homework','breakdowns','advanced','journal','leaderboard','profile','admin'];
+  var VIEWS = ['lectures','homework','breakdowns','advanced','journal','leaderboard','stats','profile','admin'];
   function showView(){
     var v = (location.hash||'').replace('#','');
     if (VIEWS.indexOf(v) === -1 || (v === 'admin' && !canAdmin()) || (v === 'advanced' && !advOk())){ if (v) try { history.replaceState(null, '', '#lectures'); } catch(e) {} v = 'lectures'; }
     if (v === 'admin' && !adm.content) admLoad();
     if (v === 'journal') renderJournal();
     if (v === 'leaderboard') renderBoard();
+    if (v === 'stats') renderStatsTab();
     if (v === 'homework' || v === 'admin') hidePop(); else if (typeof showPop === 'function') setTimeout(showPop, 300);
     document.querySelectorAll('[data-view]').forEach(function(m){
       var on = m.getAttribute('data-view') === v, was = !m.hidden; m.hidden = !on;
