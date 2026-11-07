@@ -382,3 +382,11 @@ Stats (the Stats tab, Journal → Stats, and the analysis sheets in the Excel ex
 of every stat. No-trade days always count. The export's Trades sheet still lists every trade, with a "Counted in stats"
 column. To change which accounts count, edit `STAT_ACCOUNTS` in `index.html` and the matching line in
 `communityStats()` in `api/member.js`.
+
+## Screenshot viewer
+Clicking any screenshot (journal entries, homework hand-ins, payout certificates, the admin walkthrough) opens it in a
+viewer over the page instead of a new tab. With several files you can move between them with the arrows, ← →, the
+scroll wheel or trackpad, swiping on a phone, or the thumbnails along the bottom. Click the image to zoom to full size
+(click again or press Esc to zoom out), and press Esc or click outside it to close. "Open original" still opens the file
+in a new tab, and Ctrl/Cmd-click does too. PDFs show an "Open PDF" button in the viewer. The code is `lightbox()` in
+`index.html`.
