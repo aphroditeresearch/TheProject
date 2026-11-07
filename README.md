@@ -287,8 +287,42 @@ two boards: **Psych** (journal points) and **Payouts** (certified payouts added 
 time). Certified payouts can't be deleted by the member.
 
 ## Admin notifications
-Admins get a bell in the top bar. It checks every 45 seconds (and whenever you come back to the tab) for new hand-ins,
+Admins get a bell in the top bar. It checks every 90 seconds (and whenever you come back to the tab) for new hand-ins,
 journal entries, payout or funded certificates and promotion requests. New ones pop up in the top-right corner and the
 bell shows how many you haven't seen; click one to jump straight to it. The panel also shows how much is waiting, and the
 Hand-ins, Journal and Payouts buttons in Admin carry red counts.
 
+
+## Journal points (admin picks the points)
+When you approve a journal entry you choose how many points it's worth (0–3 buttons, or keys 0–3 in the by-day
+walkthrough). The site suggests a number:
+
+| Entry | Points |
+|---|---|
+| Live/funded, rules followed, TP | 3 |
+| Live/funded, rules followed, SL or BE | 1 |
+| Paper/demo, rules followed, TP | 1 |
+| Paper/demo, rules followed, SL or BE | 0 |
+| No-trade day, rules followed | 1 |
+| Rules not followed | 0 |
+
+The suggested numbers live in `basePoints()` in `api/_gate.js` (and `entryWorth()` in `index.html`). Entries approved
+before this update keep exactly the points they already had, so nobody's leaderboard total changes.
+
+## Journal stats
+Journal → **Stats** (members see their own; admins see everyone or one student, under Admin → Journal → Stats). Filter by
+this week / month / last 30 days / all time. Shows trade days vs no-trade days, how often students sit out, win rate,
+P&L, rules followed, the times trades are taken (30-minute buckets), a weekday table, whether there was high-impact news
+on no-trade days (and which news), and breakdowns by session, entry model and account. Admins also get a per-student table.
+
+## No-trade days and news
+No-trade entries can carry up to 4 screenshots (optional) for mark-ups and price action, and every entry asks whether
+there was high-impact news that day (and which: CPI, FOMC, NFP…). Older entries without this simply show as "not said".
+
+## Breakdowns and playback speed
+Breakdown homework can be handed in without watching the video (people watch them live), and breakdown videos can be
+skipped through freely. Lectures still need watching first. Every video has a speed button: 1× or 1.5×, nothing else.
+
+## Performance
+The background is lighter: the letter rain runs at a lower frame rate with fewer columns and pauses while a video plays
+or you scroll, the moving background layers are static, and the top bars no longer blur what's behind them.

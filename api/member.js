@@ -120,7 +120,8 @@ module.exports = async (req, res) => {
     const found = findItem(content, lessonId);
     if (!found) return json(res, 404, { error: 'no_lesson' });
     if (!access.all[lessonId] || !access.all[lessonId].open) return json(res, 403, { error: 'locked' });
-    if (found.video && !admin) {
+    const skippable = found.kind === 'breakdown' && (found.item || {}).kind !== 'advanced';   // breakdowns can be handed in without watching to the end
+    if (found.video && !admin && !skippable) {
       const prog = await loadProgress(uid);
       if (!prog[lessonId]) return json(res, 409, { error: 'watch_first' });
     }
@@ -159,12 +160,16 @@ module.exports = async (req, res) => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(Date.parse(date)) || Date.parse(date) > Date.now() + 36 * 3600 * 1000) return json(res, 400, { error: 'bad_date' });
     if (typeof e.followed !== 'boolean') return json(res, 400, { error: 'need_followed' });
     const overview = str(e.overview, 4000);
-    const entry = { id: 'j' + crypto.randomBytes(6).toString('hex'), kind, date, followed: e.followed, overview, session: str(e.session, 40), createdAt: new Date().toISOString(), void: false, status: 'pending' };
+    const entry = { id: 'j' + crypto.randomBytes(6).toString('hex'), kind, date, followed: e.followed, overview, session: str(e.session, 40), createdAt: new Date().toISOString(), void: false, status: 'pending',
+      news: ['yes', 'no'].includes(e.news) ? e.news : '', newsWhat: e.news === 'yes' ? str(e.newsWhat, 60) : '' };   // high-impact news that day (for the stats)
     const entries = await loadEntries(uid);
     if (kind === 'none') {
       if (overview.length < 10) return json(res, 400, { error: 'overview_short' });
       if (!entry.session) return json(res, 400, { error: 'need_session' });
       if (Object.values(entries).some((x) => x.kind === 'none' && x.date === date)) return json(res, 409, { error: 'none_exists' });
+      // screenshots are optional on a no-trade day (mark-ups / price action)
+      entry.files = (Array.isArray(e.files) ? e.files : []).slice(0, 4).map((f) => cleanFile(f, uid, 'journal'));
+      if (entry.files.some((f) => !f)) return json(res, 400, { error: 'bad_file' });
     } else {
       Object.assign(entry, {
         time: /^\d{2}:\d{2}$/.test(str(e.time, 5)) ? str(e.time, 5) : '', pair: str(e.pair, 40), account: str(e.account, 40),

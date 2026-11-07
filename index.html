@@ -55,18 +55,14 @@ canvas.fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
 .bgfx{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;opacity:0;transition:opacity .35s ease}
 .bgfx.on{opacity:1}
 .bgfx i{position:absolute;display:block}
-.bgfx .aur{width:70vmax;height:70vmax;border-radius:50%;filter:blur(60px);opacity:.5;will-change:transform}
+.bgfx .aur{width:70vmax;height:70vmax;border-radius:50%;opacity:.5}
 .bgfx .a1{left:-20vmax;top:-30vmax;background:radial-gradient(circle,rgba(20,163,157,.16),transparent 65%)}
 .bgfx .a2{right:-25vmax;bottom:-35vmax;background:radial-gradient(circle,rgba(46,240,170,.10),transparent 65%)}
 .bgfx .grid{inset:0;background-image:linear-gradient(rgba(141,235,223,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(141,235,223,.035) 1px,transparent 1px);background-size:56px 56px;
   -webkit-mask-image:radial-gradient(ellipse 80% 70% at 50% 40%,#000 30%,transparent 85%);mask-image:radial-gradient(ellipse 80% 70% at 50% 40%,#000 30%,transparent 85%)}
 .bgfx .scan{left:0;right:0;top:-12vh;height:12vh;background:linear-gradient(to bottom,transparent,rgba(46,240,170,.05),transparent);opacity:0}
-.bgfx .grain{inset:-50%;opacity:.07;background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+.bgfx .grain{inset:0;opacity:.06;background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
 @media (prefers-reduced-motion:no-preference){
-  .bgfx .a1{animation:aur1 38s ease-in-out infinite alternate}
-  .bgfx .a2{animation:aur2 46s ease-in-out infinite alternate}
-  .bgfx .scan{animation:scan 14s cubic-bezier(.4,0,.6,1) 2s infinite}
-  .bgfx .grain{animation:grain 1.2s steps(4) infinite}
 }
 @keyframes aur1{to{transform:translate(18vmax,14vmax) scale(1.15)}}
 @keyframes aur2{to{transform:translate(-16vmax,-12vmax) scale(1.1)}}
@@ -234,7 +230,7 @@ a{color:var(--blue);text-underline-offset:3px}
 
 /* ---------- portal ---------- */
 .portal{min-height:100vh}
-.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 96%,transparent);border-bottom:1px solid var(--line)}
 .bar-in{max-width:1760px;margin:0 auto;padding-left:max(clamp(16px,3vw,48px),env(safe-area-inset-left,0px));padding-right:max(clamp(16px,3vw,48px),env(safe-area-inset-right,0px));padding-block:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .who{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--muted)}
 .av{width:34px;height:34px;border-radius:50%;background:var(--panel-2);border:1px solid var(--blue-dim);display:grid;place-items:center;font-weight:700;color:var(--blue)}
@@ -512,6 +508,30 @@ a{color:var(--blue);text-underline-offset:3px}
 .hi-err{margin:10px 0 0;padding:10px 12px;border:1px solid #6A3A2A;background:rgba(232,120,90,.08);color:#F2B9A6;font-size:14px}
 .pay-img{display:block;border:1px solid var(--line);background:#000;max-height:320px;overflow:hidden}.pay-img img{display:block;width:100%;max-height:320px;object-fit:contain}
 .pay-info{font-size:14px;color:var(--muted)}.pay-info b{color:var(--win);font-size:16px}
+.pts-pick{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pts-b{display:flex;gap:4px}
+.pts{appearance:none;width:36px;height:34px;border:1px solid var(--line);background:none;color:var(--ink);font:700 14px var(--mono);cursor:pointer}
+.pts.on{background:var(--kana-c);border-color:var(--kana-c);color:var(--bg)}
+.pts-tag{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#E8D27A;border:1px solid #5A4E22;padding:3px 7px}
+.st{display:flex;flex-direction:column;gap:16px;margin-top:14px}
+.st-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.st-tile{border:1px solid var(--line);background:var(--panel);padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.st-tile b{font-size:20px;font-variant-numeric:tabular-nums}.st-tile span{font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase}
+.st-tile.win b{color:var(--win)}.st-tile.loss b{color:var(--loss)}
+.st-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px}
+.st-card{border:1px solid var(--line);background:var(--panel);padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.st-card.wide{grid-column:1/-1}
+.st-card h4{margin:0 0 4px;font-size:15px}
+.st-card .st-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+.st-row{display:grid;grid-template-columns:110px minmax(0,1fr) auto;gap:10px;align-items:center;font-size:13px}
+.st-k{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.st-v{font-variant-numeric:tabular-nums;white-space:nowrap}
+.st-bar{height:10px;background:rgba(255,255,255,.04)}.st-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--kana-c))}
+.st-row.hi .st-k,.st-row.hi .st-v{color:var(--ink);font-weight:700}.st-row.hi .st-bar i{background:#E8D27A}
+.st-t{width:100%;border-collapse:collapse;font-size:13px}.st-t th{text-align:left;font-weight:500;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.st-t td{padding:7px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}.st-t td.win{color:var(--win)}.st-t td.loss{color:var(--loss)}
+.st-chips{display:flex;flex-wrap:wrap;gap:6px}
+.rv-bar select{min-height:40px;background:var(--panel);color:var(--ink);border:1px solid var(--line);padding:0 10px;font:500 14px var(--sans)}
+@media (max-width:640px){.st-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.st-row{grid-template-columns:84px minmax(0,1fr) auto}}
 .jd-strip{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;margin-bottom:6px;scrollbar-width:thin}
 .jd{appearance:none;flex:none;display:flex;flex-direction:column;gap:2px;min-width:118px;padding:10px 12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;text-align:left;cursor:pointer;transition:border-color .2s,background .2s}
 .jd b{font-size:14px}.jd span{font-size:11px;color:var(--muted)}
@@ -647,6 +667,8 @@ table.mem td:first-child,table.mem th:first-child{width:34px}
 .vm-th img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.8) brightness(.85)}
 .vm-it.on .vm-th::after{content:"Playing";position:absolute;left:4px;bottom:4px;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;background:var(--kana-c);color:var(--bg);padding:2px 5px}
 .vm-it b{font-size:13px;line-height:1.35}.vm-it small{display:block;color:var(--muted);font-size:11px;margin-top:3px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.ytr{width:auto !important;min-width:44px;padding:0 8px;font:600 13px var(--mono)}
+.vrate{position:absolute;top:10px;right:10px;z-index:6;min-width:46px;height:30px;border:1px solid rgba(255,255,255,.25);background:rgba(2,9,11,.7);color:#fff;font:600 13px var(--mono);cursor:pointer}
 .vm-bar{position:absolute;left:0;right:0;bottom:0;height:5px;z-index:5;background:rgba(255,255,255,.12);cursor:pointer}
 .vm-bar i{display:block;height:100%;width:0;background:var(--kana-c)}
 @keyframes vmin{0%{opacity:0;transform:translateY(18px) scale(.98)}100%{opacity:1;transform:none}}
@@ -978,7 +1000,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
 .adm-row .cols{display:flex;flex-direction:column;gap:8px;min-width:0}
 .adm-row .ord{display:flex;flex-direction:column;gap:6px}
 .adm-ch-f{padding:12px 18px 16px}
-.adm-bar{position:sticky;bottom:0;z-index:5;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 18px;border:1px solid var(--line);background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px)}
+.adm-bar{position:sticky;bottom:0;z-index:5;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 18px;border:1px solid var(--line);background:color-mix(in srgb,var(--bg) 97%,transparent)}
 .adm-bar span{color:var(--muted);font-size:14px}
 .mem{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
 .mem-wrap{overflow-x:auto;border:1px solid var(--line)}
@@ -1500,6 +1522,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
   layout(); window.addEventListener('resize', layout);
 
   /* ---------- THE PROJECT letter rain behind the portal (faint, like the Matrix) ---------- */
+  var HOLD = { video:0, scroll:0 }, holdT;
+  window.addEventListener('scroll', function(){ HOLD.scroll = 1; clearTimeout(holdT); holdT = setTimeout(function(){ HOLD.scroll = 0; }, 180); }, { passive:true });
   var rain = (function(){
     var c = document.getElementById('rain'), g = c.getContext('2d'), WORD = 'THEPROJECT', cols = [], RW, RH, FS, LH, on = false, last = 0, raf2 = 0, glyph = {}, dpr = 1;
     // each letter drawn once (trail colour + head colour), then stamped with drawImage: much cheaper than fillText every frame
@@ -1510,15 +1534,15 @@ img,video{-webkit-user-drag:none;user-drag:none}
         var x = o.getContext('2d'); x.scale(dpr, dpr); x.font = font; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = col; x.fillText(ch, FS * .55, LH / 2); return o; }); });
     }
     function fit(){
-      dpr = Math.min(window.devicePixelRatio || 1, 2); RW = c.clientWidth; RH = c.clientHeight; c.width = RW * dpr; c.height = RH * dpr; g.setTransform(1, 0, 0, 1, 0, 0);
+      dpr = 1; RW = c.clientWidth; RH = c.clientHeight; c.width = RW * dpr; c.height = RH * dpr; g.setTransform(1, 0, 0, 1, 0, 0);
       FS = RW < 600 ? 12 : 14; LH = FS * 1.3; glyphs();
-      var step = RW < 600 ? 30 : 36, n = Math.ceil(RW / step);
+      var step = RW < 600 ? 38 : 46, n = Math.ceil(RW / step);
       cols = []; for (var i = 0; i < n; i++) cols.push(drop(i * step + step / 2, true));
     }
     function drop(x, init){ return { x:x, y: init ? Math.random() * (RH / LH + 16) - 8 : -Math.random() * 12, v: .06 + Math.random() * .1, len: 6 + Math.floor(Math.random() * 10), off: Math.floor(Math.random() * 10), wait: init ? 0 : Math.random() * 25 }; }
     function frame(ts){
       raf2 = requestAnimationFrame(frame);
-      if (ts - last < 42) return; last = ts;                      // ~24 fps
+      if (ts - last < 50 || HOLD.video || HOLD.scroll) return; last = ts;                      // ~20 fps, paused while a video plays or you scroll
       g.clearRect(0, 0, c.width, c.height);
       var rows = RH / LH, gw = FS * 1.1 * dpr, gh = LH * dpr;
       for (var i = 0; i < cols.length; i++){
@@ -1963,7 +1987,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       if (nt.link){ var bl = el('a','btn-s pri','Open link'); bl.href = nt.link; bl.target = '_blank'; bl.rel = 'noopener noreferrer'; ban.appendChild(bl); }
       pane.appendChild(ban);
     }
-    var src = videoFor(id, cur), isDone = !!doneSet[cur.key], needs = mustWatch(id, cur);
+    var src = videoFor(id, cur), isDone = !!doneSet[cur.key], needs = mustWatch(id, cur), free = id === 'bx';   // free: skip anywhere
     var pl = el('div','player');
     var status = el('div','wstat'), stTxt = el('span','wtxt'), stBar = el('span','wbar'), stFill = el('i');
     stBar.appendChild(stFill); status.appendChild(stTxt); status.appendChild(stBar);
@@ -1971,7 +1995,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       if (doneSet[cur.key]){ status.className='wstat ok'; stTxt.innerHTML = checkSvg; stTxt.appendChild(document.createTextNode(' Completed ' + fmtDay(doneSet[cur.key]))); stFill.style.width='100%'; return; }
       if (!src){ status.className='wstat'; stTxt.textContent = needs ? 'This lesson completes after you watch the full video.' : ''; stFill.style.width='0%'; return; }
       var pc = Math.min(100, Math.floor((frac||0)*100));
-      status.className='wstat'; stTxt.textContent = pc ? ('Watched ' + pc + '% · finish the video to complete it') : 'Watch the full video to complete this ' + (id==='lx'?'lesson':'breakdown');
+      status.className='wstat'; stTxt.textContent = free ? 'Skip through freely. Hand in your notes and mark-ups whenever you\'re ready.' : pc ? ('Watched ' + pc + '% · finish the video to complete it') : 'Watch the full video to complete this ' + (id==='lx'?'lesson':'lecture');
       stFill.style.width = pc + '%';
     }
     if (src && ytId(src)){
@@ -1983,8 +2007,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
       var ycover = el('button','yt-cover'); ycover.type = 'button'; ycover.setAttribute('aria-label','Play video'); ycover.innerHTML = playSvg;
       var yclick = el('div','yt-click');                                   // sits over the video: clicks never reach YouTube
       var ctl = el('div','ytc'), bPlay = el('button','ytb'), tTime = el('span','ytt','0:00'), bar = el('div','ytbar'), bWat = el('i','w'), bNow = el('i','n'),
-          bMute = el('button','ytb'), bFull = el('button','ytb');
-      bPlay.type = bMute.type = bFull.type = 'button';
+          bMute = el('button','ytb'), bFull = el('button','ytb'), bRate = el('button','ytb ytr', speedLabel());
+      bPlay.type = bMute.type = bFull.type = bRate.type = 'button'; bRate.setAttribute('aria-label','Playback speed');
       var ICON = { play:'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>',
         pause:'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>',
         vol:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>',
@@ -1992,7 +2016,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
         full:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>' };
       bPlay.innerHTML = ICON.play; bPlay.setAttribute('aria-label','Play'); bMute.innerHTML = ICON.vol; bMute.setAttribute('aria-label','Mute'); bFull.innerHTML = ICON.full; bFull.setAttribute('aria-label','Full screen');
       bar.appendChild(bWat); bar.appendChild(bNow); bar.setAttribute('role','slider'); bar.setAttribute('aria-label','Video position');
-      ctl.appendChild(bPlay); ctl.appendChild(tTime); ctl.appendChild(bar); ctl.appendChild(bMute); ctl.appendChild(bFull);
+      ctl.appendChild(bPlay); ctl.appendChild(tTime); ctl.appendChild(bar); ctl.appendChild(bRate); ctl.appendChild(bMute); ctl.appendChild(bFull);
+      bRate.addEventListener('click', function(){ setSpeed(SPEED === 1 ? 1.5 : 1); bRate.textContent = speedLabel(); if (yt && yt.setPlaybackRate) yt.setPlaybackRate(SPEED); });
       holder.appendChild(yclick); holder.appendChild(ycover); holder.appendChild(ctl); pl.appendChild(holder); pl.classList.add('has-yt');
       var fmtT = function(t){ t = Math.max(0, Math.floor(t || 0)); var h = Math.floor(t/3600), m = Math.floor(t/60) % 60, x = t % 60; return (h ? h + ':' + String(m).padStart(2,'0') : m) + ':' + String(x).padStart(2,'0'); };
       var toggle = function(){ if (!yt || !yt.getPlayerState) return; if (yplaying) yt.pauseVideo(); else yt.playVideo(); };
@@ -2002,7 +2027,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       bFull.addEventListener('click', function(){ if (document.fullscreenElement) document.exitFullscreen(); else if (pl.requestFullscreen) pl.requestFullscreen().catch(function(){}); });
       bar.addEventListener('click', function(e){
         if (!yt || !ydur) return; var r = bar.getBoundingClientRect(), to = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * ydur;
-        if (!doneSet[cur.key] && to > yst.max + 1){ toast('No skipping ahead on your first watch.'); to = yst.max; }
+        if (!free && !doneSet[cur.key] && to > yst.max + 1){ toast('No skipping ahead on your first watch.'); to = yst.max; }
         yt.seekTo(to, true);
       });
       holder.tabIndex = 0;
@@ -2014,9 +2039,10 @@ img,video{-webkit-user-drag:none;user-drag:none}
           playerVars: { controls:0, disablekb:1, fs:0, rel:0, modestbranding:1, playsinline:1, iv_load_policy:3, cc_load_policy:0, showinfo:0,
                         start: Math.floor(yst.pos || 0), origin: location.origin },
           events: {
-            onReady: function(){ ytPlayers.push(yt); ydur = yt.getDuration() || 0; tTime.textContent = fmtT(yst.pos) + ' / ' + fmtT(ydur); },
+            onReady: function(){ ytPlayers.push(yt); try { yt.setPlaybackRate(SPEED); } catch(e) {} ydur = yt.getDuration() || 0; tTime.textContent = fmtT(yst.pos) + ' / ' + fmtT(ydur); },
             onStateChange: function(e){
-              yplaying = e.data === 1 || e.data === 3;
+              var was = yplaying; yplaying = e.data === 1 || e.data === 3;
+              if (was !== yplaying) HOLD.video = Math.max(0, HOLD.video + (yplaying ? 1 : -1));
               holder.classList.toggle('playing', yplaying);
               bPlay.innerHTML = yplaying ? ICON.pause : ICON.play; bPlay.setAttribute('aria-label', yplaying ? 'Pause' : 'Play');
               if (e.data === 0){   // ended
@@ -2028,11 +2054,12 @@ img,video{-webkit-user-drag:none;user-drag:none}
               box.appendChild(el('span',null,'This video won\'t play here. In YouTube Studio, set it to Unlisted (not Private) and turn on "Allow embedding".')); pl.appendChild(box); }
           } });
         var tick = setInterval(function(){
-          if (!holder.isConnected){ clearInterval(tick); ytPlayers = ytPlayers.filter(function(x){ return x !== yt; }); return; }
+          if (!holder.isConnected){ clearInterval(tick); if (yplaying) HOLD.video = Math.max(0, HOLD.video - 1); ytPlayers = ytPlayers.filter(function(x){ return x !== yt; }); return; }
+          if (yt.getPlaybackRate && yt.getPlaybackRate() !== SPEED){ try { yt.setPlaybackRate(SPEED); } catch(e) {} }
           if (!yt.getCurrentTime || !yt.getDuration) return;
           var t = yt.getCurrentTime() || 0, d = yt.getDuration() || 0; ydur = d || ydur;
-          if (!doneSet[cur.key] && t > yst.max + 2.5){ yt.seekTo(yst.max, true); if (!ywarned){ ywarned = true; toast('No skipping ahead on your first watch.'); } return; }
-          if (t >= ylast && t - ylast < 2.5 && t > yst.max) yst.max = t;
+          if (!free && !doneSet[cur.key] && t > yst.max + 2.5){ yt.seekTo(yst.max, true); if (!ywarned){ ywarned = true; toast('No skipping ahead on your first watch.'); } return; }
+          if (t >= ylast && t - ylast < 3.5 && t > yst.max) yst.max = t;
           ylast = t; yst.pos = t;
           if (d){ paintStatus(yst.max / d); bWat.style.width = (Math.min(1, yst.max / d) * 100) + '%'; bNow.style.width = (Math.min(1, t / d) * 100) + '%'; tTime.textContent = fmtT(t) + ' / ' + fmtT(d); }
           if (Date.now() - ysave > 3000){ ysave = Date.now(); saveWatch(); }
@@ -2047,16 +2074,22 @@ img,video{-webkit-user-drag:none;user-drag:none}
       v.setAttribute('controlsList','nodownload noplaybackrate noremoteplayback'); v.disablePictureInPicture = true; v.disableRemotePlayback = true;
       v.addEventListener('contextmenu', function(e){ e.preventDefault(); });
       var st = watch[cur.key] || (watch[cur.key] = { max:0, pos:0 }), last = 0, warned = false, saveT = 0;
+      v.playbackRate = v.defaultPlaybackRate = SPEED;
+      v.addEventListener('ratechange', function(){ if (v.playbackRate !== 1 && v.playbackRate !== 1.5) v.playbackRate = SPEED; });   // only 1x or 1.5x
+      var vr = el('button','vrate', speedLabel()); vr.type = 'button'; vr.setAttribute('aria-label','Playback speed');
+      vr.addEventListener('click', function(){ setSpeed(SPEED === 1 ? 1.5 : 1); v.playbackRate = SPEED; vr.textContent = speedLabel(); });
+      var vOn = false; v.addEventListener('play', function(){ if (!vOn){ vOn = true; HOLD.video++; } }); var vOff = function(){ if (vOn){ vOn = false; HOLD.video = Math.max(0, HOLD.video - 1); } };
+      v.addEventListener('pause', vOff); v.addEventListener('ended', vOff);
       v.addEventListener('loadedmetadata', function(){ if (st.pos && st.pos < v.duration - 2) v.currentTime = st.pos; last = v.currentTime; paintStatus(st.max / v.duration); });
       v.addEventListener('timeupdate', function(){
         var t = v.currentTime;
-        if (t >= last && t - last < 1.6 && t > st.max) st.max = t;      // only continuous playback counts as watched
+        if (t >= last && t - last < 2.4 && t > st.max) st.max = t;      // only continuous playback counts as watched (allows 1.5x)
         last = t; st.pos = t;
         if (v.duration) paintStatus(st.max / v.duration);
         if (Date.now() - saveT > 3000){ saveT = Date.now(); saveWatch(); }
       });
       v.addEventListener('seeking', function(){
-        if (doneSet[cur.key]) { last = v.currentTime; return; }      // rewatching a finished lesson: skip freely
+        if (doneSet[cur.key] || free) { last = v.currentTime; return; }      // rewatching a finished lesson, or a breakdown: skip freely
         if (v.currentTime > st.max + 1.5){
           v.currentTime = st.max; if (!warned){ warned = true; toast('No skipping ahead on your first watch.'); }
         }
@@ -2078,7 +2111,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
         var box = el('div','perr'); box.setAttribute('role','alert'); box.appendChild(el('b',null,'Video unavailable')); box.appendChild(el('span',null,msg));
         pl.appendChild(box);
       });
-      pl.appendChild(v);
+      pl.appendChild(v); pl.appendChild(vr);
       if (DEMO_MODE && !cur.video) pl.appendChild(el('span','note','Sample video'));
       addVideoMarks(pl);
       v.addEventListener('dblclick', function(e){ e.preventDefault(); if (document.fullscreenElement) document.exitFullscreen(); else if (pl.requestFullscreen) pl.requestFullscreen().catch(function(){}); });
@@ -2101,7 +2134,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     acts.appendChild(nb);
     if (cur.link){ var a = el('a','pbtn','Open link'); a.href=cur.link; a.target='_blank'; a.rel='noopener'; acts.appendChild(a); }
     pane.appendChild(acts);
-    if (cur.lesson) pane.appendChild(handinPanel(cur, !src || !!doneSet[cur.key], id));
+    if (cur.lesson) pane.appendChild(handinPanel(cur, !src || !needs || !!doneSet[cur.key], id));
     saveCurrent();
   }
 
@@ -2250,7 +2283,11 @@ img,video{-webkit-user-drag:none;user-drag:none}
     return ytReady;
   }
   // Lessons always need a full watch. Breakdowns need one when they have a video; link-only breakdowns are ticked by hand.
-  function mustWatch(id, it){ return id === 'lx' || !!it.video; }
+  // playback speed: 1x or 1.5x only, remembered in this browser
+  var SPEED = 1; try { SPEED = localStorage.getItem('theproject.speed') === '1.5' ? 1.5 : 1; } catch(e) {}
+  function setSpeed(x){ SPEED = x === 1.5 ? 1.5 : 1; try { localStorage.setItem('theproject.speed', String(SPEED)); } catch(e) {} }
+  function speedLabel(){ return SPEED === 1.5 ? '1.5×' : '1×'; }
+  function mustWatch(id, it){ return id === 'bx' ? false : (id === 'lx' || !!it.video); }   // breakdowns can be skipped (people watch them live)
   // In demo mode, lessons without a video play the site's sample clip so the watch-to-complete flow can be tried.
   function videoFor(id, it){ return it.video || (DEMO_MODE && id === 'lx' ? 'sample.mp4' : ''); }
   function renderCurriculum(){ renderTrack('lx'); renderProfileAccess(); }
@@ -2583,8 +2620,11 @@ img,video{-webkit-user-drag:none;user-drag:none}
   // points on the psych leaderboard: rules followed + TP = 3, followed + SL/BE = 1, followed + no trades = 1, not followed = 0
   // entries only count once an admin approves them (older entries from before reviews count as approved)
   function entryStatus(e){ return e && ['pending','approved','denied'].indexOf(e.status) !== -1 ? e.status : (e && e.void ? 'denied' : 'approved'); }
-  function entryWorth(e){ if (!e || !e.followed) return 0; if (e.kind === 'none') return 1; return e.outcome === 'tp' ? 3 : 1; }
-  function entryPoints(e){ return entryStatus(e) === 'approved' ? entryWorth(e) : 0; }
+  // what an entry is worth: paper / demo trades score less. Admins choose the points when they approve.
+  function isPaper(e){ return /demo|paper/i.test(String((e && e.account) || '')); }
+  function entryWorth(e){ if (!e || !e.followed) return 0; if (e.kind === 'none') return 1; if (isPaper(e)) return e.outcome === 'tp' ? 1 : 0; return e.outcome === 'tp' ? 3 : 1; }
+  function legacyPoints(e){ if (!e || !e.followed) return 0; if (e.kind === 'none') return 1; return e.outcome === 'tp' ? 3 : 1; }
+  function entryPoints(e){ if (entryStatus(e) !== 'approved') return 0; return typeof e.awarded === 'number' ? e.awarded : legacyPoints(e); }
   var JR = { kind:'trade', draft:{ files:[] }, editing:false, view:'cal', month:null, day:null };
   var OUT = { tp:'TP', sl:'SL', be:'BE' };
   function money(n){ n = +n || 0; return (n < 0 ? '−$' : '$') + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
@@ -2640,8 +2680,14 @@ img,video{-webkit-user-drag:none;user-drag:none}
     side.appendChild(st);
     var pend = ents.filter(function(e){ return entryStatus(e) === 'pending'; }).length;
     if (pend) side.appendChild(el('p','jr-pend', pend + (pend === 1 ? ' entry is' : ' entries are') + ' waiting for an admin to approve ' + (pend === 1 ? 'it' : 'them') + ' for the leaderboard.'));
-    var vs = el('div','jr-view'); vs.appendChild(seg([['cal','Calendar'],['new','+ New entry']], JR.view, function(v){ JR.view = v; drawJournal(host); }));
+    var vs = el('div','jr-view'); vs.appendChild(seg([['cal','Calendar'],['stats','Stats'],['new','+ New entry']], JR.view, function(v){ JR.view = v; drawJournal(host); }));
     main.appendChild(vs);
+    if (JR.view === 'stats'){
+      JR.per = JR.per || 'all';
+      main.appendChild(seg([['week','This week'],['month','This month'],['30','Last 30 days'],['all','All time']], JR.per, function(v){ JR.per = v; drawJournal(host); }));
+      var fromS = periodFrom(JR.per); main.appendChild(statsView(ents.filter(function(e){ return e.date >= fromS && entryStatus(e) !== 'denied'; })));
+      grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return;
+    }
     if (JR.view === 'cal'){ main.appendChild(journalCalendar(ents, host)); grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return; }
     // new entry
     var f = el('section','jr-form view-in'); f.appendChild(el('h3',null,'New entry'));
@@ -2651,12 +2697,27 @@ img,video{-webkit-user-drag:none;user-drag:none}
     function field(label, ctl, wide){ var w = fld(label, ctl); if (wide) w.classList.add('wide'); grid2.appendChild(w); return ctl; }
     var ENTRY_MODELS = ['BOS','MITIGATION','Chained OBs','DIV + OB'];
     if (D.model && ENTRY_MODELS.indexOf(D.model) < 0) D.model = '';
+    function shotsField(required){
+      var fb = el('div','hi-up'), chips = el('div'), busy = 0;
+      var drawF = function(){ chips.textContent = ''; chips.appendChild(fileChips(D.files, function(i){ D.files.splice(i,1); drawF(); })); };
+      drawF(); fb.appendChild(chips);
+      var pl2 = el('label','btn-s up-file','+ Add screenshots (up to 4)'), fi = el('input'); fi.type = 'file'; fi.multiple = true; fi.accept = FILE_TYPES; pl2.appendChild(fi);
+      var noteTx = required ? 'At least one screenshot is needed to post.' : 'Optional: your mark-ups and the price action you watched.'; var un = el('small','adm-note', noteTx);
+      fi.addEventListener('change', function(){ var list = Array.prototype.slice.call(fi.files || []).slice(0, Math.max(0, 4 - D.files.length)); fi.value = '';
+        list.forEach(function(file){ var ft = fileType(file); if (!ft){ toast(file.name + ' isn\'t an image or PDF.'); return; } if (ft !== file.type) file = new File([file], file.name, { type: ft });
+          busy++; un.textContent = 'Uploading ' + file.name + '…'; JR.busy = busy;
+          uploadFile(file, 'members/' + (user().id || 'demo') + '/journal/' + safeName(file.name), function(pc){ un.textContent = 'Uploading ' + file.name + '… ' + Math.round(pc) + '%'; })
+            .then(function(r){ D.files.push(r); drawF(); }).catch(function(e){ toast('Upload failed: ' + String((e && e.message) || e)); })
+            .then(function(){ busy--; JR.busy = busy; if (!busy) un.textContent = noteTx; }); }); });
+      fb.appendChild(pl2); fb.appendChild(un);
+      var sw = el('div','fld wide'); sw.appendChild(document.createTextNode(required ? 'Screenshots' : 'Screenshots (optional)')); sw.appendChild(fb); grid2.appendChild(sw);
+    }
     function txt(name, type, ph, list){ var i = inputEl(type, D[name], ph); i.addEventListener('input', function(){ D[name] = i.value; preview(); }); if (list){ i.setAttribute('list', list); } return i; }
     function sel(name, opts){ var x = el('select'); x.appendChild(el('option',null,'Choose…')).value = ''; opts.forEach(function(o){ var op = el('option',null,o); op.value = o; x.appendChild(op); }); x.value = D[name] || ''; x.addEventListener('change', function(){ D[name] = x.value; }); return x; }
     var SESSIONS = ['Asia','London','New York AM','New York PM'];
     if (JR.kind === 'trade'){
       field('Pair', txt('pair','text','NQ, ES, EURUSD…','jr-pairs'));
-      field('Account type', sel('account', ['Evaluation','Funded','Personal / live','Demo']));
+      field('Account type', sel('account', ['Evaluation','Funded','Personal / live','Paper','Demo']));
       field('Session', sel('session', SESSIONS));
       field('Trade date', txt('date','date'));
       field('Time', txt('time','time'));
@@ -2665,31 +2726,22 @@ img,video{-webkit-user-drag:none;user-drag:none}
       var pn = txt('pnl','number','e.g. 640 or -200'); pn.step = 'any'; field('Trade P&L ($)', pn);
       field('Entry model', sel('model', ENTRY_MODELS));
       var ov = txt('overview','textarea','What you saw, why you took it, how you managed it'); ov.rows = 4; field('Trade overview', ov, true);
-      // screenshots
-      var fb = el('div','hi-up'), chips = el('div'), busy = 0;
-      var drawF = function(){ chips.textContent = ''; chips.appendChild(fileChips(D.files, function(i){ D.files.splice(i,1); drawF(); })); };
-      drawF(); fb.appendChild(chips);
-      var pl2 = el('label','btn-s up-file','+ Add screenshots (up to 4)'), fi = el('input'); fi.type = 'file'; fi.multiple = true; fi.accept = FILE_TYPES; pl2.appendChild(fi);
-      var un = el('small','adm-note','At least one screenshot is needed to post.');
-      fi.addEventListener('change', function(){ var list = Array.prototype.slice.call(fi.files || []).slice(0, Math.max(0, 4 - D.files.length)); fi.value = '';
-        list.forEach(function(file){ var ft = fileType(file); if (!ft){ toast(file.name + ' isn\'t an image or PDF.'); return; } if (ft !== file.type) file = new File([file], file.name, { type: ft });
-          busy++; un.textContent = 'Uploading ' + file.name + '…'; JR.busy = busy;
-          uploadFile(file, 'members/' + (user().id || 'demo') + '/journal/' + safeName(file.name), function(pc){ un.textContent = 'Uploading ' + file.name + '… ' + Math.round(pc) + '%'; })
-            .then(function(r){ D.files.push(r); drawF(); }).catch(function(e){ toast('Upload failed: ' + String((e && e.message) || e)); })
-            .then(function(){ busy--; JR.busy = busy; if (!busy) un.textContent = 'At least one screenshot is needed to post.'; }); }); });
-      fb.appendChild(pl2); fb.appendChild(un);
-      var sw = el('div','fld wide'); sw.appendChild(document.createTextNode('Screenshots')); sw.appendChild(fb); grid2.appendChild(sw);
+      shotsField(true);
     } else {
       field('Date', txt('date','date'));
       field('Session', sel('session', SESSIONS));
       var ov2 = txt('overview','textarea','Why you didn\'t trade: what you were waiting for'); ov2.rows = 3; field('Overview', ov2, true);
+      shotsField(false);
     }
+    // high-impact news that day (feeds the stats)
+    var nw = seg([['no','No'],['yes','Yes']], D.news || '', function(v){ D.news = v; drawJournal(host); }); field('High-impact news that day?', nw);
+    if (D.news === 'yes') field('Which news?', txt('newsWhat','text','CPI, FOMC, NFP…','jr-news'));
     f.appendChild(grid2);
     var fr = el('div','jr-follow'); fr.appendChild(el('b',null,'Did you follow your rules?'));
     fr.appendChild(seg([['yes','Yes'],['no','No']], D.followed === true ? 'yes' : D.followed === false ? 'no' : '', function(v){ D.followed = v === 'yes'; drawJournal(host); }));
     f.appendChild(fr);
     var pv = el('p','jr-pts'); f.appendChild(pv);
-    function preview(){ var pts = entryWorth({ kind: JR.kind, outcome: D.outcome, followed: D.followed }); pv.textContent = D.followed === undefined ? '' : 'Worth ' + pts + (pts === 1 ? ' point' : ' points') + ' on the psych leaderboard once an admin approves it.'; }
+    function preview(){ var pts = entryWorth({ kind: JR.kind, outcome: D.outcome, followed: D.followed, account: D.account }); pv.textContent = D.followed === undefined ? '' : 'Worth ' + pts + (pts === 1 ? ' point' : ' points') + ' on the psych leaderboard once an admin approves it.'; }
     preview();
     var post = el('button','pbtn pri','Post entry'); post.type = 'button';
     post.addEventListener('click', function(){
@@ -2700,10 +2752,12 @@ img,video{-webkit-user-drag:none;user-drag:none}
         if (String(D.overview || '').trim().length < 20) need.push('Trade overview (a few sentences)');
         if (!D.files.length) need.push('a screenshot');
       } else { if (!D.date) need.push('Date'); if (!D.session) need.push('Session'); if (String(D.overview || '').trim().length < 10) need.push('Overview'); }
+      if (!D.news) need.push('whether there was high-impact news');
       if (D.followed === undefined) need.push('whether you followed your rules');
       if (need.length){ toast('Still needed: ' + need.join(', ') + '.'); return; }
       var entry = JR.kind === 'trade' ? { kind:'trade', pair:D.pair, account:D.account, session:D.session, date:D.date, time:D.time, contracts:+D.contracts, outcome:D.outcome, pnl:+D.pnl, model:D.model, overview:D.overview, files:D.files, followed:D.followed }
-        : { kind:'none', date:D.date, session:D.session, overview:D.overview, followed:D.followed };
+        : { kind:'none', date:D.date, session:D.session, overview:D.overview, files:D.files, followed:D.followed };
+      entry.news = D.news; entry.newsWhat = D.news === 'yes' ? String(D.newsWhat || '').trim() : '';
       post.disabled = true;
       memberPost({ action:'journal-add', entry:entry }).then(function(){ toast('Entry posted. It counts on the leaderboard once an admin approves it.'); JR.draft = { files:[] }; JR.view = 'cal'; JR.month = entry.date.slice(0,7); JR.day = entry.date; return loadMe(); })
         .then(function(){ drawJournal(host); })
@@ -2713,6 +2767,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     main.appendChild(f);
     grid.appendChild(side); grid.appendChild(main); host.appendChild(grid);
     if (!document.getElementById('jr-pairs')){ var dl = el('datalist'); dl.id = 'jr-pairs'; ['NQ','MNQ','ES','MES','YM','RTY','GC','CL','EURUSD','GBPUSD','XAUUSD'].forEach(function(x){ var o = el('option'); o.value = x; dl.appendChild(o); }); document.body.appendChild(dl);
+      var dn = el('datalist'); dn.id = 'jr-news'; ['CPI','PPI','FOMC','NFP','Jobless Claims','GDP','Retail Sales','PCE','ISM','JOLTS','Powell speech'].forEach(function(x){ var o = el('option'); o.value = x; dn.appendChild(o); }); document.body.appendChild(dn);
       var dm = el('datalist'); dm.id = 'jr-models'; [].forEach(function(x){ var o = el('option'); o.value = x; dm.appendChild(o); }); document.body.appendChild(dm); }
   }
 
@@ -2726,7 +2781,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     if (trade){ t.appendChild(el('b',null, e.pair)); t.appendChild(el('span','je-out o-' + e.outcome, OUT[e.outcome] || '')); if (e.model) t.appendChild(el('span','je-tag', e.model)); }
     else t.appendChild(el('b',null,'No trades'));
     mn.appendChild(t);
-    mn.appendChild(el('div','je-meta', [e.time, e.session, trade ? e.account : '', trade ? e.contracts + (+e.contracts === 1 ? ' contract' : ' contracts') : ''].filter(Boolean).join(' · ')));
+    mn.appendChild(el('div','je-meta', [e.time, e.session, trade ? e.account : '', trade ? e.contracts + (+e.contracts === 1 ? ' contract' : ' contracts') : '', e.news === 'yes' ? 'News: ' + (e.newsWhat || 'yes') : ''].filter(Boolean).join(' · ')));
     row.appendChild(mn);
     if (trade) row.appendChild(el('div','je-pnl', (pnl > 0 ? '+' : '') + money(pnl)));
     card.appendChild(row);
@@ -2807,6 +2862,98 @@ img,video{-webkit-user-drag:none;user-drag:none}
     return wrap;
   }
 
+  /* ---------- journal statistics (members: their own; admins: everyone or one student) ---------- */
+  var DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  function periodFrom(p){ var t = new Date(); if (p === 'week'){ var d = new Date(t.getFullYear(), t.getMonth(), t.getDate()); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return ymd(d); } if (p === '30'){ var d2 = new Date(); d2.setDate(d2.getDate() - 29); return ymd(d2); } if (p === 'month') return ymd(t).slice(0, 8) + '01'; return '0000-00-00'; }
+  function pct(a, b){ return b ? Math.round(a / b * 100) : 0; }
+  function journalStats(ents){
+    var S = { entries: ents.length, trades: [], none: [], tradeDays: {}, noneDays: {}, dow: {}, hours: {}, news: {}, sess: {}, model: {}, acct: {}, followed: 0, pnl: 0 };
+    var bump = function(o, k, t){ if (!k) return; var r = o[k] || (o[k] = { n:0, tp:0, sl:0, be:0, pnl:0, none:0, news:0 }); if (t){ r.n++; r[t.outcome] = (r[t.outcome] || 0) + 1; r.pnl += +t.pnl || 0; } return r; };
+    ents.forEach(function(e){
+      if (e.followed) S.followed++;
+      var dw = DOW[new Date(e.date + 'T12:00:00').getDay()];
+      if (e.kind === 'trade'){
+        S.trades.push(e); S.tradeDays[e.date] = 1; S.pnl += +e.pnl || 0;
+        bump(S.dow, dw, e); bump(S.sess, e.session, e); bump(S.model, e.model, e); bump(S.acct, isPaper(e) ? 'Paper / demo' : (e.account || 'Other'), e);
+        if (/^\d{2}:\d{2}$/.test(e.time || '')){ var hh = +e.time.slice(0,2), mm = +e.time.slice(3,5), b = String(hh).padStart(2,'0') + ':' + (mm < 30 ? '00' : '30'); S.hours[b] = (S.hours[b] || 0) + 1; }
+        if (e.news === 'yes') bump(S.news, 'Trades on news days', e); else if (e.news === 'no') bump(S.news, 'Trades on quiet days', e);
+      } else {
+        S.none.push(e); S.noneDays[e.date] = 1; var r = bump(S.dow, dw); r.none++;
+        if (e.news === 'yes') r.news++;
+      }
+    });
+    // a day with a trade isn't a no-trade day
+    Object.keys(S.tradeDays).forEach(function(d){ delete S.noneDays[d]; });
+    return S;
+  }
+  function statTiles(list){ var g = el('div','st-tiles'); list.forEach(function(x){ var d = el('div', 'st-tile' + (x[2] ? ' ' + x[2] : '')); d.appendChild(el('b',null,x[0])); d.appendChild(el('span',null,x[1])); g.appendChild(d); }); return g; }
+  function statBars(title, rows, fmt, note){
+    var box = el('section','st-card'); box.appendChild(el('h4',null,title)); if (note) box.appendChild(el('p','adm-note',note));
+    if (!rows.length){ box.appendChild(el('p','adm-note','Not enough entries yet.')); return box; }
+    var max = Math.max.apply(null, rows.map(function(r){ return r.v; })) || 1;
+    rows.forEach(function(r){ var row = el('div','st-row' + (r.hi ? ' hi' : '')); row.appendChild(el('span','st-k', r.k));
+      var bar = el('span','st-bar'), f = el('i'); f.style.width = Math.max(2, r.v / max * 100) + '%'; if (r.c) f.className = r.c; bar.appendChild(f); row.appendChild(bar);
+      row.appendChild(el('span','st-v', fmt ? fmt(r) : String(r.v))); box.appendChild(row); });
+    return box;
+  }
+  function statsView(ents, opts){
+    opts = opts || {};
+    var S = journalStats(ents), wrap = el('div','st view-in'), T = S.trades.length;
+    var wins = S.trades.filter(function(e){ return e.outcome === 'tp'; }).length, losses = S.trades.filter(function(e){ return e.outcome === 'sl'; }).length;
+    var td = Object.keys(S.tradeDays).length, nd = Object.keys(S.noneDays).length;
+    wrap.appendChild(statTiles([
+      [String(td + nd), 'Days journaled'], [String(td), 'Trade days', 'win'], [String(nd), 'No-trade days'], [pct(nd, td + nd) + '%', 'Days sat out'],
+      [String(T), 'Trades'], [pct(wins, T) + '%', 'Win rate (TP)', wins >= losses ? 'win' : 'loss'], [money(S.pnl), 'Net P&L', S.pnl > 0 ? 'win' : S.pnl < 0 ? 'loss' : ''], [pct(S.followed, S.entries) + '%', 'Rules followed']
+    ]));
+    var grid = el('div','st-grid');
+    // when trades are taken
+    var hk = Object.keys(S.hours).sort(), hmax = 0, hpeak = '';
+    hk.forEach(function(k){ if (S.hours[k] > hmax){ hmax = S.hours[k]; hpeak = k; } });
+    var endOf = function(k){ var h = +k.slice(0,2), m = +k.slice(3,5) + 30; if (m >= 60){ h++; m -= 60; } return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'); };
+    grid.appendChild(statBars('When trades are taken', hk.map(function(k){ return { k: k + '–' + endOf(k), v: S.hours[k], hi: k === hpeak }; }), function(r){ return r.v + (r.v === 1 ? ' trade' : ' trades'); },
+      hpeak ? 'Most trades: ' + hpeak + '–' + endOf(hpeak) + ' (times as logged)' : ''));
+    // weekdays
+    var days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].filter(function(d){ return S.dow[d]; });
+    var dbox = el('section','st-card'); dbox.appendChild(el('h4',null,'By weekday'));
+    if (!days.length) dbox.appendChild(el('p','adm-note','Not enough entries yet.'));
+    else { var tb = el('table','st-t'), hr = el('tr'); ['Day','Trades','Win rate','P&L','No-trade days','…with news'].forEach(function(h){ hr.appendChild(el('th',null,h)); }); tb.appendChild(hr);
+      days.forEach(function(d){ var r = S.dow[d], tr = el('tr'); tr.appendChild(el('td',null,d)); tr.appendChild(el('td',null,String(r.n))); tr.appendChild(el('td',null, r.n ? pct(r.tp || 0, r.n) + '%' : '–'));
+        var pc = el('td', r.pnl > 0 ? 'win' : r.pnl < 0 ? 'loss' : '', r.n ? money(r.pnl) : '–'); tr.appendChild(pc); tr.appendChild(el('td',null,String(r.none || 0))); tr.appendChild(el('td',null,String(r.news || 0))); tb.appendChild(tr); });
+      dbox.appendChild(tb); }
+    grid.appendChild(dbox);
+    // no-trade days and news
+    var nbox = el('section','st-card'); nbox.appendChild(el('h4',null,'No-trade days & news'));
+    var nn = S.none, ny = nn.filter(function(e){ return e.news === 'yes'; }), nno = nn.filter(function(e){ return e.news === 'no'; });
+    nbox.appendChild(statTiles([[String(nn.length), 'No-trade days logged'], [String(ny.length), 'Had high-impact news'], [String(nno.length), 'No news'], [String(nn.length - ny.length - nno.length), 'Not said']]));
+    var whats = {}; ny.forEach(function(e){ var w = (e.newsWhat || 'Not named').trim(); whats[w] = (whats[w] || 0) + 1; });
+    var wk = Object.keys(whats).sort(function(a, b){ return whats[b] - whats[a]; });
+    if (wk.length){ var ul = el('div','st-chips'); wk.forEach(function(w){ ul.appendChild(el('span','chip', w + ' · ' + whats[w])); }); nbox.appendChild(ul); }
+    var nr = Object.keys(S.news).map(function(k){ var r = S.news[k]; return k + ': ' + r.n + (r.n === 1 ? ' trade' : ' trades') + ', ' + pct(r.tp || 0, r.n) + '% win, ' + money(r.pnl); });
+    if (nr.length) nr.forEach(function(t){ nbox.appendChild(el('p','adm-note',t)); });
+    grid.appendChild(nbox);
+    // sessions, models, accounts
+    var rowsOf = function(o){ return Object.keys(o).map(function(k){ var r = o[k]; return { k:k, v:r.n, r:r }; }).sort(function(a, b){ return b.v - a.v; }); };
+    var fmtR = function(x){ return x.v + ' · ' + pct(x.r.tp || 0, x.v) + '% win · ' + money(x.r.pnl); };
+    grid.appendChild(statBars('By session', rowsOf(S.sess), fmtR));
+    grid.appendChild(statBars('By entry model', rowsOf(S.model), fmtR));
+    grid.appendChild(statBars('By account', rowsOf(S.acct), fmtR));
+    wrap.appendChild(grid);
+    // admins: one row per student
+    if (opts.byMember && opts.byMember.length){
+      var mb = el('section','st-card wide'); mb.appendChild(el('h4',null,'By student'));
+      var tw = el('div','tbl-wrap'), t2 = el('table','st-t'), h2 = el('tr'); ['Student','Days','Trade days','No-trade','Trades','Win rate','Rules','Net P&L','Points'].forEach(function(h){ h2.appendChild(el('th',null,h)); }); t2.appendChild(h2);
+      opts.byMember.map(function(x){ var q = journalStats(x.ents); return { m:x.m, q:q, ents:x.ents }; }).sort(function(a, b){ return b.ents.length - a.ents.length; }).forEach(function(x){
+        var q = x.q, tdd = Object.keys(q.tradeDays).length, ndd = Object.keys(q.noneDays).length, w = q.trades.filter(function(e){ return e.outcome === 'tp'; }).length, tr = el('tr');
+        var nmc = el('td'); var lk = el('button','lnk', x.m.displayName || x.m.username); lk.type = 'button'; lk.addEventListener('click', function(){ opts.pick(x.m.id); }); nmc.appendChild(lk); tr.appendChild(nmc);
+        [tdd + ndd, tdd, ndd, q.trades.length, pct(w, q.trades.length) + '%', pct(q.followed, q.entries) + '%'].forEach(function(v){ tr.appendChild(el('td',null,String(v))); });
+        tr.appendChild(el('td', q.pnl > 0 ? 'win' : q.pnl < 0 ? 'loss' : '', money(q.pnl)));
+        tr.appendChild(el('td',null, String(x.ents.reduce(function(t, e){ return t + entryPoints(e); }, 0)))); t2.appendChild(tr); });
+      tw.appendChild(t2); mb.appendChild(tw); wrap.appendChild(mb);
+    }
+    if (!ents.length) wrap.insertBefore(el('p','pf-none','No journal entries in this period yet.'), wrap.firstChild);
+    return wrap;
+  }
+
   /* ---------- psych leaderboard ---------- */
   var BOARD = { period:'week', kind:'psych' };
   function renderBoard(){
@@ -2818,7 +2965,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     if (BOARD.kind === 'payout') return renderPayoutBoard(host);
     var rules = el('div','lb-rules'); rules.appendChild(el('b',null,'How points work'));
     rules.appendChild(el('p','adm-note','Only journal entries an admin has approved count.'));
-    var ul = el('ul'); [['Rules followed + TP','3'],['Rules followed + SL or BE','1'],['Rules followed + no trades that day','1'],['Rules not followed','0']].forEach(function(r){ var li = el('li'); li.appendChild(el('span',null,r[0])); li.appendChild(el('b',null,r[1] + (r[1] === '1' ? ' pt' : ' pts'))); ul.appendChild(li); });
+    var ul = el('ul'); [['Rules followed + TP','3'],['Rules followed + SL or BE','1'],['Paper / demo + TP','1'],['Paper / demo + SL or BE','0'],['Rules followed + no trades that day','1'],['Rules not followed','0']].forEach(function(r){ var li = el('li'); li.appendChild(el('span',null,r[0])); li.appendChild(el('b',null,r[1] + (r[1] === '1' ? ' pt' : ' pts'))); ul.appendChild(li); });
     rules.appendChild(ul); host.appendChild(rules);
     var list = el('div','lb-list'); list.appendChild(el('p','adm-note','Loading…')); host.appendChild(list);
     var got = DEMO_MODE ? loadMe().then(function(){ var pts = (ME.entries || []).reduce(function(t, e){ return t + entryPoints(e); }, 0);
@@ -2980,7 +3127,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     clearTimeout(NTF.timer);
     if (!(SESSION && SESSION.isAdmin) || DEMO_MODE || !BACKEND) return;
     document.getElementById('bell').hidden = false;
-    var next = function(){ NTF.timer = setTimeout(pollNtf, 45000); };
+    var next = function(){ NTF.timer = setTimeout(pollNtf, 90000); };
     if (document.hidden || portV.hidden){ next(); return; }
     fetch('/api/admin/members?activity=1', { credentials:'same-origin' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
       if (!j) return;
@@ -3553,9 +3700,26 @@ img,video{-webkit-user-drag:none;user-drag:none}
       var all = []; rows.forEach(function(m){ (m.entries || []).forEach(function(e){ all.push({ m:m, e:e, st: entryStatus(e) }); }); });
       var cnt = { pending:0, approved:0, denied:0 }; all.forEach(function(x){ cnt[x.st]++; });
       var top = el('div','rv-bar');
-      top.appendChild(seg([['day','By day'],['list','All entries']], JRV.mode, function(v){ JRV.mode = v; admRender(); }));
+      top.appendChild(seg([['day','By day'],['list','All entries'],['stats','Stats']], JRV.mode, function(v){ JRV.mode = v; admRender(); }));
       host.appendChild(top);
       if (JRV.mode === 'day') return drawByDay();
+      if (JRV.mode === 'stats'){
+        JRV.per = JRV.per || '30';
+        var sb = el('div','rv-bar');
+        var who = el('select'); who.setAttribute('aria-label','Student'); who.appendChild(el('option',null,'All students')).value = '';
+        rows.filter(function(m){ return (m.entries || []).length; }).sort(function(a, b){ return String(a.displayName || a.username).localeCompare(String(b.displayName || b.username)); })
+          .forEach(function(m){ var o = el('option',null, (m.displayName || m.username) + ' (' + m.entries.length + ')'); o.value = m.id; who.appendChild(o); });
+        who.value = JRV.who || ''; who.addEventListener('change', function(){ JRV.who = who.value; admRender(); });
+        sb.appendChild(who);
+        sb.appendChild(seg([['week','This week'],['month','This month'],['30','Last 30 days'],['all','All time']], JRV.per, function(v){ JRV.per = v; admRender(); }));
+        host.appendChild(sb);
+        var fromA = periodFrom(JRV.per), keep = function(e){ return e.date >= fromA && entryStatus(e) !== 'denied'; };
+        var pool = rows.filter(function(m){ return !JRV.who || m.id === JRV.who; });
+        var allE = []; pool.forEach(function(m){ (m.entries || []).forEach(function(e){ if (keep(e)) allE.push(e); }); });
+        host.appendChild(statsView(allE, JRV.who ? {} : { byMember: pool.map(function(m){ return { m:m, ents:(m.entries || []).filter(keep) }; }).filter(function(x){ return x.ents.length; }),
+          pick: function(id){ JRV.who = id; admRender(); window.scrollTo(0, 0); } }));
+        return;
+      }
 
       // ---- all entries, filtered ----
       var bar = el('div','rv-bar'), ch = el('div','chips');
@@ -3613,9 +3777,21 @@ img,video{-webkit-user-drag:none;user-drag:none}
     }, function(t, line){ host.textContent = ''; emptyState(host, t, line); });
     return wrap;
   }
-  function reviewEntry(x, status, note){
-    return memberAction({ action:'journal-review', userId:x.m.id, entryId:x.e.id, status:status, note: note || '' })
-      .then(function(){ x.st = status; x.e.status = status; x.e.reviewNote = note || ''; });
+  function reviewEntry(x, status, note, points){
+    return memberAction({ action:'journal-review', userId:x.m.id, entryId:x.e.id, status:status, note: note || '', points: status === 'approved' ? points : undefined })
+      .then(function(){ x.st = status; x.e.status = status; x.e.reviewNote = note || ''; if (status === 'approved') x.e.awarded = points; else delete x.e.awarded; });
+  }
+  // points to give when approving: starts at what the entry is worth; pick less (e.g. 1 for a paper trade)
+  function ptsPicker(e, onChange){
+    var worth = entryWorth(e), cur = typeof e.awarded === 'number' ? e.awarded : worth, box = el('div','pts-pick');
+    box.appendChild(el('span','adm-note','Points to give'));
+    var row = el('div','pts-b'), btns = [];
+    for (var n = 0; n <= Math.max(3, worth); n++) (function(n){ var b = el('button','pts' + (n === cur ? ' on' : ''), String(n)); b.type = 'button';
+      if (n === worth) b.title = 'What this entry is worth';
+      b.addEventListener('click', function(){ cur = n; btns.forEach(function(x, i){ x.classList.toggle('on', i === n); }); if (onChange) onChange(n); }); btns.push(b); row.appendChild(b); })(n);
+    box.appendChild(row);
+    if (isPaper(e)) box.appendChild(el('span','pts-tag','Paper / demo'));
+    return { node: box, get: function(){ return cur; } };
   }
   // one entry as a review card (list views)
   function reviewCard(x){
@@ -3627,13 +3803,16 @@ img,video{-webkit-user-drag:none;user-drag:none}
     if (m.journal && m.journal.rules && m.journal.rules.length){ var rd = el('details','jrv-rules'), su = el('summary',null,'Their rules (' + m.journal.rules.length + ')'); rd.appendChild(su);
       var ol = el('ol','jr-rl show'); m.journal.rules.forEach(function(r){ ol.appendChild(el('li',null,r.text)); }); rd.appendChild(ol); card.appendChild(rd); }
     var note = inputEl('text', x.st === 'denied' ? (e.reviewNote || '') : '', 'Note for the member (needed to deny)');
-    var acts = el('div','rv-acts'), ok = el('button','btn-s pri','Approve · ' + entryWorth(e) + ' pts'), no = el('button','btn-s warn','Deny'); ok.type = no.type = 'button';
+    var acts = el('div','rv-acts'), ok = el('button','btn-s pri',''), no = el('button','btn-s warn','Deny'); ok.type = no.type = 'button';
+    var pp = ptsPicker(e, function(n){ ok.disabled = false; ok.textContent = (x.st === 'approved' ? 'Update · ' : 'Approve · ') + n + (n === 1 ? ' pt' : ' pts'); });
+    ok.textContent = (x.st === 'approved' ? 'Update · ' : 'Approve · ') + pp.get() + (pp.get() === 1 ? ' pt' : ' pts');
     if (x.st === 'approved') ok.disabled = true; if (x.st === 'denied') no.disabled = true;
+    card.appendChild(pp.node);
     function act(status){
       if (status === 'denied' && note.value.trim().length < 3){ toast('Add a short note so they know why.'); note.focus(); return; }
       ok.disabled = no.disabled = true;
-      reviewEntry(x, status, note.value.trim())
-        .then(function(){ toast(status === 'approved' ? 'Approved for the leaderboard.' : status === 'denied' ? 'Denied.' : 'Back to waiting.'); card.classList.add('gone'); setTimeout(admRender, 260); })
+      reviewEntry(x, status, note.value.trim(), pp.get())
+        .then(function(){ toast(status === 'approved' ? 'Approved · ' + pp.get() + (pp.get() === 1 ? ' point.' : ' points.') : status === 'denied' ? 'Denied.' : 'Back to waiting.'); card.classList.add('gone'); setTimeout(admRender, 260); })
         .catch(function(e2){ ok.disabled = no.disabled = false; toast(admFail(e2)); });
     }
     ok.addEventListener('click', function(){ act('approved'); }); no.addEventListener('click', function(){ act('denied'); });
@@ -3671,12 +3850,15 @@ img,video{-webkit-user-drag:none;user-drag:none}
       if (m.journal && m.journal.rules){ var rb = el('div','jw-rules'); rb.appendChild(el('b',null,'Their rules')); var ol = el('ol','jr-rl show'); m.journal.rules.forEach(function(r){ ol.appendChild(el('li',null,r.text)); }); rb.appendChild(ol); side.appendChild(rb); }
       var note = inputEl('text', stt === 'denied' ? (e.reviewNote || '') : '', 'Note for the member (needed to deny)');
       side.appendChild(fld('Note', note));
-      var acts = el('div','rv-acts'), ok = el('button','btn-s pri','Approve · ' + entryWorth(e) + ' pts  (A)'), no = el('button','btn-s warn','Deny  (D)'); ok.type = no.type = 'button';
+      var acts = el('div','rv-acts'), ok = el('button','btn-s pri',''), no = el('button','btn-s warn','Deny  (D)'); ok.type = no.type = 'button';
+      var pp = ptsPicker(e, function(n){ ok.disabled = false; ok.textContent = 'Approve · ' + n + (n === 1 ? ' pt' : ' pts') + '  (A)'; });
+      ok.textContent = 'Approve · ' + pp.get() + (pp.get() === 1 ? ' pt' : ' pts') + '  (A)';
       if (stt === 'approved') ok.disabled = true; if (stt === 'denied') no.disabled = true;
+      side.appendChild(pp.node); walk.pp = pp;
       function act(status){
         if (status === 'denied' && note.value.trim().length < 3){ toast('Add a short note so they know why.'); note.focus(); return; }
         ok.disabled = no.disabled = true;
-        reviewEntry(x, status, note.value.trim()).then(function(){ changed = true; toast(status === 'approved' ? 'Approved.' : 'Denied.'); if (i < xs.length - 1){ i++; draw(); } else draw(); })
+        reviewEntry(x, status, note.value.trim(), pp.get()).then(function(){ changed = true; toast(status === 'approved' ? 'Approved · ' + pp.get() + (pp.get() === 1 ? ' pt.' : ' pts.') : 'Denied.'); if (i < xs.length - 1){ i++; draw(); } else draw(); })
           .catch(function(e2){ ok.disabled = no.disabled = false; toast(admFail(e2)); });
       }
       ok.addEventListener('click', function(){ act('approved'); }); no.addEventListener('click', function(){ act('denied'); });
@@ -3698,6 +3880,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       if (ev.key === 'ArrowRight' && i < xs.length - 1){ i++; draw(); }
       else if (ev.key === 'ArrowLeft' && i > 0){ i--; draw(); }
       else if ((ev.key === 'a' || ev.key === 'A') && walk.act){ walk.act('approved'); }
+      else if (/^[0-3]$/.test(ev.key) && walk.pp){ var b = walk.pp.node.querySelectorAll('.pts')[+ev.key]; if (b) b.click(); }
       else if ((ev.key === 'd' || ev.key === 'D') && walk.act){ if (walk.note.value.trim().length < 3){ ev.preventDefault(); walk.note.focus(); toast('Type a short note, then click Deny.'); } else walk.act('denied'); }
     }
     document.addEventListener('keydown', key);

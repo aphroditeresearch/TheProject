@@ -228,16 +228,26 @@ async function deleteEntry(userId, id) { await kv(['HDEL', 'jentries:' + userId,
 // journal entries are reviewed by an admin before they count: 'pending' → 'approved' | 'denied'.
 // Entries from before reviews existed count as approved (or denied if they'd been voided).
 function entryStatus(e) { return e && ['pending', 'approved', 'denied'].includes(e.status) ? e.status : (e && e.void ? 'denied' : 'approved'); }
-// what an entry scores if approved
+// paper / demo accounts score less
+const isPaper = (e) => /demo|paper/i.test(String((e && e.account) || ''));
+// what an entry is worth (the suggested points an admin sees when approving it)
 function basePoints(e) {
+  if (!e || !e.followed) return 0;
+  if (e.kind === 'none') return 1;
+  if (isPaper(e)) return e.outcome === 'tp' ? 1 : 0;
+  return e.outcome === 'tp' ? 3 : 1;
+}
+// the old rule, kept for entries approved before admins chose the points, so nobody's past points change
+function legacyPoints(e) {
   if (!e || !e.followed) return 0;
   if (e.kind === 'none') return 1;
   return e.outcome === 'tp' ? 3 : 1;
 }
+// what an entry scores on the leaderboard: the points the admin gave when approving it
 function entryPoints(e) {
-  if (!e || entryStatus(e) !== 'approved' || !e.followed) return 0;
-  if (e.kind === 'none') return 1;
-  return e.outcome === 'tp' ? 3 : 1;
+  if (!e || entryStatus(e) !== 'approved') return 0;
+  if (typeof e.awarded === 'number' && isFinite(e.awarded)) return e.awarded;
+  return legacyPoints(e);
 }
 
 /* ---------- everything for one member ---------- */
@@ -261,7 +271,7 @@ async function logActivity(user, ev) {
   if (!kvConfigured()) return;
   const e = Object.assign({ id: 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), at: new Date().toISOString(),
     uid: user.id, name: user.displayName || user.username || 'A member', username: user.username || '', avatar: user.avatar || null }, ev);
-  try { await kv(['LPUSH', 'activity', JSON.stringify(e)]); await kv(['LTRIM', 'activity', 0, 299]); } catch (err) {}
+  try { await kv(['LPUSH', 'activity', JSON.stringify(e)]); await kv(['LTRIM', 'activity', 0, 299]); await kv(['DEL', 'waiting-cache']); } catch (err) {}
 }
 async function loadActivity(n) {
   if (!kvConfigured()) return [];

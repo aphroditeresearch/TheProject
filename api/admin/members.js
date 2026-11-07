@@ -62,6 +62,7 @@ module.exports = async (req, res) => {
     let body = req.body;
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = null; } }
     if (!body || typeof body !== 'object') return json(res, 400, { error: 'bad_body' });
+    try { await kv(['DEL', 'waiting-cache']); } catch (e) {}   // counts change after any admin action
     const userId = body && body.userId, lessonId = body && body.lessonId;
     const content = await contentWithDefaults();
 
@@ -104,6 +105,9 @@ module.exports = async (req, res) => {
       const status = body.action === 'journal-void' ? (body.void ? 'denied' : 'approved') : body.status;
       if (!['approved', 'denied', 'pending'].includes(status)) return json(res, 400, { error: 'bad_status' });
       e.status = status; e.void = status === 'denied';
+      // approving: the points to give (an admin can give less than it's worth, e.g. 1 for a paper trade); otherwise none
+      if (status === 'approved') { const p = Number(body.points); e.awarded = isFinite(p) && body.points !== undefined && body.points !== null && body.points !== '' ? Math.max(0, Math.min(10, Math.round(p * 2) / 2)) : basePoints(e); }
+      else delete e.awarded;
       e.reviewedBy = status === 'pending' ? null : who; e.reviewedAt = status === 'pending' ? null : new Date().toISOString();
       e.reviewNote = typeof body.note === 'string' ? body.note.trim().slice(0, 500) : '';
       await saveEntry(userId, e);
@@ -155,6 +159,9 @@ module.exports = async (req, res) => {
   if (/[?&]activity=1/.test(req.url || '')) {
     try {
       const events = await loadActivity(80);
+      // the waiting counts read every member, so they're worked out at most once a minute and shared by all admins
+      const cached = await kv(['GET', 'waiting-cache']);
+      if (cached) { try { return json(res, 200, { events, waiting: JSON.parse(cached) }); } catch (e) {} }
       const waiting = { handins: 0, journal: 0, payouts: 0, promotions: 0 };
       await Promise.all((await listMembers()).map(async (m) => {
         const [subs, entries, certs, promo] = await Promise.all([loadSubs(m.id), loadEntries(m.id), loadCerts(m.id), loadPromo(m.id)]);
@@ -163,6 +170,7 @@ module.exports = async (req, res) => {
         waiting.payouts += Object.values(certs).filter((c) => c.kind === 'payout' && !(c.review && c.review.status !== 'pending')).length;
         if (promo && promo.status === 'requested') waiting.promotions++;
       }));
+      await kv(['SET', 'waiting-cache', JSON.stringify(waiting), 'EX', 60]);
       return json(res, 200, { events, waiting });
     } catch (e) { return json(res, 502, { error: 'storage' }); }
   }
