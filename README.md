@@ -335,7 +335,8 @@ time).
 - **Admins** get a dropdown: everyone combined, yourself, or any one student, plus a "By student" table (click a name to
   open just that student).
 Denied entries are left out. The combined numbers are cached for up to 2 minutes and refresh as soon as someone posts or an
-admin reviews an entry. Each student's day counts on its own, so two people trading the same Monday is two trade days.
+admin reviews an entry. Days are calendar days: twelve people trading on Friday is one trading day with twelve trades. A no-trade log counts as
+sitting out only if that student didn't also log a trade that day.
 
 ## Trade data (optional fields on every trade)
 The journal's trade form has a **Trade data** section. Everything in it is optional, so students can still post quickly and
@@ -363,3 +364,14 @@ Stats tab → **Export to Excel** downloads a real .xlsx built in the browser: T
 No-trade days, What works (every condition), Combinations, and By student when there's more than one student. Admins export
 whatever they're looking at (everyone or one student, for the chosen period) with names. Members can only export their own
 journal. Screenshot links aren't included because they expire; the sheet shows how many screenshots each entry has.
+
+## Days, W / L / no-trade
+- **Days journaled / Trading days:** calendar days, across everyone in the combined view.
+- **No-trade logs:** each time a student logged that they sat a day out ("No-trade days" when looking at one student).
+- **W / L / No-trade:** wins, losses, break-evens and sit-outs, overall (with a bar and percentages) and for every day in
+  the **By day** table (latest 10 days, "Show all" for the rest). The weekday table has the same split.
+- The Excel export has a **By day** sheet with the same columns plus a total row.
+- Periods: this week, this month, 30 days, 90 days, this year, all time. Everything is computed from the stored entries
+  each time, so nothing is lost or rolled up, and the numbers stay right as months of data build up.
+- New entries default to the last trading day: before 5am counts as the day before, and weekends go back to Friday.
+  Dating a trade on a Saturday asks for confirmation first.
