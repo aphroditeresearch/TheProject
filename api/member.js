@@ -10,7 +10,8 @@
 // POST /api/member { action:'journal-create', rules:[…] } / { action:'journal-rules', rules:[…] } → create the journal / update its rules
 // POST /api/member { action:'journal-add', entry } / { action:'journal-delete', id }             → post / remove a journal entry
 // GET  /api/member?board=week|month|all → the psych leaderboard (points from journal entries)
-// GET  /api/member?stats=1 → every member's journal entries combined, without names, screenshots or notes (for the Stats tab)
+// GET  /api/member?stats=1 → every member's Funded/Evaluation trades and no-trade days combined, anonymous and reduced to
+//                          what the Stats tab summary needs (admins get the full detail from /api/admin/members)
 // Files are uploaded straight from the browser to Vercel Blob first (see /api/upload), into members/<their id>/…
 const crypto = require('crypto');
 const { readSession, isAdmin, kvConfigured, loadProgress, json, kv, clientIp } = require('./_lib');
@@ -60,8 +61,8 @@ async function payoutBoard(period, me) {
   return { period, from, kind: 'payout', rows };
 }
 // Community stats: only the fields the stats need, nothing that says whose entry it is. Cached for 2 minutes.
-const STAT_FIELDS = ['date', 'time', 'kind', 'outcome', 'pnl', 'session', 'model', 'account', 'followed', 'news', 'newsWhat', 'pair', 'contracts',
-  'dir', 'exitTime', 'risk', 'pEntry', 'pStop', 'pTarget', 'pExit', 'mae', 'mfe', 'htf', 'bias', 'ltf', 'swept', 'confl', 'manage', 'mistakes', 'grade', 'entryType', 'emotion'];
+// students only see the combined summary (tiles, W/L/NT, R, profit factor), so only the fields it needs leave the server
+const STAT_FIELDS = ['date', 'kind', 'outcome', 'pnl', 'followed', 'account', 'dir', 'risk', 'pEntry', 'pStop', 'pExit'];
 // choices for the optional trade-data fields (the journal form offers the same lists)
 const HTFS = ['Weekly', 'Daily', '4H', '1H', '15m'];
 const LTFS = ['30s', '1m', '2m', '3m', '5m', '15m'];

@@ -390,3 +390,12 @@ scroll wheel or trackpad, swiping on a phone, or the thumbnails along the bottom
 (click again or press Esc to zoom out), and press Esc or click outside it to close. "Open original" still opens the file
 in a new tab, and Ctrl/Cmd-click does too. PDFs show an "Open PDF" button in the viewer. The code is `lightbox()` in
 `index.html`.
+
+## Who sees what in Stats
+- **Students, Stats tab:** only the combined summary for everyone: days, trades, no-trade logs, W / L / no-trade with the
+  bar, win rate, P&L, rules followed, avg R, profit factor, avg win and avg loss, with a period filter. No student picker,
+  no "Me", no Excel. The server only sends them the fields that summary needs, anonymised.
+- **Students, Journal → Stats:** their own full stats (by day, times, weekdays, news, sessions, models, accounts, What
+  works best), like a personal TradeZella dashboard. Nobody can see another student's stats.
+- **Admins, Stats tab:** everything: everyone combined, any single student, yourself, the By student table, all the
+  breakdowns, and Export to Excel. When you preview the site "As Awakened" etc., you see the student version.

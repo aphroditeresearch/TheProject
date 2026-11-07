@@ -1213,7 +1213,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
     <main class="main" data-view="stats" hidden>
       <div class="view-h">
         <h2>stats</h2>
-        <p>Every student's journal in one place: when trades get taken, which days people sit out, how news lines up with no-trade days. Switch to <b>Me</b> for your own numbers.</p>
+        <p id="stx-intro">How every student is doing, combined. Your own full stats are in <a href="#journal" class="lnk" data-jstats>Journal → Stats</a>.</p>
       </div>
       <div id="stx"></div>
     </main>
@@ -3079,6 +3079,7 @@ img,video{-webkit-user-drag:none;user-drag:none}
       [fmtRm(avgR), isNum(avgR) ? 'Avg R' + (Rs.length < T ? ' (' + Rs.length + ' trades)' : '') : 'Avg R: needs risk or prices', isNum(avgR) ? (avgR > 0 ? 'win' : avgR < 0 ? 'loss' : '') : ''],
       [fmtPf(pfv), 'Profit factor'], [nw ? money(gw / nw) : '–', 'Avg win', 'win'], [nl ? money(-gl / nl) : '–', 'Avg loss', nl ? 'loss' : '']
     ]));
+    if (opts.summaryOnly){ if (!ents.length) wrap.insertBefore(el('p','pf-none','No journal entries in this period yet.'), wrap.firstChild); return wrap; }
     wrap.appendChild(dayCard(S));
     var grid = el('div','st-grid');
     // when trades are taken
@@ -3392,8 +3393,13 @@ img,video{-webkit-user-drag:none;user-drag:none}
   var STX = { who:'all', per:'30', data:null, rows:null, at:0 };
   function renderStatsTab(){
     var host = document.getElementById('stx'); if (!host) return; host.textContent = '';
-    var admin = canAdmin(), bar = el('div','rv-bar');
-    var whoOpts = [['all','Everyone'],['me','Me']];
+    // students: the combined summary only (their full stats are in Journal → Stats). Admins: everything, any student, Excel.
+    var admin = canAdmin() && !PREVIEW, bar = el('div','rv-bar');
+    if (!admin) STX.who = 'all';
+    var intro = document.getElementById('stx-intro');
+    if (intro) intro.innerHTML = admin ? 'Every student\'s journal in one place. Pick a student to see just them, or <b>Me</b> for your own. Students only see the combined summary at the top; everything below it is admin-only.'
+      : 'How every student is doing, combined. Your own full stats are in <a href="#journal" class="lnk" data-jstats>Journal → Stats</a>.';
+    var jl = intro && intro.querySelector('[data-jstats]'); if (jl) jl.addEventListener('click', function(){ JR.view = 'stats'; });
     if (admin && STX.rows){
       var sel = el('select'); sel.setAttribute('aria-label','Whose stats');
       sel.appendChild(el('option',null,'Everyone combined')).value = 'all'; sel.appendChild(el('option',null,'Me')).value = 'me';
@@ -3402,11 +3408,11 @@ img,video{-webkit-user-drag:none;user-drag:none}
       sel.value = STX.who; if (sel.value !== STX.who){ STX.who = 'all'; sel.value = 'all'; }
       sel.addEventListener('change', function(){ STX.who = sel.value; renderStatsTab(); });
       bar.appendChild(sel);
-    } else bar.appendChild(seg(whoOpts, STX.who === 'me' ? 'me' : 'all', function(v){ STX.who = v; renderStatsTab(); }));
+    }
     bar.appendChild(seg([['week','This week'],['month','This month'],['30','30 days'],['90','90 days'],['year','This year'],['all','All time']], STX.per, function(v){ STX.per = v; renderStatsTab(); }));
-    var xb = el('button','btn-s xl-btn', admin ? 'Export to Excel' : 'Export my journal to Excel'); xb.type = 'button';
+    if (admin){ var xb = el('button','btn-s xl-btn','Export to Excel'); xb.type = 'button';
     xb.title = admin ? 'Downloads what you are looking at: ' + (STX.who === 'all' ? 'every student' : 'this student') + ', this period' : 'Downloads your own journal for this period';
-    xb.addEventListener('click', function(){ exportStats(); }); bar.appendChild(xb);
+    xb.addEventListener('click', function(){ exportStats(); }); bar.appendChild(xb); }
     host.appendChild(bar);
     var body = el('div'); host.appendChild(body);
     var from = periodFrom(STX.per), keep = function(e){ return e && e.date >= from && countsInStats(e); };
@@ -3428,8 +3434,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
         return;
       }
       var d = STX.data || { entries: [] }, ents = (d.entries || []).filter(keep);
-      body.appendChild(el('p','adm-note', 'All students combined' + (d.members ? ' (' + d.members + ' journals)' : '') + '. Names, notes and screenshots stay private.'));
-      body.appendChild(statsView(ents));
+      body.appendChild(el('p','adm-note', 'All students combined' + (d.members ? ' · ' + d.members + (d.members === 1 ? ' journal' : ' journals') : '') + '.'));
+      body.appendChild(statsView(ents, { summaryOnly: true }));
     }
     function exportStats(){
       if (!(admin && STX.rows && STX.who !== 'me') && !ME.loaded){ loadMe().then(exportStats); return; }
