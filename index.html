@@ -1087,6 +1087,16 @@ img,video{-webkit-user-drag:none;user-drag:none}
   .stamp.on{animation:none;opacity:.92;transform:translate(-50%,-50%) rotate(-13deg)}
 }
 
+/* member feedback */
+.ntf-ic.k-ok{color:var(--win)}.ntf-ic.k-back{color:#E8B07A}
+.ntf-t .fb-line{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-line}
+.ntf-t .fb-line.said{opacity:1}
+.ntf-all{display:block;width:100%;padding:12px 14px;border:0;background:none;color:var(--kana-c, var(--ink));font:600 13px var(--sans);cursor:pointer;text-align:center}
+.ntf-all:hover{background:var(--panel-2)}
+#pf-fb .seg2{margin-bottom:10px;flex-wrap:wrap}
+.fb-list{border:1px solid var(--line);margin-bottom:10px}.fb-list .ntf-i:last-child{border-bottom:0}
+.fb-list .ntf-t .fb-line{-webkit-line-clamp:unset;display:block}
+.je-note.ok{color:var(--ink);background:rgba(28,232,190,.06);border-left:2px solid var(--kana-c);padding:8px 10px;margin-top:10px}.je-note.ok b{color:var(--kana-c)}
 /* ---------- phones & tablets ---------- */
 html,body{overflow-x:clip}
 .bgfx{contain:paint}
@@ -1345,6 +1355,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
             <dt>Discord ID</dt><dd class="mono" id="pf-id">—</dd>
           </dl>
           <div id="pf-promo"></div>
+          <section class="pf-log" id="pf-fb-s" aria-labelledby="pf-fb-h">
+            <div class="pf-log-h"><h4 id="pf-fb-h">Feedback from your mentor</h4><span id="pf-fb-n">0</span></div>
+            <div id="pf-fb"></div>
+          </section>
           <section class="pf-log" aria-labelledby="pf-certs-h">
             <div class="pf-log-h"><h4 id="pf-certs-h">Certificates</h4><span id="pf-certs-n">0</span></div>
             <p class="pf-note">Upload your payout and funded certificates. Only you and the admins can see them.</p>
@@ -1753,10 +1767,12 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     Object.keys(st).forEach(function(k){ parts.push(k + '~' + st[k]); });
     return { sig: parts.sort().join('|'), st: st, names: names };
   }
+  var pollN = 0;
   function pollUnlocks(){
     if (DEMO_MODE || !BACKEND || !SESSION || adminView() || document.hidden || Date.now() - lastPoll < 10000) return;
     var pv = document.getElementById('portal-view'); if (!pv || pv.hidden) return;
     lastPoll = Date.now();
+    if (!SESSION.isAdmin && (++pollN % 3 === 0)) loadMe().then(paintFb);   // journal + certificate reviews, about every 2 minutes
     fetch(contentUrl(), { credentials:'same-origin', cache:'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
       if (!j || !j.content || !LAST_SIG) return;
       var a = accessSig(j.content); if (a.sig === LAST_SIG) return;
@@ -3030,6 +3046,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     }
     card.appendChild(ft);
     if (stt === 'denied' && e.reviewNote) card.appendChild(el('p','je-note','Not counted: ' + e.reviewNote));
+    else if (stt === 'approved' && e.reviewNote){ var mc = el('p','je-note ok'); mc.appendChild(el('b',null,'Mentor: ')); mc.appendChild(document.createTextNode(e.reviewNote)); card.appendChild(mc); }
     return card;
   }
   // month calendar: green days made money, red days lost it; click a day to see its entries
@@ -3633,7 +3650,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       });
     }).catch(function(){ list.textContent = ''; emptyState(list, 'Couldn\'t load the payout board', 'Refresh to try again.'); });
   }
-  function renderProfileExtras(){ loadMe().then(function(){ renderCerts(); renderPromo(); }); }
+  function renderProfileExtras(){ loadMe().then(function(){ renderCerts(); renderPromo(); paintFb(); }); }
 
   function renderProfileAccess(){
     var names = CURRICULUM.filter(function(c){ return c.lessons.some(function(l){ return l.reason !== 'hidden'; }); }).map(function(c){ return c.name; });
@@ -3736,6 +3753,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     ev.stopPropagation();
     if (NTF.open){ closeNtf(); return; }
     NTF.open = true; NTF.seenAtOpen = ntfSeen(); document.getElementById('ntf').hidden = false; this.setAttribute('aria-expanded','true');
+    if (SESSION && !SESSION.isAdmin){ paintFb(); loadMe().then(paintFb); return; }
     paintNtf();
   });
   document.addEventListener('click', function(ev){ if (NTF.open && !ev.target.closest('.bell-w')) closeNtf(); });
@@ -3766,7 +3784,99 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     }).catch(function(){}).then(next);
   }
   document.addEventListener('visibilitychange', function(){ if (!document.hidden && SESSION && SESSION.isAdmin) pollNtf(); });
-  function renderContentViews(){ paintPreview(); renderCurriculum(); renderHomework(); renderBreakdowns(); renderCompletions(); renderAnnouncements(); renderProfileExtras(); }
+
+  /* ---------- feedback for members: every approval, send-back and mentor comment in one place (bell + Profile) ---------- */
+  function fbReadKey(){ return 'theproject.fbread.' + uid(); }
+  function fbSinceKey(){ return 'theproject.fbsince.' + uid(); }
+  function fbItems(){
+    var out = [];
+    function add(where, key, title, sub){
+      if (!sub || !sub.reviewedAt || (sub.status !== 'approved' && sub.status !== 'returned')) return;
+      out.push({ id:'fb:' + key + ':' + sub.reviewedAt, where:where, key:key, title:title, kind:sub.status, at:sub.reviewedAt, has:!!sub.feedback,
+        line: sub.feedback || (sub.status === 'approved' ? 'Approved. Nice work.' : 'Sent back. Make the changes and hand it in again.') });
+    }
+    CURRICULUM.forEach(function(ch){ (ch.lessons || []).forEach(function(l){ unitsOf(l).forEach(function(u){ add('lx', u.id, u === l ? l.title : l.title + ' · ' + u.title, u.sub); }); }); });
+    (BREAKDOWNS || []).forEach(function(b){ add(b.kind === 'advanced' ? 'ax' : 'bx', 'bd:' + b.id, b.title, b.sub); });
+    (HOMEWORK || []).forEach(function(h){ add('hw', 'hw:' + h.id, h.title, h.sub); });
+    ((ME && ME.entries) || []).forEach(function(e){
+      var st = entryStatus(e); if (!e.reviewedAt || st === 'pending' || (st === 'approved' && !e.reviewNote)) return;
+      var what = e.kind === 'trade' ? ((e.pair || 'Trade') + ' ' + String(e.outcome || '').toUpperCase()).trim() : 'No-trade day';
+      out.push({ id:'fb:j:' + e.id + ':' + e.reviewedAt, where:'journal', date:e.date, title:'Journal · ' + what + ' · ' + shortDay(e.date), kind: st === 'denied' ? 'returned' : 'approved', at:e.reviewedAt, has:!!e.reviewNote,
+        line: st === 'denied' ? 'Not counted' + (e.reviewNote ? ': ' + e.reviewNote : '.') : e.reviewNote });
+    });
+    ((ME && ME.certs) || []).forEach(function(c){ var r = c.review; if (c.kind !== 'payout' || !r || !r.at || r.status === 'pending') return;
+      out.push({ id:'fb:c:' + c.id + ':' + r.at, where:'profile', title:'Payout certificate', kind: r.status === 'approved' ? 'approved' : 'returned', at:r.at, has:!!r.note,
+        line: r.status === 'approved' ? 'Certified' + (r.amount ? ': ' + money(+r.amount) + ' added to the payout board.' : '.') + (r.note ? ' ' + r.note : '') : 'Not certified' + (r.note ? ': ' + r.note : '.') }); });
+    return out.sort(function(a, b){ return String(b.at).localeCompare(String(a.at)); });
+  }
+  function fbUnread(items){
+    var read = lsGet(fbReadKey()), since = '';
+    try { since = localStorage.getItem(fbSinceKey()) || ''; if (!since){ since = new Date().toISOString(); localStorage.setItem(fbSinceKey(), since); } } catch(e) {}
+    // reviews from before the bell existed count as read, so nobody opens it to a wall of old approvals
+    return items.filter(function(x){ return !read[x.id] && (!since || x.at > since); });
+  }
+  function fbMarkRead(ids){ var r = lsGet(fbReadKey()); ids.forEach(function(i){ r[i] = 1; }); lsSet(fbReadKey(), r); }
+  function fbGo(x){
+    closeNtf();
+    if (x.where === 'hw'){ openHwCard(x.key.slice(3)); return; }
+    if (x.where === 'journal'){ JR.view = 'cal'; JR.month = x.date.slice(0, 7); JR.day = x.date; if ((location.hash || '') === '#journal') showView(); else location.hash = '#journal'; return; }
+    if (x.where === 'profile'){ location.hash = '#profile'; return; }
+    var tab = { lx:'lectures', bx:'breakdowns', ax:'advanced' }[x.where];
+    current[x.where] = x.key; saveCurrent();
+    if ((location.hash || '') === '#' + tab) renderTrack(x.where); else location.hash = '#' + tab;
+    setTimeout(function(){ var pn = document.getElementById(x.where + '-pane'); if (pn) pn.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block:'start' }); }, 120);
+  }
+  var FB = { last: -1 };
+  function fbRow(x, unread, onPick){
+    var it = el('div','ntf-i' + (unread ? ' new' : '')); it.setAttribute('role','button'); it.tabIndex = 0;
+    it.addEventListener('keydown', function(ev){ if (ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); it.click(); } });
+    it.appendChild(el('span','ntf-ic k-' + (x.kind === 'approved' ? 'ok' : 'back'), x.kind === 'approved' ? '✓' : '↩'));
+    var t = el('span','ntf-t'); t.appendChild(el('b',null, x.title)); t.appendChild(el('span', 'fb-line' + (x.has ? ' said' : ''), x.line));
+    t.appendChild(el('small',null, (x.kind === 'approved' ? 'Approved' : x.where === 'journal' ? 'Not counted' : x.where === 'profile' ? 'Not certified' : 'Sent back') + ' · ' + ago(x.at))); it.appendChild(t);
+    it.addEventListener('click', function(){ fbMarkRead([x.id]); onPick(x); });
+    return it;
+  }
+  function paintFb(){
+    if (!SESSION || SESSION.isAdmin || DEMO_MODE) return;
+    var bell = document.getElementById('bell'), n = document.getElementById('bell-n'); bell.hidden = false; bell.setAttribute('aria-label','Feedback from your mentor');
+    var items = fbItems(), un = fbUnread(items);
+    n.textContent = un.length > 99 ? '99+' : un.length; n.hidden = !un.length;
+    if (FB.last >= 0 && un.length > FB.last){ bell.classList.remove('ringing'); void bell.offsetWidth; bell.classList.add('ringing'); }
+    FB.last = un.length;
+    renderFbProfile(items, un);
+    if (!NTF.open) return;
+    var box = document.getElementById('ntf'); box.textContent = '';
+    var h = el('div','ntf-h'); h.appendChild(el('b',null,'Feedback'));
+    if (un.length){ h.appendChild(el('span','ntf-c', un.length + ' new'));
+      var mr = el('button','lnk','Mark all read'); mr.type = 'button'; mr.addEventListener('click', function(ev){ ev.stopPropagation(); fbMarkRead(un.map(function(x){ return x.id; })); paintFb(); }); h.appendChild(mr); }
+    box.appendChild(h);
+    if (!items.length){ box.appendChild(el('div','ntf-none','Nothing yet. When your mentor approves or sends back your work, or comments on a journal entry, it shows up here.')); return; }
+    var unId = {}; un.forEach(function(x){ unId[x.id] = 1; });
+    items.slice(0, 25).forEach(function(x){ box.appendChild(fbRow(x, !!unId[x.id], function(y){ fbGo(y); paintFb(); })); });
+    var all = el('button','ntf-all','See all feedback in your Profile'); all.type = 'button';
+    all.addEventListener('click', function(){ closeNtf(); location.hash = '#profile'; setTimeout(function(){ var s2 = document.getElementById('pf-fb-s'); if (s2) s2.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block:'start' }); }, 150); });
+    box.appendChild(all);
+  }
+  var FBP = { f:'all', more:false };
+  function renderFbProfile(items, un){
+    var host = document.getElementById('pf-fb'), sec = document.getElementById('pf-fb-s'); if (!host) return;
+    if (!SESSION || SESSION.isAdmin){ sec.hidden = true; return; } sec.hidden = false;
+    items = items || fbItems(); un = un || fbUnread(items);
+    var unId = {}; un.forEach(function(x){ unId[x.id] = 1; });
+    document.getElementById('pf-fb-n').textContent = items.length;
+    host.textContent = '';
+    if (!items.length){ host.appendChild(el('p','pf-note','Nothing yet. Every approval, send-back and comment from your mentor will be listed here.')); return; }
+    var groups = [['all','All'],['said','With comments'],['lx','Lectures'],['bx','Breakdowns'],['hw','Homework'],['journal','Journal']];
+    var bar = seg(groups.filter(function(g){ return g[0] === 'all' || g[0] === 'said' || items.some(function(x){ return x.where === g[0] || (g[0] === 'bx' && x.where === 'ax'); }); }), FBP.f, function(v){ FBP.f = v; FBP.more = false; renderFbProfile(); });
+    host.appendChild(bar);
+    var list = items.filter(function(x){ return FBP.f === 'all' || (FBP.f === 'said' ? x.has : FBP.f === 'bx' ? (x.where === 'bx' || x.where === 'ax') : x.where === FBP.f); });
+    var box = el('div','fb-list');
+    (FBP.more ? list : list.slice(0, 12)).forEach(function(x){ box.appendChild(fbRow(x, !!unId[x.id], function(y){ fbGo(y); paintFb(); })); });
+    if (!list.length) box.appendChild(el('p','pf-note','Nothing in this filter.'));
+    host.appendChild(box);
+    if (list.length > 12){ var mb = el('button','btn-s', FBP.more ? 'Show fewer' : 'Show all ' + list.length); mb.type = 'button'; mb.addEventListener('click', function(){ FBP.more = !FBP.more; renderFbProfile(); }); host.appendChild(mb); }
+  }
+  function renderContentViews(){ paintPreview(); renderCurriculum(); renderHomework(); renderBreakdowns(); renderCompletions(); renderAnnouncements(); renderProfileExtras(); paintFb(); }
 
   /* ---------- admin panel ---------- */
   function canAdmin(){ return !!(SESSION && SESSION.isAdmin) || DEMO_MODE; }
@@ -4498,7 +4608,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     card.appendChild(entryCard(e, null));
     if (m.journal && m.journal.rules && m.journal.rules.length){ var rd = el('details','jrv-rules'), su = el('summary',null,'Their rules (' + m.journal.rules.length + ')'); rd.appendChild(su);
       var ol = el('ol','jr-rl show'); m.journal.rules.forEach(function(r){ ol.appendChild(el('li',null,r.text)); }); rd.appendChild(ol); card.appendChild(rd); }
-    var note = inputEl('text', x.st === 'denied' ? (e.reviewNote || '') : '', 'Note for the member (needed to deny)');
+    var note = inputEl('text', e.reviewNote || '', 'Comment for the member (optional; needed to deny)');
     var acts = el('div','rv-acts'), ok = el('button','btn-s pri',''), no = el('button','btn-s warn','Deny'); ok.type = no.type = 'button';
     var pp = ptsPicker(e, function(n){ ok.disabled = false; ok.textContent = (x.st === 'approved' ? 'Update · ' : 'Approve · ') + n + (n === 1 ? ' pt' : ' pts'); });
     ok.textContent = (x.st === 'approved' ? 'Update · ' : 'Approve · ') + pp.get() + (pp.get() === 1 ? ' pt' : ' pts');
@@ -4545,7 +4655,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       shots.appendChild(big); if (files.length > 1) shots.appendChild(thumbs); show(0);
       side.appendChild(entryCard(e, null));
       if (m.journal && m.journal.rules){ var rb = el('div','jw-rules'); rb.appendChild(el('b',null,'Their rules')); var ol = el('ol','jr-rl show'); m.journal.rules.forEach(function(r){ ol.appendChild(el('li',null,r.text)); }); rb.appendChild(ol); side.appendChild(rb); }
-      var note = inputEl('text', stt === 'denied' ? (e.reviewNote || '') : '', 'Note for the member (needed to deny)');
+      var note = inputEl('text', e.reviewNote || '', 'Comment for the member (optional; needed to deny)');
       side.appendChild(fld('Note', note));
       var acts = el('div','rv-acts'), ok = el('button','btn-s pri',''), no = el('button','btn-s warn','Deny  (D)'); ok.type = no.type = 'button';
       var pp = ptsPicker(e, function(n){ ok.disabled = false; ok.textContent = 'Approve · ' + n + (n === 1 ? ' pt' : ' pts') + '  (A)'; });

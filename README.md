@@ -426,3 +426,15 @@ or breakdown on the server straight away, with nothing to unlock by hand. A stud
 about 45 seconds (or as soon as they come back to the tab), with a message like "✓ Approved: Lesson name. The next one is
 unlocked." Sending a hand-in back shows them a message too. The page waits to update if they're watching a video, typing,
 or uploading, so nothing they're doing is interrupted. The code is `pollUnlocks()` in `index.html`.
+
+## Feedback for members
+- **Bell (members):** members now have a bell in the top bar. It lists every approval and send-back on lectures,
+  breakdowns, advanced lectures and homework (with the mentor's feedback), journal entries an admin commented on or didn't
+  count, and payout certificates certified or not. Clicking an item opens that lesson, homework or journal day. The red
+  number counts unread items. Reviews from before this update start as read. Admins keep their own Activity bell.
+- **Profile → Feedback from your mentor:** everything above in one list, newest first, with filters (All, With comments,
+  Lectures, Breakdowns, Homework, Journal).
+- **Journal approvals can carry a comment:** the note box when reviewing a journal entry is now "Comment for the member
+  (optional; needed to deny)". On approved entries the member sees it as "Mentor: …".
+- Updates arrive on their own: hand-in reviews within about 45 seconds, journal and certificate reviews within about 2
+  minutes, or straight away when the member opens the bell. The code is `fbItems()` / `paintFb()` in `index.html`.
