@@ -18,7 +18,7 @@
 // Files are uploaded straight from the browser to Vercel Blob first (see /api/upload), into members/<their id>/…
 const crypto = require('crypto');
 const { readSession, isAdmin, kvConfigured, loadProgress, json, kv, clientIp, rateLimit, staffAlert } = require('./_lib');
-const { logActivity, gateFor, saveSub, findItem, loadCerts, saveCert, deleteCert, loadPromo, savePromo, loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints, entryStatus, basePoints, streakOf, loadDayNotes, loadTestimonials, saveTestimonial, deleteTestimonial } = require('./_gate');
+const { logActivity, gateFor, saveSub, findItem, loadCerts, saveCert, deleteCert, loadPromo, savePromo, loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints, entryStatus, basePoints, streakOf, nyToday, loadDayNotes, loadTestimonials, saveTestimonial, deleteTestimonial } = require('./_gate');
 const { listMembers } = require('./_lib');
 const { signAll, cleanFile } = require('./_blob');
 
@@ -26,10 +26,11 @@ const FLAG_KINDS = ['right-click', 'devtools-keys', 'devtools-open', 'save', 'vi
 function byEntry(a, b) { return (String(b.date) + String(b.time || '') + b.createdAt).localeCompare(String(a.date) + String(a.time || '') + a.createdAt); }
 // The psych leaderboard: points from journal entries in the period (dates are the trade dates members enter)
 async function leaderboard(period, me) {
-  const today = new Date(); const ymd = (d) => d.toISOString().slice(0, 10);
+  // weeks and months follow the trading day (New York), not UTC, so they don't roll over at 6–7 pm US time
+  const today = nyToday();
   let from = '0000-00-00';
-  if (period === 'week') { const d = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); from = ymd(d); }
-  if (period === 'month') from = ymd(today).slice(0, 8) + '01';
+  if (period === 'week') { const d = new Date(today + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); from = d.toISOString().slice(0, 10); }
+  if (period === 'month') from = today.slice(0, 8) + '01';
   const members = await listMembers();
   const rows = [];
   await Promise.all(members.map(async (m) => {
@@ -48,10 +49,11 @@ async function leaderboard(period, me) {
 }
 // The payout leaderboard: payouts an admin has certified, added up per member (by the day of the payout)
 async function payoutBoard(period, me) {
-  const today = new Date(); const ymd = (d) => d.toISOString().slice(0, 10);
+  // weeks and months follow the trading day (New York), not UTC, so they don't roll over at 6–7 pm US time
+  const today = nyToday();
   let from = '0000-00-00';
-  if (period === 'week') { const d = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); from = ymd(d); }
-  if (period === 'month') from = ymd(today).slice(0, 8) + '01';
+  if (period === 'week') { const d = new Date(today + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); from = d.toISOString().slice(0, 10); }
+  if (period === 'month') from = today.slice(0, 8) + '01';
   const rows = [];
   await Promise.all((await listMembers()).map(async (m) => {
     const paid = Object.values(await loadCerts(m.id)).filter((c) => c.kind === 'payout' && c.review && c.review.status === 'approved' && String(c.paidAt || c.uploadedAt).slice(0, 10) >= from);
@@ -368,7 +370,7 @@ module.exports = async (req, res) => {
       // the amount and day of the payout; an admin certifies it before it counts on the payout leaderboard
       const amount = Math.round(Number(body.amount) * 100) / 100;
       if (!(amount > 0 && amount < 10000000)) return json(res, 400, { error: 'need_amount' });
-      const paidAt = /^\d{4}-\d{2}-\d{2}$/.test(str(body.paidAt, 10)) ? str(body.paidAt, 10) : new Date().toISOString().slice(0, 10);
+      const paidAt = /^\d{4}-\d{2}-\d{2}$/.test(str(body.paidAt, 10)) ? str(body.paidAt, 10) : nyToday();
       Object.assign(cert, { amount, paidAt, review: { status: 'pending' } });
     }
     await saveCert(uid, cert);

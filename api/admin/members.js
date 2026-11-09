@@ -152,7 +152,7 @@ async function cronBackup() {
     const gz = zlib.gzipSync(Buffer.from(JSON.stringify(snap)));
     status.count = snap.count; status.bytes = gz.length;
     if (!/^https:\/\/(discord\.com|discordapp\.com|ptb\.discord\.com|canary\.discord\.com)\/api\/webhooks\//.test(hook)) throw new Error('DISCORD_BACKUP_WEBHOOK is not set');
-    const day = status.at.slice(0, 10);
+    const day = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date(status.at));
     const fd = new FormData();
     fd.append('payload_json', JSON.stringify({ content: '🗄️ Daily backup · ' + day + ' · ' + snap.count + ' records · ' + Math.ceil(gz.length / 1024) + ' KB' }));
     fd.append('files[0]', new Blob([gz], { type: 'application/gzip' }), 'theproject-backup-' + day + '.json.gz');

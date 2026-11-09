@@ -1133,6 +1133,8 @@ img,video{-webkit-user-drag:none;user-drag:none}
 .dr-e{appearance:none;text-align:left;font:inherit;color:inherit;background:rgba(255,255,255,.02);border:1px solid var(--line);padding:10px 12px;display:flex;flex-direction:column;gap:5px;cursor:pointer}
 .dr-e:hover{border-color:rgba(255,255,255,.3)}.dr-et{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}.dr-tm{font:12px var(--mono);color:var(--muted)}
 .dr-pl{font-weight:700}.dr-pl.win{color:#4ade80}.dr-pl.loss{color:#f87171}.dr-ov{margin:0;font-size:13px;line-height:1.5;color:var(--muted);white-space:pre-wrap}
+.dr-live{margin-left:auto;font:12px var(--mono);color:#4ade80;letter-spacing:.04em}
+.dr-new{border-color:rgba(74,222,128,.55)!important;box-shadow:0 0 0 1px rgba(74,222,128,.25)}.dr-newtag{margin-left:auto}
 .dr-miss h4{margin:6px 0 10px}.dr-ml{display:flex;flex-wrap:wrap;gap:8px}.dr-who{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);padding:4px 12px 4px 4px;font-size:13px}.dr-who .av{width:24px;height:24px}
 /* journal: tags, day notes, list */
 .jr-tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border:1px solid var(--line);background:rgba(255,255,255,.03);padding:6px 8px;min-height:44px}
@@ -3056,7 +3058,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       if (eo && entryStatus(eo) !== 'pending') f.appendChild(el('p','adm-note jr-editnote','This entry was already reviewed. Notes, screenshots, tags and trade data can change freely; changing the result, account, date or the rules answer sends it back for review.'));
       var cx = el('button','lnk','Cancel editing'); cx.type = 'button'; cx.addEventListener('click', function(){ JR.editId = null; JR.draft = { files:[] }; JR.view = 'cal'; drawJournal(host); }); f.appendChild(cx); }
     f.appendChild(seg([['trade','Trade'],['none','No trades today']], JR.kind, function(k){ JR.kind = k; drawJournal(host); }));
-    var D = JR.draft; if (!D.date) D.date = lastTradingDay();
+    var D = JR.draft; if (!D.date) D.date = todayYmd();
     var grid2 = el('div','jr-fields');
     function field(label, ctl, wide){ var w = fld(label, ctl); if (wide) w.classList.add('wide'); grid2.appendChild(w); return ctl; }
     var ENTRY_MODELS = ['BOS','MITIGATION','Chained OBs','DIV + OB'];
@@ -4091,7 +4093,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function ntfGo(e){
     closeNtf();
     if (e.type === 'handin' || e.type === 'promo'){ RV.member = e.uid; RV.status = 'waiting'; RV.type = 'all'; RV.hw = null; adm.sec = 'review'; }
-    else if (e.type === 'journal'){ JRV.mode = 'day'; JRV.basis = 'up'; JRV.day = localDay(e.at); adm.sec = 'journal'; }
+    else if (e.type === 'journal'){ JRV.mode = 'recap'; JRV.rday = /^\d{4}-\d{2}-\d{2}$/.test(e.date || '') ? e.date : localDay(e.at); adm.sec = 'journal'; }
     else if (e.type === 'cert'){ PRV.status = 'pending'; adm.sec = e.kind === 'payout' ? 'payouts' : 'members'; }
     else if (e.type === 'review'){ adm.sec = 'testimonials'; }
     if ((location.hash || '') !== '#admin') location.hash = '#admin'; else if (adm.content) admRender();
@@ -4168,7 +4170,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
 
   /* ---------- journaling streak + week in review ---------- */
   // same rules as streakOf() in api/_gate.js: weekdays in a row with an entry (not denied), New York dates
-  function nyToday(){ try { return new Intl.DateTimeFormat('en-CA', { timeZone:'America/New_York' }).format(new Date()); } catch (e) { return todayYmd(); } }
+  function nyToday(){ return todayYmd(); }   // "today" in the page is always the viewer's own calendar day
   function addDays(ymd, n){ var d = new Date(ymd + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
   function wday(ymd){ return new Date(ymd + 'T12:00:00Z').getUTCDay(); }
   function prevWeekday(ymd){ var d = addDays(ymd, -1); while (wday(d) === 0 || wday(d) === 6) d = addDays(d, -1); return d; }
@@ -4875,7 +4877,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
 
   function mondayOf(d){ if (!d) return ''; var t = new Date(String(d).slice(0,10) + 'T12:00:00'); if (isNaN(t)) return ''; t.setDate(t.getDate() - ((t.getDay() + 6) % 7));
     return t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0'); }
-  function thisMonday(){ return mondayOf(new Date().toISOString().slice(0,10)); }
+  function thisMonday(){ return mondayOf(todayYmd()); }
   function todayKey(){ return ['mon','mon','tue','wed','thu','fri','fri'][new Date().getDay()]; }
   // tick the lectures an assignment goes with (members see it once one of them is open for them)
   function lessonPicker(picked){
@@ -5238,7 +5240,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     }, function(t, line){ host.textContent = ''; emptyState(host, t, line); });
     return wrap;
   }
-  var JRV = { status:'pending', q:'', mode:'recap', day:null, basis:'up', rday:null };
+  var JRV = { status:'pending', q:'', mode:'recap', day:null, basis:'trade', rday:null, fresh:null, sig:'', seen:null, at:null };
   function localDay(iso){ var d = new Date(iso); return isNaN(d) ? '' : ymd(d); }
   function dayLabel(d){ var t = new Date(d + 'T12:00:00'), today = todayYmd(), y = new Date(); y.setDate(y.getDate() - 1);
     return d === today ? 'Today' : d === ymd(y) ? 'Yesterday' : t.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' }); }
@@ -5246,7 +5248,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var wrap = el('div','adm-list');
     wrap.appendChild(el('p','adm-note','Journal entries count on the psych leaderboard only after you approve them. Deny ones that don\'t hold up (outcome doesn\'t match the screenshot, rules not really followed…). Members see your note.'));
     var host = el('div'); wrap.appendChild(host); host.appendChild(el('p','adm-note','Loading entries…'));
-    loadMembers(function(rows){
+    var withRows = function(cb, fail){ if (JRV.fresh){ var r0 = JRV.fresh; JRV.fresh = null; cb(r0); } else loadMembers(cb, fail); };
+    withRows(function(rows){
       host.textContent = '';
       var all = []; rows.forEach(function(m){ (m.entries || []).forEach(function(e){ all.push({ m:m, e:e, st: entryStatus(e) }); }); });
       var cnt = { pending:0, approved:0, denied:0 }; all.forEach(function(x){ cnt[x.st]++; });
@@ -5297,9 +5300,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         var key = function(x){ return JRV.basis === 'up' ? localDay(x.e.createdAt) : x.e.date; };
         var byDay = {}; all.forEach(function(x){ var d = key(x); if (d) (byDay[d] = byDay[d] || []).push(x); });
         var days = Object.keys(byDay).sort().reverse();
-        if (!JRV.day || !byDay[JRV.day]) JRV.day = days[0] || todayYmd();
+        if (!JRV.day) JRV.day = todayYmd();
         var bar2 = el('div','rv-bar');
-        bar2.appendChild(seg([['up','Day uploaded'],['trade','Trade date']], JRV.basis, function(v){ JRV.basis = v; JRV.day = null; admRender(); }));
+        bar2.appendChild(seg([['trade','Trade date'],['up','Day uploaded']], JRV.basis, function(v){ JRV.basis = v; JRV.day = null; admRender(); }));
         var pick = inputEl('date', JRV.day); pick.setAttribute('aria-label','Pick a day'); pick.addEventListener('change', function(){ if (pick.value){ JRV.day = pick.value; admRender(); } });
         bar2.appendChild(pick); host.appendChild(bar2);
         // the last days that have entries
@@ -5330,19 +5333,45 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     return wrap;
   }
 
+
+  // Daily recap refreshes itself every 30 seconds while it's open, so journals show up during the call as students post.
+  // It only redraws when something changed, and waits while you're typing or walking through entries.
+  var recapPoll = null;
+  function startRecapPoll(sigOf){
+    if (recapPoll || DEMO_MODE) return;
+    recapPoll = setInterval(function(){
+      var open = adm.sec === 'journal' && JRV.mode === 'recap' && document.querySelector('.dr') && document.querySelector('.tab[data-tab=admin]') && document.querySelector('.dr').offsetParent !== null;
+      if (!open){ clearInterval(recapPoll); recapPoll = null; return; }
+      if (document.hidden || document.querySelector('.jw') || /^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement || {}).tagName || '')) return;
+      fetch('/api/admin/members', { credentials:'same-origin', cache:'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+        if (!j || !(adm.sec === 'journal' && JRV.mode === 'recap')) return;
+        var rows = j.members || [], lv = document.querySelector('.dr-live');
+        if (sigOf(rows) === JRV.sig){ JRV.at = new Date(); if (lv) lv.textContent = '● Live · checked ' + JRV.at.toLocaleTimeString([], { hour:'numeric', minute:'2-digit' }); return; }
+        var y = window.scrollY; JRV.fresh = rows; JRV.live = true; admRender(); window.scrollTo(0, y);
+      }).catch(function(){});
+    }, 30000);
+  }
   /* ---------- daily recap: one trading day across every student, built for the group call ---------- */
   function dailyRecap(rows, all){
-    var box = el('section','dr view-in'), today = nyToday();
-    if (!JRV.rday) JRV.rday = (wday(today) === 0 || wday(today) === 6) ? prevWeekday(today) : today;
+    var box = el('section','dr' + (JRV.live ? '' : ' view-in')), today = todayYmd(); JRV.live = false;
+    if (!JRV.rday) JRV.rday = today;
+    // what's already been seen, so new or edited journals can be highlighted when they flow in
+    var sigOf = function(rs){ return rs.map(function(m){ return m.id + ':' + (m.entries || []).map(function(e){ return e.id + (e.editedAt || '') + (e.status || ''); }).join(',') + ':' + JSON.stringify(m.dayNotes || {}); }).join('|'); };
+    var keyOf = function(m, e){ return m.id + '/' + e.id + '/' + (e.editedAt || ''); };
+    var prevSeen = JRV.seen; JRV.seen = {}; rows.forEach(function(m){ (m.entries || []).forEach(function(e){ JRV.seen[keyOf(m, e)] = 1; }); JRV.seen['n:' + m.id + JSON.stringify((m.dayNotes || {}))] = 1; });
+    var isNew = function(k){ return prevSeen && !prevSeen[k]; };
+    JRV.sig = sigOf(rows); JRV.at = new Date();
+    startRecapPoll(sigOf);
     var D = JRV.rday;
     var bar = el('div','rv-bar dr-bar');
     var pv = el('button','btn-s','‹ Previous day'), nx = el('button','btn-s','Next day ›'), td = el('button','btn-s','Today'); pv.type = nx.type = td.type = 'button';
-    var step = function(n){ var d = addDays(D, n); while (wday(d) === 0 || wday(d) === 6) d = addDays(d, n); return d; };
+    var step = function(n){ return addDays(D, n); };
     pv.addEventListener('click', function(){ JRV.rday = step(-1); admRender(); });
     nx.addEventListener('click', function(){ JRV.rday = step(1); admRender(); }); nx.disabled = D >= today;
     td.addEventListener('click', function(){ JRV.rday = null; admRender(); });
     var pick = inputEl('date', D); pick.max = today; pick.setAttribute('aria-label','Pick a day'); pick.addEventListener('change', function(){ if (pick.value){ JRV.rday = pick.value; admRender(); } });
     bar.appendChild(pv); bar.appendChild(pick); bar.appendChild(nx); bar.appendChild(td); box.appendChild(bar);
+    bar.appendChild(el('span','dr-live', '● Live · checked ' + JRV.at.toLocaleTimeString([], { hour:'numeric', minute:'2-digit' })));
     // who's in it: everyone with a journal (students, not admins)
     var people = rows.filter(function(m){ return m.journal && !m.isAdmin; });
     var per = people.map(function(m){
@@ -5382,7 +5411,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var list = el('div','dr-list'); box.appendChild(list);
     if (!did.length) emptyState(list, 'Nobody has journaled this day yet', people.length ? 'Pick another day, or check back after the session.' : 'Students show up here once they create their journal.');
     did.forEach(function(x){
-      var card = el('article','dr-p'), hd = el('div','dr-ph'), av = el('span','av'); setAvatar(av, x.m); hd.appendChild(av);
+      var fresh = x.es.some(function(e){ return isNew(keyOf(x.m, e)); }) || (x.note && isNew('n:' + x.m.id + JSON.stringify(x.m.dayNotes || {})));
+      var card = el('article','dr-p' + (fresh ? ' dr-new' : '')), hd = el('div','dr-ph'), av = el('span','av'); setAvatar(av, x.m); hd.appendChild(av);
+      if (fresh) hd.appendChild(el('span','chip ok dr-newtag','New'));
       var nm = el('div'); nm.appendChild(el('b',null, x.m.displayName || x.m.username));
       var sub = x.tr.length ? x.tr.length + (x.tr.length === 1 ? ' trade' : ' trades') + (x.tr.some(function(e){ return !e.noPnl; }) ? ' · ' + money(x.pnl) : '') : x.es.length ? 'No-trade day' : 'Day notes only';
       nm.appendChild(el('span','adm-note', sub)); hd.appendChild(nm);
@@ -5393,7 +5424,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         if (x.note.recap){ dn.appendChild(el('h6',null,'Recap')); dn.appendChild(el('p',null,x.note.recap)); }
         card.appendChild(dn); }
       x.es.forEach(function(e){
-        var r = el('button','dr-e'); r.type = 'button';
+        var r = el('button','dr-e' + (isNew(keyOf(x.m, e)) ? ' dr-new' : '')); r.type = 'button';
         var top = el('div','dr-et');
         top.appendChild(el('span','dr-tm', e.time ? e.time + (e.exitTime ? '–' + e.exitTime : '') : '—'));
         if (e.kind === 'trade'){ top.appendChild(el('b',null, (e.pair || 'Trade') + (e.dir ? ' · ' + cap(e.dir) : '')));
@@ -5404,6 +5435,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         if (entryStatus(e) === 'pending') top.appendChild(el('span','chip','Waiting'));
         if (e.editedAt) top.appendChild(el('span','chip','Edited'));
         if (e.src === 'csv') top.appendChild(el('span','chip','Imported'));
+        if (e.createdAt && localDay(e.createdAt) !== e.date) top.appendChild(el('span','chip','Posted ' + new Date(e.createdAt).toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' })));
         r.appendChild(top);
         var meta = [e.model, e.session, e.account, (e.tags || []).map(function(t){ return '#' + t; }).join(' '), (e.files || []).length ? (e.files.length + (e.files.length === 1 ? ' screenshot' : ' screenshots')) : ''].filter(Boolean).join(' · ');
         if (meta) r.appendChild(el('span','adm-note', meta));
