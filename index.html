@@ -5383,7 +5383,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     bar.appendChild(pv); bar.appendChild(pick); bar.appendChild(nx); bar.appendChild(td); box.appendChild(bar);
     bar.appendChild(el('span','dr-live', '● Live · checked ' + JRV.at.toLocaleTimeString([], { hour:'numeric', minute:'2-digit' })));
     // who's in it: everyone with a journal (students, not admins)
-    var people = rows.filter(function(m){ return m.journal && !m.isAdmin; });
+    var people = rows.filter(function(m){ return m.journal; });   // admins who journal show up too
     var per = people.map(function(m){
       var es = (m.entries || []).filter(function(e){ return e.date === D && entryStatus(e) !== 'denied'; })
         .sort(function(a, b){ return String(a.time || '').localeCompare(String(b.time || '')); });
@@ -5391,7 +5391,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var tr = es.filter(function(e){ return e.kind === 'trade'; });
       return { m:m, es:es, note:note, tr:tr, pnl: tr.reduce(function(t, e){ return t + (+e.pnl || 0); }, 0) };
     });
-    var did = per.filter(function(x){ return x.es.length || x.note; }), missing = per.filter(function(x){ return !x.es.length && !x.note; });
+    var did = per.filter(function(x){ return x.es.length || x.note; }), missing = per.filter(function(x){ return !x.es.length && !x.note && !x.m.isAdmin; });
     did.sort(function(a, b){ return (b.es.length ? 1 : 0) - (a.es.length ? 1 : 0) || String(a.m.displayName || a.m.username).localeCompare(String(b.m.displayName || b.m.username)); });
     var allTr = [], allEs = []; did.forEach(function(x){ allTr = allTr.concat(x.tr); x.es.forEach(function(e){ allEs.push({ m:x.m, e:e, st: entryStatus(e) }); }); });
     var c = { tp:0, sl:0, be:0 }; allTr.forEach(function(e){ if (c[e.outcome] !== undefined) c[e.outcome]++; });
@@ -5407,7 +5407,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var cp = el('button','btn-s','Copy summary'); cp.type = 'button';
     cp.addEventListener('click', function(){
       var lines = ['**Daily recap · ' + new Date(D + 'T12:00:00').toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'short' }) + '**',
-        did.length + '/' + people.length + ' journaled · ' + c.tp + ' TP · ' + c.sl + ' SL · ' + c.be + ' BE · ' + nt + ' no-trade' + (allTr.length ? ' · net ' + money(net) : '') + (foll !== null ? ' · rules followed ' + foll + '%' : '')];
+        did.length + '/' + (did.length + missing.length) + ' journaled · ' + c.tp + ' TP · ' + c.sl + ' SL · ' + c.be + ' BE · ' + nt + ' no-trade' + (allTr.length ? ' · net ' + money(net) : '') + (foll !== null ? ' · rules followed ' + foll + '%' : '')];
       did.forEach(function(x){ lines.push('• ' + (x.m.displayName || x.m.username) + ': ' + (x.tr.length ? x.tr.map(function(e){ return (e.pair || 'trade') + ' ' + (OUT[e.outcome] || ''); }).join(', ') + (x.tr.some(function(e){ return !e.noPnl; }) ? ' (' + money(x.pnl) + ')' : '') : x.es.length ? 'no trade' : 'notes only')); });
       if (missing.length) lines.push('Not journaled yet: ' + missing.map(function(x){ return x.m.displayName || x.m.username; }).join(', '));
       var txt = lines.join('\n');
@@ -5415,7 +5415,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     });
     hb.appendChild(cp); head.appendChild(hb); box.appendChild(head);
     var sm = el('div','jr-stats dr-sum');
-    [[did.length + '/' + people.length, 'Journaled'], [c.tp + ' · ' + c.sl + ' · ' + c.be, 'TP · SL · BE'], [String(nt), 'No-trade days'], [allTr.length ? money(net) : '—', 'Net P&L'], [foll === null ? '—' : foll + '%', 'Rules followed']]
+    [[did.length + '/' + (did.length + missing.length), 'Journaled'], [c.tp + ' · ' + c.sl + ' · ' + c.be, 'TP · SL · BE'], [String(nt), 'No-trade days'], [allTr.length ? money(net) : '—', 'Net P&L'], [foll === null ? '—' : foll + '%', 'Rules followed']]
       .forEach(function(x){ var d = el('div'); d.appendChild(el('b',null,x[0])); d.appendChild(el('span',null,x[1])); sm.appendChild(d); });
     box.appendChild(sm);
     var list = el('div','dr-list'); box.appendChild(list);
