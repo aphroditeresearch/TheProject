@@ -1,7 +1,7 @@
 // Admin only.
 // GET /api/admin/content → everything (built-in lessons until you first save), including locked lessons and expired announcements
 // PUT /api/admin/content { content } → replace it (the admin panel sends the whole thing on each save)
-const { readSession, isAdmin, kvConfigured, saveContent, json } = require('../_lib');
+const { readSession, isAdmin, kvConfigured, saveContent, json, staffAlert, clientIp } = require('../_lib');
 const { contentWithDefaults } = require('../_gate');
 
 const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
@@ -58,7 +58,7 @@ function clean(c) {
 module.exports = async (req, res) => {
   const s = readSession(req);
   if (!s) return json(res, 401, { error: 'signed_out' });
-  if (!isAdmin(s)) return json(res, 403, { error: 'not_admin' });
+  if (!isAdmin(s)) { await staffAlert('admin-probe', { id: s.user.id, name: s.user.displayName || s.user.username, ip: clientIp(req) }, req.method + ' ' + String(req.url || '').slice(0, 120)); return json(res, 403, { error: 'not_admin' }); }
   if (!kvConfigured()) return json(res, 503, { error: 'no_storage' });
 
   if (req.method === 'GET') {

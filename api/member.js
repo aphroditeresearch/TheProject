@@ -17,8 +17,8 @@
 //                          what the Stats tab summary needs (admins get the full detail from /api/admin/members)
 // Files are uploaded straight from the browser to Vercel Blob first (see /api/upload), into members/<their id>/…
 const crypto = require('crypto');
-const { readSession, isAdmin, kvConfigured, loadProgress, json, kv, clientIp } = require('./_lib');
-const { logActivity, gateFor, saveSub, findItem, loadCerts, saveCert, deleteCert, loadPromo, savePromo, loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints, entryStatus, basePoints, streakOf, loadTestimonials, saveTestimonial, deleteTestimonial } = require('./_gate');
+const { readSession, isAdmin, kvConfigured, loadProgress, json, kv, clientIp, rateLimit, staffAlert } = require('./_lib');
+const { logActivity, gateFor, saveSub, findItem, loadCerts, saveCert, deleteCert, loadPromo, savePromo, loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints, entryStatus, basePoints, streakOf, loadDayNotes, loadTestimonials, saveTestimonial, deleteTestimonial } = require('./_gate');
 const { listMembers } = require('./_lib');
 const { signAll, cleanFile } = require('./_blob');
 
@@ -77,6 +77,49 @@ const MISTAKES = ['Entered early', 'Entered late', 'Moved stop', 'Oversized', 'C
 const GRADES = ['A+', 'A', 'B', 'C'];
 const ENTRY_TYPES = ['Limit', 'Market', 'Stop'];
 const EMOTIONS = ['Calm', 'Confident', 'Hesitant', 'FOMO', 'Frustrated', 'Tired'];
+// One journal entry from what the page sent. Only what decides stats and points is required:
+//   trades: date, result (TP/SL/BE), account, followed rules · no-trade days: date, followed rules
+// Everything else (time, instrument, P&L, notes, screenshots, trade data, tags) is optional.
+function buildEntry(e, uid, old) {
+  const kind = e.kind === 'none' ? 'none' : 'trade';
+  const date = str(e.date, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(Date.parse(date)) || Date.parse(date) > Date.now() + 36 * 3600 * 1000) return { error: 'bad_date' };
+  if (typeof e.followed !== 'boolean') return { error: 'missing', fields: ['followed'] };
+  const files = (Array.isArray(e.files) ? e.files : []).slice(0, MAX_FILES).map((f) => cleanFile(f, uid, 'journal'));
+  if (files.some((f) => !f)) return { error: 'bad_file' };
+  const tags = [...new Set((Array.isArray(e.tags) ? e.tags : []).map((t) => str(t, 24).replace(/[^\w\s+&/.#-]/g, '').trim()).filter(Boolean))].slice(0, 8);
+  const entry = { id: old ? old.id : 'j' + crypto.randomBytes(6).toString('hex'), kind, date, followed: e.followed, overview: str(e.overview, 4000), session: str(e.session, 40),
+    createdAt: new Date().toISOString(), void: false, status: 'pending', files,
+    news: ['yes', 'no'].includes(e.news) ? e.news : '', newsWhat: e.news === 'yes' ? str(e.newsWhat, 60) : '' };
+  if (tags.length) entry.tags = tags;
+  if (kind === 'none') return { entry };
+  const num = (v) => { if (v === '' || v === null || v === undefined) return undefined; const n = Number(v); return isFinite(n) && Math.abs(n) < 1e9 ? n : undefined; };
+  const pick = (v, list) => (list.includes(v) ? v : undefined);
+  const many = (v, list) => { const a = Array.isArray(v) ? [...new Set(v.filter((x) => list.includes(x)))] : []; return a.length ? a : undefined; };
+  Object.assign(entry, {
+    time: /^\d{2}:\d{2}$/.test(str(e.time, 5)) ? str(e.time, 5) : '', pair: str(e.pair, 40), account: str(e.account, 40),
+    outcome: ['tp', 'sl', 'be'].includes(e.outcome) ? e.outcome : '', model: ['BOS', 'MITIGATION', 'Chained OBs', 'DIV + OB'].includes(e.model) ? e.model : '',
+  });
+  const c = num(e.contracts); if (c > 0 && c <= 10000) entry.contracts = c;
+  const pnl = num(e.pnl); entry.pnl = pnl === undefined ? 0 : pnl; if (pnl === undefined) entry.noPnl = true;
+  const extra = {
+    dir: pick(e.dir, ['long', 'short']),
+    exitTime: /^\d{2}:\d{2}$/.test(str(e.exitTime, 5)) ? str(e.exitTime, 5) : undefined,
+    tz: /^[A-Za-z_]+(\/[A-Za-z0-9_+-]+){0,2}$/.test(str(e.tz, 60)) ? str(e.tz, 60) : undefined,
+    pEntry: num(e.pEntry), pStop: num(e.pStop), pTarget: num(e.pTarget), pExit: num(e.pExit),
+    risk: num(e.risk) > 0 ? num(e.risk) : undefined,
+    mae: num(e.mae) >= 0 ? num(e.mae) : undefined, mfe: num(e.mfe) >= 0 ? num(e.mfe) : undefined,
+    htf: pick(e.htf, HTFS), bias: pick(e.bias, ['bullish', 'bearish', 'neutral']), ltf: pick(e.ltf, LTFS),
+    swept: many(e.swept, SWEPT), confl: many(e.confl, CONFL), manage: many(e.manage, MANAGE), mistakes: many(e.mistakes, MISTAKES),
+    grade: pick(e.grade, GRADES), entryType: pick(e.entryType, ENTRY_TYPES), emotion: pick(e.emotion, EMOTIONS),
+  };
+  Object.keys(extra).forEach((k) => { if (extra[k] !== undefined) entry[k] = extra[k]; });
+  const missing = ['outcome', 'account'].filter((k) => !entry[k]);
+  if (missing.length) return { error: 'missing', fields: missing };
+  return { entry };
+}
+const entryLabel = (e) => (e.kind === 'none' ? 'No-trade day' : ((e.pair || 'Trade') + ' ' + (e.outcome || '').toUpperCase() + (e.noPnl ? '' : ' ' + (e.pnl >= 0 ? '+$' : '−$') + Math.abs(e.pnl))).trim());
+
 // The Wins tab: approved reviews, and certified payouts (cached 2 minutes; reading every member's certificates)
 async function wins(uid) {
   const all = Object.values(await loadTestimonials());
@@ -113,8 +156,10 @@ async function communityStats() {
   try { await kv(['SET', 'stats-cache', JSON.stringify(data), 'EX', 120]); } catch (e) {}
   return data;
 }
-// screenshots / files per hand-in or journal entry (index.html uses the same number)
+// files per journal entry, and per hand-in (lecture homework, homework assignments, breakdown mark-ups); index.html matches
 const MAX_FILES = 12;
+const MAX_HANDIN_FILES = 20;
+const MAX_ENTRIES = 5000;   // journal entries per member (about 20 years of daily journaling)
 const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
 module.exports = async (req, res) => {
@@ -134,6 +179,14 @@ module.exports = async (req, res) => {
       await kv(['HINCRBY', key, fb.kind, 1]);
       await kv(['HINCRBY', key, 'total', 1]);
       await kv(['HSET', key, 'last', new Date().toISOString(), 'lastKind', fb.kind, 'lastIp', ip || '']);
+      // tell staff: dev tools opened, or 5+ blocked actions inside 10 minutes
+      if (!isAdmin(s)) {
+        const who = { id: uid, name: s.user.displayName || s.user.username, ip };
+        const under = await rateLimit('flagburst:' + uid, 4, 600);
+        if (fb.kind === 'devtools-open') await staffAlert('devtools', who, 'Dev tools were open while on the site. Video links are hidden while they are.');
+        else if (!under) { const f = await kv(['HGETALL', key]); const m = {}; if (Array.isArray(f)) for (let i = 0; i < f.length; i += 2) m[f[i]] = f[i + 1];
+          await staffAlert('flags', who, '5+ blocked actions in 10 minutes. Latest: ' + fb.kind + '. All time: ' + FLAG_KINDS.filter((k) => m[k]).map((k) => k + ' ×' + m[k]).join(', ')); }
+      }
       return json(res, 200, { recorded: true, ip });
     }
   }
@@ -145,17 +198,21 @@ module.exports = async (req, res) => {
     if (board) return json(res, 200, await leaderboard(board[1], uid));
     if (/[?&]stats=1/.test(req.url || '')) return json(res, 200, await communityStats());
     if (/[?&]wins=1/.test(req.url || '')) return json(res, 200, await wins(uid));
-    const [certs, promo, journal, entries] = await Promise.all([loadCerts(uid), loadPromo(uid), loadJournal(uid), loadEntries(uid)]);
+    const [certs, promo, journal, entries, dayNotes] = await Promise.all([loadCerts(uid), loadPromo(uid), loadJournal(uid), loadEntries(uid), loadDayNotes(uid)]);
     const list = Object.values(certs).sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt)));
     const ents = Object.values(entries).sort(byEntry).map((e) => Object.assign({}, e, { status: entryStatus(e), points: entryPoints(e), worth: basePoints(e) }));
     await signAll(req, list.map((c) => c.file).concat(...ents.map((e) => e.files || [])), 'url');
-    return json(res, 200, { certs: list, promo, journal, entries: ents });
+    return json(res, 200, { certs: list, promo, journal, entries: ents, dayNotes });
   }
   if (req.method !== 'POST') { res.setHeader('Allow', 'GET, POST'); return json(res, 405, { error: 'method' }); }
 
   let body = req.body;
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = null; } }
   const action = body && body.action;
+  if (!(await rateLimit('member:' + uid, 300, 600))) {   // 300 actions per 10 minutes
+    await staffAlert('rate-limit', { id: uid, name: s.user.displayName || s.user.username, ip: clientIp(req) }, 'Over 300 actions in 10 minutes. Last one: ' + String(action || 'unknown').slice(0, 40));
+    return json(res, 429, { error: 'slow_down' });
+  }
 
   /* ---------- hand-in ---------- */
   if (action === 'submit') {
@@ -167,7 +224,7 @@ module.exports = async (req, res) => {
     // files: new uploads in the member's folder, or ones already in their earlier hand-in (those come back as signed links)
     const prevFiles = ((subs[lessonId] || {}).files || []);
     const files = [], badNames = [];
-    (Array.isArray(body.files) ? body.files : []).slice(0, MAX_FILES).forEach((f) => {
+    (Array.isArray(body.files) ? body.files : []).slice(0, MAX_HANDIN_FILES).forEach((f) => {
       const ok = cleanFile(f, uid, 'homework')
         || prevFiles.find((p) => f && p.url && typeof f.url === 'string' && f.url.split('?')[0] === p.url)
         || prevFiles.find((p) => f && p.name && p.name === f.name && (+p.size || 0) === (+f.size || 0));
@@ -210,57 +267,59 @@ module.exports = async (req, res) => {
     await saveJournal(uid, j);
     return json(res, 200, { saved: true, journal: j });
   }
-  if (action === 'journal-add') {
+  if (action === 'journal-add' || action === 'journal-edit') {
     const j = await loadJournal(uid);
     if (!j) return json(res, 409, { error: 'no_journal' });
-    const e = body.entry || {};
-    const kind = e.kind === 'none' ? 'none' : 'trade';
-    const date = str(e.date, 10);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(Date.parse(date)) || Date.parse(date) > Date.now() + 36 * 3600 * 1000) return json(res, 400, { error: 'bad_date' });
-    if (typeof e.followed !== 'boolean') return json(res, 400, { error: 'need_followed' });
-    const overview = str(e.overview, 4000);
-    const entry = { id: 'j' + crypto.randomBytes(6).toString('hex'), kind, date, followed: e.followed, overview, session: str(e.session, 40), createdAt: new Date().toISOString(), void: false, status: 'pending',
-      news: ['yes', 'no'].includes(e.news) ? e.news : '', newsWhat: e.news === 'yes' ? str(e.newsWhat, 60) : '' };   // high-impact news that day (for the stats)
     const entries = await loadEntries(uid);
-    if (kind === 'none') {
-      if (overview.length < 10) return json(res, 400, { error: 'overview_short' });
-      if (!entry.session) return json(res, 400, { error: 'need_session' });
-      if (Object.values(entries).some((x) => x.kind === 'none' && x.date === date)) return json(res, 409, { error: 'none_exists' });
-      // screenshots are optional on a no-trade day (mark-ups / price action)
-      entry.files = (Array.isArray(e.files) ? e.files : []).slice(0, MAX_FILES).map((f) => cleanFile(f, uid, 'journal'));
-      if (entry.files.some((f) => !f)) return json(res, 400, { error: 'bad_file' });
-    } else {
-      Object.assign(entry, {
-        time: /^\d{2}:\d{2}$/.test(str(e.time, 5)) ? str(e.time, 5) : '', pair: str(e.pair, 40), account: str(e.account, 40),
-        contracts: Number(e.contracts), outcome: ['tp', 'sl', 'be'].includes(e.outcome) ? e.outcome : '', pnl: Number(e.pnl), model: ['BOS', 'MITIGATION', 'Chained OBs', 'DIV + OB'].includes(e.model) ? e.model : '',
-        files: (Array.isArray(e.files) ? e.files : []).slice(0, MAX_FILES).map((f) => cleanFile(f, uid, 'journal')),
-      });
-      // optional trade data (for the stats and the research export); anything left blank is simply not stored
-      const num = (v) => { if (v === '' || v === null || v === undefined) return undefined; const n = Number(v); return isFinite(n) && Math.abs(n) < 1e9 ? n : undefined; };
-      const pick = (v, list) => (list.includes(v) ? v : undefined);
-      const many = (v, list) => { const a = Array.isArray(v) ? [...new Set(v.filter((x) => list.includes(x)))] : []; return a.length ? a : undefined; };
-      const extra = {
-        dir: pick(e.dir, ['long', 'short']),
-        exitTime: /^\d{2}:\d{2}$/.test(str(e.exitTime, 5)) ? str(e.exitTime, 5) : undefined,
-        tz: /^[A-Za-z_]+(\/[A-Za-z0-9_+-]+){0,2}$/.test(str(e.tz, 60)) ? str(e.tz, 60) : undefined,
-        pEntry: num(e.pEntry), pStop: num(e.pStop), pTarget: num(e.pTarget), pExit: num(e.pExit),
-        risk: num(e.risk) > 0 ? num(e.risk) : undefined,
-        mae: num(e.mae) >= 0 ? num(e.mae) : undefined, mfe: num(e.mfe) >= 0 ? num(e.mfe) : undefined,
-        htf: pick(e.htf, HTFS), bias: pick(e.bias, ['bullish', 'bearish', 'neutral']), ltf: pick(e.ltf, LTFS),
-        swept: many(e.swept, SWEPT), confl: many(e.confl, CONFL), manage: many(e.manage, MANAGE), mistakes: many(e.mistakes, MISTAKES),
-        grade: pick(e.grade, GRADES), entryType: pick(e.entryType, ENTRY_TYPES), emotion: pick(e.emotion, EMOTIONS),
-      };
-      Object.keys(extra).forEach((k) => { if (extra[k] !== undefined) entry[k] = extra[k]; });
-      const missing = ['time', 'pair', 'account', 'session', 'outcome', 'model'].filter((k) => !entry[k]);
-      if (!(entry.contracts > 0 && entry.contracts <= 10000)) missing.push('contracts');
-      if (!isFinite(entry.pnl) || e.pnl === '' || e.pnl === null) missing.push('pnl');
-      if (overview.length < 20) missing.push('overview');
-      if (missing.length) return json(res, 400, { error: 'missing', fields: missing });
-      if (!entry.files.length || entry.files.some((f) => !f)) return json(res, 400, { error: 'need_files' });
+    const old = action === 'journal-edit' ? entries[String(body.id || '')] : null;
+    if (action === 'journal-edit' && !old) return json(res, 404, { error: 'not_found' });   // only your own entries
+    if (!old && Object.keys(entries).length >= MAX_ENTRIES) return json(res, 409, { error: 'journal_full' });
+    const built = buildEntry(body.entry || {}, uid, old);
+    if (built.error) return json(res, 400, built);
+    const entry = built.entry;
+    if (entry.kind === 'none' && Object.values(entries).some((x) => x.kind === 'none' && x.date === entry.date && x.id !== entry.id)) return json(res, 409, { error: 'none_exists' });
+    if (old) {
+      // editing keeps the review, unless something that decides points changed: then it goes back to the mentor
+      const keyChanged = ['kind', 'date', 'outcome', 'account', 'followed'].some((k) => String(old[k] === undefined ? '' : old[k]) !== String(entry[k] === undefined ? '' : entry[k]));
+      ['createdAt', 'status', 'void', 'awarded', 'reviewedAt', 'reviewedBy', 'reviewNote', 'src', 'importKey'].forEach((k) => { if (old[k] !== undefined) entry[k] = old[k]; });
+      if (keyChanged && entryStatus(old) !== 'pending') { entry.status = 'pending'; entry.void = false; delete entry.awarded; delete entry.reviewedAt; delete entry.reviewedBy; delete entry.reviewNote; entry.reopened = true; }
+      entry.editedAt = new Date().toISOString();
     }
     await saveEntry(uid, entry);
-    await logActivity(s.user, { type: 'journal', key: entry.id, date: entry.date, label: kind === 'none' ? 'No-trade day' : entry.pair + ' ' + (entry.outcome || '').toUpperCase() + ' ' + (entry.pnl >= 0 ? '+$' : '−$') + Math.abs(entry.pnl) });
+    await logActivity(s.user, { type: 'journal', key: entry.id, date: entry.date, label: (old ? 'Edited · ' : '') + entryLabel(entry) });
     return json(res, 200, { saved: true, entry: Object.assign({}, entry, { points: entryPoints(entry), worth: basePoints(entry) }) });
+  }
+  // many trades at once from a broker / platform CSV (the page parses the file; each row is checked like a normal entry)
+  if (action === 'journal-import') {
+    const j = await loadJournal(uid);
+    if (!j) return json(res, 409, { error: 'no_journal' });
+    const rows = (Array.isArray(body.entries) ? body.entries : []).slice(0, 200);
+    const entries = await loadEntries(uid), seen = new Set(Object.values(entries).map((x) => x.importKey).filter(Boolean));
+    let added = 0, dupes = 0, bad = 0, room = MAX_ENTRIES - Object.keys(entries).length; const fields = [];
+    if (room <= 0) return json(res, 409, { error: 'journal_full' });
+    for (const r of rows) {
+      const built = buildEntry(Object.assign({}, r, { kind: 'trade' }), uid, null);
+      if (built.error) { bad++; continue; }
+      const e = built.entry; e.src = 'csv';
+      e.importKey = [e.date, e.time || '', e.exitTime || '', (e.pair || '').toUpperCase(), e.pnl, e.contracts || ''].join('|');
+      if (seen.has(e.importKey)) { dupes++; continue; }
+      if (added >= room) { bad++; continue; }
+      seen.add(e.importKey); fields.push(e.id, JSON.stringify(e)); added++;
+    }
+    if (fields.length) await kv(['HSET', 'jentries:' + uid].concat(fields));   // one write for the whole file
+    if (added) await logActivity(s.user, { type: 'journal', key: 'import', label: 'Imported ' + added + (added === 1 ? ' trade' : ' trades') + ' from a CSV' });
+    return json(res, 200, { saved: true, added, dupes, bad });
+  }
+  // a note for one day: the plan before the session and the recap after (TradeZella-style daily journal)
+  if (action === 'daynote-save') {
+    const date = str(body.date, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return json(res, 400, { error: 'bad_date' });
+    const note = { plan: str(body.plan, 3000), recap: str(body.recap, 3000), mood: ['great', 'good', 'ok', 'rough', 'bad'].includes(body.mood) ? body.mood : '', updatedAt: new Date().toISOString() };
+    if (note.plan || note.recap || note.mood) { const [n, has] = await Promise.all([kv(['HLEN', 'daynotes:' + uid]), kv(['HEXISTS', 'daynotes:' + uid, date])]);
+      if (!Number(has) && Number(n) >= 3000) return json(res, 409, { error: 'too_many' }); }
+    if (!note.plan && !note.recap && !note.mood) await kv(['HDEL', 'daynotes:' + uid, date]);
+    else await kv(['HSET', 'daynotes:' + uid, date, JSON.stringify(note)]);
+    return json(res, 200, { saved: true, note });
   }
   if (action === 'journal-delete') {
     const entries = await loadEntries(uid);
@@ -318,6 +377,7 @@ module.exports = async (req, res) => {
   }
   if (action === 'cert-delete') {
     const id = String(body.id || '');
+    if (!(await loadCerts(uid))[id]) return json(res, 404, { error: 'not_found' });   // only your own certificates exist here
     const promo = await loadPromo(uid);
     if (promo && promo.certId === id && promo.status !== 'declined') return json(res, 409, { error: 'in_use' });
     const mine = (await loadCerts(uid))[id];

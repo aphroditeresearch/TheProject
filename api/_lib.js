@@ -144,6 +144,62 @@ async function kvPipeline(commands) {
   return (await r.json()).map((x) => { if (x && x.error) throw new Error(x.error); return x && x.result; });
 }
 
+// Simple fixed-window rate limit in Redis: at most `limit` hits per `windowSec` for this key. Fails open if Redis is down.
+async function rateLimit(key, limit, windowSec) {
+  if (!kvConfigured()) return true;
+  try {
+    const k = KEY_PREFIX + 'rl:' + key;
+    const [n] = await kvPipeline([['INCR', k]]);
+    if (Number(n) === 1) await kvPipeline([['EXPIRE', k, String(windowSec)]]);   // the window starts with the first hit
+    return Number(n) <= limit;
+  } catch (e) { return true; }
+}
+
+/* ---------- staff alerts: suspicious activity goes to a private Discord channel ---------- */
+// Set DISCORD_STAFF_WEBHOOK to a webhook in a staff-only channel. Every alert is also kept (last 200) for
+// Admin → Backups & safety, so nothing is lost if the webhook isn't set. One alert per person per kind
+// every 30 minutes, so a spammer can't flood the channel.
+const STAFF_HOOK = /^https:\/\/(discord\.com|discordapp\.com|ptb\.discord\.com|canary\.discord\.com)\/api\/webhooks\/\d+\/[\w-]+$/;
+const ALERT_TEXT = {
+  'flags': 'Kept trying blocked actions',
+  'devtools': 'Opened dev tools on the site',
+  'rate-limit': 'Sent requests too fast (blocked)',
+  'upload-limit': 'Uploaded too many files too fast (blocked)',
+  'login-limit': 'Too many sign-in attempts from one address (blocked)',
+  'admin-probe': 'Tried to use admin-only actions without being an admin',
+  'bad-origin': 'Request from another website was blocked',
+  'test': 'Test alert from the admin panel',
+};
+function staffHook() { const h = String(process.env.DISCORD_STAFF_WEBHOOK || '').trim(); return STAFF_HOOK.test(h) ? h : ''; }
+async function staffAlert(kind, who, detail, everySec) {
+  if (!kvConfigured()) return false;
+  try {
+    who = who || {};
+    const subject = who.id || ('ip:' + (who.ip || 'unknown'));
+    const [first] = await kvPipeline([['SET', KEY_PREFIX + 'alerted:' + kind + ':' + subject, '1', 'EX', String(everySec || 1800), 'NX']]);
+    if (first !== 'OK') return false;   // already alerted about this recently
+    const row = { at: new Date().toISOString(), kind, id: who.id || '', name: String(who.name || '').slice(0, 80), ip: who.ip || '', detail: String(detail || '').slice(0, 300) };
+    await kvPipeline([['LPUSH', KEY_PREFIX + 'alerts', JSON.stringify(row)], ['LTRIM', KEY_PREFIX + 'alerts', '0', '199']]);
+    const hook = staffHook();
+    if (hook) {
+      const fields = [];
+      if (row.id) fields.push({ name: 'Member', value: (row.name ? row.name + ' · ' : '') + '<@' + row.id + '> (`' + row.id + '`)', inline: false });
+      if (row.ip) fields.push({ name: 'IP', value: '`' + row.ip + '`', inline: true });
+      if (row.detail) fields.push({ name: 'Details', value: row.detail, inline: false });
+      await fetch(hook, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+        allowed_mentions: { parse: [] },
+        embeds: [{ title: '🚨 ' + (ALERT_TEXT[kind] || kind), color: kind === 'test' ? 0x5865f2 : 0xe5484d, fields, timestamp: row.at,
+          footer: { text: 'Members site · check Admin → Members → Flags' } }] }) }).catch(() => {});
+    }
+    return true;
+  } catch (e) { return false; }
+}
+async function loadAlerts(n) {
+  if (!kvConfigured()) return [];
+  try { const [l] = await kvPipeline([['LRANGE', KEY_PREFIX + 'alerts', '0', String((n || 50) - 1)]]); return (l || []).map((x) => { try { return JSON.parse(x); } catch (e) { return null; } }).filter(Boolean); }
+  catch (e) { return []; }
+}
+
 async function loadProgress(userId) {
   if (!kvConfigured()) return {};
   const flat = await kv(['HGETALL', 'progress:' + userId]);
@@ -230,9 +286,23 @@ function json(res, status, body, cookies) {
 // Wraps a route so a missing Vercel setting or an unexpected error never shows Vercel's
 // "500 FUNCTION_INVOCATION_FAILED" page. Page routes send the member back to the site with a
 // message; data routes answer with JSON. The full error goes to Vercel → Logs.
+// requests without an Origin header (Vercel Blob callbacks, cron, old browsers) are allowed; ones from a different site are not
+function sameOrigin(req) {
+  const o = req.headers && req.headers.origin;
+  if (!o || o === 'null') return !o;
+  let host = ''; try { host = new URL(o).host; } catch (e) { return false; }
+  const own = String((req.headers['x-forwarded-host'] || req.headers.host || '')).split(',')[0].trim();
+  return !!own && host === own;
+}
 function guard(handler, kind) {
   return async (req, res) => {
     try {
+      // a form or script on another website can't make changes here using a member's sign-in
+      if (req.method && !['GET', 'HEAD', 'OPTIONS'].includes(req.method) && !sameOrigin(req)) {
+        const s0 = readSession(req);
+        await staffAlert('bad-origin', s0 ? { id: s0.user.id, name: s0.user.displayName || s0.user.username, ip: clientIp(req) } : { ip: clientIp(req) }, 'From ' + String(req.headers.origin).slice(0, 120) + ' to ' + String(req.url || '').split('?')[0]);
+        return json(res, 403, { error: 'bad_origin' });
+      }
       return await handler(req, res);
     } catch (e) {
       console.error('[the-project]', req.url, (e && e.stack) || e);
@@ -247,7 +317,7 @@ function guard(handler, kind) {
 module.exports = {
   guard,
   DISCORD_API, SESSION_COOKIE, STATE_COOKIE, ROLE_REFRESH_MS, SESSION_DAYS,
-  env, parseCookies, cookie, clearCookie, sign, verify, readSession, writeSession, kvPipeline, KEY_PREFIX,
+  env, parseCookies, cookie, clearCookie, sign, verify, readSession, writeSession, kvPipeline, KEY_PREFIX, rateLimit, staffAlert, loadAlerts, staffHook,
   redirectUri, discord, profileFrom, kvConfigured, kv, loadProgress, saveProgress, redirect, json,
   adminIds, isAdmin, recordMember, listMembers, CHAPTER_ROLES, loadContent, saveContent, clientIp, loadFlags,
 };

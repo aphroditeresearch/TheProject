@@ -17,6 +17,8 @@
 // POST { action:'journal-review', userId, entryId, status:'approved'|'denied'|'pending', note } → approve a journal entry for the
 //      leaderboard, deny it (0 points), or put it back to pending
 // GET  ?backup=1 → download everything in the database as one JSON file (admins)
+// GET  ?alerts=1      → recent staff alerts (suspicious activity), and whether DISCORD_STAFF_WEBHOOK is set
+// POST { action:'staff-test' } → post a test alert to the staff channel
 // GET  ?backup=status → when the last automatic backup ran, and whether a Discord backup channel is set up
 // GET  ?cron=backup → the daily automatic backup (Vercel Cron, needs CRON_SECRET): posts a compressed copy to the private
 //                     Discord channel in DISCORD_BACKUP_WEBHOOK
@@ -27,10 +29,10 @@
 // Certifying a payout (cert-review approved) posts it to DISCORD_PAYOUT_WEBHOOK when the member allowed sharing (post:false skips)
 // GET  ?snippets=1 / POST { action:'snippets', snippets:[…] } → the saved feedback lines admins tap into reviews
 // POST { action:'restore', keys:{…}, mode:'missing'|'all', confirm:'RESTORE' } → put keys from a backup file back
-const { kvPipeline, KEY_PREFIX } = require('../_lib');
+const { kvPipeline, KEY_PREFIX, staffAlert, clientIp, loadAlerts, staffHook } = require('../_lib');
 const zlib = require('zlib');
 const { readSession, isAdmin, adminIds, kvConfigured, kv, listMembers, loadProgress, saveProgress, loadFlags, json } = require('../_lib');
-const { loadActivity, saveCert, contentWithDefaults, memberState, loadSubs, saveSub, deleteSub, setOverride, loadCerts, loadPromo, savePromo, findItem, loadJournal, loadEntries, saveEntry, entryPoints, lastWorkOf, loadTestimonials, saveTestimonial, deleteTestimonial, hookReady, discordPost, testimonialPayload, payoutPayload, loadFeedSettings, entryStatus, basePoints } = require('../_gate');
+const { loadActivity, saveCert, contentWithDefaults, memberState, loadSubs, saveSub, deleteSub, setOverride, loadCerts, loadPromo, savePromo, findItem, loadJournal, loadEntries, saveEntry, entryPoints, lastWorkOf, loadDayNotes, loadTestimonials, saveTestimonial, deleteTestimonial, hookReady, discordPost, testimonialPayload, payoutPayload, loadFeedSettings, entryStatus, basePoints } = require('../_gate');
 const { signAll, makeSigner } = require('../_blob');
 
 const ID = /^\d{5,25}$/;
@@ -173,7 +175,7 @@ module.exports = async (req, res) => {
   }
   const s = readSession(req);
   if (!s) return json(res, 401, { error: 'signed_out' });
-  if (!isAdmin(s)) return json(res, 403, { error: 'not_admin' });
+  if (!isAdmin(s)) { await staffAlert('admin-probe', { id: s.user.id, name: s.user.displayName || s.user.username, ip: clientIp(req) }, req.method + ' ' + String(req.url || '').slice(0, 120)); return json(res, 403, { error: 'not_admin' }); }
   if (!kvConfigured()) return json(res, 503, { error: 'no_storage' });
   const who = s.user.displayName || s.user.username || s.user.id;
 
@@ -207,6 +209,12 @@ module.exports = async (req, res) => {
       await kv(['SET', 'snippets', JSON.stringify(list)]);
       return json(res, 200, { saved: true, snippets: list });
     }
+    if (body.action === 'staff-test') {   // "send a test alert" (not throttled per kind: a fresh key each time)
+      if (!staffHook()) return json(res, 400, { error: 'no_webhook' });
+      const ok = await staffAlert('test', { id: s.user.id, name: who }, 'If you can read this in your staff channel, alerts are working.', 1);
+      return json(res, 200, { sent: ok });
+    }
+    if (body.action === 'backup-now') return json(res, 200, await cronBackup());   // "send a backup to Discord now"
     if (body.action === 'restore') {
       if (body.confirm !== 'RESTORE') return json(res, 400, { error: 'confirm' });
       if (!body.keys || typeof body.keys !== 'object') return json(res, 400, { error: 'bad_backup' });
@@ -338,6 +346,7 @@ module.exports = async (req, res) => {
     let list = null; try { list = JSON.parse(await kv(['GET', 'snippets']) || 'null'); } catch (e) {}
     return json(res, 200, { snippets: Array.isArray(list) ? list : DEFAULT_SNIPPETS });
   }
+  if (/[?&]alerts=1\b/.test(req.url || '')) return json(res, 200, { alerts: await loadAlerts(60), webhook: !!staffHook() });
   if (/[?&]backup=status\b/.test(req.url || '')) {
     let last = null; try { last = JSON.parse(await kv(['GET', 'backup-status']) || 'null'); } catch (e) {}
     return json(res, 200, { last, webhook: !!process.env.DISCORD_BACKUP_WEBHOOK, cron: !!process.env.CRON_SECRET });
@@ -349,7 +358,6 @@ module.exports = async (req, res) => {
       return json(res, 200, snap);
     } catch (e) { return json(res, 502, { error: 'storage', detail: String(e.message || e).slice(0, 200) }); }
   }
-  if (/[?&]backup=now\b/.test(req.url || '')) return json(res, 200, await cronBackup());   // "send a backup to Discord now"
   // notifications: the latest things members handed in, and how much is waiting in each admin section
   if (/[?&]activity=1/.test(req.url || '')) {
     try {
@@ -379,7 +387,7 @@ module.exports = async (req, res) => {
     const files = [];
     const rows = await Promise.all(members.map(async (m) => {
       let journal = null, entries = {};
-      try { journal = await loadJournal(m.id); entries = await loadEntries(m.id); } catch (e) {}
+      let dayNotes = {}; try { journal = await loadJournal(m.id); entries = await loadEntries(m.id); dayNotes = await loadDayNotes(m.id); } catch (e) {}
       let progress = {}, flags = {}, certs = {}, st = { subs: {}, overrides: {}, promo: null, access: { level: 0, lessons: {}, breakdowns: {}, canPromote: false } };
       try { progress = await loadProgress(m.id); } catch (e) {}
       try { flags = await loadFlags(m.id); } catch (e) {}
@@ -394,7 +402,7 @@ module.exports = async (req, res) => {
         certs: Object.values(certs).sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt))),
         level: st.access.level, canPromote: st.access.canPromote,
         access: Object.assign({}, st.access.lessons, st.access.breakdowns, st.access.homework || {}), isAdmin: adminIds().includes(m.id),
-        journal, entries: ents,
+        journal, entries: ents, dayNotes,
       });
     }));
     await signAll(req, files, 'url');

@@ -8,7 +8,7 @@
 //   - older stores: BLOB_READ_WRITE_TOKEN (client-token uploads)
 const { handleUpload, handleUploadPresigned } = require('@vercel/blob/client');
 const { issueSignedToken } = require('@vercel/blob');
-const { readSession, isAdmin, json } = require('./_lib');
+const { readSession, isAdmin, json, rateLimit, staffAlert, clientIp } = require('./_lib');
 const { storeId, rwToken, oidcToken } = require('./_blob');
 
 const VIDEO = { types: ['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v'], max: 5 * 1024 * 1024 * 1024 };      // 5 GB
@@ -22,6 +22,30 @@ function rulesFor(pathname, s) {
   if (m && m[1] === s.user.id) return FILE;
   return null;
 }
+const TV_IMG = /^https:\/\/s3\.tradingview\.com\/snapshots\/[a-z0-9]\/[A-Za-z0-9]{4,16}\.png$/;
+async function tvFetchPng(url) {
+  if (!TV_IMG.test(url)) return null;
+  try {
+    const r = await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(8000) });
+    if (!r.ok) return null;
+    const buf = Buffer.from(await r.arrayBuffer());
+    // a real PNG, under 10 MB
+    if (buf.length > 10 * 1024 * 1024 || buf.length < 8 || buf.readUInt32BE(0) !== 0x89504e47) return null;
+    return buf;
+  } catch (e) { return null; }
+}
+async function tvImage(id) {
+  // usual address: snapshots/<first letter, lower case>/<id>.png
+  const direct = await tvFetchPng('https://s3.tradingview.com/snapshots/' + id[0].toLowerCase() + '/' + id + '.png');
+  if (direct) return direct;
+  // otherwise read it from the snapshot page
+  try {
+    const r = await fetch('https://www.tradingview.com/x/' + id + '/', { signal: AbortSignal.timeout(8000) });
+    const html = r.ok ? (await r.text()).slice(0, 500000) : '';
+    const u = /https:\/\/s3\.tradingview\.com\/snapshots\/[a-z0-9]\/[A-Za-z0-9]{4,16}\.png/.exec(html);
+    return u ? await tvFetchPng(u[0]) : null;
+  } catch (e) { return null; }
+}
 function mode(req) {
   if (storeId() && oidcToken(req)) return 'presigned';
   if (rwToken()) return 'token';
@@ -30,6 +54,19 @@ function mode(req) {
 
 module.exports = async (req, res) => {
   // GET: health check the page runs before each upload
+  // GET ?tv=<id>: a TradingView snapshot link (tradingview.com/x/<id>/) pasted into an upload box. The image is fetched
+  // here (TradingView doesn't let other sites read it) and handed back, so the page uploads it like any other screenshot.
+  if (req.method === 'GET' && /[?&]tv=/.test(req.url || '')) {
+    const s = readSession(req);
+    if (!s) return json(res, 401, { error: 'signed_out' });
+    const m = /[?&]tv=([A-Za-z0-9]{4,16})(?:&|$)/.exec(req.url || '');
+    if (!m) return json(res, 400, { error: 'bad link' });
+    if (!isAdmin(s) && !(await rateLimit('tv:' + s.user.id, 40, 600))) return json(res, 429, { error: 'too many in a row' });
+    const img = await tvImage(m[1]);
+    if (!img) return json(res, 404, { error: 'snapshot not found' });
+    res.statusCode = 200; res.setHeader('Content-Type', 'image/png'); res.setHeader('Cache-Control', 'private, no-store');
+    return res.end(img);
+  }
   if (req.method === 'GET') {
     const s = readSession(req);
     if (!s) return json(res, 401, { ready: false, reason: 'Sign in again, your session ended.' });
@@ -53,6 +90,7 @@ module.exports = async (req, res) => {
     const p = body.payload && body.payload.pathname;
     rules = typeof p === 'string' ? rulesFor(p, s) : null;
     if (!rules) return json(res, 403, { error: 'You can\'t upload there.' });
+    if (!isAdmin(s) && !(await rateLimit('upload:' + s.user.id, 60, 600))) return (await staffAlert('upload-limit', { id: s.user.id, name: s.user.displayName || s.user.username, ip: clientIp(req) }, 'Over 60 uploads in 10 minutes.'), json(res, 429, { error: 'Too many uploads in a row. Wait a few minutes and try again.' }));
   }
   const r = rules || FILE;
 

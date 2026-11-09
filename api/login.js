@@ -1,6 +1,6 @@
 // GET /api/login → sends the member to Discord to approve sign-in.  GET /api/login?out=1 → signs out.
 const crypto = require('crypto');
-const { env, cookie, sign, STATE_COOKIE, redirectUri, redirect, clearCookie, SESSION_COOKIE } = require('./_lib');
+const { env, cookie, sign, STATE_COOKIE, redirectUri, redirect, clearCookie, SESSION_COOKIE, rateLimit, clientIp, staffAlert } = require('./_lib');
 
 // Chrome only. Browsers can fake this header, so it's a second line behind the page's own check.
 function isChrome(ua) {
@@ -9,6 +9,8 @@ function isChrome(ua) {
 }
 
 module.exports = async (req, res) => {
+  // at most 20 sign-in starts per 10 minutes from one address
+  if (!(await rateLimit('login:' + clientIp(req), 20, 600))) { await staffAlert('login-limit', { ip: clientIp(req) }, 'Over 20 sign-in attempts in 10 minutes from this address.'); res.statusCode = 302; res.setHeader('Location', '/?error=slow_down'); return res.end(); }
   // GET /api/login?out=1 → sign out: end the session and go back to the sign-in page
   if (/[?&]out=1/.test(req.url || '')) return redirect(res, '/', [clearCookie(SESSION_COOKIE)]);
   if (!isChrome(req.headers['user-agent'] || '')) return redirect(res, '/?error=browser');

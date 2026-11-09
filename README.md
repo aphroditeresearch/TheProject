@@ -101,6 +101,9 @@ Sign-in runs on small Vercel functions in the `api` folder. No bot is needed.
    | `SESSION_SECRET` | a long random string, e.g. from https://generate-secret.vercel.app/64 |
    | `MEMBER_ROLE_ID` | optional: only members with this role can sign in at all |
    | `DISCORD_REDIRECT_URI` | optional: set it if sign-in says the redirect is invalid, to exactly the URL from step 1 |
+   | `DISCORD_BACKUP_WEBHOOK` + `CRON_SECRET` | optional: nightly backup to a private Discord channel (see Backups) |
+   | `DISCORD_TESTIMONIAL_WEBHOOK` / `DISCORD_PAYOUT_WEBHOOK` | optional: Wins feeds (see Wins) |
+   | `DISCORD_STAFF_WEBHOOK` | optional: security alerts to a staff channel (see Security alerts) |
 
 4. **Optional, for progress across devices:** in Vercel → **Storage** (or Marketplace) → add **Upstash Redis** and connect it to this project. It adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` automatically. Without it, sign-in and roles still work, and progress stays in each member's browser.
 
@@ -204,7 +207,7 @@ All three admin accounts (`1313595031466021026`, `484654761757507584`, `11957306
 
 A website can't detect screen-recording software, so the portal makes recordings traceable and awkward instead:
 - a faint, drifting watermark with the member's @username, Discord ID and the date across the whole portal and the moving name tag on the video;
-- lessons cover over and videos pause whenever the window loses focus (most snipping and capture tools take focus);
+- videos keep playing when you switch to another tab or window (so members can take notes elsewhere); watch progress still only counts real playback, so skipping ahead in a background tab doesn't work;
 - PrintScreen, Win+Shift+S and Cmd+Shift+3/4/5/6 blank the page, try to clear the clipboard, and are logged against the member (Members → Flags).
 
 A recorder running in the background (like OBS) can still capture the screen, which is why the watermark matters. Only
@@ -321,7 +324,8 @@ there was high-impact news that day (and which: CPI, FOMC, NFP…). Older entrie
 
 ## Breakdowns and playback speed
 Breakdown homework can be handed in without watching the video (people watch them live), and breakdown videos can be
-skipped through freely. Lectures still need watching first. Every video has a speed button: 1× or 1.5×, nothing else.
+skipped through freely. Lectures still need watching first. Every video has a speed button that cycles 1× → 1.5× → 2×
+(2× is the maximum), and a **CC** button for YouTube's captions (auto-captions work). Both are remembered per browser.
 
 ## Performance
 The background is lighter: the letter rain runs at a lower frame rate with fewer columns and pauses while a video plays
@@ -445,7 +449,7 @@ or uploading, so nothing they're doing is interrupted. The code is `pollUnlocks(
   replaced it). Both cases used to show "expired". A state this site didn't sign is still refused.
 - Sign-in errors show inside the sign-in card instead of a floating message.
 - On phones and tablets the Japanese wordmark sits on its own line above PROJECT instead of overlapping it.
-- Hand-ins, breakdown mark-ups, and journal entries (trade and no-trade) take up to **12** screenshots or files each
+- Hand-ins (lecture homework, homework assignments, breakdown mark-ups) take up to **20** files each (`MAX_HANDIN_FILES`); journal entries (trade and no-trade) take up to **12** screenshots
   (`MAX_FILES` in `index.html` and `api/member.js`). If a student picks more, they're told how many weren't added.
 
 ## Backups
@@ -516,3 +520,102 @@ Admin → **Backups**.
 - **Tagging:** Admin → Testimonials → Discord feeds → "Who gets tagged" lets you pick, for reviews and payouts
   separately: Nobody, @here, @everyone, or a role (paste the role ID). The post's first line then pings them, e.g.
   "@everyone 💸 Ava just got paid $2,400". It's saved in the `feed-settings` key and applies to new posts.
+
+## Security hardening
+- **Headers (`vercel.json`), on every response:**
+  - `X-Frame-Options: DENY` and `Content-Security-Policy: frame-ancestors 'none'`: the site can't be loaded inside
+    another site's frame, which stops clickjacking.
+  - `X-Content-Type-Options: nosniff`
+  - `Referrer-Policy: strict-origin-when-cross-origin`: still lets YouTube embeds play.
+  - `Permissions-Policy` turns off camera, microphone, location, payment and USB.
+  - `Access-Control-Allow-Origin` is pinned to `https://05project.com`, replacing Vercel's default `*` on static files.
+    The API never sent it.
+- **Rate limits** (Redis counters, `rateLimit()` in `api/_lib.js`):
+  - sign-in starts: 20 per 10 minutes per IP address (then "Too many sign-in attempts")
+  - upload requests: 60 per 10 minutes per member
+  - member actions: 300 per 10 minutes per member
+
+  Blocked-action flags are never limited, so they're always recorded.
+- **Certificate delete:** an ID that isn't one of your own certificates returns 404. Members could only ever delete from
+  their own record.
+- **"Send a backup now"** is a POST.
+- **Developer tools already open when the page loads:** for members on a computer, no lesson data (including video
+  links) is requested at all. The block screen shows, and the page reloads once developer tools are closed. Admins
+  aren't affected.
+- **Already in place:**
+  - the session cookie is `HttpOnly; Secure; SameSite=Lax`
+  - uploads are checked on the server: PNG, JPG, WebP, GIF, HEIC and PDF only (no SVG or HTML), max 25 MB, only into
+    the member's own folder
+  - files are in a private Blob store, reachable only through signed links that expire after 6 hours
+
+## Breakdowns: newest on top
+The Breakdowns list shows the newest week first, and the newest breakdown first inside each week. Numbers and the
+unlock order don't change: members still work through them in the order they were posted.
+
+## Journal: edit, tags, day notes, entries list
+- **Edit any entry later** (Edit button on the entry). Changing the date, result, account, rules answer or kind on an
+  entry an admin already reviewed sends it back to "waiting" for review; fixing notes, screenshots or trade data
+  doesn't. Edited entries show an "Edited" tag for admins.
+- **Only the essentials are required:** trades need date, result (TP/SL/BE), account type and "followed my rules";
+  no-trade days need date and the rules answer. Everything else (time, instrument, P&L, notes, screenshots, trade data)
+  is optional. A trade with no P&L shows "—" and counts as $0.
+- **Tags** (up to 8 per entry, e.g. `A+`, `london`, `revenge`) with suggestions from tags already used.
+- **Day notes:** click any day on the calendar (including today, before any trade) to write a **Plan** before the
+  session, a **Recap** after, and a mood. Days with notes get a small dot.
+- **Entries view:** every entry in one searchable list, filterable by result, account, model and tag, with a running
+  total (trades, TP %, net P&L).
+
+## Journal: import trades from a CSV
+Journal → **Import CSV**. Export the trade history from the trading platform, pick the file, check the preview, pick the
+account type, and import. Each trade becomes an entry (marked "Imported") that the member can add notes and screenshots
+to later. Up to 200 trades per file.
+- **Tradovate** (Performance → export): read automatically, including long/short from the buy and sell times.
+- **TopstepX / ProjectX, NinjaTrader, Rithmic, TradingView and most others:** columns are guessed from their names;
+  anything guessed wrong can be fixed with the dropdowns. Times with a time zone are converted to the member's time.
+- Negative P&L in any common form works (`-20`, `$(20.00)`, `-$20`). If the file has a fees column, fees can be taken
+  off the P&L.
+- Importing the same file twice skips the trades already there. Imported trades go to admins for review like any entry.
+- Limit: 5,000 journal entries per member.
+
+## Admin: daily recap (for the group calls)
+Admin → Journal → **Daily recap** (the default view). Pick a trading day (it starts on today, or Friday at the weekend):
+- the totals: how many students journaled, TP · SL · BE, no-trade days, net P&L, % of rules followed;
+- one card per student with their plan, recap and mood for that day, then each entry (time, instrument, side, result,
+  P&L, tags, notes). Click an entry, or **Walk through everyone**, to go through them full-screen on the call;
+- **Haven't journaled this day:** everyone with a journal who has nothing for that day;
+- **Copy summary:** a short text version to paste into Discord.
+
+## Security alerts to the staff channel
+Suspicious activity is posted to a private Discord channel and listed under Admin → **Backups & safety → Security
+alerts** (last 200 kept even without Discord):
+- dev tools opened on the site;
+- 5 or more blocked actions within 10 minutes (right-click, save, view source, print, screenshot keys…);
+- too many requests (300 actions in 10 minutes) or uploads (60 in 10 minutes);
+- too many sign-in attempts from one IP address (20 in 10 minutes);
+- a non-admin calling admin-only actions (e.g. trying to change their own role);
+- a request that came from another website (blocked; see below).
+
+Each alert names the member (with a Discord mention), their IP and what happened. One alert per person per kind every
+30 minutes, so nobody can flood the channel. To turn it on: in Discord, a staff-only channel → Edit Channel →
+Integrations → Webhooks → New Webhook → Copy Webhook URL; in Vercel add **`DISCORD_STAFF_WEBHOOK`** with that URL and
+redeploy; then press **Send a test alert** in Admin → Backups & safety.
+
+## More security (this round)
+- **Cross-site requests are refused:** any POST/PUT/DELETE whose `Origin` is a different website gets 403 (and an
+  alert). Requests without an `Origin` (Vercel's own callbacks) still work.
+- **Size limits:** 5,000 journal entries and 3,000 day notes per member; CSV imports are written in one go.
+- Edits only work on your own entries (anything else returns 404), and an edit can't change review status, points or
+  who reviewed it.
+
+
+## Paste screenshots instead of saving files
+In the journal's screenshot box and the homework / breakdown hand-in box, members can paste instead of saving a file first:
+- **TradingView "Copy chart image"** (Ctrl+Shift+S, or ⇧⌘S on a Mac), then Ctrl+V / ⌘V anywhere on the form.
+- **TradingView "Copy link"** (Alt+S / ⌥S, a `tradingview.com/x/…` snapshot link): the site fetches that snapshot's
+  image and adds it as a screenshot. If the link is pasted into a text box it stays there as text too.
+- **Any copied screenshot** (Win+Shift+S, ⌘⇧4 with Control, Snipping Tool…).
+- **Drag and drop** files onto the box.
+
+Pasted images upload exactly like picked files (same private storage, same limits). The TradingView link lookup runs in
+`api/upload.js` (`GET /api/upload?tv=<id>`), accepts only TradingView snapshot IDs and PNG images up to 10 MB, and is
+limited to 40 per 10 minutes per member.

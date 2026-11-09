@@ -826,6 +826,7 @@ table.mem td:first-child,table.mem th:first-child{width:34px}
 .cal-c{appearance:none;position:relative;min-height:78px;box-sizing:border-box;padding:6px 7px;border:1px solid var(--line);background:rgba(255,255,255,.012);color:var(--ink);font:inherit;text-align:left;display:flex;flex-direction:column;gap:2px;
   animation:calin .4s both cubic-bezier(.2,.8,.3,1);animation-delay:calc(var(--i,0) * 12ms)}
 .cal-c.empty{border-color:transparent;background:none;animation:none}
+.cal-c.noted::after{content:'';position:absolute;top:7px;right:7px;width:5px;height:5px;border-radius:50%;background:var(--ink);opacity:.55}
 button.cal-c{cursor:pointer;transition:transform .15s,box-shadow .2s,border-color .2s}
 button.cal-c:hover{transform:translateY(-2px)}
 .cal-n{font-family:var(--mono);font-size:11px;color:var(--muted)}
@@ -869,6 +870,8 @@ ul.parts{list-style:none;margin:0 0 4px 22px;padding:0 0 0 12px;border-left:1px 
 .hf-pdf{display:grid;place-items:center;height:92px;font-family:var(--mono);font-size:13px;letter-spacing:.14em;color:var(--kana-c);background:#030B0D}
 .hf-n{font-size:12px;padding:6px 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hf-x{position:absolute;top:4px;right:4px;width:26px;height:26px;border:0;background:rgba(2,9,11,.85);color:var(--ink);font-size:16px;cursor:pointer}
+.hi-up.pz{border:1px dashed transparent;transition:border-color .15s,background .15s}.hi-up.pz.drag{border-color:var(--ink);background:rgba(255,255,255,.04)}
+.paste-hint{display:block;font-size:12px;line-height:1.5;color:var(--muted);margin-top:4px}
 .up-file{display:inline-flex;align-items:center;position:relative;overflow:hidden;align-self:flex-start;cursor:pointer}
 .up-file input{position:absolute;inset:0;opacity:0;cursor:pointer}
 .pf-note{margin:0 0 12px;color:var(--muted);font-size:14px}
@@ -1095,9 +1098,11 @@ img,video{-webkit-user-drag:none;user-drag:none}
 
 /* backups */
 .bk .adm-card{margin-bottom:16px}.bk-ok{color:var(--win)}.bk-warn{color:#E8B07A}
+.al-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}.al-list h4{margin:4px 0}.al-r{display:flex;gap:10px;align-items:flex-start;border-top:1px solid var(--line);padding-top:8px}.al-r>div{display:flex;flex-direction:column;gap:2px;min-width:0;overflow-wrap:anywhere}
 .bk-steps{margin:8px 0 12px;padding-left:20px;line-height:1.6;color:var(--ink)}.bk-steps li{margin:4px 0}
 .bk-info{display:flex;flex-direction:column;gap:10px;margin-top:12px;max-width:560px}.bk-info p{margin:0}
 .btn-s.danger{border-color:rgba(232,120,96,.6);color:#F4C2B3}.btn-s.danger:hover{background:rgba(232,120,96,.15)}
+.ytcc{font:700 12px var(--mono);letter-spacing:.04em;width:auto;padding:0 8px}.ytcc.on{color:#000;background:var(--kana-c, #fff)}
 /* streak + week in review */
 .jr-streak{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border:1px solid var(--line);background:rgba(255,255,255,.02)}
 .jr-streak.hot{border-color:rgba(255,170,90,.45);background:linear-gradient(135deg,rgba(255,140,60,.10),rgba(255,140,60,0) 60%)}
@@ -1113,6 +1118,45 @@ img,video{-webkit-user-drag:none;user-drag:none}
 .jrr-f{margin:0;font-size:13px;padding:10px 12px;background:rgba(28,232,190,.06);border-left:2px solid var(--kana-c)}.jrr-f b{color:var(--kana-c)}
 .lb-fire{margin-left:8px;font-size:12px;font-weight:700;color:#FFB070;white-space:nowrap}
 .ntf-ic.k-recap{color:#FFD27A}
+.csv .csv-b{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.csv-map{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px 16px;border:1px solid var(--line);padding:12px}.csv-map b{grid-column:1/-1;font-size:13px}
+.csv-mr{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+.csv-mr select,.csv-opts select{min-height:38px;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--ink);padding:0 8px;font:14px var(--sans)}
+.csv-opts{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end}
+.csv h4{margin:4px 0 0}
+.dr{display:flex;flex-direction:column;gap:14px}.dr-bar{flex-wrap:wrap;gap:8px}.dr-bar input[type=date]{min-height:38px}
+.dr-hb{display:flex;gap:8px;flex-wrap:wrap}.dr-sum{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+.dr-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:14px;align-items:start}
+.dr-p{border:1px solid var(--line);background:var(--panel);padding:16px;display:flex;flex-direction:column;gap:10px}
+.dr-ph{display:flex;align-items:center;gap:10px}.dr-ph>div{display:flex;flex-direction:column;flex:1;min-width:0}.dr-ph .av{width:34px;height:34px}
+.dr-note{border-left:2px solid var(--line);padding:2px 0 2px 12px}.dr-note h6{margin:6px 0 2px;font:700 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.dr-note p{margin:0;white-space:pre-wrap;font-size:14px;line-height:1.5}
+.dr-e{appearance:none;text-align:left;font:inherit;color:inherit;background:rgba(255,255,255,.02);border:1px solid var(--line);padding:10px 12px;display:flex;flex-direction:column;gap:5px;cursor:pointer}
+.dr-e:hover{border-color:rgba(255,255,255,.3)}.dr-et{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}.dr-tm{font:12px var(--mono);color:var(--muted)}
+.dr-pl{font-weight:700}.dr-pl.win{color:#4ade80}.dr-pl.loss{color:#f87171}.dr-ov{margin:0;font-size:13px;line-height:1.5;color:var(--muted);white-space:pre-wrap}
+.dr-miss h4{margin:6px 0 10px}.dr-ml{display:flex;flex-wrap:wrap;gap:8px}.dr-who{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);padding:4px 12px 4px 4px;font-size:13px}.dr-who .av{width:24px;height:24px}
+/* journal: tags, day notes, list */
+.jr-tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border:1px solid var(--line);background:rgba(255,255,255,.03);padding:6px 8px;min-height:44px}
+.jr-tags input{flex:1 1 140px;border:0;background:none;color:var(--ink);font:15px var(--sans);outline:none;min-width:120px}
+.jr-tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#BFE9F2;background:rgba(80,160,190,.14);border:1px solid rgba(80,160,190,.35);padding:3px 8px}
+.jr-tag button{border:0;background:none;color:inherit;cursor:pointer;font-size:14px;line-height:1;padding:0 0 0 2px}.jr-tag.sm{font-size:11px;padding:1px 6px}
+.je-tags{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}.je-tag.dim{opacity:.6}
+.je-edit{margin-left:auto}.jr-editnote{border-left:2px solid #E8B07A;padding:8px 10px;background:rgba(232,176,122,.06)}
+.day-note{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);background:rgba(255,255,255,.02);padding:14px;margin:6px 0 14px}
+.day-note h5{margin:0;font:600 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.day-note textarea{width:100%;box-sizing:border-box;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--ink);padding:10px 12px;font:14px/1.5 var(--sans)}
+.dn-mood{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.dn-mood .seg-b{min-height:32px;font-size:12px;padding:0 10px}
+.day-note .btn-s{align-self:flex-start}
+.jl-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.jl-bar input[type=search],.jl-bar select{min-height:40px;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--ink);padding:0 10px;font:14px var(--sans)}
+.jl-bar input[type=search]{flex:1 1 220px}
+.jl-sum{margin:0 0 8px;font-size:13px;color:var(--muted)}
+.jl-list{display:flex;flex-direction:column;border:1px solid var(--line)}
+.jl-row{display:grid;grid-template-columns:150px minmax(0,1fr) 100px 100px;gap:12px;align-items:center;padding:10px 14px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);text-align:left;cursor:pointer;font:14px var(--sans)}
+.jl-row:hover{background:rgba(255,255,255,.03)}.jl-row:last-child{border-bottom:0}
+.jl-d{font-size:12px;color:var(--muted)}.jl-m{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0}.jl-x{font-size:12px;color:var(--muted)}
+.jl-p{text-align:right;font-weight:700}.jl-p.win{color:var(--win)}.jl-p.loss{color:var(--loss)}.jl-s{font-size:12px;text-align:right;color:var(--muted)}.jl-s.st-approved{color:var(--win)}.jl-s.st-denied{color:var(--loss)}
+.jl .btn-s{margin-top:10px}
+@media (max-width:640px){.jl-row{grid-template-columns:1fr auto;row-gap:4px}.jl-d{grid-column:1/-1}.jl-s{grid-column:1/-1;text-align:left}}
 /* wins */
 #wins .seg2{margin-bottom:16px}
 .win-sum{display:flex;align-items:baseline;gap:12px;margin:4px 0 16px}.win-sum b{font:900 34px/1 var(--display);font-style:italic;color:var(--kana-c)}.win-sum span{color:var(--muted)}
@@ -1419,7 +1463,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         <button type="button" data-sec="testimonials" aria-pressed="false">Testimonials<span class="nb" data-w="testimonials" hidden></span></button>
         <button type="button" data-sec="progress" aria-pressed="false">Progress</button>
         <button type="button" data-sec="members" aria-pressed="false">Members<span class="nb" data-w="quiet" hidden></span></button>
-        <button type="button" data-sec="backups" aria-pressed="false">Backups</button>
+        <button type="button" data-sec="backups" aria-pressed="false">Backups &amp; safety</button>
       </nav>
       <div id="adm-body"></div>
     </main>
@@ -1677,8 +1721,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function shieldOn(){ if (!inPortal() || isAdminViewer() || Date.now() < pickUntil) return; shieldEl.hidden = false; pauseAll(); }
   function shieldOff(){ if (Date.now() < shieldT) return; shieldEl.hidden = true; }
   function shieldFlash(){ if (!inPortal() || isAdminViewer()) return; shieldT = Date.now() + 2500; shieldOn(); setTimeout(function(){ if (document.hasFocus()) shieldOff(); }, 2600); }
-  window.addEventListener('blur', shieldOn);
-  document.addEventListener('visibilitychange', function(){ if (document.hidden) shieldOn(); });
+  // Videos keep playing when the window loses focus or the tab is in the background (members take notes elsewhere).
+  // The cover still shows for screenshot shortcuts (shieldFlash) and developer tools.
   window.addEventListener('focus', function(){ shieldOff(); });
   shieldEl.addEventListener('click', function(){ shieldT = 0; shieldOff(); });
   window.addEventListener('beforeprint', function(){ document.body.style.visibility = 'hidden'; });
@@ -2072,8 +2116,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var first = CURRICULUM[0] ? CURRICULUM[0].name : 'member';
     var mainItems = bdChain(main, false), groups = [], byWeek = {}, weeks = [];
     mainItems.forEach(function(it){ var w = it.lesson.week || ''; if (!byWeek[w]){ byWeek[w] = []; weeks.push(w); } byWeek[w].push(it); });
-    weeks.forEach(function(w){
-      var its = byWeek[w]; its.forEach(function(it, i){ it.num = i + 1; });
+    // newest week on top, newest breakdown first inside each week (numbering stays in posting order)
+    weeks.slice().reverse().forEach(function(w){
+      var its = byWeek[w]; its.forEach(function(it, i){ it.num = i + 1; }); its = its.slice().reverse();
       groups.push({ id:'w' + (w || 'x'), name: weekLabel(w), items: its,
         locked: its.every(function(it){ return it.locked && it.lesson.reason === 'level'; }), lockMsg: 'Breakdowns unlock with the ' + first + ' role in Discord.',
         allDone: its.every(function(it){ return it.lesson.passed; }) });
@@ -2259,7 +2304,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var ycover = el('button','yt-cover'); ycover.type = 'button'; ycover.setAttribute('aria-label','Play video'); ycover.innerHTML = playSvg;
       var yclick = el('div','yt-click');                                   // sits over the video: clicks never reach YouTube
       var ctl = el('div','ytc'), bPlay = el('button','ytb'), tTime = el('span','ytt','0:00'), bar = el('div','ytbar'), bWat = el('i','w'), bNow = el('i','n'),
-          bMute = el('button','ytb'), bFull = el('button','ytb'), bRate = el('button','ytb ytr', speedLabel());
+          bMute = el('button','ytb'), bFull = el('button','ytb'), bRate = el('button','ytb ytr', speedLabel()), bCC = el('button','ytb ytcc','CC');
+      bCC.type = 'button'; bCC.setAttribute('aria-label','Captions'); bCC.setAttribute('aria-pressed', CC ? 'true' : 'false'); bCC.classList.toggle('on', CC);
       bPlay.type = bMute.type = bFull.type = bRate.type = 'button'; bRate.setAttribute('aria-label','Playback speed');
       var ICON = { play:'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>',
         pause:'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>',
@@ -2268,8 +2314,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         full:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>' };
       bPlay.innerHTML = ICON.play; bPlay.setAttribute('aria-label','Play'); bMute.innerHTML = ICON.vol; bMute.setAttribute('aria-label','Mute'); bFull.innerHTML = ICON.full; bFull.setAttribute('aria-label','Full screen');
       bar.appendChild(bWat); bar.appendChild(bNow); bar.setAttribute('role','slider'); bar.setAttribute('aria-label','Video position');
-      ctl.appendChild(bPlay); ctl.appendChild(tTime); ctl.appendChild(bar); ctl.appendChild(bRate); ctl.appendChild(bMute); ctl.appendChild(bFull);
-      bRate.addEventListener('click', function(){ setSpeed(SPEED === 1 ? 1.5 : 1); bRate.textContent = speedLabel(); if (yt && yt.setPlaybackRate) yt.setPlaybackRate(SPEED); });
+      ctl.appendChild(bPlay); ctl.appendChild(tTime); ctl.appendChild(bar); ctl.appendChild(bCC); ctl.appendChild(bRate); ctl.appendChild(bMute); ctl.appendChild(bFull);
+      bCC.addEventListener('click', function(){ setCC(!CC); bCC.classList.toggle('on', CC); bCC.setAttribute('aria-pressed', CC ? 'true' : 'false'); ytCaptions(yt, CC); toast(CC ? 'Captions on (auto-generated).' : 'Captions off.'); });
+      bRate.addEventListener('click', function(){ setSpeed(nextSpeed()); bRate.textContent = speedLabel(); if (yt && yt.setPlaybackRate) yt.setPlaybackRate(SPEED); });
       holder.appendChild(yclick); holder.appendChild(ycover); holder.appendChild(ctl); pl.appendChild(holder); pl.classList.add('has-yt');
       var fmtT = function(t){ t = Math.max(0, Math.floor(t || 0)); var h = Math.floor(t/3600), m = Math.floor(t/60) % 60, x = t % 60; return (h ? h + ':' + String(m).padStart(2,'0') : m) + ':' + String(x).padStart(2,'0'); };
       var toggle = function(){ if (!yt || !yt.getPlayerState) return; if (yplaying) yt.pauseVideo(); else { yt.playVideo(); ytTapFallback(holder, function(){ return yplaying; }); } };
@@ -2288,12 +2335,12 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       holder.addEventListener('keydown', function(e){ if (e.key === ' ' || e.key === 'k'){ e.preventDefault(); toggle(); } if (e.key === 'f') bFull.click(); });
       loadYT().then(function(YT){
         if (!host2.isConnected) return;
-        var ywarned = false, ylast = 0, ysave = 0;
+        var ywarned = false, ylast = 0, ysave = 0, ywall = 0;
         yt = new YT.Player(host2, { videoId: ytId(src), width:'100%', height:'100%',
-          playerVars: { controls:0, disablekb:1, fs:0, rel:0, modestbranding:1, playsinline:1, iv_load_policy:3, cc_load_policy:0, showinfo:0,
+          playerVars: { controls:0, disablekb:1, fs:0, rel:0, modestbranding:1, playsinline:1, iv_load_policy:3, cc_load_policy: CC ? 1 : 0, cc_lang_pref:'en', showinfo:0,
                         start: Math.floor(yst.pos || 0), origin: location.origin },
           events: {
-            onReady: function(){ ytPlayers.push(yt); try { yt.setPlaybackRate(SPEED); } catch(e) {} ydur = yt.getDuration() || 0; tTime.textContent = fmtT(yst.pos) + ' / ' + fmtT(ydur); },
+            onReady: function(){ ytPlayers.push(yt); try { yt.setPlaybackRate(SPEED); } catch(e) {} ytCaptions(yt, CC); ydur = yt.getDuration() || 0; tTime.textContent = fmtT(yst.pos) + ' / ' + fmtT(ydur); },
             onStateChange: function(e){
               var was = yplaying; yplaying = e.data === 1 || e.data === 3;
               if (was !== yplaying) HOLD.video = Math.max(0, HOLD.video + (yplaying ? 1 : -1));
@@ -2312,8 +2359,12 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
           if (yt.getPlaybackRate && yt.getPlaybackRate() !== SPEED){ try { yt.setPlaybackRate(SPEED); } catch(e) {} }
           if (!yt.getCurrentTime || !yt.getDuration) return;
           var t = yt.getCurrentTime() || 0, d = yt.getDuration() || 0; ydur = d || ydur;
-          if (!free && !doneSet[cur.key] && t > yst.max + 2.5){ yt.seekTo(yst.max, true); if (!ywarned){ ywarned = true; toast('No skipping ahead on your first watch.'); } return; }
-          if (t >= ylast && t - ylast < 3.5 && t > yst.max) yst.max = t;
+          // natural playback: the video moved forward no faster than real time × speed (background tabs tick rarely, so the
+          // gap between ticks can be long); anything faster is a skip
+          var nowW = Date.now(), gap = ywall ? (nowW - ywall) / 1000 : 0.4; ywall = nowW;
+          var natural = t >= ylast && t - ylast <= gap * Math.max(SPEED, 1) + 2.5;
+          if (!free && !doneSet[cur.key] && t > yst.max + 2.5 && !natural){ yt.seekTo(yst.max, true); ylast = yst.max; if (!ywarned){ ywarned = true; toast('No skipping ahead on your first watch.'); } return; }
+          if (natural && t > yst.max) yst.max = t;
           ylast = t; yst.pos = t;
           if (d){ paintStatus(yst.max / d); bWat.style.width = (Math.min(1, yst.max / d) * 100) + '%'; bNow.style.width = (Math.min(1, t / d) * 100) + '%'; tTime.textContent = fmtT(t) + ' / ' + fmtT(d); }
           if (Date.now() - ysave > 3000){ ysave = Date.now(); saveWatch(); }
@@ -2327,17 +2378,18 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var v = document.createElement('video'); v.src = src; v.controls = true; v.playsInline = true; v.preload = 'metadata';
       v.setAttribute('controlsList','nodownload noplaybackrate noremoteplayback'); v.disablePictureInPicture = true; v.disableRemotePlayback = true;
       v.addEventListener('contextmenu', function(e){ e.preventDefault(); });
-      var st = watch[cur.key] || (watch[cur.key] = { max:0, pos:0 }), last = 0, warned = false, saveT = 0;
+      var st = watch[cur.key] || (watch[cur.key] = { max:0, pos:0 }), last = 0, warned = false, saveT = 0, lastW = 0;
       v.playbackRate = v.defaultPlaybackRate = SPEED;
-      v.addEventListener('ratechange', function(){ if (v.playbackRate !== 1 && v.playbackRate !== 1.5) v.playbackRate = SPEED; });   // only 1x or 1.5x
+      v.addEventListener('ratechange', function(){ if (SPEEDS.indexOf(v.playbackRate) < 0) v.playbackRate = SPEED; });   // only 1x, 1.5x or 2x
       var vr = el('button','vrate', speedLabel()); vr.type = 'button'; vr.setAttribute('aria-label','Playback speed');
-      vr.addEventListener('click', function(){ setSpeed(SPEED === 1 ? 1.5 : 1); v.playbackRate = SPEED; vr.textContent = speedLabel(); });
+      vr.addEventListener('click', function(){ setSpeed(nextSpeed()); v.playbackRate = SPEED; vr.textContent = speedLabel(); });
       var vOn = false; v.addEventListener('play', function(){ if (!vOn){ vOn = true; HOLD.video++; } }); var vOff = function(){ if (vOn){ vOn = false; HOLD.video = Math.max(0, HOLD.video - 1); } };
       v.addEventListener('pause', vOff); v.addEventListener('ended', vOff);
       v.addEventListener('loadedmetadata', function(){ if (st.pos && st.pos < v.duration - 2) v.currentTime = st.pos; last = v.currentTime; paintStatus(st.max / v.duration); });
       v.addEventListener('timeupdate', function(){
         var t = v.currentTime;
-        if (t >= last && t - last < 2.4 && t > st.max) st.max = t;      // only continuous playback counts as watched (allows 1.5x)
+        var nw = Date.now(), gp = lastW ? (nw - lastW) / 1000 : 0.3; lastW = nw;
+        if (t >= last && t - last <= gp * Math.max(SPEED, 1) + 1.5 && t > st.max) st.max = t;      // only continuous playback counts (any speed, background tabs too)
         last = t; st.pos = t;
         if (v.duration) paintStatus(st.max / v.duration);
         if (Date.now() - saveT > 3000){ saveT = Date.now(); saveWatch(); }
@@ -2394,7 +2446,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
 
   /* ---------- notes + homework hand-in (under each lesson's video) ---------- */
   function draftKey(lid){ return 'theproject.draft.' + uid() + '.' + lid; }
-  var MAX_FILES = 12;   // screenshots / files per hand-in or journal entry (api/member.js uses the same number)
+  var MAX_FILES = 12;          // screenshots per journal entry (api/member.js uses the same numbers)
+  var MAX_HANDIN_FILES = 20;   // files per hand-in: lecture homework, homework assignments, breakdown mark-ups
   function handinPanel(it, watched, track){
     var bd = track === 'bx', hwk = track === 'hw', key = it.key, word = bd ? 'mark-ups' : 'homework', unit = bd ? 'breakdown' : track === 'ax' ? 'lecture' : 'lesson';
     var l = it.lesson, sub = l.sub || null, st = sub ? sub.status : 'none', approve = SETTINGS.unlockMode === 'approve';
@@ -2427,11 +2480,13 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     function drawFiles(){ chipsHost.textContent = ''; chipsHost.appendChild(fileChips(files, locked ? null : function(i){ files.splice(i,1); saveDraft(); drawFiles(); })); }
     drawFiles(); fileBox.appendChild(chipsHost);
     if (!locked){
-      var pickL = el('label','btn-s up-file', bd ? '+ Upload mark-up screenshots (up to ' + MAX_FILES + ')' : '+ Upload files (up to ' + MAX_FILES + ')'), fi = el('input'); fi.type = 'file'; fi.multiple = true; fi.accept = FILE_TYPES; pickL.appendChild(fi);
+      var pickL = el('label','btn-s up-file', bd ? '+ Upload mark-up screenshots (up to ' + MAX_HANDIN_FILES + ')' : '+ Upload files (up to ' + MAX_HANDIN_FILES + ')'), fi = el('input'); fi.type = 'file'; fi.multiple = true; fi.accept = FILE_TYPES; pickL.appendChild(fi);
       var upNote = el('small','adm-note','Photos, screenshots or PDFs from your phone or computer, up to 25 MB each.');
-      fi.addEventListener('change', function(){
-        var picked = Array.prototype.slice.call(fi.files || []), list = picked.slice(0, Math.max(0, MAX_FILES - files.length)); fi.value = '';
-        if (picked.length > list.length) toast('Up to ' + MAX_FILES + ' files per hand-in. ' + (picked.length - list.length) + (picked.length - list.length === 1 ? ' wasn\'t' : ' weren\'t') + ' added.');
+      fi.addEventListener('change', function(){ var picked = Array.prototype.slice.call(fi.files || []); fi.value = ''; addHandin(picked); });
+      pasteDrop(fileBox, function(picked){ addHandin(picked); });
+      function addHandin(picked){
+        var list = picked.slice(0, Math.max(0, MAX_HANDIN_FILES - files.length));
+        if (picked.length > list.length) toast('Up to ' + MAX_HANDIN_FILES + ' files per hand-in. ' + (picked.length - list.length) + (picked.length - list.length === 1 ? ' wasn\'t' : ' weren\'t') + ' added.');
         list.forEach(function(f){
           var ftype = fileType(f); if (!ftype){ say(f.name + ' isn\'t an image or PDF.'); return; }
           if (ftype !== f.type) f = new File([f], f.name, { type: ftype });
@@ -2443,8 +2498,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
             .catch(function(e){ say('Upload failed (' + f.name + '): ' + String((e && e.message) || e).replace(/^Vercel Blob:\s*/,'')); })
             .then(function(){ busy--; if (!busy){ upNote.textContent = 'Photos, screenshots or PDFs from your phone or computer, up to 25 MB each.'; go.disabled = locked || !watched || !!PREVIEW; } });
         });
-      });
-      fileBox.appendChild(pickL); fileBox.appendChild(upNote);
+      }
+      fileBox.appendChild(pickL); fileBox.appendChild(upNote); fileBox.appendChild(pasteHint());
     }
     box.appendChild(fld('Your notes', notes));
     box.appendChild(fld(bd ? 'Your mark-ups' : 'Your homework', hw));
@@ -2540,9 +2595,21 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   }
   // Lessons always need a full watch. Breakdowns need one when they have a video; link-only breakdowns are ticked by hand.
   // playback speed: 1x or 1.5x only, remembered in this browser
-  var SPEED = 1; try { SPEED = localStorage.getItem('theproject.speed') === '1.5' ? 1.5 : 1; } catch(e) {}
-  function setSpeed(x){ SPEED = x === 1.5 ? 1.5 : 1; try { localStorage.setItem('theproject.speed', String(SPEED)); } catch(e) {} }
-  function speedLabel(){ return SPEED === 1.5 ? '1.5×' : '1×'; }
+  // playback speed: 1x, 1.5x or 2x (2x is the max)
+  var SPEEDS = [1, 1.5, 2], SPEED = 1; try { var sv0 = parseFloat(localStorage.getItem('theproject.speed')); if (SPEEDS.indexOf(sv0) >= 0) SPEED = sv0; } catch(e) {}
+  function setSpeed(x){ SPEED = SPEEDS.indexOf(x) >= 0 ? x : 1; try { localStorage.setItem('theproject.speed', String(SPEED)); } catch(e) {} }
+  function nextSpeed(){ return SPEEDS[(SPEEDS.indexOf(SPEED) + 1) % SPEEDS.length]; }
+  function speedLabel(){ return SPEED + '×'; }
+  // captions (YouTube's auto captions), remembered per browser
+  var CC = false; try { CC = localStorage.getItem('theproject.cc') === '1'; } catch(e) {}
+  function setCC(on){ CC = !!on; try { localStorage.setItem('theproject.cc', CC ? '1' : '0'); } catch(e) {} }
+  function ytCaptions(p, on){
+    if (!p) return;
+    try {
+      if (on){ p.loadModule && p.loadModule('captions'); setTimeout(function(){ try { p.setOption('captions', 'track', { languageCode:'en' }); } catch(e) {} }, 400); }
+      else { p.setOption && p.setOption('captions', 'track', {}); p.unloadModule && p.unloadModule('captions'); }
+    } catch(e) {}
+  }
   function mustWatch(id, it){ return id === 'bx' ? false : (id === 'lx' || !!it.video); }   // breakdowns can be skipped (people watch them live)
   // In demo mode, lessons without a video play the site's sample clip so the watch-to-complete flow can be tried.
   function videoFor(id, it){ return it.video || (DEMO_MODE && id === 'lx' ? 'sample.mp4' : ''); }
@@ -2827,13 +2894,14 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       return Promise.resolve({});
     }
     return fetch('/api/member', { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) })
-      .then(function(r){ return r.json().then(function(j){ if (!r.ok) throw new Error(j && j.error || r.status); return j; }); });
+      .then(function(r){ return r.json().then(function(j){ if (!r.ok) throw new Error(MP_ERR[j && j.error] || (j && j.error) || r.status); return j; }); });
   }
+  var MP_ERR = { journal_full:'Your journal is full (5,000 entries). Delete some old ones first.', slow_down:'Too many actions in a row. Wait a few minutes and try again.', bad_origin:'That request was blocked. Refresh the page and try again.' };
   function loadMe(){
     if (DEMO_MODE){ ME = { certs: demoCerts, promo: demoPromo, journal: demoJournal, entries: demoEntries.map(function(e){ return Object.assign({}, e, { points: entryPoints(e) }); }), loaded: true }; return Promise.resolve(); }
     if (!BACKEND || !SESSION) return Promise.resolve();
     return fetch('/api/member', { credentials:'same-origin' }).then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(j){ if (j){ ME = { certs: j.certs || [], promo: j.promo || null, journal: j.journal || null, entries: j.entries || [], loaded: true }; } }).catch(function(){});
+      .then(function(j){ if (j){ ME = { certs: j.certs || [], promo: j.promo || null, journal: j.journal || null, entries: j.entries || [], dayNotes: j.dayNotes || {}, loaded: true }; } }).catch(function(){});
   }
   var CERT_ERR = { need_payout:'Pick a payout certificate.', not_ready:'Finish every lesson first.', already_requested:'You\'ve already asked. An admin will review it.',
     in_use:'That certificate is attached to your promotion request.', need_amount:'Enter the payout amount.', certified:'Certified payouts stay on your record.', bad_file:'That file didn\'t upload properly. Try again.', no_storage:'Certificates need Upstash Redis connected in Vercel.' };
@@ -2912,7 +2980,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function entryWorth(e){ if (!e || !e.followed) return 0; if (e.kind === 'none') return 1; if (isPaper(e)) return e.outcome === 'tp' ? 1 : 0; return e.outcome === 'tp' ? 3 : 1; }
   function legacyPoints(e){ if (!e || !e.followed) return 0; if (e.kind === 'none') return 1; return e.outcome === 'tp' ? 3 : 1; }
   function entryPoints(e){ if (entryStatus(e) !== 'approved') return 0; return typeof e.awarded === 'number' ? e.awarded : legacyPoints(e); }
-  var JR = { kind:'trade', draft:{ files:[] }, editing:false, view:'cal', month:null, day:null };
+  var JR = { kind:'trade', draft:{ files:[] }, editing:false, view:'cal', month:null, day:todayYmd() };
   var OUT = { tp:'TP', sl:'SL', be:'BE' };
   function money(n){ n = +n || 0; return (n < 0 ? '−$' : '$') + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
   // the date a new journal entry most likely belongs to: before 5am counts as the day before, and weekends go back to Friday
@@ -2971,7 +3039,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     side.appendChild(recapCard(ents, host));
     var pend = ents.filter(function(e){ return entryStatus(e) === 'pending'; }).length;
     if (pend) side.appendChild(el('p','jr-pend', pend + (pend === 1 ? ' entry is' : ' entries are') + ' waiting for an admin to approve ' + (pend === 1 ? 'it' : 'them') + ' for the leaderboard.'));
-    var vs = el('div','jr-view'); vs.appendChild(seg([['cal','Calendar'],['stats','Stats'],['new','+ New entry']], JR.view, function(v){ JR.view = v; drawJournal(host); }));
+    var vs = el('div','jr-view'); vs.appendChild(seg([['cal','Calendar'],['list','Entries'],['stats','Stats'],['new', JR.editId ? '✎ Editing' : '+ New entry'],['import','Import CSV']], JR.view, function(v){ if (v !== 'new' && JR.editId){ JR.editId = null; JR.draft = { files:[] }; } JR.view = v; drawJournal(host); }));
     main.appendChild(vs);
     if (JR.view === 'stats'){
       JR.per = JR.per || 'all';
@@ -2980,8 +3048,13 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return;
     }
     if (JR.view === 'cal'){ main.appendChild(journalCalendar(ents, host)); grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return; }
+    if (JR.view === 'list'){ main.appendChild(entriesList(ents, host)); grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return; }
+    if (JR.view === 'import'){ main.appendChild(csvImportView(host)); grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return; }
     // new entry
-    var f = el('section','jr-form view-in'); f.appendChild(el('h3',null,'New entry'));
+    var f = el('section','jr-form view-in'); f.appendChild(el('h3',null, JR.editId ? 'Edit entry' : 'New entry'));
+    if (JR.editId){ var eo = (ME.entries || []).filter(function(x){ return x.id === JR.editId; })[0];
+      if (eo && entryStatus(eo) !== 'pending') f.appendChild(el('p','adm-note jr-editnote','This entry was already reviewed. Notes, screenshots, tags and trade data can change freely; changing the result, account, date or the rules answer sends it back for review.'));
+      var cx = el('button','lnk','Cancel editing'); cx.type = 'button'; cx.addEventListener('click', function(){ JR.editId = null; JR.draft = { files:[] }; JR.view = 'cal'; drawJournal(host); }); f.appendChild(cx); }
     f.appendChild(seg([['trade','Trade'],['none','No trades today']], JR.kind, function(k){ JR.kind = k; drawJournal(host); }));
     var D = JR.draft; if (!D.date) D.date = lastTradingDay();
     var grid2 = el('div','jr-fields');
@@ -2993,15 +3066,17 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var drawF = function(){ chips.textContent = ''; chips.appendChild(fileChips(D.files, function(i){ D.files.splice(i,1); drawF(); })); };
       drawF(); fb.appendChild(chips);
       var pl2 = el('label','btn-s up-file','+ Add screenshots (up to ' + MAX_FILES + ')'), fi = el('input'); fi.type = 'file'; fi.multiple = true; fi.accept = FILE_TYPES; pl2.appendChild(fi);
-      var noteTx = required ? 'At least one screenshot is needed to post.' : 'Optional: your mark-ups and the price action you watched.'; var un = el('small','adm-note', noteTx);
-      fi.addEventListener('change', function(){ var picked = Array.prototype.slice.call(fi.files || []), list = picked.slice(0, Math.max(0, MAX_FILES - D.files.length)); fi.value = '';
+      var noteTx = JR.kind === 'trade' ? 'Optional, but reviews are much better with your entry and mark-ups.' : 'Optional: your mark-ups and the price action you watched.'; var un = el('small','adm-note', noteTx);
+      fi.addEventListener('change', function(){ var picked = Array.prototype.slice.call(fi.files || []); fi.value = ''; addShots(picked); });
+      pasteDrop(fb, function(picked){ addShots(picked); });
+      function addShots(picked){ var list = picked.slice(0, Math.max(0, MAX_FILES - D.files.length));
         if (picked.length > list.length) toast('Up to ' + MAX_FILES + ' screenshots per entry. ' + (picked.length - list.length) + (picked.length - list.length === 1 ? ' wasn\'t' : ' weren\'t') + ' added.');
         list.forEach(function(file){ var ft = fileType(file); if (!ft){ toast(file.name + ' isn\'t an image or PDF.'); return; } if (ft !== file.type) file = new File([file], file.name, { type: ft });
           busy++; un.textContent = 'Uploading ' + file.name + '…'; JR.busy = busy;
           uploadFile(file, 'members/' + (user().id || 'demo') + '/journal/' + safeName(file.name), function(pc){ un.textContent = 'Uploading ' + file.name + '… ' + Math.round(pc) + '%'; })
             .then(function(r){ D.files.push(r); drawF(); }).catch(function(e){ toast('Upload failed: ' + String((e && e.message) || e)); })
-            .then(function(){ busy--; JR.busy = busy; if (!busy) un.textContent = noteTx; }); }); });
-      fb.appendChild(pl2); fb.appendChild(un);
+            .then(function(){ busy--; JR.busy = busy; if (!busy) un.textContent = noteTx; }); }); }
+      fb.appendChild(pl2); fb.appendChild(un); fb.appendChild(pasteHint());
       var sw = el('div','fld wide'); sw.appendChild(document.createTextNode(required ? 'Screenshots' : 'Screenshots (optional)')); sw.appendChild(fb); grid2.appendChild(sw);
     }
     // optional trade data: feeds "What works best" and the Excel export
@@ -3058,7 +3133,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var pn = txt('pnl','number','e.g. 640 or -200'); pn.step = 'any'; field('Trade P&L ($)', pn);
       field('Entry model', sel('model', ENTRY_MODELS));
       var ov = txt('overview','textarea','What you saw, why you took it, how you managed it'); ov.rows = 4; field('Trade overview', ov, true);
-      shotsField(true);
+      shotsField(false);
       tradeData();
     } else {
       field('Date', txt('date','date'));
@@ -3066,6 +3141,17 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var ov2 = txt('overview','textarea','Why you didn\'t trade: what you were waiting for'); ov2.rows = 3; field('Overview', ov2, true);
       shotsField(false);
     }
+    // tags (your own labels, like Notion): type and press Enter
+    D.tags = D.tags || [];
+    var tg = el('div','jr-tags'), tgIn = el('input'); tgIn.type = 'text'; tgIn.maxLength = 24; tgIn.placeholder = D.tags.length ? 'Add another…' : 'e.g. A+ setup, revenge, patience'; tgIn.setAttribute('list','jr-taglist');
+    function drawTags(){ Array.prototype.slice.call(tg.querySelectorAll('.jr-tag')).forEach(function(x){ x.remove(); });
+      D.tags.forEach(function(t, i){ var c = el('span','jr-tag', '#' + t), x = el('button',null,'×'); x.type = 'button'; x.setAttribute('aria-label','Remove ' + t); x.addEventListener('click', function(){ D.tags.splice(i, 1); drawTags(); }); c.appendChild(x); tg.insertBefore(c, tgIn); }); }
+    function addTag(){ var v = tgIn.value.replace(/^#/, '').trim().slice(0, 24); if (v && D.tags.indexOf(v) < 0 && D.tags.length < 8) D.tags.push(v); tgIn.value = ''; drawTags(); }
+    tgIn.addEventListener('keydown', function(ev){ if (ev.key === 'Enter' || ev.key === ','){ ev.preventDefault(); addTag(); } else if (ev.key === 'Backspace' && !tgIn.value && D.tags.length){ D.tags.pop(); drawTags(); } });
+    tgIn.addEventListener('blur', addTag);
+    tg.appendChild(tgIn); drawTags(); field('Tags (optional)', tg, true);
+    var dlT = document.getElementById('jr-taglist') || (function(){ var d0 = el('datalist'); d0.id = 'jr-taglist'; document.body.appendChild(d0); return d0; })(); dlT.textContent = '';
+    allTags(ME.entries || []).forEach(function(t){ var o = el('option'); o.value = t; dlT.appendChild(o); });
     // high-impact news that day (feeds the stats)
     var nw = seg([['no','No'],['yes','Yes']], D.news || '', function(v){ D.news = v; drawJournal(host); }); field('High-impact news that day?', nw);
     if (D.news === 'yes') field('Which news?', txt('newsWhat','text','CPI, FOMC, NFP…','jr-news'));
@@ -3084,22 +3170,22 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         if (D.dir === 'long' ? sp >= en : sp <= en){ toast('Your stop price is on the wrong side of your entry for a ' + D.dir + '. Check the prices or the direction.'); return; }
       }
       if (D.date && new Date(D.date + 'T12:00:00').getDay() === 6 && !JR.satOk){ JR.satOk = true; toast('That date is a Saturday, when markets are closed. If the trade was Friday, change the date. If it really was Saturday, press Post again.'); return; }
+      // required: trades need the date, result, account and the rules answer; no-trade days need the date and the rules answer
       var need = [];
-      if (JR.kind === 'trade'){
-        [['pair','Pair'],['account','Account type'],['session','Session'],['date','Trade date'],['time','Time'],['contracts','Contracts'],['outcome','Outcome'],['pnl','Trade P&L'],['model','Entry model']].forEach(function(x){ if (D[x[0]] === undefined || String(D[x[0]]).trim() === '') need.push(x[1]); });
-        if (String(D.overview || '').trim().length < 20) need.push('Trade overview (a few sentences)');
-        if (!D.files.length) need.push('a screenshot');
-      } else { if (!D.date) need.push('Date'); if (!D.session) need.push('Session'); if (String(D.overview || '').trim().length < 10) need.push('Overview'); }
-      if (!D.news) need.push('whether there was high-impact news');
+      if (!D.date) need.push('Date');
+      if (JR.kind === 'trade'){ if (!D.outcome) need.push('Outcome (TP / SL / BE)'); if (!D.account) need.push('Account type'); }
       if (D.followed === undefined) need.push('whether you followed your rules');
       if (need.length){ toast('Still needed: ' + need.join(', ') + '.'); return; }
-      var entry = JR.kind === 'trade' ? { kind:'trade', pair:D.pair, account:D.account, session:D.session, date:D.date, time:D.time, contracts:+D.contracts, outcome:D.outcome, pnl:+D.pnl, model:D.model, overview:D.overview, files:D.files, followed:D.followed,
+      var entry = JR.kind === 'trade' ? { kind:'trade', pair:D.pair, account:D.account, session:D.session, date:D.date, time:D.time, contracts: D.contracts === '' || D.contracts === undefined ? '' : +D.contracts, outcome:D.outcome, pnl: D.pnl === '' || D.pnl === undefined || D.pnl === null ? '' : +D.pnl, model:D.model, overview:D.overview, files:D.files, followed:D.followed,
           dir:D.dir, entryType:D.entryType, tz:D.tz, exitTime:D.exitTime, pEntry:numv(D.pEntry), pStop:numv(D.pStop), pTarget:numv(D.pTarget), pExit:numv(D.pExit), risk:numv(D.risk), mae:numv(D.mae), mfe:numv(D.mfe),
           htf:D.htf, bias:D.bias, ltf:D.ltf, grade:D.grade, emotion:D.emotion, swept:D.swept, confl:D.confl, manage:D.manage, mistakes:D.mistakes }
         : { kind:'none', date:D.date, session:D.session, overview:D.overview, files:D.files, followed:D.followed };
+      entry.tags = D.tags || [];
       entry.news = D.news; entry.newsWhat = D.news === 'yes' ? String(D.newsWhat || '').trim() : '';
       post.disabled = true;
-      memberPost({ action:'journal-add', entry:entry }).then(function(){ JR.satOk = false; toast('Entry posted. It counts on the leaderboard once an admin approves it.'); JR.draft = { files:[] }; JR.view = 'cal'; JR.month = entry.date.slice(0,7); JR.day = entry.date; return loadMe(); })
+      var editing = JR.editId;
+      memberPost(editing ? { action:'journal-edit', id:editing, entry:entry } : { action:'journal-add', entry:entry }).then(function(r){ JR.satOk = false; JR.editId = null;
+        toast(editing ? (r && r.entry && r.entry.reopened ? 'Saved. Because the result, account, date or rules answer changed, it\'s back in review.' : 'Saved.') : 'Entry posted. It counts on the leaderboard once an admin approves it.'); JR.draft = { files:[] }; JR.view = 'cal'; JR.month = entry.date.slice(0,7); JR.day = entry.date; return loadMe(); })
         .then(function(){ drawJournal(host); })
         .catch(function(e){ post.disabled = false; var m = e && e.message; toast(m === 'none_exists' ? 'You already logged a no-trade day for that date.' : m === 'need_files' ? 'Add at least one screenshot.' : m === 'missing' ? 'Some fields are missing.' : 'Couldn\'t post it: ' + m); });
     });
@@ -3111,6 +3197,196 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var dm = el('datalist'); dm.id = 'jr-models'; [].forEach(function(x){ var o = el('option'); o.value = x; dm.appendChild(o); }); document.body.appendChild(dm); }
   }
 
+
+
+  /* ---------- CSV import (Tradovate, NinjaTrader, TopstepX / ProjectX, Rithmic, TradingView and most others) ---------- */
+  function parseCSV(text){
+    var rows = [], row = [], f = '', q = false, i = 0, c, sep = ',';
+    var first = text.split(/\r?\n/)[0] || ''; if ((first.match(/;/g) || []).length > (first.match(/,/g) || []).length) sep = ';'; else if ((first.match(/\t/g) || []).length > (first.match(/,/g) || []).length) sep = '\t';
+    text = text.replace(/^﻿/, '');
+    for (; i < text.length; i++){ c = text[i];
+      if (q){ if (c === '"'){ if (text[i + 1] === '"'){ f += '"'; i++; } else q = false; } else f += c; continue; }
+      if (c === '"') q = true; else if (c === sep){ row.push(f); f = ''; } else if (c === '\n' || c === '\r'){ if (c === '\r' && text[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; } else f += c; }
+    if (f !== '' || row.length){ row.push(f); rows.push(row); }
+    return rows.filter(function(r){ return r.some(function(x){ return String(x).trim() !== ''; }); });
+  }
+  // which column holds what: guessed from the header names, fixable by the member
+  var CSV_FIELDS = [
+    ['entryTime','Entry date / time',[/^(entry ?time|entered ?at|open(ed)? ?(time|at)|bought ?timestamp|buy ?time|open date|entry date|time ?opened|date ?time|fill ?time|timestamp|date)$/]],
+    ['exitTime','Exit date / time',[/^(exit ?time|exited ?at|close(d)? ?(time|at)|sold ?timestamp|sell ?time|close date|exit date|time ?closed)$/]],
+    ['symbol','Instrument',[/^(symbol|instrument|contract ?name|contract|market|ticker|product)$/]],
+    ['side','Long / short',[/^(side|direction|type|market ?pos\.?|position|b\/s|buy\/sell|action)$/]],
+    ['qty','Contracts',[/^(qty|quantity|size|contracts|lots|volume|filled ?qty)$/]],
+    ['entryPrice','Entry price',[/^(entry ?price|open ?price|avg ?entry|buy ?price|price ?in|fill ?price|avg ?price)$/]],
+    ['exitPrice','Exit price',[/^(exit ?price|close ?price|avg ?exit|sell ?price|price ?out)$/]],
+    ['pnl','P&L ($)',[/^(pnl|p&l|p\/l|net ?p&l|net ?pnl|profit|realized ?pnl|realized ?p&l|gross ?p&l|net ?profit|profit ?\/ ?loss|pl)$/]],
+    ['fees','Fees / commission',[/^(fees|commission|commissions|comm|fee)$/]],
+    ['account','Account',[/^(account|account ?name|acct)$/]]
+  ];
+  function csvGuess(header){
+    var m = {}, norm = header.map(function(h){ return String(h).trim().toLowerCase().replace(/[_\-]+/g, ' ').replace(/\s+/g, ' '); });
+    CSV_FIELDS.forEach(function(f){ for (var i = 0; i < norm.length; i++){ if (f[2].some(function(re){ return re.test(norm[i]); }) && Object.keys(m).every(function(k){ return m[k] !== i; })){ m[f[0]] = i; break; } } });
+    // Tradovate: buy + sell timestamps/prices; whichever came first is the entry
+    var bt = norm.indexOf('boughttimestamp') >= 0 ? norm.indexOf('boughttimestamp') : norm.indexOf('bought timestamp'), stt = norm.indexOf('soldtimestamp') >= 0 ? norm.indexOf('soldtimestamp') : norm.indexOf('sold timestamp');
+    if (bt >= 0 && stt >= 0){ m.tvBuyT = bt; m.tvSellT = stt; m.tvBuyP = norm.indexOf('buyprice') >= 0 ? norm.indexOf('buyprice') : norm.indexOf('buy price'); m.tvSellP = norm.indexOf('sellprice') >= 0 ? norm.indexOf('sellprice') : norm.indexOf('sell price'); }
+    return m;
+  }
+  function csvNum(v){ if (v === undefined || v === null) return NaN; var t = String(v).trim().replace(/[$€£\s]/g, ''); if (!t) return NaN; var neg = /^\(.*\)$/.test(t) || /^-/.test(t);
+    t = t.replace(/[()$€£,\s]/g, '').replace(/^-/, ''); var n = parseFloat(t); return isNaN(n) ? NaN : (neg ? -n : n); }
+  function csvDate(v){
+    var t = String(v || '').trim(); if (!t) return null; var m;
+    if ((m = /^(\d{4})-(\d{1,2})-(\d{1,2})[ T](\d{1,2}):(\d{2})/.exec(t))) return { date: m[1] + '-' + m[2].padStart(2,'0') + '-' + m[3].padStart(2,'0'), time: m[4].padStart(2,'0') + ':' + m[5], iso: /Z|[+-]\d{2}:?\d{2}$/.test(t) ? t : null };
+    if ((m = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})[ ,]+(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?/i.exec(t))){ var h = +m[4]; if (m[6]){ if (/pm/i.test(m[6]) && h < 12) h += 12; if (/am/i.test(m[6]) && h === 12) h = 0; }
+      var y = m[3].length === 2 ? '20' + m[3] : m[3]; return { date: y + '-' + m[1].padStart(2,'0') + '-' + m[2].padStart(2,'0'), time: String(h).padStart(2,'0') + ':' + m[5] }; }
+    if ((m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t))) return { date: t, time:'' };
+    var d = new Date(t); if (!isNaN(d)) return { date: ymd(d), time: String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') };
+    return null;
+  }
+  // an ISO time with a zone (e.g. ProjectX "2026-11-06T14:35:12+00:00") becomes the member's local time
+  function csvLocal(p){ if (!p || !p.iso) return p; var d = new Date(p.iso); return isNaN(d) ? p : { date: ymd(d), time: String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') }; }
+  function csvRows(rows, m, opt){
+    var out = [];
+    rows.forEach(function(r){
+      var g = function(k){ return m[k] === undefined || m[k] < 0 ? '' : r[m[k]]; };
+      var en, ex, dir = '', pE, pX;
+      if (m.tvBuyT !== undefined){ var bt = csvLocal(csvDate(r[m.tvBuyT])), st = csvLocal(csvDate(r[m.tvSellT])); if (!bt || !st) return;
+        var buyFirst = (bt.date + bt.time) <= (st.date + st.time); en = buyFirst ? bt : st; ex = buyFirst ? st : bt; dir = buyFirst ? 'long' : 'short';
+        pE = csvNum(r[buyFirst ? m.tvBuyP : m.tvSellP]); pX = csvNum(r[buyFirst ? m.tvSellP : m.tvBuyP]); }
+      else { en = csvLocal(csvDate(g('entryTime'))); ex = csvLocal(csvDate(g('exitTime'))); pE = csvNum(g('entryPrice')); pX = csvNum(g('exitPrice'));
+        var sd = String(g('side')).toLowerCase(); dir = /long|buy|^b$|^0$/.test(sd) ? 'long' : /short|sell|^s$|^1$/.test(sd) ? 'short' : ''; }
+      if (!en) return;
+      var pnl = csvNum(g('pnl')), fees = csvNum(g('fees'));
+      if (isNaN(pnl)) return;
+      if (opt.net && !isNaN(fees)) pnl = pnl - Math.abs(fees);
+      pnl = Math.round(pnl * 100) / 100;
+      var q = Math.abs(csvNum(g('qty')));
+      var e = { kind:'trade', date: en.date, time: en.time, exitTime: ex ? ex.time : '', pair: String(g('symbol') || '').trim().slice(0, 40), account: opt.account,
+        outcome: pnl > 0 ? 'tp' : pnl < 0 ? 'sl' : 'be', pnl: pnl, followed: opt.followed, session: '', news: '', overview: '', files: [], tz: (function(){ try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e2) { return ''; } })() };
+      if (q > 0) e.contracts = q; if (dir) e.dir = dir; if (!isNaN(pE)) e.pEntry = pE; if (!isNaN(pX)) e.pExit = pX;
+      out.push(e);
+    });
+    return out;
+  }
+  var CSVI = { rows:null, header:null, map:null, name:'', account:'', followed:true, net:true };
+  function csvImportView(host){
+    var box = el('section','jr-form csv view-in'); box.appendChild(el('h3',null,'Import trades from a CSV'));
+    box.appendChild(el('p','adm-note','Export your trades from your platform (Tradovate: Performance → Export CSV · NinjaTrader: Trade Performance → Trades → Export · TopstepX / ProjectX: Trades → Export · others: any trade-history CSV), then pick the file here. Each completed trade becomes a journal entry you can add notes and screenshots to later. Trades already imported are skipped.'));
+    var pick = el('label','btn-s pri up-file','Choose CSV file'), fi = el('input'); fi.type = 'file'; fi.accept = '.csv,text/csv,.txt'; pick.appendChild(fi); box.appendChild(pick);
+    var body = el('div','csv-b'); box.appendChild(body);
+    fi.addEventListener('change', function(){ var f = fi.files && fi.files[0]; fi.value = ''; if (!f) return;
+      if (f.size > 5 * 1024 * 1024){ toast('That file is over 5 MB. Export a shorter date range.'); return; }
+      f.text().then(function(t){ var rows = parseCSV(t); if (rows.length < 2){ toast('That file has no trade rows.'); return; }
+        CSVI.header = rows[0]; CSVI.rows = rows.slice(1); CSVI.map = csvGuess(CSVI.header); CSVI.name = f.name; draw(); }).catch(function(){ toast('Couldn\'t read that file.'); }); });
+    function draw(){
+      body.textContent = ''; if (!CSVI.rows) return;
+      body.appendChild(el('p',null, CSVI.name + ' · ' + CSVI.rows.length + (CSVI.rows.length === 1 ? ' row' : ' rows')));
+      if (CSVI.map.tvBuyT !== undefined) body.appendChild(el('p','bk-ok','✓ Looks like a Tradovate export: direction, entry and exit come from the buy and sell columns.'));
+      else { var mg = el('div','csv-map'); mg.appendChild(el('b',null,'Columns (fix any that are wrong)'));
+        CSV_FIELDS.forEach(function(f){ var row = el('label','csv-mr'); row.appendChild(el('span',null,f[1]));
+          var s0 = el('select'), o0 = el('option',null,'— not in this file —'); o0.value = '-1'; s0.appendChild(o0);
+          CSVI.header.forEach(function(h, i){ var o = el('option',null, h || ('Column ' + (i + 1))); o.value = String(i); s0.appendChild(o); });
+          s0.value = CSVI.map[f[0]] === undefined ? '-1' : String(CSVI.map[f[0]]); s0.addEventListener('change', function(){ CSVI.map[f[0]] = +s0.value; draw(); });
+          row.appendChild(s0); mg.appendChild(row); });
+        body.appendChild(mg); }
+      var opts = el('div','csv-opts');
+      var acc = el('select'); ['','Funded','Evaluation','Personal / live','Paper','Demo'].forEach(function(a){ var o = el('option',null, a || 'Account type for these trades…'); o.value = a; acc.appendChild(o); });
+      acc.value = CSVI.account; acc.addEventListener('change', function(){ CSVI.account = acc.value; draw(); }); opts.appendChild(fld('Account type', acc));
+      opts.appendChild(fld('Followed your rules on these?', seg([[true,'Yes'],[false,'No']], CSVI.followed, function(v){ CSVI.followed = v; draw(); })));
+      if (CSVI.map.fees !== undefined && CSVI.map.fees >= 0){ var nl = el('label','tick'), nc = el('input'); nc.type = 'checkbox'; nc.checked = CSVI.net; nl.appendChild(nc); nl.appendChild(document.createTextNode(' Take fees off the P&L'));
+        nc.addEventListener('change', function(){ CSVI.net = nc.checked; draw(); }); opts.appendChild(nl); }
+      body.appendChild(opts);
+      var trades = csvRows(CSVI.rows, CSVI.map, { account: CSVI.account, followed: CSVI.followed, net: CSVI.net });
+      var skipped = CSVI.rows.length - trades.length;
+      body.appendChild(el('h4',null, trades.length + (trades.length === 1 ? ' trade' : ' trades') + ' found' + (skipped ? ' (' + skipped + ' rows skipped: no date or P&L)' : '')));
+      if (!trades.length){ body.appendChild(el('p','bk-warn','No trades could be read. Pick the entry time and P&L columns above.')); return; }
+      var tw = el('div','tbl-wrap'), t = el('table','st-t'), hr = el('tr'); ['Date','Time','Instrument','Side','Qty','Entry','Exit','P&L','Result'].forEach(function(h){ hr.appendChild(el('th',null,h)); }); t.appendChild(hr);
+      trades.slice(0, 12).forEach(function(e){ var r = el('tr'); [e.date, e.time + (e.exitTime ? '–' + e.exitTime : ''), e.pair, e.dir ? cap(e.dir) : '', e.contracts || '', isNaN(e.pEntry) || e.pEntry === undefined ? '' : e.pEntry, e.pExit === undefined ? '' : e.pExit].forEach(function(v){ r.appendChild(el('td',null,String(v))); });
+        r.appendChild(el('td', e.pnl > 0 ? 'win' : e.pnl < 0 ? 'loss' : '', money(e.pnl))); r.appendChild(el('td',null, OUT[e.outcome] || '')); t.appendChild(r); });
+      tw.appendChild(t); body.appendChild(tw); if (trades.length > 12) body.appendChild(el('p','adm-note','…and ' + (trades.length - 12) + ' more.'));
+      var go = el('button','btn-s pri','Import ' + trades.length + (trades.length === 1 ? ' trade' : ' trades')); go.type = 'button';
+      go.addEventListener('click', function(){
+        if (!CSVI.account){ toast('Pick the account type for these trades.'); acc.focus(); return; }
+        if (trades.length > 200){ toast('Up to 200 trades at a time. Export a shorter date range.'); return; }
+        go.disabled = true; go.textContent = 'Importing…';
+        memberPost({ action:'journal-import', entries: trades }).then(function(r){ r = r || {};
+          toast('Imported ' + (r.added || 0) + (r.added === 1 ? ' trade' : ' trades') + (r.dupes ? ' · ' + r.dupes + ' already in your journal' : '') + (r.bad ? ' · ' + r.bad + ' couldn\'t be read' : '') + '. Add notes and screenshots to them anytime.');
+          CSVI.rows = null; return loadMe(); }).then(function(){ JR.view = 'list'; drawJournal(host); })
+          .catch(function(e){ go.disabled = false; go.textContent = 'Import'; toast('Import failed: ' + ((e && e.message) || e)); });
+      });
+      body.appendChild(go);
+    }
+    draw(); return box;
+  }
+  /* ---------- journal: editing, tags, day notes, entry list ---------- */
+  function allTags(ents){ var c = {}; (ents || []).forEach(function(e){ (e.tags || []).forEach(function(t){ c[t] = (c[t] || 0) + 1; }); }); return Object.keys(c).sort(function(a, b){ return c[b] - c[a]; }); }
+  function editEntry(e){
+    var d = JSON.parse(JSON.stringify(e)); d.files = (e.files || []).slice(); d.tags = (e.tags || []).slice();
+    if (e.noPnl) d.pnl = ''; ['status','points','worth','awarded','reviewNote','reviewedAt','reviewedBy','createdAt','editedAt','void','reopened','importKey','src','noPnl'].forEach(function(k){ delete d[k]; });
+    JR.editId = e.id; JR.kind = e.kind === 'none' ? 'none' : 'trade'; JR.draft = d; JR.view = 'new';
+    if ((location.hash || '') !== '#journal') location.hash = '#journal'; else showView();
+    window.scrollTo(0, 0);
+  }
+  var MOODS = [['great','😄 Great'],['good','🙂 Good'],['ok','😐 OK'],['rough','😕 Rough'],['bad','😣 Bad']];
+  function dayNoteCard(day, host){
+    var n = (ME.dayNotes || {})[day] || {}, box = el('section','day-note'), D2 = { plan:n.plan || '', recap:n.recap || '', mood:n.mood || '' };
+    box.appendChild(el('h5',null,'Day notes'));
+    var pl = inputEl('textarea', D2.plan, 'Plan before the session: bias, key levels, news, what you\'re waiting for'); pl.rows = 3; pl.addEventListener('input', function(){ D2.plan = pl.value; });
+    var rc = inputEl('textarea', D2.recap, 'Recap after the session: what happened, what you did well, what to fix tomorrow'); rc.rows = 3; rc.addEventListener('input', function(){ D2.recap = rc.value; });
+    box.appendChild(fld('Plan', pl)); box.appendChild(fld('Recap', rc));
+    var md = el('div','dn-mood'); md.appendChild(el('span','adm-note','How did the day feel?'));
+    md.appendChild(seg(MOODS, D2.mood, function(v){ D2.mood = D2.mood === v ? '' : v; Array.prototype.forEach.call(md.querySelectorAll('.seg-b'), function(b, i){ b.classList.toggle('on', MOODS[i][0] === D2.mood); }); }));
+    box.appendChild(md);
+    var sv = el('button','btn-s pri','Save day notes'); sv.type = 'button';
+    sv.addEventListener('click', function(){ sv.disabled = true; memberPost({ action:'daynote-save', date:day, plan:D2.plan, recap:D2.recap, mood:D2.mood })
+      .then(function(r){ ME.dayNotes = ME.dayNotes || {}; if (D2.plan || D2.recap || D2.mood) ME.dayNotes[day] = (r && r.note) || D2; else delete ME.dayNotes[day]; toast('Day notes saved.'); })
+      .catch(function(){ toast('Couldn\'t save. Try again.'); }).finally(function(){ sv.disabled = false; }); });
+    box.appendChild(sv);
+    if (n.updatedAt) box.appendChild(el('small','adm-note','Saved ' + ago(n.updatedAt)));
+    return box;
+  }
+  var JL = { q:'', out:'all', acct:'', tag:'', model:'', n:30 };
+  function entriesList(ents, host){
+    var wrap = el('section','jl view-in'), bar = el('div','jl-bar');
+    var q = el('input'); q.type = 'search'; q.placeholder = 'Search notes, pairs, tags…'; q.value = JL.q;
+    var deb = 0; q.addEventListener('input', function(){ clearTimeout(deb); deb = setTimeout(function(){ JL.q = q.value; JL.n = 30; draw(); }, 200); });
+    bar.appendChild(q);
+    bar.appendChild(seg([['all','All'],['tp','TP'],['sl','SL'],['be','BE'],['none','No-trade']], JL.out, function(v){ JL.out = v; JL.n = 30; draw(); }));
+    function pickSel(label, key, vals){ var s0 = el('select'); s0.setAttribute('aria-label', label); var o0 = el('option',null,label); o0.value = ''; s0.appendChild(o0);
+      vals.forEach(function(v){ var o = el('option',null,v); o.value = v; s0.appendChild(o); }); s0.value = JL[key]; s0.addEventListener('change', function(){ JL[key] = s0.value; JL.n = 30; draw(); }); return s0; }
+    var accts = []; ents.forEach(function(e){ if (e.account && accts.indexOf(e.account) < 0) accts.push(e.account); });
+    var models = []; ents.forEach(function(e){ if (e.model && models.indexOf(e.model) < 0) models.push(e.model); });
+    bar.appendChild(pickSel('Any account','acct',accts)); bar.appendChild(pickSel('Any model','model',models)); bar.appendChild(pickSel('Any tag','tag',allTags(ents)));
+    wrap.appendChild(bar);
+    var sum = el('p','jl-sum'), list = el('div','jl-list'), more = el('button','btn-s','Show more'); more.type = 'button';
+    more.addEventListener('click', function(){ JL.n += 30; draw(); });
+    wrap.appendChild(sum); wrap.appendChild(list); wrap.appendChild(more);
+    function draw(){
+      var qq = JL.q.trim().toLowerCase();
+      var rows = ents.filter(function(e){
+        if (JL.out === 'none' ? e.kind !== 'none' : JL.out !== 'all' && (e.kind !== 'trade' || e.outcome !== JL.out)) return false;
+        if (JL.acct && e.account !== JL.acct) return false; if (JL.model && e.model !== JL.model) return false; if (JL.tag && (e.tags || []).indexOf(JL.tag) < 0) return false;
+        if (qq && [e.pair, e.overview, e.model, e.session, e.account, (e.tags || []).join(' '), e.newsWhat].join(' ').toLowerCase().indexOf(qq) < 0) return false;
+        return true; }).sort(function(a, b){ return String(b.date + (b.time || '')).localeCompare(String(a.date + (a.time || ''))); });
+      var tr = rows.filter(function(e){ return e.kind === 'trade'; }), pnl = tr.reduce(function(t, e){ return t + (+e.pnl || 0); }, 0), w = tr.filter(function(e){ return e.outcome === 'tp'; }).length;
+      sum.textContent = rows.length + (rows.length === 1 ? ' entry' : ' entries') + (tr.length ? ' · ' + tr.length + ' trades · ' + Math.round(w / tr.length * 100) + '% TP · ' + money(pnl) : '');
+      list.textContent = '';
+      if (!rows.length) list.appendChild(el('p','pf-none','Nothing matches. Try clearing a filter.'));
+      rows.slice(0, JL.n).forEach(function(e){
+        var r = el('button','jl-row'); r.type = 'button';
+        r.appendChild(el('span','jl-d', shortDay(e.date) + (e.time ? ' · ' + e.time : '')));
+        var mid = el('span','jl-m'); mid.appendChild(el('b',null, e.kind === 'trade' ? (e.pair || 'Trade') : 'No-trade day'));
+        if (e.kind === 'trade') mid.appendChild(el('span','je-out o-' + e.outcome, OUT[e.outcome] || ''));
+        if (e.model) mid.appendChild(el('span','jl-x', e.model)); (e.tags || []).slice(0, 3).forEach(function(t){ mid.appendChild(el('span','jr-tag sm','#' + t)); });
+        r.appendChild(mid);
+        r.appendChild(el('span','jl-p ' + (e.kind !== 'trade' || e.noPnl ? '' : +e.pnl > 0 ? 'win' : +e.pnl < 0 ? 'loss' : ''), e.kind !== 'trade' || e.noPnl ? '—' : money(+e.pnl || 0)));
+        r.appendChild(el('span','jl-s st-' + entryStatus(e), entryStatus(e) === 'approved' ? 'Approved' : entryStatus(e) === 'denied' ? 'Not counted' : 'Waiting'));
+        r.addEventListener('click', function(){ JR.view = 'cal'; JR.month = e.date.slice(0, 7); JR.day = e.date; drawJournal(host); window.scrollTo(0, 0); });
+        list.appendChild(r);
+      });
+      more.hidden = rows.length <= JL.n;
+    }
+    draw(); return wrap;
+  }
   function ymd(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
   function shortMoney(n){ n = +n || 0; var a = Math.abs(n), t = a >= 10000 ? (a/1000).toFixed(a >= 100000 ? 0 : 1) + 'k' : a.toLocaleString('en-US', { maximumFractionDigits: 0 }); return (n < 0 ? '−$' : n > 0 ? '+$' : '$') + t; }
   var STATUS_CHIP = { pending:['Pending review',' wait'], approved:['Approved',' ok'], denied:['Denied',' warn'] };
@@ -3120,19 +3396,23 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var row = el('div','je-row'), mn = el('div','je-main'), t = el('div','je-t');
     if (trade){ t.appendChild(el('b',null, e.pair)); t.appendChild(el('span','je-out o-' + e.outcome, OUT[e.outcome] || '')); if (e.model) t.appendChild(el('span','je-tag', e.model)); }
     else t.appendChild(el('b',null,'No trades'));
+    if (e.src === 'csv') t.appendChild(el('span','je-tag dim','Imported'));
+    if (e.editedAt) t.appendChild(el('span','je-tag dim','Edited'));
     mn.appendChild(t);
-    mn.appendChild(el('div','je-meta', [e.time, e.session, trade ? e.account : '', trade ? e.contracts + (+e.contracts === 1 ? ' contract' : ' contracts') : '', e.news === 'yes' ? 'News: ' + (e.newsWhat || 'yes') : ''].filter(Boolean).join(' · ')));
+    if (e.tags && e.tags.length){ var tw2 = el('div','je-tags'); e.tags.forEach(function(x){ tw2.appendChild(el('span','jr-tag sm','#' + x)); }); mn.appendChild(tw2); }
+    mn.appendChild(el('div','je-meta', [e.time, e.session, trade ? e.account : '', trade && e.contracts ? e.contracts + (+e.contracts === 1 ? ' contract' : ' contracts') : '', e.news === 'yes' ? 'News: ' + (e.newsWhat || 'yes') : ''].filter(Boolean).join(' · ')));
     if (trade){ var rr = rOf(e), td2 = [cap(e.dir), e.entryType, e.ltf ? e.ltf + ' entry' : '', e.htf || e.bias ? 'Bias ' + [e.htf, e.bias].filter(Boolean).join(' ') : '', isNum(rr) ? fmtRm(rr) : '', e.grade ? 'Grade ' + e.grade : '', e.emotion,
         e.swept && e.swept.length ? 'Swept: ' + e.swept.join(', ') : '', e.confl && e.confl.length ? e.confl.join(', ') : '', e.mistakes && e.mistakes.length ? 'Mistakes: ' + e.mistakes.join(', ') : ''].filter(Boolean);
       if (td2.length) mn.appendChild(el('div','je-meta je-td', td2.join(' · '))); }
     row.appendChild(mn);
-    if (trade) row.appendChild(el('div','je-pnl', (pnl > 0 ? '+' : '') + money(pnl)));
+    if (trade) row.appendChild(el('div','je-pnl', e.noPnl ? '—' : (pnl > 0 ? '+' : '') + money(pnl)));
     card.appendChild(row);
     if (e.overview) card.appendChild(el('p','je-ov', e.overview));
     if (e.files && e.files.length){ var sh = fileChips(e.files); sh.classList.add('je-shots'); card.appendChild(sh); }
     var ft = el('div','je-foot');
     ft.appendChild(el('span','je-rule' + (e.followed ? ' ok' : ' no'), e.followed ? '✓ Rules followed' : '✕ Rules broken'));
     ft.appendChild(el('span','je-st st-' + stt, stt === 'approved' ? 'Approved · ' + entryPoints(e) + (entryPoints(e) === 1 ? ' pt' : ' pts') : stt === 'pending' ? 'Waiting for review · ' + entryWorth(e) + (entryWorth(e) === 1 ? ' pt' : ' pts') : 'Not counted'));
+    if (onChange && !adminView()){ var ed = el('button','je-del je-edit','Edit'); ed.type = 'button'; ed.addEventListener('click', function(){ editEntry(e); }); ft.appendChild(ed); }
     if (onChange && stt !== 'approved' && Date.now() - Date.parse(e.createdAt) < 7 * 864e5){
       var del = el('button','je-del','Remove'); del.type = 'button';
       del.addEventListener('click', function(){ if (!confirmInline(del, 'Remove?')) return; del.disabled = true;
@@ -3177,15 +3457,16 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         var pnl = dayPnl(d), trades = es.filter(function(e){ return e.kind === 'trade'; }).length;
         var cls = 'cal-c' + (es.length ? (trades ? (pnl > 0 ? ' win' : pnl < 0 ? ' loss' : ' flat') : ' none') : '') + (d === tdy ? ' today' : '') + (JR.day === d ? ' sel' : '')
           + (es.some(function(e){ return entryStatus(e) === 'pending'; }) ? ' pend' : '');
-        var c = el(es.length ? 'button' : 'span', cls); if (es.length) c.type = 'button';
+        var open = es.length || d <= tdy || (ME.dayNotes && ME.dayNotes[d]);
+        var c = el(open ? 'button' : 'span', cls + (ME.dayNotes && ME.dayNotes[d] ? ' noted' : '')); if (open) c.type = 'button';
         c.style.setProperty('--i', dn);
         c.appendChild(el('span','cal-n', String(dn)));
         if (es.length){
           c.appendChild(el('b','cal-p', trades ? shortMoney(pnl) : 'No trade'));
           c.appendChild(el('span','cal-k', es.length + (es.length === 1 ? ' entry' : ' entries')));
           c.setAttribute('aria-label', d + ': ' + (trades ? money(pnl) : 'no trades') + ', ' + es.length + ' entries');
-          c.addEventListener('click', function(){ JR.day = JR.day === d ? null : d; drawJournal(host); });
         }
+        if (open) c.addEventListener('click', function(){ JR.day = JR.day === d ? null : d; drawJournal(host); });
         g.appendChild(c);
       })(dn);
     }
@@ -3193,13 +3474,15 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var leg = el('div','cal-leg'); [['win','Green day'],['loss','Red day'],['none','No-trade day'],['pend','Waiting for review']].forEach(function(x){ var s2 = el('span','lg ' + x[0]); s2.appendChild(el('i')); s2.appendChild(document.createTextNode(x[1])); leg.appendChild(s2); });
     wrap.appendChild(leg);
     // the chosen day
-    if (JR.day && byDay[JR.day]){
+    if (JR.day){
       var dd = el('div','cal-day view-in'), dh = el('div','cal-day-h');
       var dp = dayPnl(JR.day);
       dh.appendChild(el('h4',null, new Date(JR.day + 'T12:00:00').toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long' })));
-      dh.appendChild(el('span','cal-day-p ' + (dp > 0 ? 'win' : dp < 0 ? 'loss' : ''), money(dp)));
+      if (byDay[JR.day]) dh.appendChild(el('span','cal-day-p ' + (dp > 0 ? 'win' : dp < 0 ? 'loss' : ''), money(dp)));
       dd.appendChild(dh);
-      byDay[JR.day].forEach(function(e){ dd.appendChild(entryCard(e, function(){ drawJournal(host); })); });
+      if (!adminView()) dd.appendChild(dayNoteCard(JR.day, host));
+      (byDay[JR.day] || []).forEach(function(e){ dd.appendChild(entryCard(e, function(){ drawJournal(host); })); });
+      if (!byDay[JR.day]) dd.appendChild(el('p','adm-note','No entries on this day.'));
       wrap.appendChild(dd);
     } else if (!ents.length) wrap.appendChild(el('p','pf-none','No entries yet. Post one with “+ New entry” and it shows up on its day.'));
     else wrap.appendChild(el('p','cal-hint','Click a day to open its entries.'));
@@ -4215,7 +4498,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
           l.ok ? '✓ Last backup ' + fmtDay(l.at) + ' at ' + new Date(l.at).toLocaleTimeString([], { hour:'numeric', minute:'2-digit' }) + ' · ' + l.count + ' records · ' + Math.ceil((l.bytes || 0) / 1024) + ' KB, sent to your Discord backup channel.' :
           '⚠ The last automatic backup failed (' + fmtDay(l.at) + '): ' + (l.error || 'unknown error') + '. Download one by hand until it\'s fixed.'));
         var now = el('button','btn-s','Send a backup to Discord now'); now.type = 'button';
-        now.addEventListener('click', function(){ now.disabled = true; fetch('/api/admin/members?backup=now', { credentials:'same-origin' }).then(function(r){ return r.json(); })
+        now.addEventListener('click', function(){ now.disabled = true; fetch('/api/admin/members', { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ action:'backup-now' }) }).then(function(r){ return r.json(); })
           .then(function(x){ toast(x.ok ? 'Backup sent to your Discord backup channel.' : 'Didn\'t send: ' + (x.error || 'unknown error')); admRender(); }).catch(function(){ toast('Didn\'t send. Try again.'); }).finally(function(){ now.disabled = false; }); });
         st.appendChild(now);
       } else {
@@ -4263,6 +4546,29 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       });
     }
     wrap.appendChild(c3);
+    // 4. security alerts to the staff channel
+    var c4 = el('section','adm-card'); c4.appendChild(el('h3',null,'Security alerts'));
+    c4.appendChild(el('p','adm-note','When someone looks like they\'re trying to mess with the site, staff get pinged: dev tools opened, 5+ blocked actions in 10 minutes (right-click, save, view source, screenshot keys…), too many requests or uploads, too many sign-in attempts, a non-admin calling admin actions, or a request from another website. One alert per person per kind every 30 minutes.'));
+    var ast = el('div','bk-st','Checking…'); c4.appendChild(ast);
+    var al = el('div','al-list'); c4.appendChild(al); wrap.appendChild(c4);
+    var AK = { flags:'Blocked actions', devtools:'Dev tools', 'rate-limit':'Too many requests', 'upload-limit':'Too many uploads', 'login-limit':'Sign-in attempts', 'admin-probe':'Admin probe', 'bad-origin':'Other website', test:'Test' };
+    fetch('/api/admin/members?alerts=1', { credentials:'same-origin', cache:'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      ast.textContent = ''; if (!j){ ast.textContent = 'Couldn\'t check. Refresh to try again.'; return; }
+      if (j.webhook){ ast.appendChild(el('p','bk-ok','✓ Staff channel connected (DISCORD_STAFF_WEBHOOK).'));
+        var tb = el('button','btn-s','Send a test alert'); tb.type = 'button';
+        tb.addEventListener('click', function(){ tb.disabled = true; adminPost({ action:'staff-test' }).then(function(){ toast('Test alert sent. Check the staff channel.'); admRender(); }).catch(function(e){ tb.disabled = false; toast(admFail(e)); }); });
+        ast.appendChild(tb); }
+      else { ast.appendChild(el('p','bk-warn','Not connected yet: alerts are only listed here. To get them in Discord:'));
+        var ol = el('ol','bk-steps'); ['In Discord, open a staff-only channel → Edit Channel → Integrations → Webhooks → New Webhook → Copy Webhook URL.','In Vercel → your project → Settings → Environment Variables, add DISCORD_STAFF_WEBHOOK with that URL.','Deployments → ⋯ on the latest → Redeploy. Then come back here and send a test alert.']
+          .forEach(function(t){ ol.appendChild(el('li',null,t)); }); ast.appendChild(ol); }
+      var xs = j.alerts || [];
+      if (!xs.length){ al.appendChild(el('p','adm-note','No alerts yet.')); return; }
+      al.appendChild(el('h4',null,'Recent alerts'));
+      xs.forEach(function(a){ var r = el('div','al-r');
+        r.appendChild(el('span','chip' + (a.kind === 'test' ? '' : ' warn'), AK[a.kind] || a.kind));
+        var tx = el('div'); tx.appendChild(el('b',null, a.name || a.ip || 'Unknown')); tx.appendChild(el('span','adm-note', fmtDay(a.at) + ' ' + new Date(a.at).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) + (a.ip ? ' · ' + a.ip : '') + (a.detail ? ' · ' + a.detail : '')));
+        r.appendChild(tx); al.appendChild(r); });
+    });
     return wrap;
   }
   /* ---------- admin panel ---------- */
@@ -4322,6 +4628,48 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     return blobLib;
   }
   // Upload a file from the browser straight to Vercel Blob. Resolves to { url, name, type, size }.
+
+  /* ---------- paste or drop screenshots (TradingView "Copy image", or a TradingView snapshot link) ---------- */
+  var PASTE_ZONES = [];
+  function pasteHint(){
+    var mac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+    return el('small','paste-hint', '…or paste instead of saving: in TradingView press ' + (mac ? '⇧⌘S' : 'Ctrl+Shift+S') + ' (copy chart image) or ' + (mac ? '⌥S' : 'Alt+S') + ' (copy link), then ' + (mac ? '⌘V' : 'Ctrl+V') + ' here. Any copied screenshot works, and you can drag files in too.');
+  }
+  function stampName(prefix, ext){ var d = new Date(), p = function(n){ return String(n).padStart(2,'0'); };
+    return prefix + '-' + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) + '.' + ext; }
+  function pasteDrop(zone, add){
+    zone.classList.add('pz');
+    var isFiles = function(e){ return e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') >= 0; };
+    zone.addEventListener('dragover', function(e){ if (!isFiles(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; zone.classList.add('drag'); });
+    zone.addEventListener('dragleave', function(e){ if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag'); });
+    zone.addEventListener('drop', function(e){ if (!isFiles(e)) return; e.preventDefault(); zone.classList.remove('drag'); add(Array.prototype.slice.call(e.dataTransfer.files || [])); });
+    PASTE_ZONES.push({ zone: zone, add: add });
+  }
+  function tvSnapshot(id){
+    return fetch('/api/upload?tv=' + encodeURIComponent(id), { credentials:'same-origin' }).then(function(r){
+      if (!r.ok) return r.json().catch(function(){ return {}; }).then(function(j){ throw new Error(j.error || ('error ' + r.status)); });
+      return r.blob(); }).then(function(b){ return new File([b], 'tradingview-' + id + '.png', { type:'image/png' }); });
+  }
+  document.addEventListener('paste', function(e){
+    PASTE_ZONES = PASTE_ZONES.filter(function(z){ return z.zone.isConnected; });
+    var live = PASTE_ZONES.filter(function(z){ return z.zone.offsetParent !== null; });
+    if (!live.length || !e.clipboardData) return;
+    var z = live[live.length - 1], cd = e.clipboardData, files = [];
+    Array.prototype.forEach.call(cd.items || [], function(it){ if (it.kind === 'file'){ var f = it.getAsFile(); if (f && (/^image\//.test(f.type) || f.type === 'application/pdf')) files.push(f); } });
+    if (files.length){
+      e.preventDefault();
+      z.add(files.map(function(f, i){ var ext = (f.type.split('/')[1] || 'png').replace('jpeg','jpg');
+        return (!f.name || /^image\.\w+$/i.test(f.name)) ? new File([f], stampName('pasted' + (i ? '-' + (i + 1) : ''), ext), { type: f.type }) : f; }));
+      return;
+    }
+    var txt = cd.getData('text/plain') || '', m = /tradingview\.com\/x\/([A-Za-z0-9]{4,16})/i.exec(txt);
+    if (!m) return;
+    var t = e.target, inText = t && (/^(INPUT|TEXTAREA)$/.test(t.tagName) || t.isContentEditable);
+    if (!inText) e.preventDefault();   // in a text box the link is pasted as text too
+    if (DEMO_MODE){ toast('TradingView links work on the live site.'); return; }
+    toast('Getting the TradingView snapshot…');
+    tvSnapshot(m[1]).then(function(f){ z.add([f]); }).catch(function(err){ toast('Couldn\'t get that TradingView snapshot (' + ((err && err.message) || err) + '). Use "Copy image" instead.'); });
+  });
   function uploadFile(f, pathname, onProgress){
     UPL++; var done = function(){ UPL = Math.max(0, UPL - 1); };
     var pr = uploadFile0(f, pathname, onProgress); pr.then(done, done); return pr;
@@ -4890,7 +5238,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     }, function(t, line){ host.textContent = ''; emptyState(host, t, line); });
     return wrap;
   }
-  var JRV = { status:'pending', q:'', mode:'day', day:null, basis:'up' };
+  var JRV = { status:'pending', q:'', mode:'recap', day:null, basis:'up', rday:null };
   function localDay(iso){ var d = new Date(iso); return isNaN(d) ? '' : ymd(d); }
   function dayLabel(d){ var t = new Date(d + 'T12:00:00'), today = todayYmd(), y = new Date(); y.setDate(y.getDate() - 1);
     return d === today ? 'Today' : d === ymd(y) ? 'Yesterday' : t.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' }); }
@@ -4903,9 +5251,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var all = []; rows.forEach(function(m){ (m.entries || []).forEach(function(e){ all.push({ m:m, e:e, st: entryStatus(e) }); }); });
       var cnt = { pending:0, approved:0, denied:0 }; all.forEach(function(x){ cnt[x.st]++; });
       var top = el('div','rv-bar');
-      top.appendChild(seg([['day','By day'],['list','All entries'],['stats','Stats']], JRV.mode, function(v){ JRV.mode = v; admRender(); }));
+      top.appendChild(seg([['recap','Daily recap'],['day','By day'],['list','All entries'],['stats','Stats']], JRV.mode, function(v){ JRV.mode = v; admRender(); }));
       host.appendChild(top);
       if (JRV.mode === 'day') return drawByDay();
+      if (JRV.mode === 'recap') return host.appendChild(dailyRecap(rows, all));
       if (JRV.mode === 'stats'){
         JRV.per = JRV.per || '30';
         var sb = el('div','rv-bar');
@@ -4979,6 +5328,98 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       }
     }, function(t, line){ host.textContent = ''; emptyState(host, t, line); });
     return wrap;
+  }
+
+  /* ---------- daily recap: one trading day across every student, built for the group call ---------- */
+  function dailyRecap(rows, all){
+    var box = el('section','dr view-in'), today = nyToday();
+    if (!JRV.rday) JRV.rday = (wday(today) === 0 || wday(today) === 6) ? prevWeekday(today) : today;
+    var D = JRV.rday;
+    var bar = el('div','rv-bar dr-bar');
+    var pv = el('button','btn-s','‹ Previous day'), nx = el('button','btn-s','Next day ›'), td = el('button','btn-s','Today'); pv.type = nx.type = td.type = 'button';
+    var step = function(n){ var d = addDays(D, n); while (wday(d) === 0 || wday(d) === 6) d = addDays(d, n); return d; };
+    pv.addEventListener('click', function(){ JRV.rday = step(-1); admRender(); });
+    nx.addEventListener('click', function(){ JRV.rday = step(1); admRender(); }); nx.disabled = D >= today;
+    td.addEventListener('click', function(){ JRV.rday = null; admRender(); });
+    var pick = inputEl('date', D); pick.max = today; pick.setAttribute('aria-label','Pick a day'); pick.addEventListener('change', function(){ if (pick.value){ JRV.rday = pick.value; admRender(); } });
+    bar.appendChild(pv); bar.appendChild(pick); bar.appendChild(nx); bar.appendChild(td); box.appendChild(bar);
+    // who's in it: everyone with a journal (students, not admins)
+    var people = rows.filter(function(m){ return m.journal && !m.isAdmin; });
+    var per = people.map(function(m){
+      var es = (m.entries || []).filter(function(e){ return e.date === D && entryStatus(e) !== 'denied'; })
+        .sort(function(a, b){ return String(a.time || '').localeCompare(String(b.time || '')); });
+      var note = (m.dayNotes || {})[D] || null;
+      var tr = es.filter(function(e){ return e.kind === 'trade'; });
+      return { m:m, es:es, note:note, tr:tr, pnl: tr.reduce(function(t, e){ return t + (+e.pnl || 0); }, 0) };
+    });
+    var did = per.filter(function(x){ return x.es.length || x.note; }), missing = per.filter(function(x){ return !x.es.length && !x.note; });
+    did.sort(function(a, b){ return (b.es.length ? 1 : 0) - (a.es.length ? 1 : 0) || String(a.m.displayName || a.m.username).localeCompare(String(b.m.displayName || b.m.username)); });
+    var allTr = [], allEs = []; did.forEach(function(x){ allTr = allTr.concat(x.tr); x.es.forEach(function(e){ allEs.push({ m:x.m, e:e, st: entryStatus(e) }); }); });
+    var c = { tp:0, sl:0, be:0 }; allTr.forEach(function(e){ if (c[e.outcome] !== undefined) c[e.outcome]++; });
+    var nt = did.filter(function(x){ return x.es.length && !x.tr.length; }).length;
+    var foll = allEs.length ? Math.round(allEs.filter(function(x){ return x.e.followed; }).length / allEs.length * 100) : null;
+    var net = allTr.reduce(function(t, e){ return t + (+e.pnl || 0); }, 0);
+    var head = el('div','jd-h'), ht = el('div');
+    ht.appendChild(el('h3',null, new Date(D + 'T12:00:00').toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' })));
+    ht.appendChild(el('span','adm-note','Grouped by trade date. Pick a day to go through on the recap call.'));
+    head.appendChild(ht);
+    var hb = el('div','dr-hb');
+    if (allEs.length){ var go = el('button','btn-s pri','▶ Walk through everyone'); go.type = 'button'; go.addEventListener('click', function(){ openWalk(allEs, 0); }); hb.appendChild(go); }
+    var cp = el('button','btn-s','Copy summary'); cp.type = 'button';
+    cp.addEventListener('click', function(){
+      var lines = ['**Daily recap · ' + new Date(D + 'T12:00:00').toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'short' }) + '**',
+        did.length + '/' + people.length + ' journaled · ' + c.tp + ' TP · ' + c.sl + ' SL · ' + c.be + ' BE · ' + nt + ' no-trade' + (allTr.length ? ' · net ' + money(net) : '') + (foll !== null ? ' · rules followed ' + foll + '%' : '')];
+      did.forEach(function(x){ lines.push('• ' + (x.m.displayName || x.m.username) + ': ' + (x.tr.length ? x.tr.map(function(e){ return (e.pair || 'trade') + ' ' + (OUT[e.outcome] || ''); }).join(', ') + (x.tr.some(function(e){ return !e.noPnl; }) ? ' (' + money(x.pnl) + ')' : '') : x.es.length ? 'no trade' : 'notes only')); });
+      if (missing.length) lines.push('Not journaled yet: ' + missing.map(function(x){ return x.m.displayName || x.m.username; }).join(', '));
+      var txt = lines.join('\n');
+      (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(function(){ toast('Summary copied. Paste it in Discord.'); }, function(){ window.prompt('Copy the summary:', txt); });
+    });
+    hb.appendChild(cp); head.appendChild(hb); box.appendChild(head);
+    var sm = el('div','jr-stats dr-sum');
+    [[did.length + '/' + people.length, 'Journaled'], [c.tp + ' · ' + c.sl + ' · ' + c.be, 'TP · SL · BE'], [String(nt), 'No-trade days'], [allTr.length ? money(net) : '—', 'Net P&L'], [foll === null ? '—' : foll + '%', 'Rules followed']]
+      .forEach(function(x){ var d = el('div'); d.appendChild(el('b',null,x[0])); d.appendChild(el('span',null,x[1])); sm.appendChild(d); });
+    box.appendChild(sm);
+    var list = el('div','dr-list'); box.appendChild(list);
+    if (!did.length) emptyState(list, 'Nobody has journaled this day yet', people.length ? 'Pick another day, or check back after the session.' : 'Students show up here once they create their journal.');
+    did.forEach(function(x){
+      var card = el('article','dr-p'), hd = el('div','dr-ph'), av = el('span','av'); setAvatar(av, x.m); hd.appendChild(av);
+      var nm = el('div'); nm.appendChild(el('b',null, x.m.displayName || x.m.username));
+      var sub = x.tr.length ? x.tr.length + (x.tr.length === 1 ? ' trade' : ' trades') + (x.tr.some(function(e){ return !e.noPnl; }) ? ' · ' + money(x.pnl) : '') : x.es.length ? 'No-trade day' : 'Day notes only';
+      nm.appendChild(el('span','adm-note', sub)); hd.appendChild(nm);
+      if (x.note && x.note.mood){ var mo = MOODS.filter(function(z){ return z[0] === x.note.mood; })[0]; if (mo) hd.appendChild(el('span','chip dr-mood', mo[1])); }
+      card.appendChild(hd);
+      if (x.note && (x.note.plan || x.note.recap)){ var dn = el('div','dr-note');
+        if (x.note.plan){ dn.appendChild(el('h6',null,'Plan')); dn.appendChild(el('p',null,x.note.plan)); }
+        if (x.note.recap){ dn.appendChild(el('h6',null,'Recap')); dn.appendChild(el('p',null,x.note.recap)); }
+        card.appendChild(dn); }
+      x.es.forEach(function(e){
+        var r = el('button','dr-e'); r.type = 'button';
+        var top = el('div','dr-et');
+        top.appendChild(el('span','dr-tm', e.time ? e.time + (e.exitTime ? '–' + e.exitTime : '') : '—'));
+        if (e.kind === 'trade'){ top.appendChild(el('b',null, (e.pair || 'Trade') + (e.dir ? ' · ' + cap(e.dir) : '')));
+          top.appendChild(el('span','je-out o-' + e.outcome, OUT[e.outcome] || ''));
+          top.appendChild(el('span','dr-pl ' + (e.pnl > 0 ? 'win' : e.pnl < 0 ? 'loss' : ''), e.noPnl ? '—' : money(e.pnl))); }
+        else top.appendChild(el('b',null,'No trade'));
+        top.appendChild(el('span','chip' + (e.followed ? ' ok' : ' warn'), e.followed ? 'Rules ✓' : 'Rules ✗'));
+        if (entryStatus(e) === 'pending') top.appendChild(el('span','chip','Waiting'));
+        if (e.editedAt) top.appendChild(el('span','chip','Edited'));
+        if (e.src === 'csv') top.appendChild(el('span','chip','Imported'));
+        r.appendChild(top);
+        var meta = [e.model, e.session, e.account, (e.tags || []).map(function(t){ return '#' + t; }).join(' '), (e.files || []).length ? (e.files.length + (e.files.length === 1 ? ' screenshot' : ' screenshots')) : ''].filter(Boolean).join(' · ');
+        if (meta) r.appendChild(el('span','adm-note', meta));
+        if (e.overview) r.appendChild(el('p','dr-ov', e.overview.length > 260 ? e.overview.slice(0, 260) + '…' : e.overview));
+        r.addEventListener('click', function(){ var i = 0; allEs.forEach(function(y, k){ if (y.e === e) i = k; }); openWalk(allEs, i); });
+        card.appendChild(r);
+      });
+      list.appendChild(card);
+    });
+    if (missing.length){
+      var ms = el('section','dr-miss'); ms.appendChild(el('h4',null,'Haven\'t journaled this day (' + missing.length + ')'));
+      var ml = el('div','dr-ml'); missing.sort(function(a, b){ return String(a.m.displayName || a.m.username).localeCompare(String(b.m.displayName || b.m.username)); })
+        .forEach(function(x){ var w = el('span','dr-who'), av = el('span','av'); setAvatar(av, x.m); w.appendChild(av); w.appendChild(document.createTextNode(x.m.displayName || x.m.username)); ml.appendChild(w); });
+      ms.appendChild(ml); box.appendChild(ms);
+    }
+    return box;
   }
   function reviewEntry(x, status, note, points){
     return memberAction({ action:'journal-review', userId:x.m.id, entryId:x.e.id, status:status, note: note || '', points: status === 'approved' ? points : undefined })
@@ -5651,6 +6092,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var ERRORS = {
         denied:'Sign-in was cancelled.',
         expired:'Sign-in timed out. Tap the button below to try again.',
+        slow_down:'Too many sign-in attempts. Wait a few minutes, then try again.',
         not_member:'That Discord account isn\'t in The Project server.',
         no_access:'Your Discord account doesn\'t have member access yet.',
         discord:'Discord didn\'t respond. Try again in a moment.',
@@ -5689,6 +6131,15 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       .then(function(j){
         if (!(j && j.user)) return;
         SESSION = j; loadPreview();
+        // developer tools already open (e.g. opened, then the page refreshed): don't load any lesson data until they're closed
+        var touchDev = /Android|iPhone|iPad|iPod|Mobile|CriOS/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        var dtOpen = function(){ return (window.outerWidth - window.innerWidth > 170) || (window.outerHeight - window.innerHeight > 220); };
+        if (!j.isAdmin && !touchDev && window.top === window.self && dtOpen()){
+          var wall = document.getElementById('shield'); if (wall) wall.hidden = false;
+          try { navigator.sendBeacon && navigator.sendBeacon('/api/member', new Blob([JSON.stringify({ action:'flag', kind:'devtools-open' })], { type:'application/json' })); } catch (e) {}
+          var tw = setInterval(function(){ if (!dtOpen()){ clearInterval(tw); location.reload(); } }, 800);
+          return;
+        }
         return fetch(contentUrl(), { credentials:'same-origin' })
           .then(function(r){ return r.ok ? r.json() : null; })
           .then(function(c){ if (c && c.content) applyContent(c.content); })

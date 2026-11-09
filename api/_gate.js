@@ -394,8 +394,17 @@ function payoutPayload(name, avatar, c, imageName, tag) {
   }] });
 }
 
+// daily plan / recap notes: { 'YYYY-MM-DD': { plan, recap, mood, updatedAt } }
+async function loadDayNotes(userId) {
+  const flat = await kv(['HGETALL', 'daynotes:' + userId]); const out = {};
+  const put = (k, v) => { try { out[k] = JSON.parse(v); } catch (e) {} };
+  if (Array.isArray(flat)) for (let i = 0; i < flat.length; i += 2) put(flat[i], flat[i + 1]);
+  else if (flat && typeof flat === 'object') Object.keys(flat).forEach((k) => put(k, flat[k]));
+  return out;
+}
+
 module.exports = {
-  streakOf, nyToday, lastWorkOf, loadTestimonials, saveTestimonial, deleteTestimonial, hookReady, discordPost, testimonialPayload, payoutPayload, loadFeedSettings,
+  loadDayNotes, streakOf, nyToday, lastWorkOf, loadTestimonials, saveTestimonial, deleteTestimonial, hookReady, discordPost, testimonialPayload, payoutPayload, loadFeedSettings,
   ROLES, contentWithDefaults,
   loadSubs, saveSub, deleteSub, loadOverrides, setOverride, loadPromo, savePromo, loadCerts, saveCert, deleteCert,
   unitsOf, passes, chapterRoles, roleLevel, promotionStep, levelFor, accessFor,
