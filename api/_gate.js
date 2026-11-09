@@ -222,7 +222,18 @@ async function loadJournal(userId) {
   try { return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
 }
 async function saveJournal(userId, j) { await kv(['SET', 'journal:' + userId, JSON.stringify(j)]); }
-async function loadEntries(userId) { return kvConfigured() ? hashToObj(await kv(['HGETALL', 'jentries:' + userId]), true) : {}; }
+// Futures open Sunday evening for Monday's session, so anything dated Sunday belongs to Monday's trading day.
+// Older Sunday entries are shown under Monday when read (what's saved isn't touched); new ones are saved as Monday.
+function tradeDay(d) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(d || ''))) return d;
+  const t = new Date(d + 'T12:00:00Z'); if (isNaN(t) || t.getUTCDay() !== 0) return d;
+  t.setUTCDate(t.getUTCDate() + 1); return t.toISOString().slice(0, 10);
+}
+async function loadEntries(userId) {
+  const all = kvConfigured() ? hashToObj(await kv(['HGETALL', 'jentries:' + userId]), true) : {};
+  Object.keys(all).forEach((k) => { const e = all[k]; if (e && e.date && tradeDay(e.date) !== e.date) { e.sunday = e.date; e.date = tradeDay(e.date); } });
+  return all;
+}
 async function saveEntry(userId, e) { await kv(['HSET', 'jentries:' + userId, e.id, JSON.stringify(e)]); }
 async function deleteEntry(userId, id) { await kv(['HDEL', 'jentries:' + userId, id]); }
 // journal entries are reviewed by an admin before they count: 'pending' → 'approved' | 'denied'.
@@ -400,10 +411,19 @@ async function loadDayNotes(userId) {
   const put = (k, v) => { try { out[k] = JSON.parse(v); } catch (e) {} };
   if (Array.isArray(flat)) for (let i = 0; i < flat.length; i += 2) put(flat[i], flat[i + 1]);
   else if (flat && typeof flat === 'object') Object.keys(flat).forEach((k) => put(k, flat[k]));
+  // a Sunday note goes with Monday (see tradeDay); if both exist they're shown together
+  Object.keys(out).sort().forEach((k) => {
+    const m = tradeDay(k); if (m === k) return;
+    const sun = out[k], mon = out[m]; delete out[k];
+    if (!mon) { out[m] = Object.assign({}, sun, { sunday: k }); return; }
+    const join = (a, b) => [a, b].filter(Boolean).join('\n\n');
+    out[m] = Object.assign({}, mon, { plan: join(sun.plan, mon.plan), recap: join(sun.recap, mon.recap), mood: mon.mood || sun.mood, sunday: k });
+  });
   return out;
 }
 
 module.exports = {
+  tradeDay,
   loadDayNotes, streakOf, nyToday, lastWorkOf, loadTestimonials, saveTestimonial, deleteTestimonial, hookReady, discordPost, testimonialPayload, payoutPayload, loadFeedSettings,
   ROLES, contentWithDefaults,
   loadSubs, saveSub, deleteSub, loadOverrides, setOverride, loadPromo, savePromo, loadCerts, saveCert, deleteCert,

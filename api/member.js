@@ -18,7 +18,7 @@
 // Files are uploaded straight from the browser to Vercel Blob first (see /api/upload), into members/<their id>/…
 const crypto = require('crypto');
 const { readSession, isAdmin, kvConfigured, loadProgress, json, kv, clientIp, rateLimit, staffAlert } = require('./_lib');
-const { logActivity, gateFor, saveSub, findItem, loadCerts, saveCert, deleteCert, loadPromo, savePromo, loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints, entryStatus, basePoints, streakOf, nyToday, loadDayNotes, loadTestimonials, saveTestimonial, deleteTestimonial } = require('./_gate');
+const { logActivity, gateFor, saveSub, findItem, loadCerts, saveCert, deleteCert, loadPromo, savePromo, loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints, entryStatus, basePoints, streakOf, nyToday, tradeDay, loadDayNotes, loadTestimonials, saveTestimonial, deleteTestimonial } = require('./_gate');
 const { listMembers } = require('./_lib');
 const { signAll, cleanFile } = require('./_blob');
 
@@ -84,8 +84,9 @@ const EMOTIONS = ['Calm', 'Confident', 'Hesitant', 'FOMO', 'Frustrated', 'Tired'
 // Everything else (time, instrument, P&L, notes, screenshots, trade data, tags) is optional.
 function buildEntry(e, uid, old) {
   const kind = e.kind === 'none' ? 'none' : 'trade';
-  const date = str(e.date, 10);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(Date.parse(date)) || Date.parse(date) > Date.now() + 36 * 3600 * 1000) return { error: 'bad_date' };
+  const rawDate = str(e.date, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(rawDate) || isNaN(Date.parse(rawDate)) || Date.parse(rawDate) > Date.now() + 36 * 3600 * 1000) return { error: 'bad_date' };
+  const date = tradeDay(rawDate);   // a Sunday-open trade is saved under Monday
   if (typeof e.followed !== 'boolean') return { error: 'missing', fields: ['followed'] };
   const files = (Array.isArray(e.files) ? e.files : []).slice(0, MAX_FILES).map((f) => cleanFile(f, uid, 'journal'));
   if (files.some((f) => !f)) return { error: 'bad_file' };
@@ -94,6 +95,7 @@ function buildEntry(e, uid, old) {
     createdAt: new Date().toISOString(), void: false, status: 'pending', files,
     news: ['yes', 'no'].includes(e.news) ? e.news : '', newsWhat: e.news === 'yes' ? str(e.newsWhat, 60) : '' };
   if (tags.length) entry.tags = tags;
+  if (date !== rawDate) entry.sunday = rawDate;   // the day it was actually traded (Sunday open)
   if (kind === 'none') return { entry };
   const num = (v) => { if (v === '' || v === null || v === undefined) return undefined; const n = Number(v); return isFinite(n) && Math.abs(n) < 1e9 ? n : undefined; };
   const pick = (v, list) => (list.includes(v) ? v : undefined);
@@ -284,6 +286,7 @@ module.exports = async (req, res) => {
       // editing keeps the review, unless something that decides points changed: then it goes back to the mentor
       const keyChanged = ['kind', 'date', 'outcome', 'account', 'followed'].some((k) => String(old[k] === undefined ? '' : old[k]) !== String(entry[k] === undefined ? '' : entry[k]));
       ['createdAt', 'status', 'void', 'awarded', 'reviewedAt', 'reviewedBy', 'reviewNote', 'src', 'importKey'].forEach((k) => { if (old[k] !== undefined) entry[k] = old[k]; });
+      if (old.sunday && !entry.sunday && entry.date === old.date) entry.sunday = old.sunday;
       if (keyChanged && entryStatus(old) !== 'pending') { entry.status = 'pending'; entry.void = false; delete entry.awarded; delete entry.reviewedAt; delete entry.reviewedBy; delete entry.reviewNote; entry.reopened = true; }
       entry.editedAt = new Date().toISOString();
     }
@@ -314,8 +317,11 @@ module.exports = async (req, res) => {
   }
   // a note for one day: the plan before the session and the recap after (TradeZella-style daily journal)
   if (action === 'daynote-save') {
-    const date = str(body.date, 10);
+    const date = tradeDay(str(body.date, 10));
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return json(res, 400, { error: 'bad_date' });
+    // an older Sunday note was shown merged into this Monday, so what's saved now replaces both
+    const sun = new Date(date + 'T12:00:00Z'); sun.setUTCDate(sun.getUTCDate() - 1);
+    if (sun.getUTCDay() === 0) await kv(['HDEL', 'daynotes:' + uid, sun.toISOString().slice(0, 10)]);
     const note = { plan: str(body.plan, 3000), recap: str(body.recap, 3000), mood: ['great', 'good', 'ok', 'rough', 'bad'].includes(body.mood) ? body.mood : '', updatedAt: new Date().toISOString() };
     if (note.plan || note.recap || note.mood) { const [n, has] = await Promise.all([kv(['HLEN', 'daynotes:' + uid]), kv(['HEXISTS', 'daynotes:' + uid, date])]);
       if (!Number(has) && Number(n) >= 3000) return json(res, 409, { error: 'too_many' }); }

@@ -619,3 +619,10 @@ In the journal's screenshot box and the homework / breakdown hand-in box, member
 Pasted images upload exactly like picked files (same private storage, same limits). The TradingView link lookup runs in
 `api/upload.js` (`GET /api/upload?tv=<id>`), accepts only TradingView snapshot IDs and PNG images up to 10 MB, and is
 limited to 40 per 10 minutes per member.
+
+## Sunday counts as Monday
+Futures open Sunday evening for Monday's session, so anything dated **Sunday** belongs to **Monday's** trading day:
+journal entries, imported trades and day notes. A Sunday-dated entry is saved under Monday with a "Sunday open" tag (the
+form says so when a Sunday is picked). Older Sunday entries and notes are shown under Monday when read, without changing
+what's saved; a Sunday plan and a Monday plan show together. Daily recap, By day, the calendar, streaks, weekly recaps
+and leaderboards all follow this. On Sunday evening the new-entry date and the admin Daily recap start on Monday.
