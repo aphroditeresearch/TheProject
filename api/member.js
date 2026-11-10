@@ -187,7 +187,8 @@ module.exports = async (req, res) => {
       if (!isAdmin(s)) {
         const who = { id: uid, name: s.user.displayName || s.user.username, ip };
         const under = await rateLimit('flagburst:' + uid, 4, 600);
-        if (fb.kind === 'devtools-open') await staffAlert('devtools', who, 'Dev tools were open while on the site. Video links are hidden while they are.');
+        if (fb.kind === 'devtools-open') { const size = /^[\dx .z]{3,40}$/.test(String(fb.size || '')) ? String(fb.size) : '';
+          await staffAlert('devtools', who, 'Dev tools (or a browser side panel) were open on the site. Lessons are hidden while they are.' + (size ? ' Window / page size: ' + size + '.' : '')); }
         else if (!under) { const f = await kv(['HGETALL', key]); const m = {}; if (Array.isArray(f)) for (let i = 0; i < f.length; i += 2) m[f[i]] = f[i + 1];
           await staffAlert('flags', who, '5+ blocked actions in 10 minutes. Latest: ' + fb.kind + '. All time: ' + FLAG_KINDS.filter((k) => m[k]).map((k) => k + ' ×' + m[k]).join(', ')); }
       }

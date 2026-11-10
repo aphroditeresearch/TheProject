@@ -900,6 +900,13 @@ ul.parts{list-style:none;margin:0 0 4px 22px;padding:0 0 0 12px;border-left:1px 
 .pane{display:flex;flex-direction:column;gap:18px;min-width:0}
 .pane .kick{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--kana-c)}
 .pane h3{margin:0;font-family:var(--display);font-style:italic;font-weight:900;font-stretch:125%;font-size:clamp(30px,4vw,46px);line-height:1;letter-spacing:-.02em;text-wrap:balance}
+.shc{position:fixed;inset:0;z-index:300;background:#02090B;display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));overflow:auto}
+.shc-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;width:100%;max-width:720px}
+.shc-top input{min-height:38px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--ink);padding:0 10px;font:14px var(--sans);width:170px}
+.shc-hint{margin:0;font-size:12px;color:var(--muted);text-align:center}
+.shc-stage{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:0}
+.shc-img{display:block;max-width:100%;max-height:calc(100vh - 140px);aspect-ratio:9/16;object-fit:contain;cursor:pointer}
+.shc.bare{padding:0;justify-content:center}.shc.bare .shc-top,.shc.bare .shc-hint{display:none}.shc.bare .shc-img{max-height:100vh;max-width:100vw}
 .seek-flash{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:6;pointer-events:none;padding:10px 18px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font:600 18px var(--sans);opacity:0}
 .seek-flash.on{animation:seekf .7s ease-out}@keyframes seekf{0%{opacity:1}60%{opacity:1}100%{opacity:0}}
 .player{position:relative;width:100%;max-width:min(100%,calc((100vh - 380px) * 16 / 9));aspect-ratio:16/9;border:1px solid var(--line);overflow:hidden;background:#000 url("poster.jpg") 38% 50%/cover no-repeat;display:grid;place-items:center}
@@ -1568,6 +1575,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     <div class="wm sm brand" aria-label="The Project"><span class="wm-n" aria-hidden="true"><span>T</span><span>H</span><span>E</span></span><span class="wm-t" aria-hidden="true">PROJECT</span></div>
     <h2 id="sh-h">Close developer tools.</h2>
     <p>The portal is paused while developer tools are open. Close them to keep going.</p>
+    <p class="sh-hint">Not using developer tools? Close Chrome's side panel (bookmarks, reading list, Google Lens or an extension's sidebar) if it's open.</p>
   </div>
 </div>
 
@@ -1665,7 +1673,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     if (!warnEl.hidden && now - lastWarn < 1500) return;
     lastWarn = now; showWarning();
     if (typeof SESSION !== 'undefined' && SESSION && SESSION.user && BACKEND){
-      fetch('/api/member', { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ action:'flag', kind: kind }) })
+      fetch('/api/member', { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ action:'flag', kind: kind, size: kind === 'devtools-open' ? winSize() : undefined }) })
         .then(function(r){ return r.json(); })
         .then(function(j){ if (j && j.ip && !SESSION.ip){ SESSION.ip = j.ip; if (!warnEl.hidden) showWarning(); } })
         .catch(function(){});
@@ -1733,13 +1741,24 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   window.addEventListener('beforeprint', function(){ document.body.style.visibility = 'hidden'; });
   window.addEventListener('afterprint', function(){ document.body.style.visibility = ''; });
 
+
+  // Docked dev tools take space from the page on one side only. Browser zoom shrinks the page in both directions
+  // evenly, so it's measured first and not mistaken for dev tools (that used to flag anyone not at 100% zoom).
+  function devtoolsDocked(){
+    var ow = window.outerWidth, oh = window.outerHeight, iw = window.innerWidth, ih = window.innerHeight;
+    if (!ow || !oh || !iw || !ih) return false;
+    var z = Math.max(ow - 16, 1) / iw;          // page zoom, if nothing is docked at the side
+    var bars = oh - ih * z;                      // what that leaves for tabs, address bar and bookmarks
+    return bars < -40 || bars > 230;             // tools at the side make z too big; tools at the bottom leave too much
+  }
+  function winSize(){ return window.outerWidth + 'x' + window.outerHeight + ' ' + window.innerWidth + 'x' + window.innerHeight + ' z' + (Math.round((window.devicePixelRatio || 1) * 100) / 100); }
   // Docked developer tools shrink the page area; pause everything while they're open.
   // Skipped when the page is shown inside another page (a preview), where the sizes don't apply.
   var shield = document.getElementById('shield');
   // (skipped on phones and tablets: they have no developer tools, and the keyboard or pinch-zoom changes these sizes)
   if (window.top === window.self && !MOBILE_DEV){
     setInterval(function(){
-      var open = (window.outerWidth - window.innerWidth > 170) || (window.outerHeight - window.innerHeight > 220);
+      var open = devtoolsDocked();
       if (open !== !shield.hidden){
         shield.hidden = !open;
         if (open) blocked('devtools-open');
@@ -3088,7 +3107,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     main.appendChild(vs);
     if (JR.view === 'stats'){
       JR.per = JR.per || 'all';
-      main.appendChild(seg([['week','This week'],['month','This month'],['30','30 days'],['90','90 days'],['year','This year'],['all','All time']], JR.per, function(v){ JR.per = v; drawJournal(host); }));
+      var sbar = el('div','rv-bar'); sbar.appendChild(seg([['week','This week'],['month','This month'],['30','30 days'],['90','90 days'],['year','This year'],['all','All time']], JR.per, function(v){ JR.per = v; drawJournal(host); }));
+      var shb = el('button','btn-s pri','📱 Share my P&L'); shb.type = 'button'; shb.addEventListener('click', function(){ openShareCard('me'); }); sbar.appendChild(shb); main.appendChild(sbar);
       var fromS = periodFrom(JR.per); main.appendChild(statsView(ents.filter(function(e){ return e.date >= fromS && countsInStats(e); })));
       grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return;
     }
@@ -3698,6 +3718,129 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     return wrap;
   }
 
+
+  /* ---------- share card: a 1080×1920 image of the community's results for TikTok / Instagram (admins) ---------- */
+  // Drawn on a canvas so "Save image" gives the exact picture shown. Students only (admins' own trades aren't counted),
+  // Funded / Evaluation trades, same rules as Stats. Tap the card to hide the controls for a clean phone screenshot.
+  var SHC = { per:'day', rows:null, scope:'all' };
+  function shcData(rows, per){
+    var today = tradeDay(todayYmd()), from, to = today, pill, sub;
+    var D = function(d, o){ return new Date(d + 'T12:00:00').toLocaleDateString('en-US', o); };
+    if (per === 'day'){ from = today; pill = 'Today'; sub = D(today, { weekday:'long', month:'long', day:'numeric' }); }
+    else if (per === 'week'){ from = mondayOf(today); to = addDays(from, 4); pill = 'This week'; sub = D(from, { month:'short', day:'numeric' }) + ' – ' + D(to, { month:'short', day:'numeric' }); }
+    else { from = today.slice(0, 8) + '01'; pill = D(today, { month:'long' }); sub = D(today, { month:'long', year:'numeric' }); }
+    var trades = [], traders = {};
+    rows.filter(function(m){ return !m.isAdmin; }).forEach(function(m){ (m.entries || []).forEach(function(e){
+      if (e.kind === 'trade' && e.date >= from && e.date <= to && countsInStats(e)){ trades.push(e); traders[m.id] = 1; } }); });
+    var W = 0, L = 0, BE = 0, net = 0, wins = [], losses = [], rs = [], byDay = {};
+    trades.forEach(function(e){ var p = e.noPnl ? 0 : (+e.pnl || 0);
+      if (e.outcome === 'tp') W++; else if (e.outcome === 'sl') L++; else BE++;
+      net += p; if (!e.noPnl && p > 0) wins.push(p); if (!e.noPnl && p < 0) losses.push(-p);
+      var r = rOf(e); if (isNum(r)) rs.push(r); byDay[e.date] = (byDay[e.date] || 0) + p; });
+    var avg = function(a){ return a.length ? a.reduce(function(t, x){ return t + x; }, 0) / a.length : 0; };
+    // the curve: running total, trade by trade (today) or day by day
+    var pts = [{ v:0, l:'' }], run = 0;
+    if (per === 'day') trades.slice().sort(function(a, b){ return String(a.time || '').localeCompare(String(b.time || '')); })
+      .forEach(function(e){ run += e.noPnl ? 0 : (+e.pnl || 0); pts.push({ v:run, l:e.time || '' }); });
+    else for (var d = from; d <= to && d <= today; d = addDays(d, 1)){ if (wday(d) === 0 || wday(d) === 6) continue; run += byDay[d] || 0; pts.push({ v:run, l:D(d, { month:'short', day:'numeric' }) }); }
+    return { pill:pill, sub:sub, per:per, n:trades.length, W:W, L:L, BE:BE, net:net, wr: W + L ? Math.round(W / (W + L) * 100) : null,
+      ratio: wins.length && losses.length ? avg(wins) / avg(losses) : null, avgR: rs.length >= 3 ? avg(rs) : null,
+      traders: Object.keys(traders).length, pts:pts, from:from, mine: rows.length === 1 && rows[0].id === 'me' };
+  }
+  function drawShareCard(cv, q){
+    var c = cv.getContext('2d'), Wd = 1080, Ht = 1920; cv.width = Wd; cv.height = Ht;
+    var INK = '#E3F1EF', MUTED = '#7F9A9B', TEAL = '#14A39D', UP = '#3BE38F', DOWN = '#F05454', col = q.net >= 0 ? UP : DOWN;
+    var SANS = "'Instrument Sans', system-ui, -apple-system, sans-serif", DISP = "Archivo, 'Arial Black', sans-serif", MONO = "'JetBrains Mono', ui-monospace, monospace";
+    var F = function(st, sz, fam){ c.font = st + ' ' + sz + 'px ' + fam; };
+    var rr = function(x, y, w, h, r){ c.beginPath(); if (c.roundRect) c.roundRect(x, y, w, h, r); else c.rect(x, y, w, h); };
+    var pill = function(x, y, txt, fg, bg, bd, fs){ F('600', fs || 30, SANS); var w = c.measureText(txt).width + 48, h = (fs || 30) + 30; rr(x, y, w, h, h / 2); c.fillStyle = bg; c.fill(); if (bd){ c.strokeStyle = bd; c.lineWidth = 2; c.stroke(); } c.fillStyle = fg; c.textBaseline = 'middle'; c.fillText(txt, x + 24, y + h / 2 + 1); c.textBaseline = 'alphabetic'; return w; };
+    // background
+    c.fillStyle = '#02090B'; c.fillRect(0, 0, Wd, Ht);
+    var g = c.createRadialGradient(Wd * .5, 620, 0, Wd * .5, 620, 1000); g.addColorStop(0, q.net >= 0 ? 'rgba(20,163,157,.28)' : 'rgba(240,84,84,.18)'); g.addColorStop(1, 'rgba(2,9,11,0)');
+    c.fillStyle = g; c.fillRect(0, 0, Wd, Ht);
+    var M = 72;
+    // header: wordmark + period
+    c.fillStyle = INK; F('italic 200', 21, DISP); ['T','H','E'].forEach(function(ch, i){ c.fillText(ch, M + 4, 226 + i * 21); });
+    try { c.fontStretch = 'expanded'; } catch (e) {}
+    F('italic 900', 76, DISP); c.fillText('PROJECT', M + 30, 276);
+    try { c.fontStretch = 'normal'; } catch (e) {}
+    F('600', 30, SANS); var pw = c.measureText(q.pill).width + 48; pill(Wd - M - pw, 214, q.pill, INK, 'rgba(227,241,239,.06)', 'rgba(227,241,239,.14)');
+    // the card
+    var cx = M, cy = 380, cw = Wd - M * 2, ch = 1250, P = 64;
+    c.save(); c.shadowColor = 'rgba(0,0,0,.55)'; c.shadowBlur = 80; c.shadowOffsetY = 30; rr(cx, cy, cw, ch, 52); c.fillStyle = '#071416'; c.fill(); c.restore();
+    var cg = c.createLinearGradient(0, cy, 0, cy + ch); cg.addColorStop(0, 'rgba(20,163,157,.10)'); cg.addColorStop(.5, 'rgba(20,163,157,0)');
+    rr(cx, cy, cw, ch, 52); c.fillStyle = cg; c.fill(); c.strokeStyle = 'rgba(227,241,239,.09)'; c.lineWidth = 2; c.stroke();
+    F('500', 34, SANS); c.fillStyle = MUTED; c.fillText(q.mine ? 'My P&L' : 'Students’ P&L', cx + P, cy + 104);
+    F('400', 28, SANS); c.textAlign = 'right'; c.fillText(q.sub, cx + cw - P, cy + 104); c.textAlign = 'left';
+    var big = (q.net < 0 ? '−$' : '+$') + Math.abs(Math.round(q.net)).toLocaleString('en-US'), bs = 176;
+    F('700', bs, SANS); while (c.measureText(big).width > cw - P * 2 && bs > 90){ bs -= 6; F('700', bs, SANS); }
+    c.fillStyle = col; c.fillText(big, cx + P - 6, cy + 120 + bs * .86);
+    var py = cy + 150 + bs * .86;
+    var pw1 = pill(cx + P, py, (q.wr === null ? '— ' : (q.wr >= 50 ? '▲ ' : '▼ ') + q.wr + '%') + ' win rate', q.wr === null || q.wr >= 50 ? UP : DOWN, q.wr === null || q.wr >= 50 ? 'rgba(59,227,143,.12)' : 'rgba(240,84,84,.12)', null, 28);
+    pill(cx + P + pw1 + 14, py, q.n + (q.n === 1 ? ' trade' : ' trades') + (q.mine ? '' : ' · ' + q.traders + (q.traders === 1 ? ' trader' : ' traders')), INK, 'rgba(227,241,239,.06)', null, 28);
+    // the curve
+    var gx = cx + P, gy = py + 120, gw = cw - P * 2, gh = (cy + ch - 190 - 96) - (py + 120), pts = q.pts.length > 1 ? q.pts : [{ v:0 }, { v:0 }];
+    var vs = pts.map(function(p){ return p.v; }), lo = Math.min.apply(null, vs.concat([0])), hi = Math.max.apply(null, vs.concat([0])); if (hi === lo){ hi += 1; lo -= 1; }
+    var X = function(i){ return gx + i / (pts.length - 1) * gw; }, Y = function(v){ return gy + 16 + (hi - v) / (hi - lo) * (gh - 32); };
+    c.setLineDash([6, 10]); c.strokeStyle = 'rgba(227,241,239,.14)'; c.lineWidth = 2; c.beginPath(); c.moveTo(gx, Y(0)); c.lineTo(gx + gw, Y(0)); c.stroke(); c.setLineDash([]);
+    var path = function(){ c.moveTo(X(0), Y(pts[0].v)); for (var i = 1; i < pts.length; i++){ var x0 = X(i - 1), x1 = X(i), y0 = Y(pts[i - 1].v), y1 = Y(pts[i].v), mx = (x0 + x1) / 2; c.bezierCurveTo(mx, y0, mx, y1, x1, y1); } };
+    var fg = c.createLinearGradient(0, gy, 0, gy + gh); fg.addColorStop(0, q.net >= 0 ? 'rgba(59,227,143,.30)' : 'rgba(240,84,84,.26)'); fg.addColorStop(1, 'rgba(59,227,143,0)');
+    c.beginPath(); path(); c.lineTo(X(pts.length - 1), gy + gh); c.lineTo(X(0), gy + gh); c.closePath(); c.fillStyle = fg; c.fill();
+    c.save(); c.shadowColor = col; c.shadowBlur = 24; c.beginPath(); path(); c.strokeStyle = col; c.lineWidth = 7; c.lineJoin = 'round'; c.lineCap = 'round'; c.stroke(); c.restore();
+    var ex = X(pts.length - 1), ey = Y(pts[pts.length - 1].v);
+    c.beginPath(); c.arc(ex, ey, 22, 0, Math.PI * 2); c.fillStyle = q.net >= 0 ? 'rgba(59,227,143,.22)' : 'rgba(240,84,84,.22)'; c.fill();
+    c.beginPath(); c.arc(ex, ey, 10, 0, Math.PI * 2); c.fillStyle = col; c.fill();
+    F('500', 24, MONO); c.fillStyle = MUTED;
+    var firstL = q.per === 'day' ? 'Open' : (pts[1] && pts[1].l) || '', lastL = q.per === 'day' ? (pts.length > 1 && pts[pts.length - 1].l) || '' : 'Today';
+    c.fillText(firstL, gx, gy + gh + 44); c.textAlign = 'right'; c.fillText(lastL, gx + gw, gy + gh + 44); c.textAlign = 'left';
+    // three numbers
+    var sy = cy + ch - 190; c.fillStyle = 'rgba(227,241,239,.08)'; c.fillRect(cx + P, sy, cw - P * 2, 2);
+    var cols = [['Record', q.W + '–' + q.L + (q.BE ? '–' + q.BE : '')], ['Avg win : loss', q.ratio === null ? '—' : (Math.round(q.ratio * 10) / 10) + ' : 1'], q.avgR !== null ? ['Avg R / trade', (q.avgR >= 0 ? '+' : '') + (Math.round(q.avgR * 100) / 100) + 'R'] : q.mine ? ['Trades', String(q.n)] : ['Traders', String(q.traders)]];
+    var colW = (cw - P * 2) / 3;
+    cols.forEach(function(k, i){ var x = cx + P + colW * i + (i ? 28 : 0);
+      if (i){ c.fillStyle = 'rgba(227,241,239,.08)'; c.fillRect(cx + P + colW * i, sy + 40, 2, 110); }
+      F('500', 26, SANS); c.fillStyle = MUTED; c.fillText(k[0], x, sy + 74);
+      var vsz = 56; F('700', vsz, SANS); while (c.measureText(k[1]).width > colW - 40 && vsz > 32){ vsz -= 4; F('700', vsz, SANS); }
+      c.fillStyle = INK; c.fillText(k[1], x, sy + 142); });
+    F('400', 22, SANS); c.fillStyle = 'rgba(127,154,155,.6)'; c.textAlign = 'center';
+    c.fillText((q.mine ? 'From my trade journal' : 'From students\u2019 trade journals') + ' \u00b7 Funded & Evaluation \u00b7 Not financial advice', Wd / 2, Ht - 96); c.textAlign = 'left';
+  }
+  function openShareCard(scopeArg){
+    var isAdm = canAdmin() && !PREVIEW; SHC.scope = isAdm ? (scopeArg === 'me' ? 'me' : SHC.scope) : 'me';
+    var old = document.getElementById('shc'); if (old) old.remove();
+    var sc = el('div','shc'); sc.id = 'shc'; sc.setAttribute('role','dialog'); sc.setAttribute('aria-modal','true'); sc.setAttribute('aria-label','Share card');
+    var top = el('div','shc-top'), x = el('button','btn-s','✕ Close'); x.type = 'button';
+    var perSeg = seg([['day','Today'],['week','This week'],['month','This month']], SHC.per, function(v){ SHC.per = v; paint(); });
+    var save = el('button','btn-s pri','Save image'); save.type = 'button';
+    if (isAdm) top.appendChild(seg([['all','Everyone'],['me','Just me']], SHC.scope, function(v){ SHC.scope = v; load(); }));
+    top.appendChild(perSeg); top.appendChild(save); top.appendChild(x);
+    var stage = el('div','shc-stage'), cv = document.createElement('canvas'), img = el('img','shc-img'); img.alt = 'Results card'; stage.appendChild(img);
+    var hint = el('p','shc-hint','Tap the card to hide these buttons for a clean screenshot. Tap again to bring them back.');
+    sc.appendChild(top); sc.appendChild(hint); sc.appendChild(stage); document.body.appendChild(sc); document.documentElement.classList.add('lb-open');
+    var close = function(){ sc.remove(); document.documentElement.classList.remove('lb-open'); document.removeEventListener('keydown', esc, true); };
+    var esc = function(e){ if (e.key === 'Escape'){ if (sc.classList.contains('bare')) sc.classList.remove('bare'); else close(); } };
+    document.addEventListener('keydown', esc, true); x.addEventListener('click', close);
+    stage.addEventListener('click', function(){ sc.classList.toggle('bare'); });
+    function rowsNow(){ return SHC.scope === 'me' ? (ME.loaded ? [{ id:'me', entries: ME.entries || [] }] : null) : SHC.rows; }
+    function paint(){ var r = rowsNow(); if (!r) return; drawShareCard(cv, shcData(r, SHC.per)); img.src = cv.toDataURL('image/png'); }
+    save.addEventListener('click', function(){
+      cv.toBlob(function(b){ if (!b) return;
+        var fn = 'the-project-' + (SHC.scope === 'me' ? 'my-pnl-' : '') + ({ day:'daily', week:'weekly', month:'monthly' }[SHC.per]) + '-' + tradeDay(todayYmd()) + '.png', f = null;
+        try { f = new File([b], fn, { type:'image/png' }); } catch (e) {}
+        if (f && navigator.canShare && navigator.canShare({ files:[f] }) && TOUCHY){ navigator.share({ files:[f] }).catch(function(){}); return; }
+        downloadBlob(b, fn); toast('Saved ' + fn); }, 'image/png');
+    });
+    stage.appendChild(el('p','adm-note','Loading results…'));
+    var fontsReady = (document.fonts && document.fonts.load) ? Promise.all(['italic 900 100px Archivo','italic 200 100px Archivo','600 40px "Instrument Sans"','400 22px "Instrument Sans"','500 22px "JetBrains Mono"'].map(function(f){ return document.fonts.load(f).catch(function(){}); })) : Promise.resolve();
+    function load(){
+      stage.querySelectorAll('.adm-note').forEach(function(n){ n.remove(); }); stage.appendChild(el('p','adm-note','Loading results…'));
+      var dataReady = SHC.scope === 'me' ? loadMe().catch(function(){})
+        : new Promise(function(res){ if (SHC.rows && Date.now() - (SHC.at || 0) < 60000) return res(); loadMembers(function(rows){ SHC.rows = rows; SHC.at = Date.now(); res(); }, function(){ res(); }); });
+      Promise.all([fontsReady, dataReady]).then(function(){ stage.querySelectorAll('.adm-note').forEach(function(n){ n.remove(); });
+        if (!rowsNow()){ stage.appendChild(el('p','adm-note','Couldn\'t load the results. Close and try again.')); return; } paint(); });
+    }
+    load();
+  }
   /* ---------- trade data: the optional fields, what they mean, and the "what works best" analysis ---------- */
   // same lists as api/member.js
   var TD = {
@@ -3973,6 +4116,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     if (admin){ var xb = el('button','btn-s xl-btn','Export to Excel'); xb.type = 'button';
     xb.title = admin ? 'Downloads what you are looking at: ' + (STX.who === 'all' ? 'every student' : 'this student') + ', this period' : 'Downloads your own journal for this period';
     xb.addEventListener('click', function(){ exportStats(); }); bar.appendChild(xb); }
+    var sb = el('button','btn-s pri', admin ? '📱 Share card' : '📱 Share my P&L'); sb.type = 'button'; sb.title = admin ? 'A clean image of the results for TikTok / Instagram' : 'A clean image of your own P&L to post'; sb.addEventListener('click', function(){ openShareCard(admin ? 'all' : 'me'); }); bar.appendChild(sb);
     host.appendChild(bar);
     var body = el('div'); host.appendChild(body);
     var from = periodFrom(STX.per), keep = function(e){ return e && e.date >= from && countsInStats(e); };
@@ -6218,10 +6362,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         SESSION = j; loadPreview();
         // developer tools already open (e.g. opened, then the page refreshed): don't load any lesson data until they're closed
         var touchDev = /Android|iPhone|iPad|iPod|Mobile|CriOS/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        var dtOpen = function(){ return (window.outerWidth - window.innerWidth > 170) || (window.outerHeight - window.innerHeight > 220); };
+        var dtOpen = devtoolsDocked;
         if (!j.isAdmin && !touchDev && window.top === window.self && dtOpen()){
           var wall = document.getElementById('shield'); if (wall) wall.hidden = false;
-          try { navigator.sendBeacon && navigator.sendBeacon('/api/member', new Blob([JSON.stringify({ action:'flag', kind:'devtools-open' })], { type:'application/json' })); } catch (e) {}
+          try { navigator.sendBeacon && navigator.sendBeacon('/api/member', new Blob([JSON.stringify({ action:'flag', kind:'devtools-open', size: winSize() })], { type:'application/json' })); } catch (e) {}
           var tw = setInterval(function(){ if (!dtOpen()){ clearInterval(tw); location.reload(); } }, 800);
           return;
         }
