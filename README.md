@@ -635,15 +635,15 @@ last clicked or the one playing, and are ignored while typing in a text box or w
 
 ## Share cards: results for TikTok / Instagram
 **Students:** Stats → **📱 Share my P&L** (also in Journal → Stats) makes the same card from their own journal only
-("My P&L"). **Admins:** Stats → **📱 Share card**, with **Everyone** (the whole community, admin-only: the data behind
-it only loads for admins) or **Just me**.
+("My P&L"). **Admins:** Stats → **📱 Share card**, then pick whose: **Everyone (the Project)** (the whole community, admin-only: the
+data behind it only loads for admins), **Me**, or any student. A personal card shows the person's name at the top
+("Ava · P&L") and a faint @username under the card; the Everyone card shows no name.
 
 The card is A clean 9:16 image (1080×1920) of every student's combined results for **Today**, **This
 week** or **This month**: net P&L, win rate (breakevens not counted), trades and traders, a running P&L curve, record
 (W–L–BE), average win : loss, and average R per trade (when at least 3 trades have risk or prices logged).
 - Only students' trades count (admins' own trades don't), Funded / Evaluation accounts only, denied entries left out:
   the same rules as Stats. Sunday counts as Monday.
-- Nothing personal on it: no names, pictures or web address. One small line at the bottom says the numbers come
-  from student journals (Funded & Evaluation) and aren't financial advice.
+- No web address or disclaimer text on the image.
 - **Save image** shares the PNG straight to apps on a phone (Instagram, TikTok, Photos) or downloads it on a computer.
   Or tap the card to hide the buttons and take a normal screenshot; tap again to bring them back.
