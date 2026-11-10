@@ -3746,7 +3746,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     else for (var d = from; d <= to && d <= today; d = addDays(d, 1)){ if (wday(d) === 0 || wday(d) === 6) continue; run += byDay[d] || 0; pts.push({ v:run, l:D(d, { month:'short', day:'numeric' }) }); }
     return { pill:pill, sub:sub, per:per, n:trades.length, W:W, L:L, BE:BE, net:net, wr: W + L ? Math.round(W / (W + L) * 100) : null,
       ratio: wins.length && losses.length ? avg(wins) / avg(losses) : null, avgR: rs.length >= 3 ? avg(rs) : null,
-      traders: Object.keys(traders).length, pts:pts, from:from, mine: !!who, who: who || null };
+      traders: Object.keys(traders).length, pts:pts, from:from, mine: !!who, who: who || null,
+      totalR: rs.length ? rs.reduce(function(t, x){ return t + x; }, 0) : null,
+      pf: losses.length ? wins.reduce(function(t, x){ return t + x; }, 0) / losses.reduce(function(t, x){ return t + x; }, 0) : (wins.length ? Infinity : null) };
   }
   function drawShareCard(cv, q){
     var c = cv.getContext('2d'), Wd = 1080, Ht = 1920; cv.width = Wd; cv.height = Ht;
@@ -3779,10 +3781,12 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     F('700', bs, SANS); while (c.measureText(big).width > cw - P * 2 && bs > 90){ bs -= 6; F('700', bs, SANS); }
     c.fillStyle = col; c.fillText(big, cx + P - 6, cy + 120 + bs * .86);
     var py = cy + 150 + bs * .86;
+    if (!q.mine){
     var pw1 = pill(cx + P, py, (q.wr === null ? '— ' : (q.wr >= 50 ? '▲ ' : '▼ ') + q.wr + '%') + ' win rate', q.wr === null || q.wr >= 50 ? UP : DOWN, q.wr === null || q.wr >= 50 ? 'rgba(59,227,143,.12)' : 'rgba(240,84,84,.12)', null, 28);
     pill(cx + P + pw1 + 14, py, q.n + (q.n === 1 ? ' trade' : ' trades') + (q.mine ? '' : ' · ' + q.traders + (q.traders === 1 ? ' trader' : ' traders')), INK, 'rgba(227,241,239,.06)', null, 28);
+    }
     // the curve
-    var gx = cx + P, gy = py + 120, gw = cw - P * 2, gh = (cy + ch - 190 - 96) - (py + 120), pts = q.pts.length > 1 ? q.pts : [{ v:0 }, { v:0 }];
+    var gTop = q.mine ? py + 40 : py + 120, gx = cx + P, gy = gTop, gw = cw - P * 2, gh = (cy + ch - 190 - 96) - gTop, pts = q.pts.length > 1 ? q.pts : [{ v:0 }, { v:0 }];
     var vs = pts.map(function(p){ return p.v; }), lo = Math.min.apply(null, vs.concat([0])), hi = Math.max.apply(null, vs.concat([0])); if (hi === lo){ hi += 1; lo -= 1; }
     var X = function(i){ return gx + i / (pts.length - 1) * gw; }, Y = function(v){ return gy + 16 + (hi - v) / (hi - lo) * (gh - 32); };
     c.setLineDash([6, 10]); c.strokeStyle = 'rgba(227,241,239,.14)'; c.lineWidth = 2; c.beginPath(); c.moveTo(gx, Y(0)); c.lineTo(gx + gw, Y(0)); c.stroke(); c.setLineDash([]);
@@ -3798,7 +3802,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     c.fillText(firstL, gx, gy + gh + 44); c.textAlign = 'right'; c.fillText(lastL, gx + gw, gy + gh + 44); c.textAlign = 'left';
     // three numbers
     var sy = cy + ch - 190; c.fillStyle = 'rgba(227,241,239,.08)'; c.fillRect(cx + P, sy, cw - P * 2, 2);
-    var cols = [['Record', q.W + '–' + q.L + (q.BE ? '–' + q.BE : '')], ['Avg win : loss', q.ratio === null ? '—' : (Math.round(q.ratio * 10) / 10) + ' : 1'], q.avgR !== null ? ['Avg R / trade', (q.avgR >= 0 ? '+' : '') + (Math.round(q.avgR * 100) / 100) + 'R'] : q.mine ? ['Trades', String(q.n)] : ['Traders', String(q.traders)]];
+    var fmtRs = function(r){ return (r >= 0 ? '+' : '−') + (Math.round(Math.abs(r) * 100) / 100) + 'R'; };
+    var cols = q.mine ? [['Total R', q.totalR === null ? '—' : fmtRs(q.totalR)], ['Profit factor', q.pf === null ? '—' : q.pf === Infinity ? '∞' : (Math.round(q.pf * 100) / 100).toFixed(2)], ['Trades', String(q.n)]]
+      : [['Record', q.W + '–' + q.L + (q.BE ? '–' + q.BE : '')], ['Avg win : loss', q.ratio === null ? '—' : (Math.round(q.ratio * 10) / 10) + ' : 1'], q.avgR !== null ? ['Avg R / trade', (q.avgR >= 0 ? '+' : '') + (Math.round(q.avgR * 100) / 100) + 'R'] : q.mine ? ['Trades', String(q.n)] : ['Traders', String(q.traders)]];
     var colW = (cw - P * 2) / 3;
     cols.forEach(function(k, i){ var x = cx + P + colW * i + (i ? 28 : 0);
       if (i){ c.fillStyle = 'rgba(227,241,239,.08)'; c.fillRect(cx + P + colW * i, sy + 40, 2, 110); }

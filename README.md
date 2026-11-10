@@ -638,6 +638,8 @@ last clicked or the one playing, and are ignored while typing in a text box or w
 ("My P&L"). **Admins:** Stats → **📱 Share card**, then pick whose: **Everyone (the Project)** (the whole community, admin-only: the
 data behind it only loads for admins), **Me**, or any student. A personal card shows the person's name at the top
 ("Ava · P&L") and a faint @username under the card; the Everyone card shows no name.
+Personal cards stay minimal: P&L, the curve, **Total R** (sum of R on trades with risk or prices logged), **Profit
+factor** (gross profit ÷ gross loss, ∞ with no losing trades) and **Trades**. No win rate or win : loss ratio.
 
 The card is A clean 9:16 image (1080×1920) of every student's combined results for **Today**, **This
 week** or **This month**: net P&L, win rate (breakevens not counted), trades and traders, a running P&L curve, record
