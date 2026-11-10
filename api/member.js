@@ -77,7 +77,7 @@ const CONFL = ['FVG', 'Order block', 'Breaker', 'SMT divergence', 'Displacement'
 const MANAGE = ['Held to target / stop', 'Took partials', 'Moved stop to BE', 'Trailed stop', 'Closed early'];
 const MISTAKES = ['Entered early', 'Entered late', 'Moved stop', 'Oversized', 'Chased', 'Traded through news', 'Revenge trade', 'Overtraded'];
 const GRADES = ['A+', 'A', 'B', 'C'];
-const ENTRY_TYPES = ['Limit', 'Market', 'Stop'];
+const ENTRY_TYPES = ['Limit', 'Market', 'Stop', 'Internal manip'];
 const EMOTIONS = ['Calm', 'Confident', 'Hesitant', 'FOMO', 'Frustrated', 'Tired'];
 // One journal entry from what the page sent. Only what decides stats and points is required:
 //   trades: date, result (TP/SL/BE), account, followed rules · no-trade days: date, followed rules
@@ -95,6 +95,7 @@ function buildEntry(e, uid, old) {
     createdAt: new Date().toISOString(), void: false, status: 'pending', files,
     news: ['yes', 'no'].includes(e.news) ? e.news : '', newsWhat: e.news === 'yes' ? str(e.newsWhat, 60) : '' };
   if (tags.length) entry.tags = tags;
+  if (typeof e.goalKept === 'boolean') entry.goalKept = e.goalKept;   // did they keep this week's focus goal
   if (date !== rawDate) entry.sunday = rawDate;   // the day it was actually traded (Sunday open)
   if (kind === 'none') return { entry };
   const num = (v) => { if (v === '' || v === null || v === undefined) return undefined; const n = Number(v); return isFinite(n) && Math.abs(n) < 1e9 ? n : undefined; };
@@ -111,11 +112,12 @@ function buildEntry(e, uid, old) {
     exitTime: /^\d{2}:\d{2}$/.test(str(e.exitTime, 5)) ? str(e.exitTime, 5) : undefined,
     tz: /^[A-Za-z_]+(\/[A-Za-z0-9_+-]+){0,2}$/.test(str(e.tz, 60)) ? str(e.tz, 60) : undefined,
     pEntry: num(e.pEntry), pStop: num(e.pStop), pTarget: num(e.pTarget), pExit: num(e.pExit),
-    risk: num(e.risk) > 0 ? num(e.risk) : undefined,
+    risk: num(e.risk) ? Math.abs(num(e.risk)) : undefined,   // stop size is a positive amount; a minus typed in front is read as the same size
     mae: num(e.mae) >= 0 ? num(e.mae) : undefined, mfe: num(e.mfe) >= 0 ? num(e.mfe) : undefined,
     htf: pick(e.htf, HTFS), bias: pick(e.bias, ['bullish', 'bearish', 'neutral']), ltf: pick(e.ltf, LTFS),
     swept: many(e.swept, SWEPT), confl: many(e.confl, CONFL), manage: many(e.manage, MANAGE), mistakes: many(e.mistakes, MISTAKES),
     grade: pick(e.grade, GRADES), entryType: pick(e.entryType, ENTRY_TYPES), emotion: pick(e.emotion, EMOTIONS),
+    acctId: /^a[0-9a-f]{10}$/.test(str(e.acctId, 12)) ? str(e.acctId, 12) : undefined,   // which prop account (Coaching → Accounts)
   };
   Object.keys(extra).forEach((k) => { if (extra[k] !== undefined) entry[k] = extra[k]; });
   const missing = ['outcome', 'account'].filter((k) => !entry[k]);

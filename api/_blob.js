@@ -45,7 +45,9 @@ async function signAll(req, items, field) {
 }
 
 // A file a member uploaded: must be in their own folder in this site's Blob store.
-const EXT_TYPE = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif', heic: 'image/heic', heif: 'image/heif', pdf: 'application/pdf' };
+const EXT_TYPE = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif', heic: 'image/heic', heif: 'image/heif', pdf: 'application/pdf',
+  webm: 'audio/webm', m4a: 'audio/mp4', mp3: 'audio/mpeg', ogg: 'audio/ogg', wav: 'audio/wav' };
+const AUDIO = /^audio\/(webm|mp4|mpeg|ogg|wav)$/;   // voice notes, only in conversation threads
 function cleanFile(f, userId, folder) {
   if (!f || typeof f.url !== 'string') return null;
   const url = f.url.trim().slice(0, 2000).split('?')[0];
@@ -56,6 +58,8 @@ function cleanFile(f, userId, folder) {
   // the type: what the browser said, or worked out from the file name (some browsers send none, or "image/jpg")
   let type = typeof f.type === 'string' ? f.type.toLowerCase().slice(0, 80) : '';
   if (type === 'image/jpg' || type === 'image/pjpeg') type = 'image/jpeg';
+  type = type.split(';')[0];
+  if (folder === 'thread' && AUDIO.test(type)) return { url, name: String(f.name || 'voice').slice(0, 140), type, size: Math.max(0, Math.min(+f.size || 0, 50 * 1024 * 1024)) };
   if (!/^(image\/(png|jpeg|webp|gif|heic|heif)|application\/pdf)$/.test(type)) {
     const ext = (/\.([a-z0-9]{2,5})$/i.exec(String(f.name || '')) || /\.([a-z0-9]{2,5})$/i.exec(path) || [])[1];
     type = EXT_TYPE[String(ext || '').toLowerCase()] || '';

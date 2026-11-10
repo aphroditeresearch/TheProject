@@ -32,8 +32,9 @@
 const { kvPipeline, KEY_PREFIX, staffAlert, clientIp, loadAlerts, staffHook } = require('../_lib');
 const zlib = require('zlib');
 const { readSession, isAdmin, adminIds, kvConfigured, kv, listMembers, loadProgress, saveProgress, loadFlags, json } = require('../_lib');
-const { loadActivity, saveCert, contentWithDefaults, memberState, loadSubs, saveSub, deleteSub, setOverride, loadCerts, loadPromo, savePromo, findItem, loadJournal, loadEntries, saveEntry, entryPoints, lastWorkOf, loadDayNotes, loadTestimonials, saveTestimonial, deleteTestimonial, hookReady, discordPost, testimonialPayload, payoutPayload, loadFeedSettings, entryStatus, basePoints } = require('../_gate');
+const { nyToday, loadActivity, saveCert, contentWithDefaults, memberState, loadSubs, saveSub, deleteSub, setOverride, loadCerts, loadPromo, savePromo, findItem, loadJournal, loadEntries, saveEntry, entryPoints, lastWorkOf, loadDayNotes, loadTestimonials, saveTestimonial, deleteTestimonial, hookReady, discordPost, testimonialPayload, payoutPayload, loadFeedSettings, entryStatus, basePoints } = require('../_gate');
 const { signAll, makeSigner } = require('../_blob');
+const C = require('../_coach');
 
 const ID = /^\d{5,25}$/;
 const KEY = /^(bd:|hw:)?[\w-]{1,64}$/;
@@ -144,6 +145,38 @@ async function restoreKeys(keys, mode) {
   return { written, skipped };
 }
 // daily: a compressed copy goes to a private Discord channel (outside Vercel and Upstash), and the result is noted
+// End-of-day nudge in Discord (DISCORD_RECAP_WEBHOOK): who journaled, the group's P&L and rules kept, and an @mention for
+// every student who hasn't journaled today. Runs from Vercel Cron on weekdays, or from Admin → Coaching → "Send today's now".
+async function dailyNudge() {
+  const hook = process.env.DISCORD_RECAP_WEBHOOK || '';
+  if (!hookReady(hook)) return { ok: false, error: 'no_webhook' };
+  const today = nyToday(), wd = new Date(today + 'T12:00:00Z').getUTCDay();
+  if (wd === 0 || wd === 6) return { ok: true, skipped: 'weekend' };
+  const admins = adminIds(), members = (await listMembers()).filter((m) => !admins.includes(m.id));
+  let journaled = 0, total = 0, pnl = 0, followed = 0, answered = 0; const missing = [], clean = [];
+  await Promise.all(members.map(async (m) => {
+    const j = await loadJournal(m.id); if (!j) return;   // only students who keep a journal
+    total++;
+    const ents = Object.values(await loadEntries(m.id)).filter((e) => e.date === today && entryStatus(e) !== 'denied');
+    if (!ents.length) { missing.push(m.id); return; }
+    journaled++;
+    ents.forEach((e) => { if (typeof e.followed === 'boolean') { answered++; if (e.followed) followed++; } if (e.kind === 'trade' && /^(funded|evaluation)$/i.test(String(e.account || '').trim())) pnl += +e.pnl || 0; });
+    if (ents.every((e) => e.followed === true)) clean.push(m.displayName || m.username || 'A student');
+  }));
+  if (!total) return { ok: true, skipped: 'no_journals' };
+  const day = new Date(today + 'T12:00:00Z').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+  const money = (n) => (n < 0 ? '−$' : '+$') + Math.abs(Math.round(n)).toLocaleString('en-US');
+  const lines = ['📊 **Daily recap · ' + day + '**',
+    '✅ ' + journaled + ' of ' + total + ' students journaled' + (answered ? ' · rules kept ' + Math.round(followed / answered * 100) + '%' : ''),
+    '💰 Group P&L (funded + evaluation): ' + money(pnl)];
+  if (clean.length) lines.push('🏆 Kept every rule today: ' + clean.slice(0, 15).map((n) => '**' + n.replace(/[*_`~|]/g, '') + '**').join(', '));
+  const ping = missing.slice(0, 90);
+  if (ping.length) lines.push('⏰ Still to journal today: ' + ping.map((id) => '<@' + id + '>').join(' ') + '\nPost your trades, or log a no-trade day. It keeps your streak.');
+  else lines.push('🔥 Everyone journaled today. That\'s how it\'s done.');
+  const r = await discordPost(hook, { content: lines.join('\n').slice(0, 1990), allowed_mentions: { parse: [], users: ping } });
+  await kv(['SET', 'nudge-last', JSON.stringify({ at: new Date().toISOString(), ok: r.ok, journaled, total })]);
+  return Object.assign({ journaled, total, missing: missing.length }, r);
+}
 async function cronBackup() {
   const hook = process.env.DISCORD_BACKUP_WEBHOOK || '';
   const status = { at: new Date().toISOString(), ok: false };
@@ -166,6 +199,13 @@ async function cronBackup() {
 
 module.exports = async (req, res) => {
   // the daily automatic backup comes from Vercel Cron, not a signed-in admin
+  if (/[?&]cron=nudge\b/.test(req.url || '')) {
+    const secret = process.env.CRON_SECRET || '';
+    if (!secret || (req.headers.authorization || '') !== 'Bearer ' + secret) return json(res, 401, { error: 'not_cron' });
+    if (!kvConfigured()) return json(res, 503, { error: 'no_storage' });
+    const st = await dailyNudge();
+    return json(res, st.ok ? 200 : 500, st);
+  }
   if (/[?&]cron=backup\b/.test(req.url || '')) {
     const secret = process.env.CRON_SECRET || '';
     if (!secret || (req.headers.authorization || '') !== 'Bearer ' + secret) return json(res, 401, { error: 'not_cron' });
@@ -209,6 +249,7 @@ module.exports = async (req, res) => {
       await kv(['SET', 'snippets', JSON.stringify(list)]);
       return json(res, 200, { saved: true, snippets: list });
     }
+    if (body.action === 'nudge-now') return json(res, 200, await dailyNudge());
     if (body.action === 'staff-test') {   // "send a test alert" (not throttled per kind: a fresh key each time)
       if (!staffHook()) return json(res, 400, { error: 'no_webhook' });
       const ok = await staffAlert('test', { id: s.user.id, name: who }, 'If you can read this in your staff channel, alerts are working.', 1);
@@ -359,6 +400,10 @@ module.exports = async (req, res) => {
     } catch (e) { return json(res, 502, { error: 'storage', detail: String(e.message || e).slice(0, 200) }); }
   }
   // notifications: the latest things members handed in, and how much is waiting in each admin section
+  if (/[?&]nudge=status/.test(req.url || '')) {
+    let last = null; try { last = JSON.parse(await kv(['GET', 'nudge-last']) || 'null'); } catch (e) {}
+    return json(res, 200, { webhook: hookReady(process.env.DISCORD_RECAP_WEBHOOK || ''), cron: !!process.env.CRON_SECRET, last });
+  }
   if (/[?&]activity=1/.test(req.url || '')) {
     try {
       const events = await loadActivity(80);
@@ -385,9 +430,11 @@ module.exports = async (req, res) => {
     const content = await contentWithDefaults();
     const members = await listMembers();
     const files = [];
+    const [mentors, myUnread] = await Promise.all([C.mentorMap(), C.unreadOf(s.user.id)]);
     const rows = await Promise.all(members.map(async (m) => {
       let journal = null, entries = {};
       let dayNotes = {}; try { journal = await loadJournal(m.id); entries = await loadEntries(m.id); dayNotes = await loadDayNotes(m.id); } catch (e) {}
+      let goals = {}, accounts = {}, tmeta = {}; try { [goals, accounts, tmeta] = await Promise.all([C.loadGoals(m.id), C.loadAccounts(m.id), C.threadMeta(m.id)]); } catch (e) {}
       let progress = {}, flags = {}, certs = {}, st = { subs: {}, overrides: {}, promo: null, access: { level: 0, lessons: {}, breakdowns: {}, canPromote: false } };
       try { progress = await loadProgress(m.id); } catch (e) {}
       try { flags = await loadFlags(m.id); } catch (e) {}
@@ -403,11 +450,12 @@ module.exports = async (req, res) => {
         level: st.access.level, canPromote: st.access.canPromote,
         access: Object.assign({}, st.access.lessons, st.access.breakdowns, st.access.homework || {}), isAdmin: adminIds().includes(m.id),
         journal, entries: ents, dayNotes,
+        goals, accounts: Object.values(accounts), tmeta, mentor: mentors[m.id] || '',
       });
     }));
     await signAll(req, files, 'url');
     rows.sort((a, b) => String(b.lastSeen || '').localeCompare(String(a.lastSeen || '')));
-    json(res, 200, { members: rows });
+    json(res, 200, { members: rows, unread: myUnread });
   } catch (e) {
     json(res, 502, { error: 'storage' });
   }

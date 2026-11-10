@@ -14,12 +14,14 @@ const { storeId, rwToken, oidcToken } = require('./_blob');
 const VIDEO = { types: ['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v'], max: 5 * 1024 * 1024 * 1024 };      // 5 GB
 const FILE = { types: ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/heic', 'image/heif', 'application/pdf'], max: 25 * 1024 * 1024 }; // 25 MB
 const VIDEO_PATH = /^(lessons|breakdowns)\/[\w.\-]{1,120}$/;
-const MEMBER_PATH = /^members\/(\d{5,25})\/(homework|certs|journal)\/[\w.\-]{1,120}$/;
+const MEMBER_PATH = /^members\/(\d{5,25})\/(homework|certs|journal|thread)\/[\w.\-]{1,120}$/;
+// conversation threads: screenshots, drawings on a screenshot, and voice notes
+const THREAD = { types: FILE.types.concat(['audio/webm', 'audio/mp4', 'audio/mpeg', 'audio/ogg', 'audio/wav']), max: 25 * 1024 * 1024 };
 
 function rulesFor(pathname, s) {
   if (VIDEO_PATH.test(pathname)) return isAdmin(s) ? VIDEO : null;
   const m = MEMBER_PATH.exec(pathname);
-  if (m && m[1] === s.user.id) return FILE;
+  if (m && m[1] === s.user.id) return m[2] === 'thread' ? THREAD : FILE;
   return null;
 }
 const TV_IMG = /^https:\/\/s3\.tradingview\.com\/snapshots\/[a-z0-9]\/[A-Za-z0-9]{4,16}\.png$/;

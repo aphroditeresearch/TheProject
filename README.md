@@ -253,10 +253,12 @@ All and by Lessons / Breakdowns / Homework, or search a member. **Clear all hand
 **Progress**: see "catching members up" above.
 
 
-## Advanced tab
-Members who reach the top level (Enlightened) get an **Advanced** tab next to Breakdowns. Add lectures to it in
-**Admin → Advanced** (section, title, video, summary, homework). They unlock one at a time, like breakdowns, and are
-grouped by section. Nobody below the top level sees the tab or its lectures.
+## Advanced lectures (inside Lectures)
+Advanced lectures sit under **Lectures → Advanced**, with a Course | Advanced switch at the top of Lectures. Only
+three groups can see them: members with the **Enlightened Discord role**, **moderators** (IDs in `MOD_IDS`, default
+`505505326532132868`; moderators can open every one) and **admins**. Reaching the level another way doesn't open them.
+The server enforces this: anyone else never receives them. Add lectures in **Admin → Advanced** (section, title, video,
+summary, homework). They unlock one at a time, like breakdowns, and are grouped by section.
 
 ## Homework notifications
 New homework and work that's sent back or approved show as notifications at the top of the Homework tab and as a popup
@@ -274,8 +276,9 @@ Illuminated or Enlightened, with the same locks and blur, as a brand-new member 
 preview, and your own progress is left alone. Pick **Admin view** (or "Back to admin view") to see everything again. The choice is
 remembered in that browser.
 
-## Letter rain
-Behind the portal, the letters of THE PROJECT fall faintly in columns, like the Matrix, from the moment the portal opens. Under them: two slow teal glows drifting, a faint chart grid, a soft scan line every ~14 seconds and fine film grain. It pauses when the tab is in the background and is off for anyone who has "reduce motion" turned on.
+## Portal background
+The letter rain was removed. The portal background is now the faint chart grid and soft glows only, which is lighter on
+phones and quieter behind lessons.
 
 ## Admins: going through journals by day
 **Admin → Journal → By day** lists the days journal entries were uploaded (or switch to **Trade date**), with how many
@@ -328,8 +331,7 @@ skipped through freely. Lectures still need watching first. Every video has a sp
 (2× is the maximum), and a **CC** button for YouTube's captions (auto-captions work). Both are remembered per browser.
 
 ## Performance
-The background is lighter: the letter rain runs at a lower frame rate with fewer columns and pauses while a video plays
-or you scroll, the moving background layers are static, and the top bars no longer blur what's behind them.
+The background is lighter (no letter rain), the moving background layers are static, and the top bars no longer blur what's behind them.
 
 ## Stats tab
 A **Stats** tab in the top bar puts every student's journal together: trade days vs no-trade days, when trades get taken,
@@ -342,16 +344,24 @@ Denied entries are left out. The combined numbers are cached for up to 2 minutes
 admin reviews an entry. Days are calendar days: twelve people trading on Friday is one trading day with twelve trades. A no-trade log counts as
 sitting out only if that student didn't also log a trade that day.
 
-## Trade data (optional fields on every trade)
-The journal's trade form has a **Trade data** section. Everything in it is optional, so students can still post quickly and
-older entries are untouched:
-direction, entry type, which time zone their times are in (converted to New York time for the stats), exit time, entry /
-stop / target / exit prices, risk in $, how far price went against them and in their favour (MAE / MFE, in points), bias
-timeframe and HTF bias, entry timeframe, setup grade, how they felt before entering, liquidity swept, confluence, how they
-managed the trade, and mistakes.
-The site works out the planned R, the R multiple, the hold time, whether the trade was with or against the HTF bias, and
-which trade of the day it was. The choice lists are at the top of the "trade data" block in `index.html` (`TD`) and in
-`api/member.js` (`HTFS`, `SWEPT`, `CONFL`…); keep the two in step when you add an option.
+## The trade form (trimmed to what the big journals ask for)
+A live strip across the top shows **Net P&L, R multiple, planned R and time held** as you type. The fields sit in four cards:
+- **Trade:** symbol, long / short, account, date, entry time, contracts, setup (entry model), entry style (Limit, Market,
+  Stop, Internal manip).
+- **Result:** TP / SL / BE, net P&L, stop size. Stop size is what you'd lose if the stop got hit, always a positive number.
+  A minus typed in front is read as the same size, and the server stores it as a positive number too.
+- **Prices** (folded away unless used): entry, stop, target and exit price, exit time, the time zone the times are in.
+- **Review:** setup grade, how you felt, mistakes, notes, screenshots, then tags, news and "did you follow your rules?".
+- The session (Asia / London / NY AM / NY PM) is worked out from the entry time in New York time.
+
+Price and dollar boxes add commas as you type (27998 becomes 27,998); the saved value is the plain number.
+**R multiple:** P&L ÷ stop size when both are in; otherwise it comes from the prices. A blank P&L no longer counts as $0,
+which used to show 0R ("like you didn't hit the trade"). With prices and stop size but no P&L, the strip shows an
+estimated P&L (R × stop size). It also warns when the outcome and the numbers disagree.
+
+Dropped from the form: HTF bias, bias and entry timeframes, liquidity swept, confluence, management, MAE / MFE. Old
+entries keep those values, and editing an old entry doesn't erase them. The stats and the Excel export still use them where they exist.
+The choice lists are in `TD` in `index.html` and in `api/member.js`; keep the two in step when you add an option.
 
 ## What works best (Stats tab)
 Ranks every condition (model, session, half-hour of the day in NY time, weekday, direction, bias alignment, timeframes,
@@ -634,6 +644,13 @@ and → only goes as far as already watched (no skipping ahead). Works in full s
 last clicked or the one playing, and are ignored while typing in a text box or when the image viewer or walkthrough is open.
 
 ## Share cards: results for TikTok / Instagram
+**Phone vs computer:** on a phone the share card offers the 9:16 story styles below (1080×1920, Instagram and
+TikTok's story size). On a computer it shows only the **PC card**: a wide 16:9 card drawn at 3840×2160 in the style of
+copy-trading group cards. A header with the diamond and "Group P&L Card" / "P&L Card" plus the date; the picture
+tile and name (role colour) with role; a headline figure top-right (win rate for the group, trade count for a person);
+the big P&L panel with a trend arrow; and three figures along the bottom (group: record, average win : loss, trades;
+person: total R, profit factor, best trade). Discord pictures are fetched at 512px for both.
+
 **Students:** Stats → **📱 Share my P&L** (also in Journal → Stats). **Admins:** Stats → **📱 Share card**, then pick whose:
 **Everyone (the Project)** (admin-only: the data behind it only loads for admins), **Me**, or any student. Each card is a
 1080×1920 image for **Today**, **This week** or **This month**.
@@ -689,3 +706,89 @@ Names on share cards and in the sign-in intro use Discord role colours. Staff ar
 - `484654761757507584`: Admin, red `#E74C3C`
 Everyone else: Enlightened `#00C853`, Illuminated `#AA00FF`, Awakened `#3498DB` (highest level role wins), otherwise the
 site's green.
+
+## Share cards: sharp after Instagram / TikTok
+Story cards stay exactly 1080×1920 and PC cards 3840×2160 (PNG), so the apps don't rescale them. The canvas draws text
+at geometric precision and scales images at high quality. Glows are drawn in two soft layers, then the text again on top
+with no shadow, so the edges stay sharp. A faint grain (±3/255) goes over the whole card so dark gradients and glows don't
+band into steps when the apps recompress the image.
+
+## The diamond
+`diamond-gem.png` is the standalone diamond, a clean cut-out with its glow on a transparent background. It is used on
+share cards (recoloured red on a red day) and anywhere the diamond appears on its own. The tab icon and phone/app icons
+(`favicon.ico`, `favicon-16/32.png`, `apple-touch-icon.png`, `icon-192/512.png`) are the same diamond on the site's dark
+background. The turning diamond in the sign-in scene is still `diamond.mp4`.
+
+## Logo
+- `logo-word.svg`: the full name (THE PROJECT). `logo-tp.svg`: the TP mark. Both are white vector artwork, so they stay
+  sharp at any size. The site gives them the white-to-mint finish and glow.
+- **Sign-in screen:** the full name with the turning diamond floating right beside it. On computers and phones, the
+  logo, the tagline and the sign-in card are centred.
+- **Top bar (computer and phone) and the other brand spots:** TP | full name side by side (`.lockup`).
+- **Sign-in intro:** the full name draws itself on, then fills in.
+- **Share cards:** the TP mark in the corner (story cards and the PC card header). The diamond stays as the group
+  card's picture.
+- `diamond.mp4` was re-encoded so the diamond turns in place. The bob is now a gentle CSS float that starts level with the
+  logo.
+
+## Coaching: mentor and student, every step
+Everything below adds to what's stored. Journal entries, hand-ins and notes are never changed or removed by it.
+- **Conversations:** every journal entry, hand-in and trading day has a two-way thread ("Talk to your mentor" /
+  "Conversation"). Messages can include pictures, **voice notes** (recorded in the browser, up to 3 minutes) and a
+  **mark-up**: the mentor (or student) draws on one of the student's screenshots with a pen, box or arrow in four colours.
+  The drawing is saved as a see-through layer over the original. The student is notified in their bell. When a student
+  writes, their assigned mentor is notified, or every admin if no mentor is assigned, and it shows in the admins' bell.
+  - Storage: `thread:<student>:<item>` (messages), `tmeta:<student>` (one line per thread), `tunread:<reader>`.
+  - Uploads go to `members/<id>/thread/` in Blob. `vercel.json` now allows the microphone on this site
+    (`microphone=(self)`) for voice notes.
+- **Weekly focus goal:** one goal per student per week, shown in the journal sidebar. The student or a mentor sets it.
+  Once a mentor sets it, the student can't change it. Every journal entry that week asks "Did you keep your focus goal?"
+  (`goalKept` on the entry). Storage: `goals:<id>` (week = the Monday).
+- **Weekly scorecard + Progress (Journal → Progress):**
+  - This week: rules kept %, goal kept, days journaled, P&L, win–loss, top mistake.
+  - Week-by-week table for the last 8 weeks.
+  - Prop accounts.
+  - Every conversation.
+- **Prop accounts:** name, firm, type, starting balance, profit target, max drawdown (trailing intraday, end-of-day
+  trailing or static; it stops trailing at the starting balance unless unticked) and a daily loss limit. Pick the
+  account on a journal entry (`acctId`) and the card shows the balance, distance to the target and room before the
+  drawdown limit. Storage: `paccts:<id>`.
+- **Admin → Coaching (first tab):**
+  - **Triage:** every student, most urgent first. It flags:
+    - messages waiting for a reply
+    - rules broken 2+ journaled days in a row
+    - a big losing day (2× their usual losing day, or $1,000+)
+    - overtrading
+    - no journal for 3+ trading days
+    - accounts within 25% of the drawdown limit or past it, and daily loss limit hit
+    - journal entries and hand-ins waiting for review
+    - no focus goal this week
+
+    Chips open the conversation or the review. "My students" shows only the students assigned to you.
+  - **Student page:** mentor assignment, focus goal (set or change), scorecard, week by week, accounts, conversations,
+    course progress, their rules and latest entries (each with its conversation).
+- **Discord daily recap:** add **`DISCORD_RECAP_WEBHOOK`** (a Discord channel webhook) in Vercel.
+  - Weekdays around 4:30 pm New York, the second Vercel Cron posts how many students journaled, rules kept %, the group's
+    funded + evaluation P&L and who kept every rule. It also @mentions every student with a journal who hasn't journaled
+    that day.
+  - It needs `CRON_SECRET`, as the backup does. "Send today's now" in Admin → Coaching posts it on demand.
+  - This uses both of the free plan's cron jobs (backup + recap).
+
+## Simpler places
+- **Wins** is one page: certified **Payouts**, **Top earners** (the payout leaderboard, moved from Leaderboard) and
+  **Reviews**. The Leaderboard tab is the psych leaderboard only.
+- **Journal → Stats** for students opens with the summary. "Deeper stats" (time of day, day of week, session, setup,
+  what works best) is one click away. Admins always see everything.
+- Kept on purpose: the Chrome-only lock, and the dev-tools shield and alerts (lesson content stays protected).
+
+## Sign-in intro: the lockup
+After sign-in (about 4 seconds):
+1. The TP mark draws itself in one stroke and fills with the mint finish.
+2. It slides left as the full name wipes out beside it, then the teal line draws.
+3. The member's Discord photo (spinning ring in their role colour) appears with "Welcome back, <name>" in their role
+   colour and "VERIFIED MEMBER · <ROLE>".
+4. The portal fades up and the lockup flies into its place in the top bar (`sigDock`), so the intro hands straight into
+   the site with no cut.
+
+The intro has the same proportions as the top-bar logo, so the landing matches exactly. "Reduce motion" skips the
+movement. Markup is `#sig`/`.sig-lock`; the styles start at `.sig-lock`.

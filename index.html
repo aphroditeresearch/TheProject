@@ -80,6 +80,19 @@ a{color:var(--blue);text-underline-offset:3px}
 .word .wm-t,.brand .wm-t{text-transform:none;background:linear-gradient(180deg,#FFFFFF 0%,#EFFFFC 48%,#A6DDD6 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 22px color-mix(in srgb,var(--blue) 45%,transparent)) drop-shadow(0 2px 0 rgba(0,0,0,.35));padding-right:.06em}
 .wm-k{font-family:var(--jp);font-weight:900;font-size:.28em;line-height:1.05;writing-mode:vertical-rl;text-orientation:upright;color:var(--kana-c);align-self:flex-end;margin-bottom:.12em}
 .wm.sm{font-size:28px}
+/* Course | Advanced switch at the top of Lectures */
+.lx-switch{display:inline-flex;align-self:flex-start;border:1px solid var(--line);margin-top:14px}.lx-switch[hidden]{display:none}
+.lx-switch a{padding:9px 18px;font:600 14px var(--sans);color:var(--muted);text-decoration:none}
+.lx-switch a[aria-current=page]{background:var(--blue);color:#02100F}.lx-switch a:hover{color:var(--ink)}.lx-switch a[aria-current=page]:hover{color:#02100F}
+/* the logo artwork (vector): the full name and the TP mark, filled with the wordmark's white-to-mint finish */
+.wm-g{display:block;flex:none;line-height:0}
+.wm-svg,.tp-svg{display:block;background:linear-gradient(180deg,#FFFFFF 0%,#EFFFFC 48%,#A6DDD6 100%);-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat;max-width:none}
+.wm-svg{--m:url(logo-word.svg);height:1.05em;aspect-ratio:1329/183}
+.tp-svg{--m:url(logo-tp.svg);height:1.1em;aspect-ratio:576/273}
+.lockup{gap:.42em}.lockup .wm-svg{height:.86em}
+.lk-div{display:block;flex:none;width:1px;height:1.05em;background:linear-gradient(180deg,transparent,rgba(227,241,239,.35),transparent)}
+.brand .wm-g{filter:drop-shadow(0 0 8px rgba(120,255,210,.32))}
+.word .wm-g{filter:drop-shadow(0 0 1px rgba(236,255,246,.55)) drop-shadow(0 0 6px rgba(205,255,230,.26)) drop-shadow(0 0 16px rgba(90,245,175,.12))}
 .wm.sm .wm-t{text-transform:none}
 .brand{font-size:30px;gap:.07em}
 .brand .wm-t{filter:drop-shadow(0 0 10px color-mix(in srgb,var(--blue) 40%,transparent))}
@@ -145,7 +158,7 @@ a{color:var(--blue);text-underline-offset:3px}
 @media (prefers-reduced-motion:no-preference){
   .scene::after{animation:lift 1.4s cubic-bezier(.4,0,.2,1) both}
   .blueprint{animation:bpin 2.4s cubic-bezier(.4,0,.2,1) both}
-  .moon{animation:fadeup 1.2s cubic-bezier(.4,0,.2,1) 1.25s both,float 6s ease-in-out 2.5s infinite}
+  .moon{animation:fadeup 1.2s cubic-bezier(.4,0,.2,1) 1.25s both,float 6s ease-in-out 1.25s infinite}
   .kana-v{animation:fadeup 1.8s cubic-bezier(.4,0,.2,1) .4s both}
   .word .wm{animation:slam .75s cubic-bezier(.16,1,.3,1) 1s both}
   .impact{animation:impact 1.4s cubic-bezier(.4,0,.2,1) 1.15s both}
@@ -157,11 +170,11 @@ a{color:var(--blue);text-underline-offset:3px}
   @keyframes lift{from{opacity:1}to{opacity:0}}
   @keyframes fadeup{from{opacity:0}}
   @keyframes bpin{from{opacity:0}}
-  @keyframes float{0%,100%{translate:0 0}50%{translate:0 -.06em}}
+  @keyframes float{0%,100%{translate:0 0}25%{translate:0 -.035em}75%{translate:0 .035em}}
   /* the glow breathes: slow swell in, slow fade out; the diamond's glow and the letters' edge follow it */
   .hero::after{animation:breathe 5.2s ease-in-out 1.6s infinite}
   .moon::before{animation:breathe 5.2s ease-in-out 1.6s infinite}
-  .word .wm-t{animation:breatheText 5.2s ease-in-out 1.6s infinite}
+  .word .wm-g{animation:breatheText 5.2s ease-in-out 1.6s infinite}
   @keyframes breathe{0%,100%{opacity:.4;scale:.92}50%{opacity:1;scale:1.07}}
   @keyframes breatheText{0%,100%{filter:drop-shadow(0 0 1px rgba(236,255,246,.5)) drop-shadow(0 0 5px rgba(205,255,230,.18)) drop-shadow(0 0 12px rgba(90,245,175,.08))}
     50%{filter:drop-shadow(0 0 1px rgba(236,255,246,.6)) drop-shadow(0 0 8px rgba(205,255,230,.34)) drop-shadow(0 0 20px rgba(90,245,175,.18))}}
@@ -173,6 +186,14 @@ a{color:var(--blue);text-underline-offset:3px}
   @keyframes beam{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
 }
 
+/* computers: logo + diamond centred, sign-in card centred under it */
+@media (min-width:1025px){
+  .scene{--cx:50%;--cy:36%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(36px,6vh,64px);padding-block:56px}
+  .word{position:relative;left:auto;top:auto;transform:none;align-items:center}
+  .word .hero{font-size:clamp(56px,6.2vw,120px)}
+  .word .tag{align-self:center;text-align:center;padding-left:0}
+  .card{position:relative;right:auto;bottom:auto}
+}
 /* phone/tablet: stack the scene */
 @media (max-width:1024px){
   .scene{min-height:0;padding-block:40px 48px;display:flex;flex-direction:column;align-items:center;gap:32px}
@@ -183,8 +204,10 @@ a{color:var(--blue);text-underline-offset:3px}
   .kana-v{position:relative;align-self:flex-start;writing-mode:horizontal-tb;text-orientation:mixed;font-size:clamp(16px,4.6vw,24px);letter-spacing:.32em;line-height:1;margin:0 0 -18px}
   .laser{display:none}
   .word .tag{padding-left:0}
-  .word{align-self:stretch;align-items:flex-start;margin-top:32px}
-  .word .hero{font-size:clamp(40px,11.5vw,104px)}
+  .word{align-self:stretch;align-items:center;margin-top:32px}
+  .word .tag{align-self:center;text-align:center}
+  .kana-v{align-self:center}
+  .word .hero{font-size:clamp(34px,9vw,96px)}
   .card{width:100%;max-width:420px;box-shadow:10px 10px 0 var(--blue)}
 }
 .card-err{margin:0 0 4px;padding:10px 12px;border:1px solid rgba(232,120,96,.45);background:rgba(232,120,96,.08);color:#F4C2B3;font-size:14px;line-height:1.4}
@@ -196,15 +219,19 @@ a{color:var(--blue);text-underline-offset:3px}
 .sig.in{opacity:1}
 #sig:not([hidden]){display:flex;align-items:center;justify-content:center}   /* centred, whatever else styles this page */
 .sig-in{display:flex;flex-direction:column;align-items:center;gap:30px;padding:24px 16px;transition:transform .7s cubic-bezier(.2,.7,.2,1),opacity .55s ease}
-.sig-mark{display:flex;align-items:center;gap:14px;width:min(640px,86vw)}
-.sig-the{display:flex;flex-direction:column;font:italic 200 22px/.92 var(--display);font-stretch:125%;color:var(--ink)}
-.sig-the span{opacity:0;transform:translateY(4px);transition:opacity .4s ease,transform .5s cubic-bezier(.2,.8,.2,1)}
-.sig.draw .sig-the span{opacity:1;transform:none}
-.sig.draw .sig-the span:nth-child(2){transition-delay:.12s}.sig.draw .sig-the span:nth-child(3){transition-delay:.24s}
-.sig-svg{flex:1;min-width:0;overflow:visible}
-.sig-word{font:italic 900 112px var(--display);font-stretch:125%;fill:transparent;stroke:var(--ink);stroke-width:1.4;stroke-dasharray:1400;stroke-dashoffset:1400;stroke-linejoin:round}
-.sig.draw .sig-word{animation:sigInk 1.25s cubic-bezier(.45,0,.25,1) forwards,sigFill .55s ease 1.05s forwards}
-.sig-line{width:min(560px,76vw);height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,#14A39D 18%,#14A39D 82%,transparent);box-shadow:0 0 18px rgba(20,163,157,.7);transform:scaleX(0);transition:transform .7s cubic-bezier(.2,.8,.2,1) 1.25s;margin-top:-14px}
+/* the lockup: the TP mark draws itself, then slides left as the full name comes out of it (same proportions as the top bar) */
+.sig-lock{--H:min(64px,calc(86vw / 8.6));display:flex;align-items:center;gap:calc(var(--H) * .38);height:var(--H);transform:translateX(calc(var(--H) * 3.2))}
+.sig-tp{height:100%;width:auto;overflow:visible;flex:none}
+.sig-tpp{fill:transparent;stroke:#E3F1EF;stroke-width:3.2;stroke-dasharray:1;stroke-dashoffset:1;stroke-linejoin:round}
+.sig-div{display:block;width:1px;height:95%;flex:none;background:linear-gradient(180deg,transparent,rgba(227,241,239,.5),transparent);transform:scaleY(0)}
+.sig-wm{height:78%;width:auto;flex:none;clip-path:inset(0 100% 0 0);filter:drop-shadow(0 0 10px rgba(140,255,215,.3))}
+.sig.draw .sig-tpp{animation:sigInk 1s cubic-bezier(.5,0,.2,1) .15s forwards,sigFill .45s ease .95s forwards}
+.sig.draw .sig-lock{animation:sigSlide .7s cubic-bezier(.6,0,.2,1) 1.25s forwards}
+.sig.draw .sig-div{animation:sigGrow .4s ease 1.2s forwards}
+.sig.draw .sig-wm{animation:sigWipe .7s cubic-bezier(.6,0,.2,1) 1.3s forwards}
+.sig-ghost{position:fixed;z-index:75;margin:0;pointer-events:none;transform-origin:0 0;transition:transform .8s cubic-bezier(.65,0,.2,1)}
+.sig-ghost *{animation:none!important}.sig-ghost .sig-wm{clip-path:none}.sig-ghost .sig-div{transform:none}.sig-ghost .sig-tpp{fill:url(#sigmint);stroke:transparent;stroke-dashoffset:0}
+.sig-line{width:min(560px,76vw);height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,#14A39D 18%,#14A39D 82%,transparent);box-shadow:0 0 18px rgba(20,163,157,.7);transform:scaleX(0);transition:transform .7s cubic-bezier(.2,.8,.2,1) 1.75s;margin-top:-6px}
 .sig.draw .sig-line{transform:scaleX(1)}
 .sig.wait .sig-line{animation:sigPulse 1.4s ease-in-out infinite}
 .sig-who{display:flex;align-items:center;gap:22px;min-height:96px}
@@ -224,11 +251,14 @@ a{color:var(--blue);text-underline-offset:3px}
 .sig.out{opacity:0;transition:opacity .55s ease .1s}
 .sig.out .sig-in{transform:scale(1.05);opacity:0}
 @keyframes sigInk{to{stroke-dashoffset:0}}
-@keyframes sigFill{to{fill:var(--ink);stroke:transparent}}
+@keyframes sigFill{to{fill:url(#sigmint);stroke:transparent}}
+@keyframes sigSlide{to{transform:none}}
+@keyframes sigGrow{to{transform:none}}
+@keyframes sigWipe{to{clip-path:inset(0 0 0 0)}}
 @keyframes sigSpin{to{transform:rotate(360deg)}}
 @keyframes sigPulse{50%{opacity:.45}}
 @media (max-width:560px){.sig-who{flex-direction:column;gap:16px}.sig-txt{text-align:center;align-items:center}.sig-hi{font-size:28px}}
-@media (prefers-reduced-motion:reduce){.sig *{transition:none!important;animation:none!important}.sig-word{fill:var(--ink);stroke:transparent}.sig-line{transform:none}}
+@media (prefers-reduced-motion:reduce){.sig *{transition:none!important;animation:none!important}.sig-tpp{fill:url(#sigmint);stroke:transparent}.sig-lock{transform:none}.sig-div{transform:none}.sig-wm{clip-path:none}.sig-line{transform:none}}
 .scrim{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:rgba(2,3,7,.8);backdrop-filter:blur(10px)}
 .modal{position:relative;width:100%;max-width:440px;box-sizing:border-box;background:var(--panel);border:2px solid var(--ink);box-shadow:14px 14px 0 var(--blue);padding:44px 30px 30px;display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center;overflow:hidden;max-width:380px}
 .ring{position:relative;width:200px;height:200px;margin-block:8px}
@@ -558,6 +588,8 @@ a{color:var(--blue);text-underline-offset:3px}
 .st-tile{border:1px solid var(--line);background:var(--panel);padding:12px 14px;display:flex;flex-direction:column;gap:2px}
 .st-tile b{font-size:20px;font-variant-numeric:tabular-nums}.st-tile span{font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase}
 .st-tile.win b{color:var(--win)}.st-tile.loss b{color:var(--loss)}
+.st-more{display:flex;flex-direction:column;gap:16px}.st-more>summary{cursor:pointer;list-style:none;padding:12px 14px;border:1px solid var(--line);font:600 14px var(--sans);color:var(--ink)}
+.st-more>summary::-webkit-details-marker{display:none}.st-more>summary::before{content:'+ ';color:var(--muted)}.st-more[open]>summary::before{content:'− '}
 .st-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px}
 .st .tbl-wrap{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
 .st-card{border:1px solid var(--line);background:var(--panel);padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
@@ -788,6 +820,115 @@ table.mem td:first-child,table.mem th:first-child{width:34px}
 .jr-h{margin:28px 0 12px}
 .jr-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .jr-fields .wide{grid-column:1/-1}
+/* ---------- coaching: conversations ---------- */
+.av img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.av.sm{width:28px;height:28px;font-size:12px;flex:none}.av.lg{width:56px;height:56px;font-size:22px;flex:none}
+.th-wrap{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.th-open{align-self:flex-start;appearance:none;cursor:pointer;min-height:34px;padding:0 14px;border:1px solid var(--line);background:transparent;color:var(--ink);font:600 13px var(--sans)}
+.th-open:hover{border-color:var(--blue)}.th-open.on{border-color:var(--blue);background:color-mix(in srgb,var(--blue) 14%,transparent)}
+.th-open.new{border-color:#E8D27A;color:#E8D27A}.th-open.new::after{content:' · new';font-weight:700}
+.th{display:flex;flex-direction:column;border:1px solid var(--line);background:var(--panel)}
+.th-list{display:flex;flex-direction:column;gap:12px;padding:14px;max-height:460px;overflow-y:auto}
+.th-empty{margin:0;color:var(--muted);font-size:14px}
+.th-m{display:flex;gap:10px;align-items:flex-start}.th-m.mine{flex-direction:row-reverse}
+.th-b{display:flex;flex-direction:column;gap:6px;max-width:min(560px,85%);min-width:0;padding:10px 12px;background:var(--panel-2);border:1px solid var(--line)}
+.th-m.staff .th-b{border-color:rgba(232,210,122,.35);background:rgba(232,210,122,.05)}.th-m.mine .th-b{border-color:color-mix(in srgb,var(--blue) 45%,transparent)}
+.th-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.th-h b{font-size:13.5px}.th-h small{color:var(--muted);font-size:12px}
+.th-badge{font:600 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#E8D27A;border:1px solid rgba(232,210,122,.45);padding:3px 5px}
+.th-t{margin:0;font-size:14.5px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.th-b audio{width:min(320px,100%);height:36px}
+.th-mark{position:relative;cursor:zoom-in;max-width:420px;border:1px solid var(--line);line-height:0}.th-mark img{display:block;width:100%;height:auto}
+.th-mark img.ov{position:absolute;inset:0;width:100%;height:100%}.th-mark.big{max-width:none;cursor:default}
+.th-new{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-top:1px solid var(--line)}
+.th-new textarea{width:100%;box-sizing:border-box;min-height:64px;padding:9px 12px;background:#030B0D;border:1px solid #1F3A3C;color:var(--ink);font:15px/1.4 var(--sans);resize:vertical}
+.th-pend{display:flex;flex-wrap:wrap;gap:6px}.th-pend:empty{display:none}
+.th-chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:4px 8px;border:1px solid var(--line);background:var(--panel-2)}.th-chip.dim{color:var(--muted)}
+.th-chip button{appearance:none;border:0;background:none;color:var(--muted);cursor:pointer;font-size:15px;line-height:1;padding:0 2px}
+.th-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.th-send{margin-left:auto}
+.th-btn{min-height:34px;display:inline-flex;align-items:center;gap:4px;box-sizing:border-box}.th-btn.rec{border-color:var(--loss);color:var(--loss)}
+.th-btn input[type=file]{display:none}
+/* windows */
+.cm-sc{position:fixed;inset:0;z-index:80;background:rgba(2,9,11,.82);display:grid;place-items:center;padding:16px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.cm-md{width:min(720px,100%);max-height:calc(100vh - 32px);overflow:auto;background:var(--panel);border:1px solid var(--line);display:flex;flex-direction:column}
+.cm-md.wide{width:min(1200px,100%)}
+.cm-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:1}
+.cm-hd .x{appearance:none;border:0;background:none;color:var(--muted);font-size:24px;line-height:1;cursor:pointer}
+.cm-md .th{border:0}.cm-md .th-list{max-height:none}
+/* mark-up editor */
+.mk-pick{display:flex;gap:8px;padding:10px 16px;overflow-x:auto}.mk-th{appearance:none;border:2px solid transparent;padding:0;background:none;cursor:pointer;flex:none}.mk-th.on{border-color:var(--blue)}.mk-th img{height:56px;display:block}
+.mk-stage{position:relative;margin:0 16px;line-height:0;align-self:center;max-width:calc(100% - 32px)}
+.mk-stage img{display:block;max-width:100%;max-height:calc(100vh - 230px);width:auto;height:auto;user-select:none}
+.mk-stage canvas{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair;touch-action:none}
+.mk-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 16px}
+.mk-col{appearance:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--line);cursor:pointer}.mk-col.on{border-color:var(--ink);box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--ink)}
+/* ---------- focus goal, scorecard, progress, prop accounts ---------- */
+.fg{display:flex;flex-direction:column;gap:6px;padding:14px 16px;border:1px solid rgba(232,210,122,.4);background:rgba(232,210,122,.05)}
+.fg.empty{border-style:dashed;border-color:var(--line);background:none}
+.fg-k{font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:#E8D27A}.fg.empty .fg-k{color:var(--muted)}
+.fg-t{font-size:17px;line-height:1.35}.fg small{color:var(--muted);font-size:12px}.fg-none{margin:0;color:var(--muted);font-size:14px}
+.fg .lnk{align-self:flex-start}.fg-ed{display:flex;gap:8px;flex-wrap:wrap}.fg-ed input{flex:1;min-width:200px;min-height:40px;padding:0 10px;background:#030B0D;border:1px solid #1F3A3C;color:var(--ink);font:15px var(--sans)}
+.jr-follow.goal{border-color:rgba(232,210,122,.5)}.jr-follow.goal div{display:flex;flex-direction:column;gap:2px}.jr-follow.goal small{color:#E8D27A;font-size:13px}
+.sc-card{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border:1px solid var(--line);background:var(--panel)}
+.sc-h{display:flex;justify-content:space-between;gap:10px;align-items:baseline}.sc-h b{font-size:15px}.sc-h span{color:var(--muted);font:500 12px var(--mono)}
+.sc-goal{margin:0;display:flex;flex-direction:column;gap:2px}.sc-goal span{font:600 10.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}.sc-goal em{font-style:normal;font-size:13px}
+.sc-goal em.win{color:var(--win)}.sc-goal em.loss{color:var(--loss)}
+.sc-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+.sc-tiles div{background:var(--panel);padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}.sc-tiles b{font:700 18px var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sc-tiles span{font-size:11.5px;color:var(--muted)}
+.sc-tiles .win b{color:var(--win)}.sc-tiles .loss b{color:var(--loss)}
+.sc-l{margin:0;font-size:13.5px;color:#E8D27A}
+.pp{display:flex;flex-direction:column;gap:18px}
+.pp-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:14px;align-items:start}.pp-top.one{grid-template-columns:minmax(0,1fr)}
+.pp-sec{display:flex;flex-direction:column;gap:10px;min-width:0}.pp-sec .tbl-wrap{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}.pp{min-width:0}
+.fg .lnk,.pa-h .lnk{appearance:none;background:none;border:0;padding:0;color:var(--kana-c);cursor:pointer;font:600 14px var(--sans)}.pp-sec h4{margin:0;font-size:16px}
+.pp-h{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.pp-th{appearance:none;text-align:left;cursor:pointer;display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 14px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit}
+.pp-th div{display:flex;flex-direction:column;gap:2px;min-width:0}.pp-th div span{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pp-th small{color:var(--muted);font-size:12px;white-space:nowrap}.pp-th.wait{border-color:rgba(232,210,122,.5)}.pp-th.wait small{color:#E8D27A}
+.pp-th:hover{border-color:var(--blue)}
+.pa-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px}
+.pa{display:flex;flex-direction:column;gap:8px;padding:14px 16px;border:1px solid var(--line);background:var(--panel)}
+.pa.danger{border-color:rgba(240,84,84,.55)}.pa.blown{border-color:var(--loss);background:rgba(240,84,84,.06)}.pa.passed{border-color:rgba(59,227,143,.5)}
+.pa-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.pa-h b{font-size:15px}.pa-k{color:var(--muted);font-size:12.5px}.pa-h .lnk{margin-left:auto}
+.pa-big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.pa-big b{font:700 22px var(--mono)}.pa-big span{font-size:13px;color:var(--muted)}.pa-big .win{color:var(--win)}.pa-big .loss{color:var(--loss)}
+.pa small{font-size:12.5px;color:var(--muted)}.pa small.warn{color:#E8D27A}.pa small.bad{color:var(--loss)}
+.pa-bar{height:6px;background:var(--panel-2);border:1px solid var(--line)}.pa-bar i{display:block;height:100%;background:var(--win)}
+.pa-bar.dd i{background:linear-gradient(90deg,var(--loss),#E8D27A 40%,var(--win))}
+.pa-form{display:flex;flex-direction:column;gap:10px;grid-column:1/-1;padding:14px 16px;border:1px solid var(--line)}
+/* ---------- mentor triage ---------- */
+.tri{display:flex;flex-direction:column;gap:14px}
+.tri-nudge{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:13.5px;color:var(--muted)}.tri-nudge:empty{display:none}
+.co-note{margin:0;color:var(--muted);font-size:14px;line-height:1.5;max-width:80ch}
+.tri-list{display:flex;flex-direction:column;gap:8px}
+.tri-c{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);gap:14px;align-items:center;padding:12px 14px;border:1px solid var(--line);background:var(--panel)}
+.tri-c.hot{border-color:rgba(240,84,84,.5)}.tri-c.calm{opacity:.75}
+.tri-who{appearance:none;display:flex;gap:10px;align-items:center;text-align:left;background:none;border:0;color:var(--ink);cursor:pointer;padding:0;font:inherit;min-width:0}
+.tri-who div{display:flex;flex-direction:column;gap:2px;min-width:0}.tri-who small{color:var(--muted);font-size:12px}
+.tri-f{display:flex;flex-wrap:wrap;gap:6px}
+.tri-chip{appearance:none;font:500 12.5px var(--sans);padding:5px 10px;border:1px solid var(--line);background:var(--panel-2);color:var(--ink)}
+button.tri-chip{cursor:pointer}button.tri-chip:hover{border-color:var(--blue)}
+.tri-chip.bad{border-color:rgba(240,84,84,.55);color:#FF9C9C}.tri-chip.warn{border-color:rgba(232,210,122,.45);color:#E8D27A}.tri-chip.ok{color:var(--win);border-color:rgba(59,227,143,.4)}.tri-chip.dim{color:var(--muted)}
+.pp-head{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.pp-head>div{display:flex;flex-direction:column;gap:2px}.pp-head>div b{font-size:22px}.pp-head small{color:var(--muted)}
+.pp-head .fld{margin-left:auto;min-width:200px}
+.ntf-ic.k-msg,.ntf-ic.k-thread{color:#E8D27A}
+@media (max-width:760px){.pp-top{grid-template-columns:1fr}.tri-c{grid-template-columns:1fr}.sc-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.pp-head .fld{margin-left:0;width:100%}}
+
+.jr-body{display:flex;flex-direction:column;gap:12px}
+.jr-sec{border:1px solid var(--line);background:rgba(255,255,255,.015);padding:14px 16px 16px}
+.jr-sec-h,.jr-col>summary{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin:0 0 12px}
+.jr-sec-h b,.jr-col>summary b{font:700 11px/1.2 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink)}
+.jr-sec-h span,.jr-col>summary span{font-size:12px;color:var(--muted)}
+.jr-col>summary{cursor:pointer;list-style:none;margin:0}.jr-col[open]>summary{margin-bottom:12px}
+.jr-col>summary::-webkit-details-marker{display:none}
+.jr-col>summary b::before{content:'+ ';color:var(--muted)}.jr-col[open]>summary b::before{content:'− '}
+.jr-live{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+.jr-live>div{background:var(--panel);padding:12px 14px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.jr-live span{font:600 10.5px/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.jr-live b{font:700 22px/1.15 var(--mono);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.jr-live b.win{color:var(--win)}.jr-live b.loss{color:var(--loss)}
+.jr-live small{font-size:11.5px;color:var(--muted)}
+.jr-live .jr-warn{grid-column:1/-1;margin:0;padding:9px 14px;background:rgba(232,210,122,.08);color:#E8D27A;font-size:13px}
+.jr-fields input[inputmode=decimal]{font-variant-numeric:tabular-nums}
+@media (max-width:700px){.jr-live{grid-template-columns:repeat(2,minmax(0,1fr))}.jr-live b{font-size:19px}.jr-sec{padding:12px 12px 14px}}
 .jr-fields select{width:100%;min-height:42px;background:#030B0D;border:1px solid #1F3A3C;color:var(--ink);font:15px var(--sans);padding:0 10px}
 .seg2{display:inline-flex;flex-wrap:wrap;gap:0;border:1px solid var(--line);align-self:flex-start}
 .seg-b{appearance:none;cursor:pointer;min-height:40px;padding:0 16px;border:0;border-right:1px solid var(--line);background:transparent;color:var(--muted);font:600 14px var(--sans)}
@@ -945,6 +1086,8 @@ ul.parts{list-style:none;margin:0 0 4px 22px;padding:0 0 0 12px;border-left:1px 
 .shc-hint{margin:0;font-size:12px;color:var(--muted);text-align:center}
 .shc-stage{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:0}
 .shc-img{display:block;height:min(calc(100vh - 150px),calc((100vw - 32px) * 16 / 9));width:auto;max-width:100%;cursor:pointer}
+.shc.pc .shc-img{height:auto;width:min(100%,calc((100vh - 170px) * 16 / 9))}
+.shc.pc.bare .shc-img{height:auto;width:min(100vw,calc(100vh * 16 / 9))}
 .shc.bare{padding:0;justify-content:center}.shc.bare .shc-top,.shc.bare .shc-hint{display:none}.shc.bare .shc-img{height:min(100vh,calc(100vw * 16 / 9))}
 .img-ph{display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-height:90px;background:rgba(227,241,239,.04);color:var(--muted)}
 .ld{color:transparent!important;background:linear-gradient(100deg,rgba(227,241,239,.04) 30%,rgba(227,241,239,.10) 50%,rgba(227,241,239,.04) 70%) 0 0/300% 100%!important;animation:ldsh 1.2s linear infinite}
@@ -1314,7 +1457,6 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
 </head>
 <body>
 <div class="bgfx" id="bgfx" aria-hidden="true"><i class="aur a1"></i><i class="aur a2"></i><i class="grid"></i><i class="scan"></i><i class="grain"></i></div>
-<canvas id="rain" class="fx" aria-hidden="true"></canvas>
 
 <div class="page">
   <!-- SIGN-IN SCENE -->
@@ -1326,7 +1468,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     <div class="word">
       <div class="impact" aria-hidden="true"></div>
       <div class="hero">
-      <h1 class="wm" aria-label="The Project"><span class="wm-n" aria-hidden="true"><span>T</span><span>H</span><span>E</span></span><span class="wm-t" aria-hidden="true">PROJECT</span></h1>
+      <h1 class="wm" aria-label="The Project"><span class="wm-g" aria-hidden="true"><span class="wm-svg"></span></span></h1>
         <div class="moon"><video src="diamond.mp4" poster="diamond.jpg" autoplay muted loop playsinline preload="auto" aria-label="A glowing diamond turning slowly in the dark."></video></div>
       </div>
       <span class="tag">discipline compounds.</span>
@@ -1345,13 +1487,12 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   <section id="portal-view" class="portal" hidden>
     <div class="bar">
       <div class="bar-in">
-        <div class="wm sm brand" aria-label="The Project"><span class="wm-n" aria-hidden="true"><span>T</span><span>H</span><span>E</span></span><span class="wm-t" aria-hidden="true">PROJECT</span></div>
+        <div class="wm sm brand lockup" aria-label="The Project"><span class="wm-g tp-g" aria-hidden="true"><span class="tp-svg"></span></span><i class="lk-div" aria-hidden="true"></i><span class="wm-g" aria-hidden="true"><span class="wm-svg"></span></span></div>
         <nav class="tabs" aria-label="Portal">
           <span class="tab-ink" id="tab-ink" aria-hidden="true"></span>
           <a class="tab" href="#lectures" data-tab="lectures">Lectures</a>
           <a class="tab" href="#homework" data-tab="homework">Homework <span class="badge" id="hw-badge" hidden>0</span></a>
           <a class="tab" href="#breakdowns" data-tab="breakdowns">Breakdowns</a>
-          <a class="tab" href="#advanced" data-tab="advanced" id="adv-tab" hidden>Advanced</a>
           <a class="tab" href="#journal" data-tab="journal">Journal</a>
           <a class="tab" href="#leaderboard" data-tab="leaderboard">Leaderboard</a>
           <a class="tab" href="#stats" data-tab="stats">Stats</a>
@@ -1382,12 +1523,12 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       <div class="hello">
         <span class="eyebrow">Member portal</span>
         <h2>Welcome back <span id="hello-name">Member</span>.</h2>
-        
+        <nav class="lx-switch" aria-label="Lectures" hidden><a href="#lectures" aria-current="page">Course</a><a href="#advanced">Advanced</a></nav>
       </div>
       <div class="course">
         <aside class="side" aria-label="Lessons">
           <div class="side-h">
-            <div class="wm sm brand" aria-label="The Project"><span class="wm-n" aria-hidden="true"><span>T</span><span>H</span><span>E</span></span><span class="wm-t" aria-hidden="true">PROJECT</span></div>
+            <div class="wm sm brand lockup" aria-label="The Project"><span class="wm-g tp-g" aria-hidden="true"><span class="tp-svg"></span></span><i class="lk-div" aria-hidden="true"></i><span class="wm-g" aria-hidden="true"><span class="wm-svg"></span></span></div>
             <small>Signed in as <span class="js-handle">@member</span></small>
           </div>
           <div class="prog" aria-live="polite">
@@ -1441,7 +1582,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     <main class="main" data-view="wins" hidden>
       <div class="view-h">
         <h2>wins</h2>
-        <p>Reviews from students and payouts certified by a mentor. Share yours: approved reviews show here and in the Discord.</p>
+        <p>Payouts certified by a mentor, the top earners, and reviews from students. Share yours: approved reviews and payouts show here and in the Discord.</p>
       </div>
       <div id="wins"></div>
     </main>
@@ -1464,7 +1605,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       <div class="course">
         <aside class="side" aria-label="Breakdowns">
           <div class="side-h">
-            <div class="wm sm brand" aria-label="The Project"><span class="wm-n" aria-hidden="true"><span>T</span><span>H</span><span>E</span></span><span class="wm-t" aria-hidden="true">PROJECT</span></div>
+            <div class="wm sm brand lockup" aria-label="The Project"><span class="wm-g tp-g" aria-hidden="true"><span class="tp-svg"></span></span><i class="lk-div" aria-hidden="true"></i><span class="wm-g" aria-hidden="true"><span class="wm-svg"></span></span></div>
             <small>Signed in as <span class="js-handle">@member</span></small>
           </div>
           <div class="prog" aria-live="polite">
@@ -1482,12 +1623,13 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     <main class="main wide" data-view="advanced" hidden>
       <div class="view-h">
         <h2>advanced</h2>
+        <nav class="lx-switch" aria-label="Lectures" hidden><a href="#lectures">Course</a><a href="#advanced" aria-current="page">Advanced</a></nav>
         <p>Lectures for Enlightened members. Work through them in order: hand in your notes and homework on each one to unlock the next.</p>
       </div>
       <div class="course">
         <aside class="side" aria-label="Advanced lectures">
           <div class="side-h">
-            <div class="wm sm brand" aria-label="The Project"><span class="wm-n" aria-hidden="true"><span>T</span><span>H</span><span>E</span></span><span class="wm-t" aria-hidden="true">PROJECT</span></div>
+            <div class="wm sm brand lockup" aria-label="The Project"><span class="wm-g tp-g" aria-hidden="true"><span class="tp-svg"></span></span><i class="lk-div" aria-hidden="true"></i><span class="wm-g" aria-hidden="true"><span class="wm-svg"></span></span></div>
             <small>Signed in as <span class="js-handle">@member</span></small>
           </div>
           <div class="prog" aria-live="polite">
@@ -1509,7 +1651,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         <span class="adm-note" id="adm-note"></span>
       </div>
       <nav class="adm-nav" id="adm-nav" aria-label="Admin sections">
-        <button type="button" data-sec="announcements" aria-pressed="true">Announcements</button>
+        <button type="button" data-sec="coach" aria-pressed="true">Coaching</button>
+        <button type="button" data-sec="announcements" aria-pressed="false">Announcements</button>
         <button type="button" data-sec="homework" aria-pressed="false">Homework</button>
         <button type="button" data-sec="lectures" aria-pressed="false">Lectures</button>
         <button type="button" data-sec="breakdowns" aria-pressed="false">Breakdowns</button>
@@ -1591,9 +1734,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
 <!-- SIGN-IN INTRO: the wordmark signs itself on, then the member's picture, name (role colour) and role appear -->
 <div class="sig" id="sig" role="status" aria-live="polite" hidden>
   <div class="sig-in">
-    <div class="sig-mark" aria-hidden="true">
-      <span class="sig-the"><span>T</span><span>H</span><span>E</span></span>
-      <svg class="sig-svg" viewBox="0 0 640 120"><text x="4" y="98" class="sig-word">PROJECT</text></svg>
+    <div class="sig-lock" id="sig-lock" aria-hidden="true">
+      <svg class="sig-tp" viewBox="-2 -2 580 277"><defs><linearGradient id="sigmint" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".48" stop-color="#EFFFFC"/><stop offset="1" stop-color="#A6DDD6"/></linearGradient></defs><path class="sig-tpp" pathLength="1" fill-rule="evenodd" d="M108.25 271.42 C108.25 271.24 108.54 270.81 108.90 270.48 C109.25 270.15 109.95 269.31 110.45 268.62 C112.08 266.38 119.29 257.43 121.23 255.24 C122.27 254.07 124.03 251.95 125.12 250.53 C126.22 249.10 127.63 247.31 128.26 246.53 C128.88 245.76 129.83 244.51 130.37 243.75 C130.91 242.99 132.43 241.08 133.75 239.50 C135.08 237.92 137.44 234.94 139.00 232.88 C140.56 230.81 144.38 226.00 147.48 222.18 C150.59 218.36 154.40 213.58 155.96 211.56 C157.51 209.53 159.49 207.03 160.34 206.00 C161.19 204.97 162.22 203.68 162.62 203.12 C163.02 202.57 164.31 201.00 165.49 199.62 C166.67 198.25 168.08 196.56 168.63 195.88 C170.12 194.00 172.93 190.60 174.63 188.62 C175.45 187.66 177.34 185.18 178.82 183.11 C181.47 179.39 182.41 178.22 185.88 174.30 C186.84 173.22 189.31 170.16 191.38 167.50 C193.44 164.85 196.20 161.38 197.52 159.78 C198.83 158.18 201.68 154.62 203.85 151.88 C206.02 149.12 208.92 145.51 210.30 143.83 C211.67 142.16 213.72 139.61 214.84 138.16 C217.85 134.28 220.67 130.76 224.90 125.62 C225.92 124.39 229.07 120.45 231.91 116.88 C234.74 113.30 237.64 109.76 238.34 109.00 C239.67 107.58 242.08 104.46 243.38 102.50 C244.63 100.60 247.86 96.68 250.05 94.41 L252.12 92.25 L282.62 92.20 C299.40 92.18 348.17 92.14 391.00 92.12 C471.29 92.08 471.02 92.08 476.12 91.10 C484.23 89.54 489.36 86.72 495.59 80.41 C499.17 76.78 499.34 76.56 500.63 73.89 C502.32 70.37 502.84 68.60 502.70 66.74 C502.49 63.79 500.60 61.98 497.23 61.49 C496.27 61.36 459.37 61.25 406.12 61.24 C356.90 61.22 315.33 61.13 313.75 61.04 C311.34 60.90 310.87 60.81 310.80 60.46 C310.75 60.20 311.64 59.08 313.08 57.58 C314.37 56.23 316.68 53.70 318.21 51.96 C319.74 50.22 321.25 48.59 321.56 48.33 C322.26 47.77 327.55 42.28 331.75 37.75 C333.47 35.90 336.28 32.92 338.00 31.12 C339.72 29.33 341.74 27.20 342.50 26.37 C343.25 25.55 346.62 21.99 350.00 18.47 C353.37 14.95 357.98 10.11 360.24 7.72 C362.50 5.33 364.52 3.27 364.73 3.15 C364.93 3.02 365.61 2.89 366.24 2.84 C369.45 2.63 513.43 2.79 516.23 3.01 C517.96 3.15 520.56 3.42 522.00 3.61 C523.44 3.81 525.24 4.04 526.00 4.13 C528.40 4.40 534.99 5.96 538.50 7.08 C545.30 9.26 554.52 14.62 559.22 19.12 C563.43 23.16 568.22 30.06 570.09 34.78 C570.91 36.85 571.65 39.15 571.87 40.25 C571.96 40.73 572.20 41.80 572.39 42.62 C572.99 45.23 573.80 54.18 573.62 56.38 C573.19 61.79 572.34 67.41 571.33 71.50 C570.84 73.50 569.66 77.23 569.31 77.89 C568.86 78.73 567.54 81.83 567.14 82.95 C566.93 83.54 566.60 84.33 566.40 84.70 C566.20 85.07 565.79 85.94 565.48 86.62 C563.99 89.94 559.99 96.36 556.66 100.75 C551.39 107.70 543.38 116.13 537.83 120.57 C533.24 124.24 527.38 128.08 522.13 130.87 C521.03 131.46 518.89 132.60 517.38 133.41 C514.96 134.71 512.32 135.93 508.50 137.52 C506.85 138.20 500.15 140.48 498.12 141.05 C493.99 142.20 484.43 144.16 480.00 144.75 C471.28 145.93 477.89 145.85 380.50 145.99 C330.52 146.07 289.44 146.22 289.22 146.33 C288.76 146.55 284.45 151.58 283.53 152.96 C282.72 154.17 281.34 155.85 278.78 158.75 C277.63 160.06 276.11 161.97 275.42 163.00 C273.84 165.33 269.73 170.44 266.26 174.38 C264.81 176.03 262.30 179.12 260.70 181.25 C259.10 183.38 257.02 186.05 256.08 187.17 C250.61 193.73 249.16 195.51 246.29 199.23 C242.32 204.38 240.29 206.93 238.50 209.00 C237.73 209.89 236.43 211.52 235.62 212.61 C234.10 214.64 233.49 215.40 223.39 228.00 C220.25 231.92 217.40 235.54 217.07 236.04 C216.47 236.95 215.20 237.75 214.38 237.75 C214.01 237.75 211.75 238.46 201.58 241.79 C199.90 242.33 197.60 243.18 196.45 243.66 C193.71 244.82 191.52 245.59 187.88 246.65 C186.22 247.13 181.89 248.48 178.25 249.65 C174.61 250.82 170.84 252.01 169.88 252.30 C168.91 252.59 166.16 253.47 163.75 254.27 C161.34 255.06 158.59 255.94 157.62 256.23 C152.16 257.85 150.77 258.31 148.20 259.34 C144.99 260.62 143.04 261.29 140.00 262.16 C138.83 262.50 135.18 263.65 131.88 264.73 C125.82 266.70 123.28 267.48 119.62 268.50 C118.53 268.81 116.61 269.39 115.38 269.80 C112.05 270.88 109.04 271.75 108.62 271.75 C108.42 271.75 108.25 271.60 108.25 271.42 Z M23.15 208.07 C22.81 207.72 23.04 206.99 23.61 206.61 C23.94 206.39 24.70 205.58 25.29 204.79 C25.87 204.01 27.73 201.80 29.41 199.88 C31.09 197.95 33.63 194.90 35.05 193.09 C37.80 189.58 42.83 183.53 46.53 179.25 C47.78 177.81 49.43 175.84 50.21 174.87 C50.99 173.91 53.14 171.28 55.00 169.02 C56.86 166.76 58.93 164.23 59.61 163.39 C60.28 162.56 61.92 160.63 63.23 159.10 C64.55 157.58 66.64 155.05 67.88 153.48 C69.11 151.92 70.92 149.73 71.88 148.63 C72.85 147.53 74.08 146.05 74.63 145.35 C75.18 144.64 76.47 143.08 77.50 141.86 C80.77 138.02 82.05 136.46 83.79 134.16 C85.20 132.30 88.61 128.35 91.28 125.49 C92.18 124.53 97.54 118.05 98.62 116.62 C100.12 114.63 101.92 112.56 104.49 109.86 C105.80 108.47 108.45 105.33 110.38 102.87 C112.30 100.41 116.12 95.71 118.88 92.42 C121.62 89.13 124.81 85.24 125.95 83.78 C127.08 82.32 128.54 80.62 129.17 80.00 C129.80 79.38 131.57 77.36 133.10 75.51 C134.63 73.66 136.44 71.47 137.13 70.64 C137.83 69.81 139.55 67.69 140.96 65.94 C142.37 64.19 143.63 62.70 143.76 62.62 C144.12 62.40 144.05 61.57 143.66 61.42 C143.47 61.35 116.45 61.28 83.60 61.27 C15.79 61.25 2.03 61.13 1.81 60.54 C1.62 60.06 3.97 57.89 8.38 54.46 C10.16 53.07 12.69 51.05 14.00 49.97 C15.31 48.90 20.03 45.12 24.50 41.57 C28.97 38.02 33.68 34.22 34.97 33.12 C36.26 32.02 38.24 30.45 39.37 29.62 C41.41 28.14 42.60 27.21 53.77 18.38 C56.90 15.90 60.62 13.03 62.04 12.01 C63.46 10.98 65.13 9.67 65.75 9.11 C66.37 8.54 68.37 6.88 70.20 5.41 L73.53 2.75 L187.45 2.71 C334.77 2.66 343.44 2.69 343.67 3.39 C343.72 3.54 343.39 4.05 342.94 4.52 C342.49 4.99 341.03 6.61 339.70 8.12 C338.36 9.64 335.96 12.17 334.35 13.75 C332.74 15.33 328.99 19.27 326.02 22.50 C323.05 25.73 319.33 29.72 317.75 31.37 C316.16 33.02 314.37 34.94 313.77 35.62 C313.16 36.31 312.15 37.44 311.51 38.12 C310.88 38.81 309.47 40.38 308.38 41.61 C307.30 42.83 304.21 46.04 301.52 48.74 C298.83 51.43 295.56 54.87 294.25 56.38 C292.94 57.89 291.41 59.60 290.85 60.19 L289.82 61.25 L256.10 61.28 C237.55 61.30 221.65 61.38 220.76 61.47 L219.15 61.62 L217.14 64.03 C216.03 65.36 214.39 67.38 213.50 68.53 C209.78 73.30 206.55 77.25 204.76 79.25 C202.64 81.61 200.63 84.11 199.12 86.27 C197.25 88.95 194.15 92.87 192.14 95.12 C191.03 96.36 189.17 98.61 188.00 100.11 C186.83 101.62 185.19 103.64 184.36 104.61 C183.53 105.58 180.83 108.88 178.36 111.95 C169.86 122.52 167.94 124.86 166.23 126.81 C165.28 127.88 163.73 129.79 162.78 131.06 C161.83 132.34 159.89 134.72 158.48 136.38 C157.07 138.03 154.88 140.67 153.61 142.25 C152.34 143.83 150.53 146.08 149.59 147.25 C148.64 148.42 146.75 150.84 145.39 152.62 C144.02 154.41 142.19 156.61 141.33 157.51 C140.47 158.41 139.17 159.90 138.44 160.81 C137.72 161.71 136.03 163.80 134.70 165.44 C133.37 167.08 131.46 169.50 130.45 170.81 C129.45 172.13 127.26 174.82 125.59 176.80 C123.92 178.79 121.73 181.48 120.71 182.79 C118.94 185.08 115.18 189.76 110.74 195.22 C109.58 196.65 107.85 198.85 106.90 200.10 C104.95 202.67 100.77 207.78 100.38 208.06 C100.08 208.28 23.37 208.29 23.15 208.07 Z"/></svg>
+      <i class="sig-div"></i>
+      <svg class="sig-wm" viewBox="0 0 1329 183"><path fill="url(#sigmint)" fill-rule="evenodd" d="M467.88 181.88 C460.20 180.82 454.15 178.52 449.78 175.00 C448.65 174.09 446.15 171.12 445.07 169.41 C441.62 163.94 440.52 157.51 441.73 149.88 C442.44 145.45 444.99 137.95 447.87 131.88 C448.32 130.91 449.00 129.39 449.37 128.50 C449.74 127.61 450.86 125.19 451.87 123.12 C452.87 121.06 454.00 118.70 454.38 117.88 C454.75 117.05 455.88 114.69 456.88 112.62 C457.88 110.56 459.05 108.03 459.49 107.00 C459.92 105.97 460.38 104.90 460.49 104.62 C460.71 104.12 464.86 95.61 468.84 87.50 C470.09 84.96 471.58 82.34 472.41 81.25 C473.77 79.44 475.75 76.71 477.42 74.32 C478.53 72.74 482.32 68.88 484.81 66.81 C488.25 63.94 494.83 59.81 498.21 58.39 C501.75 56.91 507.89 55.35 513.75 54.45 C516.86 53.97 626.64 53.97 630.50 54.45 C637.75 55.35 643.70 57.77 647.47 61.36 C649.80 63.57 652.11 66.52 653.01 68.44 C653.45 69.37 654.09 71.42 654.43 73.00 C654.97 75.54 655.03 76.31 654.93 79.62 C654.81 83.58 654.47 85.51 653.23 89.25 C652.14 92.52 651.81 93.39 650.90 95.33 C648.70 100.01 648.00 101.54 648.00 101.66 C648.00 101.73 647.11 103.60 646.03 105.83 C642.75 112.58 641.35 115.54 640.50 117.50 C640.05 118.53 639.60 119.49 639.50 119.62 C639.40 119.76 638.72 121.22 638.00 122.88 C636.94 125.30 634.64 129.94 633.26 132.44 C633.13 132.68 632.50 134.11 631.87 135.62 C631.23 137.14 630.26 139.33 629.70 140.50 C629.14 141.67 628.26 143.53 627.74 144.62 C627.22 145.72 626.31 147.64 625.72 148.88 C622.18 156.30 615.08 164.82 606.44 172.03 C602.22 175.55 592.36 179.68 584.75 181.11 C580.05 181.99 578.60 182.02 524.25 182.12 C479.46 182.21 469.95 182.16 467.88 181.88 Z M616.32 181.97 C616.12 181.77 616.55 181.18 617.92 179.78 C618.96 178.73 620.72 176.81 621.84 175.52 C626.64 169.96 631.03 165.33 641.62 154.62 C644.53 151.69 649.13 147.51 650.42 146.64 C656.45 142.57 659.77 140.57 661.50 139.99 C661.84 139.87 662.91 139.48 663.88 139.12 C665.99 138.32 668.64 137.58 670.50 137.27 C672.72 136.89 676.81 136.48 676.95 136.62 C677.08 136.75 676.93 137.07 675.88 138.92 C675.10 140.29 674.25 143.36 674.25 144.79 C674.25 146.21 675.00 147.39 676.38 148.10 C677.18 148.53 677.78 148.62 679.50 148.59 C680.67 148.57 688.26 148.53 696.38 148.51 C705.36 148.49 711.71 148.37 712.62 148.22 C717.42 147.38 721.06 145.41 723.93 142.08 C725.74 139.98 726.91 138.04 728.52 134.50 C729.30 132.78 730.55 130.08 731.31 128.50 C733.62 123.69 736.25 118.02 736.25 117.88 C736.25 117.73 738.36 112.73 739.95 109.12 C741.00 106.74 743.45 101.46 745.97 96.18 C746.81 94.42 748.22 91.27 749.11 89.18 C749.99 87.09 751.24 84.25 751.88 82.88 C752.52 81.50 753.87 78.52 754.88 76.25 C758.24 68.65 764.60 55.09 764.98 54.68 C765.30 54.34 768.65 54.27 789.62 54.16 C812.22 54.04 816.42 54.14 816.84 54.80 C817.05 55.13 816.99 55.40 816.55 55.98 C816.25 56.39 816.00 56.85 816.00 57.01 C816.00 57.16 815.71 57.92 815.35 58.70 C815.00 59.49 814.55 60.46 814.37 60.88 C813.54 62.72 807.77 76.01 807.27 77.25 C806.62 78.85 806.02 80.19 804.87 82.62 C804.42 83.59 803.74 85.05 803.36 85.88 C802.99 86.70 802.12 88.56 801.44 90.00 C800.75 91.44 800.05 93.02 799.87 93.50 C799.69 93.98 798.96 95.61 798.25 97.12 C797.54 98.64 796.67 100.49 796.32 101.25 C795.97 102.01 795.27 103.53 794.75 104.62 C794.24 105.72 793.59 107.13 793.31 107.75 C793.03 108.37 792.50 109.55 792.12 110.38 C791.74 111.20 791.12 112.55 790.74 113.38 C790.37 114.20 789.44 116.17 788.69 117.75 C786.82 121.68 786.40 122.59 783.75 128.62 C782.48 131.51 781.13 134.55 780.75 135.38 C780.37 136.20 779.53 138.06 778.88 139.50 C778.23 140.94 776.33 144.88 774.67 148.25 C771.91 153.82 770.71 155.95 768.03 159.98 C766.80 161.82 758.35 170.29 755.88 172.15 C750.23 176.41 747.88 177.58 740.62 179.77 C736.38 181.05 733.17 181.69 730.11 181.86 C728.74 181.94 702.64 182.05 672.11 182.12 C631.79 182.21 616.52 182.17 616.32 181.97 Z M786.71 182.08 C778.27 181.98 778.20 181.97 779.25 180.50 C779.88 179.61 781.47 176.20 782.90 172.62 C783.51 171.11 784.11 169.69 784.24 169.46 C784.37 169.22 784.87 168.04 785.35 166.83 C786.04 165.07 788.06 160.74 789.23 158.50 C789.33 158.29 790.28 155.98 791.33 153.35 C792.38 150.73 794.02 147.01 794.98 145.10 C795.93 143.19 797.24 140.39 797.87 138.88 C798.51 137.36 799.23 135.68 799.49 135.12 C799.74 134.57 800.23 133.39 800.58 132.50 C800.94 131.61 801.44 130.43 801.71 129.88 C801.98 129.32 802.73 127.69 803.37 126.25 C804.02 124.81 804.88 122.89 805.30 122.00 C806.47 119.47 806.89 118.50 807.58 116.75 C807.93 115.85 808.39 114.78 808.61 114.37 C808.82 113.96 809.00 113.55 809.00 113.45 C809.00 113.36 809.45 112.32 810.00 111.16 C810.55 109.99 811.00 108.97 811.00 108.90 C811.00 108.78 811.55 107.57 813.75 102.88 C814.26 101.78 815.03 100.09 815.45 99.12 C815.87 98.16 816.39 97.04 816.61 96.62 C816.82 96.21 817.00 95.72 817.00 95.54 C817.00 95.35 817.16 94.90 817.36 94.54 C817.55 94.17 817.96 93.31 818.27 92.62 C818.57 91.94 819.54 89.90 820.41 88.10 C821.28 86.29 822.00 84.75 822.00 84.67 C822.00 84.59 822.41 83.64 822.90 82.57 C824.25 79.67 824.60 78.88 825.87 75.88 C828.00 70.84 828.31 70.15 830.02 66.62 C831.53 63.51 832.60 61.06 834.00 57.50 C835.00 54.95 835.26 54.51 835.81 54.39 C836.69 54.21 987.61 54.04 990.00 54.22 C991.90 54.36 992.13 54.43 992.20 54.90 C992.24 55.19 992.00 55.75 991.66 56.15 C991.32 56.55 990.33 57.77 989.48 58.88 C988.62 59.98 987.10 61.83 986.11 63.00 C985.11 64.17 982.96 66.70 981.33 68.62 C979.69 70.55 977.83 72.80 977.18 73.62 C976.53 74.45 974.82 76.53 973.38 78.25 C971.93 79.97 969.90 82.41 968.87 83.66 C967.83 84.92 966.84 86.01 966.67 86.07 C966.49 86.14 953.48 86.21 937.74 86.23 C897.42 86.27 869.10 86.60 868.59 87.03 C868.42 87.17 868.21 87.64 868.11 88.08 C868.02 88.52 867.80 89.16 867.62 89.50 C867.44 89.84 867.07 90.63 866.80 91.25 C864.92 95.53 863.75 98.30 863.36 99.38 C863.10 100.06 862.68 101.00 862.41 101.46 C861.41 103.17 858.22 103.05 903.28 103.05 C947.19 103.05 952.57 103.13 952.70 103.77 C952.81 104.37 949.94 108.94 946.59 113.51 C941.09 121.03 940.57 121.70 934.02 129.86 C933.28 130.78 932.40 131.64 932.07 131.77 C931.73 131.90 914.40 132.00 890.54 132.00 C845.51 132.01 848.89 131.89 848.26 133.55 C848.09 134.00 847.67 134.99 847.32 135.75 C846.98 136.51 846.60 137.35 846.49 137.62 C845.18 140.76 844.66 142.00 844.36 142.66 C844.16 143.10 844.00 143.56 844.00 143.69 C844.00 143.93 843.24 145.82 842.70 146.92 C842.55 147.22 842.50 147.64 842.58 147.86 C842.72 148.21 843.96 148.25 853.43 148.27 C928.86 148.39 946.59 148.45 947.83 148.62 C948.64 148.73 949.35 148.96 949.42 149.14 C949.48 149.32 949.19 150.21 948.76 151.11 C948.33 152.01 947.38 154.24 946.64 156.06 C945.22 159.58 943.97 162.46 942.25 166.12 C941.67 167.36 940.41 170.06 939.45 172.12 C938.50 174.19 937.51 176.21 937.27 176.62 C937.03 177.04 936.45 178.28 935.99 179.38 C935.53 180.47 935.00 181.50 934.81 181.66 C934.56 181.88 917.43 181.96 866.80 181.97 C829.58 181.99 798.06 182.04 796.75 182.08 C795.44 182.13 790.93 182.13 786.71 182.08 Z M1.51 181.64 C1.26 181.34 1.38 180.99 2.10 179.82 C2.59 179.03 4.17 175.80 5.61 172.66 C7.06 169.52 9.07 165.36 10.09 163.41 C11.11 161.47 12.31 159.03 12.75 158.00 C14.35 154.30 16.45 150.07 18.29 146.88 C19.31 145.09 20.92 141.94 21.85 139.88 C22.78 137.81 24.23 134.83 25.07 133.25 C26.83 129.90 37.77 108.07 39.97 103.50 C40.79 101.78 42.01 99.36 42.67 98.11 C43.33 96.86 44.77 93.99 45.86 91.73 C46.96 89.47 48.58 86.28 49.47 84.62 C51.10 81.60 52.12 79.58 55.60 72.50 C56.64 70.37 57.96 67.78 58.52 66.75 C59.09 65.72 59.89 64.09 60.30 63.12 C62.05 59.04 64.28 54.75 64.82 54.44 C65.27 54.19 80.53 54.13 142.88 54.14 C226.71 54.16 222.09 54.09 229.50 55.40 C236.72 56.68 242.47 60.52 245.66 66.18 C246.83 68.27 247.61 70.90 248.14 74.57 C248.55 77.45 248.56 77.82 248.16 81.07 C247.68 85.06 247.14 87.30 245.63 91.56 C242.45 100.52 242.25 100.98 238.19 108.62 C235.33 114.02 233.52 116.85 230.79 120.22 C226.36 125.67 222.92 128.80 218.42 131.47 C217.35 132.10 216.17 132.81 215.80 133.04 C209.33 137.07 200.08 139.65 190.00 140.23 C184.80 140.54 97.89 140.67 94.06 140.38 C92.64 140.27 91.43 140.09 91.36 139.97 C91.28 139.85 91.62 138.94 92.10 137.94 C92.58 136.94 93.40 135.18 93.92 134.02 C94.45 132.86 95.91 129.88 97.17 127.39 C98.43 124.91 100.32 121.19 101.37 119.12 C104.33 113.30 105.31 111.63 105.91 111.40 C106.13 111.31 121.90 111.19 140.96 111.12 C160.03 111.06 176.33 110.93 177.19 110.85 C181.08 110.49 185.04 108.15 188.09 104.40 C189.30 102.92 192.62 96.49 193.46 94.01 C193.76 93.13 194.00 92.00 193.99 91.51 C193.98 89.43 192.30 87.41 189.88 86.56 C188.70 86.15 186.01 86.12 145.60 86.12 C110.15 86.12 102.51 86.18 102.18 86.46 C101.96 86.64 101.53 87.32 101.24 87.96 C100.94 88.60 100.32 89.91 99.87 90.88 C99.41 91.84 98.74 93.36 98.37 94.25 C98.00 95.14 97.19 96.94 96.57 98.25 C95.95 99.56 95.00 101.64 94.45 102.88 C93.20 105.71 92.51 107.17 89.49 113.38 C88.15 116.12 86.65 119.25 86.15 120.31 C85.66 121.38 84.84 123.12 84.35 124.19 C83.85 125.25 82.22 128.62 80.72 131.67 C79.23 134.71 78.00 137.30 78.00 137.42 C78.00 137.54 77.79 138.02 77.53 138.50 C77.28 138.98 76.98 139.66 76.88 140.00 C76.66 140.69 74.63 144.93 70.07 154.25 C68.42 157.62 66.82 160.94 66.51 161.62 C66.20 162.31 64.78 165.25 63.35 168.15 C61.92 171.05 60.75 173.50 60.75 173.58 C60.75 174.20 56.91 181.47 56.40 181.81 C56.25 181.91 43.90 181.99 28.97 182.00 C5.48 182.00 1.77 181.95 1.51 181.64 Z M216.58 181.59 C216.49 181.37 216.61 180.89 216.84 180.53 C217.72 179.17 219.82 174.84 220.92 172.16 C221.54 170.63 223.71 166.00 225.74 161.88 C227.77 157.75 230.20 152.80 231.13 150.88 C232.06 148.95 233.23 146.64 233.73 145.75 C234.23 144.86 235.87 141.37 237.36 138.01 C238.86 134.64 240.40 131.35 240.79 130.69 C241.18 130.02 241.90 128.61 242.40 127.55 C242.89 126.49 244.17 123.83 245.25 121.62 C249.69 112.53 252.00 107.72 252.00 107.60 C252.00 107.41 256.43 98.57 257.68 96.25 C258.23 95.22 259.26 93.05 259.96 91.44 C260.66 89.83 262.63 85.78 264.33 82.44 C266.04 79.10 268.36 74.29 269.49 71.75 C271.28 67.73 272.84 64.58 276.86 56.88 C277.36 55.91 277.91 54.99 278.08 54.82 C278.72 54.17 290.28 54.07 359.25 54.13 C433.05 54.19 431.06 54.16 436.71 55.28 C443.67 56.66 448.88 60.07 452.46 65.60 C456.42 71.72 456.80 79.22 453.64 88.75 C452.01 93.67 451.82 94.20 450.89 96.12 C449.18 99.69 447.78 102.66 447.29 103.75 C447.02 104.37 446.21 106.11 445.49 107.62 C444.78 109.14 444.11 110.61 444.00 110.90 C443.80 111.40 441.43 114.98 440.45 116.25 C440.18 116.59 439.21 117.91 438.30 119.17 C435.68 122.75 431.02 127.41 428.21 129.24 C426.62 130.28 419.66 133.77 418.50 134.12 C418.16 134.23 417.75 134.41 417.60 134.53 C416.88 135.10 411.55 136.76 408.93 137.23 C404.08 138.10 401.49 138.30 392.88 138.46 C385.52 138.61 384.62 138.67 384.55 139.03 C384.45 139.56 385.53 140.59 390.00 144.23 C391.99 145.85 395.38 148.80 397.52 150.78 C404.60 157.32 408.35 160.67 410.50 162.40 C413.07 164.45 413.59 164.91 419.78 170.62 C422.46 173.10 426.19 176.53 428.07 178.25 C429.95 179.97 431.49 181.52 431.49 181.69 C431.50 181.94 424.82 182.00 398.90 182.00 L366.30 182.00 L363.47 179.44 C360.60 176.85 357.91 174.28 350.62 167.21 C348.43 165.07 345.95 162.72 345.12 162.00 C344.30 161.27 340.98 158.12 337.75 155.00 C334.52 151.88 330.81 148.39 329.51 147.23 C326.24 144.32 324.23 142.43 318.14 136.50 C315.24 133.68 311.67 130.20 310.19 128.76 C308.71 127.33 307.50 126.02 307.50 125.86 C307.50 125.70 307.82 124.73 308.22 123.72 C308.62 122.70 309.47 120.52 310.11 118.87 C310.75 117.21 311.53 115.41 311.83 114.87 C312.36 113.93 312.47 113.87 313.88 113.71 C314.70 113.62 330.28 113.48 348.50 113.41 C377.42 113.30 381.80 113.23 383.00 112.89 C383.76 112.68 384.94 112.38 385.62 112.22 C390.77 111.06 395.20 106.08 398.75 97.50 C399.67 95.28 399.85 94.54 399.95 92.72 C400.12 89.38 399.48 88.03 397.16 86.80 L395.88 86.12 L355.77 86.06 L315.66 85.99 L314.96 86.67 C314.57 87.04 314.25 87.47 314.25 87.63 C314.25 87.78 313.74 88.90 313.12 90.11 C312.51 91.32 312.00 92.42 312.00 92.54 C312.00 92.74 311.63 93.56 309.00 99.12 C308.48 100.22 307.75 101.90 307.38 102.86 C307.00 103.81 306.61 104.77 306.49 104.98 C306.38 105.20 305.31 107.40 304.13 109.88 C302.94 112.35 301.39 115.50 300.70 116.88 C298.93 120.34 298.00 122.24 298.00 122.36 C298.00 122.54 296.07 126.68 293.96 131.00 C291.57 135.91 291.23 136.66 290.50 138.62 C290.19 139.45 288.82 142.43 287.44 145.25 C284.85 150.58 284.52 151.30 283.37 154.00 C282.99 154.89 281.98 157.09 281.13 158.88 C280.27 160.66 279.20 162.91 278.76 163.88 C278.31 164.84 277.51 166.54 276.97 167.65 C276.44 168.77 276.00 169.75 276.00 169.82 C276.00 169.90 275.48 171.07 274.85 172.42 C272.15 178.15 270.66 181.15 270.30 181.56 C269.95 181.97 268.34 182.00 243.33 182.00 C219.01 182.00 216.72 181.97 216.58 181.59 Z M987.75 181.74 C983.29 181.09 980.46 180.34 976.73 178.81 C972.45 177.05 968.76 174.18 965.45 170.03 C963.72 167.87 963.29 167.05 962.43 164.38 C961.20 160.53 960.93 158.85 960.95 155.00 C960.98 147.83 962.71 139.61 965.37 133.88 C966.81 130.78 968.39 127.20 969.88 123.62 C971.97 118.61 973.10 116.06 974.49 113.29 C975.29 111.69 976.22 109.64 976.56 108.75 C977.54 106.16 978.76 103.01 979.42 101.31 C979.76 100.45 980.53 98.87 981.14 97.81 C981.75 96.74 982.65 94.92 983.15 93.75 C986.83 85.08 992.39 76.26 997.92 70.33 C1000.84 67.20 1006.84 62.74 1011.77 60.04 C1013.58 59.05 1017.76 57.30 1020.00 56.59 C1024.05 55.31 1029.94 54.21 1034.62 53.86 C1037.51 53.65 1153.06 53.66 1153.74 53.87 C1154.41 54.08 1154.39 54.64 1153.68 55.32 C1153.36 55.63 1152.03 57.23 1150.71 58.88 C1149.39 60.52 1147.81 62.44 1147.20 63.12 C1146.58 63.81 1144.91 65.84 1143.49 67.62 C1142.07 69.41 1139.59 72.34 1137.99 74.12 C1135.50 76.91 1130.70 82.77 1129.50 84.49 L1129.12 85.03 L1089.62 85.15 C1046.71 85.28 1047.24 85.26 1043.91 86.66 C1038.87 88.78 1033.66 93.57 1031.82 97.75 C1031.49 98.51 1030.94 99.71 1030.61 100.42 C1030.27 101.14 1030.00 101.77 1030.00 101.83 C1030.00 101.90 1029.33 103.35 1028.50 105.06 C1027.67 106.78 1027.00 108.26 1027.00 108.37 C1027.00 108.56 1026.70 109.26 1025.37 112.12 C1023.77 115.57 1023.29 116.65 1022.51 118.50 C1021.58 120.69 1021.38 121.15 1020.02 124.06 C1019.46 125.26 1019.00 126.34 1019.00 126.45 C1019.00 126.57 1018.67 127.33 1018.28 128.15 C1017.64 129.44 1016.14 132.65 1015.49 134.12 C1014.37 136.63 1013.94 138.30 1013.82 140.53 C1013.74 142.01 1013.80 143.26 1013.97 143.79 C1014.44 145.22 1015.96 146.67 1017.76 147.41 L1019.38 148.07 L1071.72 147.91 C1108.28 147.79 1124.16 147.82 1124.38 148.00 C1124.63 148.21 1124.01 149.63 1121.56 154.45 C1119.84 157.84 1116.50 164.45 1114.14 169.12 C1109.49 178.34 1107.93 181.13 1107.22 181.51 C1106.61 181.85 989.99 182.07 987.75 181.74 Z M1162.06 181.81 C1161.62 181.66 1161.67 181.08 1162.24 180.03 C1162.86 178.87 1165.00 173.88 1165.00 173.58 C1165.00 173.46 1165.40 172.40 1165.90 171.24 C1166.39 170.08 1166.86 168.90 1166.93 168.62 C1167.01 168.35 1167.16 168.01 1167.26 167.88 C1167.36 167.74 1167.82 166.67 1168.27 165.50 C1168.72 164.33 1169.17 163.26 1169.27 163.12 C1169.37 162.99 1169.86 161.83 1170.36 160.54 C1170.86 159.26 1171.37 158.03 1171.50 157.79 C1171.62 157.56 1172.02 156.64 1172.38 155.75 C1172.75 154.86 1173.19 153.79 1173.37 153.38 C1173.55 152.96 1173.95 152.06 1174.25 151.38 C1174.56 150.69 1175.50 148.66 1176.36 146.88 C1177.22 145.09 1178.15 143.01 1178.44 142.25 C1180.14 137.82 1180.95 135.82 1182.06 133.25 C1182.75 131.67 1183.40 130.26 1183.51 130.12 C1183.78 129.78 1185.33 125.95 1186.40 123.00 C1186.87 121.69 1187.36 120.40 1187.49 120.12 C1187.62 119.85 1188.06 118.84 1188.48 117.88 C1188.89 116.91 1189.81 115.00 1190.51 113.62 C1191.20 112.25 1192.06 110.39 1192.42 109.50 C1192.77 108.61 1193.26 107.42 1193.50 106.88 C1193.74 106.33 1194.19 105.26 1194.50 104.50 C1194.80 103.74 1195.20 102.79 1195.39 102.38 C1195.58 101.96 1196.00 101.01 1196.33 100.25 C1196.66 99.49 1197.38 97.92 1197.93 96.75 C1199.28 93.89 1201.01 89.92 1201.00 89.68 C1201.00 89.57 1201.40 88.68 1201.88 87.70 C1202.69 86.07 1202.73 85.87 1202.37 85.52 C1202.02 85.17 1199.71 85.12 1180.93 85.10 C1149.90 85.07 1146.75 85.04 1146.75 84.74 C1146.75 84.60 1147.77 83.33 1149.02 81.93 C1150.27 80.52 1151.92 78.47 1152.69 77.38 C1155.41 73.48 1157.84 70.41 1161.06 66.79 C1164.57 62.85 1171.25 54.63 1171.25 54.26 C1171.25 54.13 1171.50 53.95 1171.80 53.86 C1172.53 53.63 1192.71 53.55 1266.32 53.52 C1299.84 53.50 1327.38 53.55 1327.51 53.63 C1327.92 53.89 1327.77 54.65 1327.21 55.15 C1326.91 55.41 1325.15 57.54 1323.29 59.88 C1321.43 62.21 1319.21 64.86 1318.37 65.75 C1317.52 66.64 1315.35 69.34 1313.54 71.75 C1311.73 74.16 1309.51 76.97 1308.62 78.00 C1307.72 79.03 1306.08 80.96 1304.98 82.29 C1303.68 83.85 1302.73 84.76 1302.30 84.87 C1301.93 84.97 1294.59 85.02 1286.00 85.00 C1258.50 84.91 1252.39 84.97 1251.93 85.31 C1251.70 85.48 1250.99 86.92 1250.36 88.50 C1248.70 92.67 1248.47 93.20 1246.48 97.75 C1245.49 100.02 1244.08 103.34 1243.35 105.12 C1241.42 109.87 1240.64 111.73 1239.91 113.33 C1238.55 116.28 1238.05 117.44 1237.14 119.75 C1236.63 121.06 1235.93 122.76 1235.60 123.53 C1235.27 124.30 1235.00 125.01 1235.00 125.11 C1235.00 125.20 1234.79 125.75 1234.53 126.33 C1234.27 126.90 1233.30 129.29 1232.37 131.62 C1231.44 133.95 1230.59 136.04 1230.47 136.24 C1230.36 136.45 1229.75 137.86 1229.11 139.38 C1226.79 144.93 1225.95 146.90 1225.50 147.88 C1224.97 149.03 1224.24 150.75 1220.34 160.12 C1220.00 160.95 1219.62 161.85 1219.50 162.12 C1218.88 163.58 1217.96 165.82 1217.37 167.36 C1216.71 169.07 1216.27 170.13 1215.62 171.62 C1215.44 172.04 1214.99 173.11 1214.62 174.00 C1214.01 175.50 1213.74 176.11 1212.68 178.50 C1212.46 178.98 1212.06 179.91 1211.78 180.56 C1211.50 181.22 1211.19 181.75 1211.08 181.76 C1208.91 181.83 1162.28 181.89 1162.06 181.81 Z M564.41 148.13 C566.45 147.60 568.02 146.98 568.72 146.45 C569.05 146.20 569.41 146.00 569.52 146.00 C569.62 146.00 570.54 145.45 571.56 144.78 C574.83 142.61 577.65 138.99 580.46 133.38 C583.13 128.02 585.80 122.46 587.25 119.22 C587.91 117.76 588.92 115.68 589.49 114.59 C590.06 113.51 590.87 111.84 591.29 110.88 C591.72 109.91 593.38 106.31 595.00 102.88 C596.61 99.44 598.06 96.03 598.22 95.30 C599.31 90.19 596.97 86.68 591.86 85.75 C590.56 85.52 583.05 85.42 561.70 85.34 C534.19 85.24 533.20 85.26 531.02 85.73 C527.53 86.49 524.03 88.30 520.69 91.06 C518.97 92.48 516.70 95.63 515.28 98.57 C511.56 106.22 510.00 109.52 510.00 109.70 C510.00 109.81 509.17 111.59 508.16 113.64 C507.15 115.69 505.79 118.50 505.13 119.88 C502.56 125.26 499.92 130.68 499.30 131.88 C498.44 133.53 498.17 134.10 497.37 135.88 C497.00 136.70 496.52 137.71 496.29 138.12 C495.97 138.70 495.88 139.54 495.88 141.64 C495.88 144.25 495.92 144.47 496.57 145.45 C497.37 146.67 498.90 147.71 500.50 148.13 C501.33 148.35 509.64 148.43 532.29 148.46 C558.94 148.50 563.15 148.45 564.41 148.13 Z M79.31 41.23 C78.90 40.79 78.92 40.13 79.36 39.76 C79.56 39.60 80.02 38.54 80.39 37.42 C80.76 36.29 81.17 35.25 81.29 35.09 C81.53 34.78 83.68 29.73 83.99 28.73 C84.10 28.38 84.31 27.87 84.46 27.61 C84.61 27.34 85.08 26.28 85.50 25.25 C85.93 24.22 86.38 23.15 86.50 22.88 C86.62 22.60 87.06 21.53 87.47 20.50 C87.88 19.47 88.83 17.20 89.59 15.47 C91.31 11.56 91.40 11.19 90.88 10.66 C90.51 10.29 89.44 10.25 80.85 10.25 C72.34 10.25 71.22 10.20 71.08 9.86 C71.00 9.64 71.15 9.16 71.41 8.79 C71.68 8.43 72.10 7.62 72.36 7.00 C73.92 3.26 74.99 1.31 75.55 1.17 C76.71 0.89 129.58 0.88 130.06 1.17 C130.42 1.38 130.24 2.21 129.47 3.91 C129.05 4.85 128.53 6.02 128.32 6.50 C127.22 9.08 126.66 10.01 126.16 10.12 C125.86 10.19 121.74 10.27 117.00 10.32 C112.26 10.37 108.17 10.50 107.93 10.61 C107.53 10.79 106.00 13.49 106.00 14.02 C106.00 14.21 105.47 15.41 103.52 19.62 C103.11 20.53 102.28 22.66 100.57 27.25 C99.86 29.17 99.12 30.98 98.47 32.40 C98.21 32.97 98.00 33.53 98.00 33.66 C98.00 33.78 97.79 34.27 97.53 34.75 C97.28 35.23 96.99 35.91 96.89 36.25 C96.45 37.74 95.16 40.76 94.85 41.02 C94.32 41.46 79.72 41.66 79.31 41.23 Z M159.39 41.32 C156.37 41.21 156.09 41.05 156.74 39.77 C157.00 39.26 157.90 37.21 158.75 35.23 C159.59 33.25 160.43 31.29 160.62 30.88 C160.81 30.46 161.35 29.17 161.83 28.00 C162.96 25.21 165.11 20.22 165.90 18.55 C167.70 14.75 168.64 12.55 171.62 5.25 C173.13 1.54 173.26 1.28 173.85 1.07 C174.76 0.73 188.32 0.96 188.67 1.31 C188.92 1.56 188.57 2.65 186.99 6.62 C185.89 9.38 184.71 12.34 184.36 13.21 C183.61 15.10 183.72 15.68 184.86 15.89 C185.32 15.98 190.92 16.01 197.30 15.96 C207.53 15.89 208.97 15.83 209.51 15.47 C209.96 15.16 210.87 13.30 212.96 8.34 C214.52 4.65 215.98 1.48 216.20 1.31 C216.49 1.08 218.44 1.00 223.93 1.00 C230.20 1.00 231.29 1.05 231.41 1.37 C231.49 1.58 231.02 2.96 230.37 4.44 C229.72 5.91 228.09 9.82 226.75 13.12 C225.40 16.43 223.84 20.25 223.27 21.62 C222.70 23.00 221.63 25.70 220.89 27.62 C220.15 29.55 219.02 32.25 218.38 33.62 C217.74 35.00 216.82 37.14 216.35 38.38 C215.87 39.61 215.30 40.77 215.07 40.94 C214.76 41.17 212.80 41.25 207.32 41.25 C200.93 41.25 199.97 41.20 199.84 40.86 C199.75 40.65 200.03 39.72 200.44 38.80 C203.33 32.36 205.51 26.49 205.21 25.94 C205.00 25.53 204.14 25.50 192.55 25.50 C182.14 25.50 180.03 25.56 179.60 25.86 C179.32 26.06 178.61 27.32 178.02 28.67 C177.43 30.02 176.75 31.57 176.50 32.12 C176.25 32.67 175.34 34.90 174.48 37.07 C173.24 40.18 172.80 41.03 172.39 41.12 C171.61 41.28 162.21 41.42 159.39 41.32 Z M262.80 41.30 C259.99 41.23 259.61 41.01 260.33 39.91 C260.54 39.59 261.01 38.61 261.38 37.73 C261.74 36.85 262.49 35.17 263.04 34.00 C264.47 30.98 265.04 29.73 265.41 28.88 C265.59 28.46 266.32 26.77 267.03 25.12 C268.29 22.23 270.21 17.56 270.89 15.75 C272.14 12.44 275.58 4.22 276.44 2.50 L277.12 1.12 L302.97 1.12 C326.08 1.12 328.85 1.17 329.07 1.51 C329.24 1.79 329.14 2.29 328.70 3.26 C328.36 4.01 327.81 5.24 327.48 6.00 C326.15 9.01 325.63 9.85 325.00 10.03 C324.66 10.12 316.48 10.21 306.84 10.23 C290.53 10.25 289.27 10.28 288.76 10.69 C288.07 11.25 286.94 13.87 286.90 15.00 L286.88 15.88 L291.50 16.04 C294.04 16.13 300.79 16.21 306.50 16.20 C318.36 16.20 317.72 16.07 316.82 18.30 C316.53 19.03 316.16 20.07 315.99 20.62 C315.53 22.12 314.29 24.65 313.84 25.03 C313.53 25.29 310.41 25.38 298.66 25.46 C282.26 25.57 282.76 25.52 282.10 27.20 C281.90 27.71 281.44 28.76 281.08 29.54 C280.72 30.32 280.50 31.13 280.58 31.35 C280.72 31.71 282.46 31.75 298.12 31.75 C317.00 31.75 316.33 31.70 315.44 33.06 C315.24 33.37 314.55 34.95 313.90 36.57 C313.25 38.19 312.50 39.90 312.23 40.36 L311.73 41.20 L308.88 41.38 C306.31 41.54 269.12 41.48 262.80 41.30 Z"/></svg>
     </div>
     <div class="sig-line" aria-hidden="true"></div>
     <div class="sig-who">
@@ -1606,7 +1750,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
 <!-- WRONG BROWSER -->
 <div class="wall" id="wrongb" role="alertdialog" aria-modal="true" aria-labelledby="wb-h" hidden>
   <div class="wall-in">
-    <div class="wm sm brand" aria-label="The Project"><span class="wm-n" aria-hidden="true"><span>T</span><span>H</span><span>E</span></span><span class="wm-t" aria-hidden="true">PROJECT</span></div>
+    <div class="wm sm brand lockup" aria-label="The Project"><span class="wm-g tp-g" aria-hidden="true"><span class="tp-svg"></span></span><i class="lk-div" aria-hidden="true"></i><span class="wm-g" aria-hidden="true"><span class="wm-svg"></span></span></div>
     <h2 id="wb-h">Wrong browser.</h2>
     <p><b>The Project only works in Google Chrome.</b> Open this page in the Chrome app on your phone or computer.</p>
     <div class="row">
@@ -1629,15 +1773,6 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   </div>
 </div>
 
-<!-- DEVTOOLS SHIELD -->
-<div class="wall" id="shield" role="alertdialog" aria-modal="true" aria-labelledby="sh-h" hidden>
-  <div class="wall-in">
-    <div class="wm sm brand" aria-label="The Project"><span class="wm-n" aria-hidden="true"><span>T</span><span>H</span><span>E</span></span><span class="wm-t" aria-hidden="true">PROJECT</span></div>
-    <h2 id="sh-h">Close developer tools.</h2>
-    <p>The portal is paused while developer tools are open. Close them to keep going.</p>
-    <p class="sh-hint">Not using developer tools? Close Chrome's side panel (bookmarks, reading list, Google Lens or an extension's sidebar) if it's open.</p>
-  </div>
-</div>
 
 <div class="toast" id="toast" role="status" hidden></div>
 <div class="ntf-pops" id="ntf-pops" aria-live="polite"></div>
@@ -1650,6 +1785,16 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
 </div>
 <!-- recording deterrents: a traceable watermark over the portal, and a cover whenever the window loses focus -->
 <div id="wmark" aria-hidden="true" hidden></div>
+<!-- DEVTOOLS SHIELD -->
+<div class="wall" id="shield" role="alertdialog" aria-modal="true" aria-labelledby="sh-h" hidden>
+  <div class="wall-in">
+    <div class="wm sm brand lockup" aria-label="The Project"><span class="wm-g tp-g" aria-hidden="true"><span class="tp-svg"></span></span><i class="lk-div" aria-hidden="true"></i><span class="wm-g" aria-hidden="true"><span class="wm-svg"></span></span></div>
+    <h2 id="sh-h">Close developer tools.</h2>
+    <p>The portal is paused while developer tools are open. Close them to keep going.</p>
+    <p class="sh-hint">Not using developer tools? Close Chrome's side panel (bookmarks, reading list, Google Lens or an extension's sidebar) if it's open.</p>
+  </div>
+</div>
+
 <div id="pshield" role="status" hidden><div><b>Paused</b><span>Lessons hide while this window isn't in focus. Click here to keep going.</span></div></div>
 
 <script>
@@ -1861,48 +2006,11 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function layout(){ placeLaser(); }
   layout(); window.addEventListener('resize', layout);
 
-  /* ---------- THE PROJECT letter rain behind the portal (faint, like the Matrix) ---------- */
+  /* ---------- portal background ---------- */
   var HOLD = { video:0, scroll:0 }, holdT;
   window.addEventListener('scroll', function(){ HOLD.scroll = 1; clearTimeout(holdT); holdT = setTimeout(function(){ HOLD.scroll = 0; }, 180); }, { passive:true });
-  var rain = (function(){
-    var c = document.getElementById('rain'), g = c.getContext('2d'), WORD = 'THEPROJECT', cols = [], RW, RH, FS, LH, on = false, last = 0, raf2 = 0, glyph = {}, dpr = 1;
-    // each letter drawn once (trail colour + head colour), then stamped with drawImage: much cheaper than fillText every frame
-    function glyphs(){
-      glyph = {}; var font = '600 ' + FS + 'px ' + (getComputedStyle(document.body).getPropertyValue('--mono') || 'monospace');
-      WORD.split('').forEach(function(ch){ if (glyph[ch]) return; glyph[ch] = ['rgb(46,214,170)', 'rgb(200,255,240)'].map(function(col){
-        var o = document.createElement('canvas'), w = Math.ceil(FS * 1.1 * dpr), h = Math.ceil(LH * dpr); o.width = w; o.height = h;
-        var x = o.getContext('2d'); x.scale(dpr, dpr); x.font = font; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = col; x.fillText(ch, FS * .55, LH / 2); return o; }); });
-    }
-    function fit(){
-      dpr = 1; RW = c.clientWidth; RH = c.clientHeight; c.width = RW * dpr; c.height = RH * dpr; g.setTransform(1, 0, 0, 1, 0, 0);
-      FS = RW < 600 ? 12 : 14; LH = FS * 1.3; glyphs();
-      var step = RW < 600 ? 38 : 46, n = Math.ceil(RW / step);
-      cols = []; for (var i = 0; i < n; i++) cols.push(drop(i * step + step / 2, true));
-    }
-    function drop(x, init){ return { x:x, y: init ? Math.random() * (RH / LH + 16) - 8 : -Math.random() * 12, v: .06 + Math.random() * .1, len: 6 + Math.floor(Math.random() * 10), off: Math.floor(Math.random() * 10), wait: init ? 0 : Math.random() * 25 }; }
-    function frame(ts){
-      raf2 = requestAnimationFrame(frame);
-      if (ts - last < 50 || HOLD.video || HOLD.scroll) return; last = ts;                      // ~20 fps, paused while a video plays or you scroll
-      g.clearRect(0, 0, c.width, c.height);
-      var rows = RH / LH, gw = FS * 1.1 * dpr, gh = LH * dpr;
-      for (var i = 0; i < cols.length; i++){
-        var k = cols[i]; if (k.wait > 0){ k.wait--; continue; }
-        k.y += k.v; var head = Math.floor(k.y);
-        for (var j = 0; j < k.len; j++){
-          var r = head - j; if (r < 0 || r > rows) continue;
-          g.globalAlpha = j === 0 ? .17 : .09 * (1 - j / k.len);
-          g.drawImage(glyph[WORD[(r + k.off) % 10]][j === 0 ? 1 : 0], (k.x - FS * .55) * dpr, r * gh, gw, gh);
-        }
-        if (head - k.len > rows) cols[i] = drop(k.x, false);
-      }
-      g.globalAlpha = 1;
-    }
-    function start(){ document.getElementById('bgfx').classList.add('on'); if (on || reduce) return; on = true; fit(); c.classList.add('on'); last = 0; raf2 = requestAnimationFrame(frame); }
-    function stop(){ document.getElementById('bgfx').classList.remove('on'); on = false; cancelAnimationFrame(raf2); c.classList.remove('on'); }
-    var rt; window.addEventListener('resize', function(){ if (!on) return; clearTimeout(rt); rt = setTimeout(fit, 200); });
-    document.addEventListener('visibilitychange', function(){ if (!on) return; if (document.hidden) cancelAnimationFrame(raf2); else { last = 0; raf2 = requestAnimationFrame(frame); } });
-    return { start:start, stop:stop };
-  })();
+  // (the letter rain behind the portal was removed; this keeps the faint background grid switching on and off with the portal)
+  var rain = { start:function(){ document.getElementById('bgfx').classList.add('on'); }, stop:function(){ document.getElementById('bgfx').classList.remove('on'); } };
 
   var tEl = document.getElementById('toast'), tT;
   function toast(msg){ tEl.textContent=msg; tEl.hidden=false; clearTimeout(tT); tT=setTimeout(function(){ tEl.hidden=true; }, Math.max(3200, String(msg).length * 55)); }
@@ -1985,7 +2093,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     if (DEMO_MODE || !BACKEND || !SESSION || adminView() || document.hidden || Date.now() - lastPoll < 10000) return;
     var pv = document.getElementById('portal-view'); if (!pv || pv.hidden) return;
     lastPoll = Date.now();
-    if (!SESSION.isAdmin && (++pollN % 3 === 0)) loadMe().then(paintFb);   // journal + certificate reviews, about every 2 minutes
+    if (!SESSION.isAdmin && (++pollN % 3 === 0)) Promise.all([loadMe(), coachLoad()]).then(paintFb);   // journal + certificate reviews, about every 2 minutes
     fetch(contentUrl(), { credentials:'same-origin', cache:'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
       if (!j || !j.content || !LAST_SIG) return;
       var a = accessSig(j.content); if (a.sig === LAST_SIG) return;
@@ -2218,11 +2326,11 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     groups.forEach(function(g){ g.items.forEach(function(it, i){ it.num = i + 1; }); g.allDone = g.items.every(function(it){ return it.lesson.passed; }); });
     return groups;
   }
-  // the Advanced tab is only there for members at the top level (and admins)
+    // Advanced lectures: Enlightened role, moderators and admins only. The server decides (others get them as 'hidden').
   function advOk(){
     if (adminView()) return true;
-    if (BREAKDOWNS.some(function(b){ return bdKind(b) === 'advanced' && b.reason !== 'hidden'; })) return true;
-    return LEVEL >= 1 && !NEXT && (DEMO_MODE ? LEVEL >= CURRICULUM.length : true);
+    if (DEMO_MODE) return LEVEL >= CURRICULUM.length;
+    return BREAKDOWNS.some(function(b){ return bdKind(b) === 'advanced' && b.reason !== 'hidden'; });
   }
   var TRACKS = {
     lx: { groups: lectureGroups, unit:['lesson','lessons'], verb:'finished', doneLabel:'Mark complete', doneOn:'Completed', empty:'No lessons yet.' },
@@ -2565,6 +2673,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     if (sub && sub.offsite && st === 'approved') line = 'Marked done by ' + (sub.reviewer || 'an admin') + ' on ' + fmtDay(sub.reviewedAt) + '.';
     box.appendChild(el('p','hi-state',line));
     if (sub && sub.feedback){ var fb = el('div','hi-fb'); fb.appendChild(el('b',null,'Feedback from your mentor')); fb.appendChild(document.createTextNode(sub.feedback)); box.appendChild(fb); }
+    if (sub && sub.submittedAt && !DEMO_MODE && !adminView()) box.appendChild(threadToggle(uid(), 'h:' + key, (COACH.meta || {})['h:' + key], { shots: sub.files || [] }));
     if (l.homework){ var tk = el('div','hi-task'); tk.appendChild(el('b',null, bd ? 'Mark-ups' : 'Homework')); tk.appendChild(document.createTextNode(l.homework)); box.appendChild(tk); }
     var draft = {}; try { draft = JSON.parse(localStorage.getItem(draftKey(key)) || '{}') || {}; } catch(e) {}
     var src = sub || draft;
@@ -2714,7 +2823,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function renderCurriculum(){ renderTrack('lx'); renderProfileAccess(); }
   function renderBreakdowns(){
     renderTrack('bx');
-    var ok = advOk(), tab = document.getElementById('adv-tab'); if (tab && tab.hidden === ok){ tab.hidden = !ok; moveInk(); }
+    var ok = advOk(); document.querySelectorAll('.lx-switch').forEach(function(sw){ sw.hidden = !ok; });   // Advanced lives inside Lectures now
     if (ok) renderTrack('ax');
     if (!ok && (location.hash || '') === '#advanced') location.hash = '#breakdowns';
   }
@@ -3132,9 +3241,414 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         onPick(o[0]); }); wrap.appendChild(b); });
     return wrap;
   }
+  /* =====================================================================
+     COACHING: conversations, focus goals, prop accounts, progress, mentor triage
+     ===================================================================== */
+  var COACH = { loaded:false, week:'', goals:{}, accounts:[], meta:{}, unread:[], mentor:null };
+  function coachLoad(){
+    if (DEMO_MODE || !BACKEND){ COACH.loaded = true; return Promise.resolve(); }
+    return fetch('/api/coach?me=1', { credentials:'same-origin', cache:'no-store' }).then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){ if (j){ COACH.week = j.week; COACH.goals = j.goals || {}; COACH.accounts = j.accounts || []; COACH.meta = j.meta || {}; COACH.unread = j.unread || []; COACH.mentor = j.mentor || null; } COACH.loaded = true; })
+      .catch(function(){ COACH.loaded = true; });
+  }
+  var COACH_ERR = { slow_down:'Too many messages in a row. Wait a few minutes.', empty:'Write something, or add a voice note or picture.', bad_file:'That file couldn\'t be attached.', not_found:'That item no longer exists.', need_start:'Enter the starting balance.', too_many:'Up to 20 accounts.', forbidden:'Not allowed.' };
+  function coachPost(payload){
+    return fetch('/api/coach', { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) })
+      .then(function(r){ return r.json().then(function(j){ if (!r.ok) throw new Error(COACH_ERR[j && j.error] || MP_ERR[j && j.error] || (j && j.error) || r.status); return j; }); });
+  }
+  function weekOfDay(d){ return mondayOf(tradeDay(d)); }
+  function goalFor(goals, d){ return (goals || {})[weekOfDay(d)] || null; }
+  function timeAgo(iso){ return iso ? ago(iso) : ''; }
+  function itemTitleFor(item, ents){
+    if (/^d:/.test(item)) return 'Trading day · ' + shortDay(item.slice(2));
+    if (/^j:/.test(item)){ var e = (ents || []).filter(function(x){ return x.id === item.slice(2); })[0];
+      return e ? 'Journal · ' + (e.kind === 'trade' ? (e.pair || 'Trade') + ' ' + String(e.outcome || '').toUpperCase() : 'No-trade day') + ' · ' + shortDay(e.date) : 'Journal entry'; }
+    if (/^h:/.test(item)) return 'Hand-in · ' + String(itemTitleSafe(item.slice(2)));
+    return 'Conversation';
+  }
+  function itemTitleSafe(k){ try { return typeof itemTitle === 'function' ? itemTitle(k).replace(/^“|”$/g, '') : k; } catch (e) { return k; } }
+
+  // ---------- one conversation ----------
+  // owner: the student it belongs to · item: j:<entry> / h:<hand-in> / d:<day> · opts.shots: screenshots that can be marked up
+  function threadPanel(owner, item, opts){
+    opts = opts || {};
+    var box = el('div','th'), list = el('div','th-list'), me = uid();
+    list.appendChild(el('p','th-empty','Loading…')); box.appendChild(list);
+    var P = { files:[], audio:null, mark:null, busy:0 };
+    function msgNode(m){
+      var mine = m.by === me, n = el('div','th-m' + (m.staff ? ' staff' : '') + (mine ? ' mine' : ''));
+      var av = el('span','av sm'); setAvatar(av, { avatar:m.avatar, displayName:m.name }); n.appendChild(av);
+      var b = el('div','th-b'), h = el('div','th-h'); h.appendChild(el('b',null, mine ? 'You' : m.name)); if (m.staff) h.appendChild(el('span','th-badge','Mentor'));
+      h.appendChild(el('small',null, timeAgo(m.at))); b.appendChild(h);
+      if (m.text) b.appendChild(el('p','th-t', m.text));
+      if (m.mark && m.mark.base && m.mark.overlay){ var mk = el('div','th-mark'), i1 = el('img'), i2 = el('img'); i1.src = m.mark.base.url; i2.src = m.mark.overlay.url; i1.alt = 'Screenshot'; i2.alt = 'Mentor\'s drawing'; i2.className = 'ov';
+        mk.appendChild(i1); mk.appendChild(i2); mk.addEventListener('click', function(){ openMarkView(m.mark); }); b.appendChild(mk); }
+      if (m.audio){ var au = el('audio'); au.controls = true; au.preload = 'none'; au.src = m.audio.url; b.appendChild(au); }
+      if (m.files && m.files.length) b.appendChild(fileChips(m.files));
+      n.appendChild(b); return n;
+    }
+    function draw(msgs){
+      list.textContent = '';
+      if (!msgs.length) list.appendChild(el('p','th-empty', opts.staffView ? 'No messages yet. Say what you see: they get a notification.' : 'No messages yet. Ask your mentor anything about this: they get a notification.'));
+      msgs.forEach(function(m){ list.appendChild(msgNode(m)); });
+      list.scrollTop = list.scrollHeight;
+    }
+    var msgs = [];
+    if (DEMO_MODE) draw([]);
+    else fetch('/api/coach?thread=' + encodeURIComponent(item) + (owner !== me ? '&uid=' + owner : ''), { credentials:'same-origin', cache:'no-store' })
+      .then(function(r){ return r.ok ? r.json() : { messages:[] }; }).then(function(j){ msgs = j.messages || []; draw(msgs);
+        COACH.unread = (COACH.unread || []).filter(function(u){ return !(u.owner === owner && u.item === item); }); if (typeof paintFb === 'function') paintFb(); })
+      .catch(function(){ list.textContent = ''; list.appendChild(el('p','th-empty','Couldn\'t load the conversation.')); });
+    // composer
+    var cmp = el('div','th-new'), ta = inputEl('textarea','', opts.staffView ? 'Reply to the student…' : 'Write to your mentor…'); ta.rows = 2; ta.maxLength = 2000;
+    var pend = el('div','th-pend'), tools = el('div','th-tools');
+    function drawPend(){ pend.textContent = '';
+      P.files.forEach(function(f, i){ var c = el('span','th-chip', '📎 ' + (f.name || 'image')), x = el('button',null,'×'); x.type = 'button'; x.addEventListener('click', function(){ P.files.splice(i, 1); drawPend(); }); c.appendChild(x); pend.appendChild(c); });
+      if (P.audio){ var c2 = el('span','th-chip', '🎙 Voice note · ' + P.audio.secs + 's'), x2 = el('button',null,'×'); x2.type = 'button'; x2.addEventListener('click', function(){ P.audio = null; drawPend(); }); c2.appendChild(x2); pend.appendChild(c2); }
+      if (P.mark){ var c3 = el('span','th-chip', '✎ Marked-up screenshot'), x3 = el('button',null,'×'); x3.type = 'button'; x3.addEventListener('click', function(){ P.mark = null; drawPend(); }); c3.appendChild(x3); pend.appendChild(c3); }
+      if (P.busy) pend.appendChild(el('span','th-chip dim','Uploading…'));
+    }
+    function up(file, name){ P.busy++; drawPend(); return uploadFile(file, 'members/' + me + '/thread/' + safeName(name || file.name)).then(function(r){ P.busy--; drawPend(); return r; }, function(e){ P.busy--; drawPend(); throw e; }); }
+    // picture
+    var pl = el('label','btn-s th-btn','📎 Picture'), fi = el('input'); fi.type = 'file'; fi.accept = 'image/png,image/jpeg,image/webp,image/gif'; pl.appendChild(fi);
+    fi.addEventListener('change', function(){ var f = fi.files && fi.files[0]; fi.value = ''; if (!f) return; if (P.files.length >= 4){ toast('Up to 4 pictures per message.'); return; }
+      up(f).then(function(r){ P.files.push(r); drawPend(); }).catch(function(e){ toast('Upload failed: ' + ((e && e.message) || e)); }); });
+    tools.appendChild(pl);
+    pasteDrop(cmp, function(picked){ var f = picked[0]; if (!f || !/^image\//.test(f.type || '')) return; up(f, 'pasted.png').then(function(r){ P.files.push(r); drawPend(); }).catch(function(e){ toast('Upload failed: ' + ((e && e.message) || e)); }); });
+    // voice note
+    if (window.MediaRecorder && navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+      var vb = el('button','btn-s th-btn','🎙 Voice note'); vb.type = 'button'; var rec = null, chunks = [], t0 = 0, tick = 0;
+      vb.addEventListener('click', function(){
+        if (rec && rec.state === 'recording'){ rec.stop(); return; }
+        navigator.mediaDevices.getUserMedia({ audio:true }).then(function(stream){
+          chunks = []; var mt = MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '');
+          rec = mt ? new MediaRecorder(stream, { mimeType: mt }) : new MediaRecorder(stream);
+          rec.ondataavailable = function(ev){ if (ev.data && ev.data.size) chunks.push(ev.data); };
+          rec.onstop = function(){ clearInterval(tick); stream.getTracks().forEach(function(t){ t.stop(); }); vb.classList.remove('rec'); vb.textContent = '🎙 Voice note';
+            var secs = Math.round((Date.now() - t0) / 1000), type = (rec.mimeType || mt || 'audio/webm').split(';')[0], ext = /mp4/.test(type) ? 'm4a' : 'webm';
+            var file = new File(chunks, 'voice-' + Date.now() + '.' + ext, { type: type });
+            up(file).then(function(r){ r.secs = secs; r.type = type; P.audio = r; drawPend(); }).catch(function(e){ toast('Upload failed: ' + ((e && e.message) || e)); }); };
+          rec.start(); t0 = Date.now(); vb.classList.add('rec');
+          var upd = function(){ var s = Math.round((Date.now() - t0) / 1000); vb.textContent = '■ Stop · ' + Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); if (s >= 180) rec.stop(); };
+          upd(); tick = setInterval(upd, 500);
+        }).catch(function(){ toast('Microphone blocked. Allow it in Chrome (the icon in the address bar) to record a voice note.'); });
+      });
+      tools.appendChild(vb);
+    }
+    // mark up one of the student's screenshots
+    var shots = (opts.shots || []).filter(function(f){ return /^image\//.test(f.type || ''); });
+    if (shots.length){ var mb = el('button','btn-s th-btn','✎ Mark up screenshot'); mb.type = 'button';
+      mb.addEventListener('click', function(){ openMarkup(shots, function(base, blob){
+        up(new File([blob], 'markup-' + Date.now() + '.png', { type:'image/png' })).then(function(r){ P.mark = { base:{ url: base.url, name: base.name, type: base.type }, overlay: r }; drawPend(); })
+          .catch(function(e){ toast('Upload failed: ' + ((e && e.message) || e)); }); }); });
+      tools.appendChild(mb); }
+    var send = el('button','btn-s pri th-send','Send'); send.type = 'button';
+    send.addEventListener('click', function(){
+      if (P.busy){ toast('Wait for the upload to finish.'); return; }
+      var text = ta.value.trim(); if (!text && !P.files.length && !P.audio && !P.mark){ ta.focus(); return; }
+      send.disabled = true;
+      coachPost({ action:'say', uid: owner, item: item, text: text, files: P.files, audio: P.audio, mark: P.mark }).then(function(r){
+        msgs.push(r.message); draw(msgs); ta.value = ''; P.files = []; P.audio = null; P.mark = null; drawPend();
+        if (owner === me){ COACH.meta[item] = r.meta; } if (opts.onSent) opts.onSent(r.meta);
+      }).catch(function(e){ toast((e && e.message) || 'Couldn\'t send.'); }).then(function(){ send.disabled = false; });
+    });
+    ta.addEventListener('keydown', function(ev){ if (ev.key === 'Enter' && (ev.metaKey || ev.ctrlKey)){ ev.preventDefault(); send.click(); } });
+    cmp.appendChild(ta); cmp.appendChild(pend); tools.appendChild(send); cmp.appendChild(tools); box.appendChild(cmp);
+    return box;
+  }
+  // a button that opens / closes the conversation under a card
+  function threadToggle(owner, item, meta, opts){
+    var wrap = el('div','th-wrap'), n = (meta && meta.n) || 0, unread = (COACH.unread || []).some(function(u){ return u.owner === owner && u.item === item; });
+    var b = el('button','th-open' + (unread ? ' new' : ''), (opts && opts.staffView ? '💬 Conversation' : '💬 Talk to your mentor') + (n ? ' · ' + n : '')); b.type = 'button';
+    var panel = null;
+    b.addEventListener('click', function(){ if (panel){ panel.remove(); panel = null; b.classList.remove('on'); return; }
+      panel = threadPanel(owner, item, Object.assign({}, opts || {}, { onSent: function(m){ b.textContent = (opts && opts.staffView ? '💬 Conversation' : '💬 Talk to your mentor') + ' · ' + m.n; } }));
+      wrap.appendChild(panel); b.classList.add('on'); b.classList.remove('new'); });
+    wrap.appendChild(b);
+    if (opts && opts.open) setTimeout(function(){ b.click(); }, 0);
+    return wrap;
+  }
+  // the conversation in a window (from the bell, the triage board, the progress page)
+  function openThread(owner, item, title, opts){
+    var sc = el('div','cm-sc'), md = el('div','cm-md'), hd = el('div','cm-hd');
+    hd.appendChild(el('b',null, title || 'Conversation')); var x = el('button','x','×'); x.type = 'button'; x.setAttribute('aria-label','Close'); hd.appendChild(x); md.appendChild(hd);
+    md.appendChild(threadPanel(owner, item, opts)); sc.appendChild(md); document.body.appendChild(sc);
+    function close(){ document.removeEventListener('keydown', key); sc.remove(); if (opts && opts.onClose) opts.onClose(); }
+    function key(ev){ if (ev.key === 'Escape') close(); }
+    x.addEventListener('click', close); sc.addEventListener('click', function(ev){ if (ev.target === sc) close(); }); document.addEventListener('keydown', key);
+  }
+  // ---------- drawing on a screenshot (a transparent layer saved over the original) ----------
+  function openMarkup(shots, done){
+    var sc = el('div','cm-sc'), md = el('div','cm-md wide mk-ed'), hd = el('div','cm-hd'); hd.appendChild(el('b',null,'Mark up a screenshot'));
+    var x = el('button','x','×'); x.type = 'button'; hd.appendChild(x); md.appendChild(hd);
+    var pick = el('div','mk-pick'), stage = el('div','mk-stage'), img = el('img'), cv = el('canvas'), bar = el('div','mk-bar');
+    stage.appendChild(img); stage.appendChild(cv);
+    var cur = 0, col = '#F05454', tool = 'pen', strokes = [], drawing = null;
+    shots.forEach(function(f, i){ var b = el('button','mk-th' + (i === 0 ? ' on' : '')), t = el('img'); t.src = viewUrl(f); b.appendChild(t); b.type = 'button';
+      b.addEventListener('click', function(){ cur = i; strokes = []; Array.prototype.forEach.call(pick.children, function(c, j){ c.classList.toggle('on', j === i); }); load(); }); pick.appendChild(b); });
+    if (shots.length > 1) md.appendChild(pick);
+    md.appendChild(stage);
+    [['#F05454','Red'],['#F1C40F','Yellow'],['#3BE38F','Green'],['#FFFFFF','White']].forEach(function(c, i){ var b = el('button','mk-col' + (i === 0 ? ' on' : '')); b.type = 'button'; b.style.background = c[0]; b.setAttribute('aria-label', c[1]);
+      b.addEventListener('click', function(){ col = c[0]; bar.querySelectorAll('.mk-col').forEach(function(z){ z.classList.toggle('on', z === b); }); }); bar.appendChild(b); });
+    var tseg = seg([['pen','Pen'],['box','Box'],['arrow','Arrow']], tool, function(v){ tool = v; }); bar.appendChild(tseg);
+    var un = el('button','btn-s','Undo'), cl = el('button','btn-s','Clear'), ok = el('button','btn-s pri','Attach drawing'); un.type = cl.type = ok.type = 'button';
+    un.addEventListener('click', function(){ strokes.pop(); paint(); }); cl.addEventListener('click', function(){ strokes = []; paint(); });
+    bar.appendChild(un); bar.appendChild(cl); bar.appendChild(ok); md.appendChild(bar);
+    sc.appendChild(md); document.body.appendChild(sc);
+    var g = cv.getContext('2d'), W = 0, H = 0, lw = 4;
+    function load(){ img.onload = function(){ var nw = img.naturalWidth || 1600, nh = img.naturalHeight || 900, s = Math.min(1, 2400 / nw); W = Math.round(nw * s); H = Math.round(nh * s); cv.width = W; cv.height = H; lw = Math.max(3, Math.round(W / 320)); paint(); }; img.src = viewUrl(shots[cur]); }
+    function pt(ev){ var r = cv.getBoundingClientRect(); return { x: (ev.clientX - r.left) / r.width * W, y: (ev.clientY - r.top) / r.height * H }; }
+    function arrowHead(a, b){ var ang = Math.atan2(b.y - a.y, b.x - a.x), L = lw * 5; g.beginPath(); g.moveTo(b.x, b.y); g.lineTo(b.x - L * Math.cos(ang - .45), b.y - L * Math.sin(ang - .45)); g.moveTo(b.x, b.y); g.lineTo(b.x - L * Math.cos(ang + .45), b.y - L * Math.sin(ang + .45)); g.stroke(); }
+    function paint(){ g.clearRect(0, 0, W, H); g.lineCap = 'round'; g.lineJoin = 'round';
+      strokes.concat(drawing ? [drawing] : []).forEach(function(s){ g.strokeStyle = s.col; g.lineWidth = lw; g.shadowColor = 'rgba(0,0,0,.6)'; g.shadowBlur = lw;
+        if (s.tool === 'pen'){ g.beginPath(); s.pts.forEach(function(p, i){ if (i) g.lineTo(p.x, p.y); else g.moveTo(p.x, p.y); }); g.stroke(); }
+        else { var a = s.pts[0], b = s.pts[s.pts.length - 1]; if (!a || !b) return; g.beginPath();
+          if (s.tool === 'box') g.strokeRect(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(b.x - a.x), Math.abs(b.y - a.y)); else { g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.stroke(); arrowHead(a, b); } } });
+      g.shadowBlur = 0; }
+    cv.addEventListener('pointerdown', function(ev){ ev.preventDefault(); cv.setPointerCapture(ev.pointerId); drawing = { tool:tool, col:col, pts:[pt(ev)] }; paint(); });
+    cv.addEventListener('pointermove', function(ev){ if (!drawing) return; if (drawing.tool === 'pen') drawing.pts.push(pt(ev)); else drawing.pts[1] = pt(ev); paint(); });
+    var end = function(){ if (drawing){ if (drawing.pts.length > 1) strokes.push(drawing); drawing = null; paint(); } };
+    cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+    function close(){ sc.remove(); }
+    x.addEventListener('click', close);
+    ok.addEventListener('click', function(){ if (!strokes.length){ toast('Draw on the screenshot first.'); return; } paint(); cv.toBlob(function(blob){ if (!blob) return; close(); done(shots[cur], blob); }, 'image/png'); });
+    load();
+  }
+  function openMarkView(mark){
+    var sc = el('div','cm-sc'), md = el('div','cm-md wide'), hd = el('div','cm-hd'); hd.appendChild(el('b',null,'Your mentor\'s mark-up')); var x = el('button','x','×'); x.type = 'button'; hd.appendChild(x); md.appendChild(hd);
+    var mk = el('div','th-mark big'), i1 = el('img'), i2 = el('img'); i1.src = mark.base.url; i2.src = mark.overlay.url; i2.className = 'ov'; mk.appendChild(i1); mk.appendChild(i2); md.appendChild(mk);
+    sc.appendChild(md); document.body.appendChild(sc); x.addEventListener('click', function(){ sc.remove(); }); sc.addEventListener('click', function(ev){ if (ev.target === sc) sc.remove(); });
+  }
+
+  // ---------- prop accounts: balance, distance to target and to the drawdown floor ----------
+  function acctState(a, ents){
+    var list = (ents || []).filter(function(e){ return e.kind === 'trade' && e.acctId === a.id && entryStatus(e) !== 'denied'; })
+      .sort(function(x, y){ return String(x.date + (x.time || '')).localeCompare(String(y.date + (y.time || ''))); });
+    var bal = +a.start || 0, peak = bal, days = {}, today = tradeDay(todayYmd());
+    list.forEach(function(e){ bal += +e.pnl || 0; days[e.date] = (days[e.date] || 0) + (+e.pnl || 0); if (a.ddType === 'trailing') peak = Math.max(peak, bal); });
+    if (a.ddType === 'eod'){ var run = +a.start || 0; Object.keys(days).sort().forEach(function(d){ run += days[d]; peak = Math.max(peak, run); }); }
+    var floor = null;
+    if (a.maxDD){ floor = a.ddType === 'static' ? a.start - a.maxDD : peak - a.maxDD; if (a.lockAtStart !== false && a.ddType !== 'static') floor = Math.min(floor, +a.start); }
+    var S = { bal: bal, pnl: bal - (+a.start || 0), peak: peak, floor: floor, room: floor === null ? null : bal - floor, trades: list.length, today: days[today] || 0 };
+    S.toTarget = a.target ? a.target - S.pnl : null;
+    S.pct = a.target ? Math.max(0, Math.min(1, S.pnl / a.target)) : null;
+    S.ddPct = a.maxDD && S.room !== null ? Math.max(0, Math.min(1, S.room / a.maxDD)) : null;   // 1 = full cushion, 0 = blown
+    S.blown = S.room !== null && S.room <= 0; S.passed = a.target && S.pnl >= a.target;
+    S.danger = !S.blown && S.ddPct !== null && S.ddPct < .25;
+    S.dailyHit = a.dailyLoss && S.today <= -a.dailyLoss;
+    return S;
+  }
+  function acctCard(a, ents, onEdit){
+    var S = acctState(a, ents), c = el('article','pa' + (S.blown ? ' blown' : S.danger ? ' danger' : S.passed ? ' passed' : ''));
+    var h = el('div','pa-h'); h.appendChild(el('b',null, a.name)); h.appendChild(el('span','pa-k', [a.firm, a.kind, a.status !== 'active' ? cap(a.status) : ''].filter(Boolean).join(' · ')));
+    if (onEdit){ var ed = el('button','lnk','Edit'); ed.type = 'button'; ed.addEventListener('click', function(){ onEdit(a); }); h.appendChild(ed); }
+    c.appendChild(h);
+    var big = el('div','pa-big'); big.appendChild(el('b',null, '$' + Math.round(S.bal).toLocaleString('en-US'))); big.appendChild(el('span', S.pnl > 0 ? 'win' : S.pnl < 0 ? 'loss' : '', (S.pnl >= 0 ? '+' : '−') + '$' + Math.abs(Math.round(S.pnl)).toLocaleString('en-US') + ' · ' + S.trades + (S.trades === 1 ? ' trade' : ' trades'))); c.appendChild(big);
+    if (a.target){ var t = el('div','pa-bar'), f = el('i'); f.style.width = Math.round(S.pct * 100) + '%'; t.appendChild(f); c.appendChild(el('small',null, S.passed ? '✓ Profit target reached' : 'Target: $' + Math.round(S.toTarget).toLocaleString('en-US') + ' to go of $' + a.target.toLocaleString('en-US'))); c.appendChild(t); }
+    if (a.maxDD){ var d = el('div','pa-bar dd'), f2 = el('i'); f2.style.width = Math.round((S.ddPct || 0) * 100) + '%'; d.appendChild(f2);
+      c.appendChild(el('small', S.blown ? 'bad' : S.danger ? 'warn' : '', S.blown ? '✕ Below the drawdown limit ($' + Math.round(S.floor).toLocaleString('en-US') + ')' : 'Room before the drawdown limit: $' + Math.round(S.room).toLocaleString('en-US') + ' (limit at $' + Math.round(S.floor).toLocaleString('en-US') + ', ' + ({ trailing:'trailing', eod:'end-of-day trailing', static:'static' })[a.ddType] + ')'));
+      c.appendChild(d); }
+    if (a.dailyLoss) c.appendChild(el('small', S.dailyHit ? 'bad' : '', 'Today ' + money(S.today) + ' · daily loss limit $' + a.dailyLoss.toLocaleString('en-US') + (S.dailyHit ? ' · limit hit, stop for today' : '')));
+    return c;
+  }
+  function acctForm(a, owner, done){
+    a = a || { kind:'Evaluation', ddType:'trailing', lockAtStart:true, status:'active' };
+    var f = el('div','pa-form'), D = JSON.parse(JSON.stringify(a)), g = el('div','jr-fields');
+    var tx = function(k, ph, type){ var i = inputEl(type || 'text', D[k] === undefined ? '' : String(D[k]), ph); i.addEventListener('input', function(){ D[k] = i.value; }); if (type === 'number'){ i.step = 'any'; i.inputMode = 'decimal'; } return i; };
+    var sl = function(k, opts){ var s0 = el('select'); opts.forEach(function(o){ var op = el('option',null,o[1]); op.value = o[0]; s0.appendChild(op); }); s0.value = D[k] || opts[0][0]; s0.addEventListener('change', function(){ D[k] = s0.value; }); return s0; };
+    [['Name', tx('name','e.g. Topstep 50K #2')], ['Firm', tx('firm','Topstep, Apex, Tradeify…')], ['Type', sl('kind', [['Evaluation','Evaluation'],['Funded','Funded'],['Personal / live','Personal / live']])],
+     ['Starting balance ($)', tx('start','50000','number')], ['Profit target ($)', tx('target','3000','number')], ['Max drawdown ($)', tx('maxDD','2000','number')],
+     ['Drawdown type', sl('ddType', [['trailing','Trailing (intraday)'],['eod','Trailing (end of day)'],['static','Static']])], ['Daily loss limit ($, optional)', tx('dailyLoss','1000','number')],
+     ['Status', sl('status', [['active','Active'],['passed','Passed'],['paid','Paid out'],['failed','Failed'],['archived','Archived']])]].forEach(function(r){ g.appendChild(fld(r[0], r[1])); });
+    f.appendChild(g);
+    var lk = el('label','tick'), lc = el('input'); lc.type = 'checkbox'; lc.checked = D.lockAtStart !== false; lk.appendChild(lc); lk.appendChild(document.createTextNode(' Drawdown stops trailing at the starting balance (most firms)')); lc.addEventListener('change', function(){ D.lockAtStart = lc.checked; }); f.appendChild(lk);
+    var acts = el('div','jr-acts'), sv = el('button','btn-s pri', a.id ? 'Save account' : 'Add account'), cx = el('button','btn-s','Cancel'); sv.type = cx.type = 'button';
+    sv.addEventListener('click', function(){ sv.disabled = true; coachPost({ action:'acct-save', uid: owner, acct: D }).then(function(r){ toast(a.id ? 'Saved.' : 'Account added.'); done(r.acct); }).catch(function(e){ sv.disabled = false; toast(e.message); }); });
+    cx.addEventListener('click', function(){ done(null); });
+    acts.appendChild(sv); acts.appendChild(cx);
+    if (a.id){ var dl = el('button','btn-s warn','Delete'); dl.type = 'button'; dl.addEventListener('click', function(){ if (!confirmInline(dl, 'Sure? Delete')) return; coachPost({ action:'acct-delete', uid: owner, id: a.id }).then(function(){ toast('Deleted. Trades linked to it stay in the journal.'); done(false); }); }); acts.appendChild(dl); }
+    f.appendChild(acts); return f;
+  }
+
+  // ---------- weekly scorecard ----------
+  function scoreOf(ents, mon, goals){
+    var R = weekRecap(ents, mon), g = (goals || {})[mon] || null, fri = addDays(mon, 4);
+    var wk = (ents || []).filter(function(e){ return e.date >= mon && e.date <= fri && entryStatus(e) !== 'denied'; }), ans = wk.filter(function(e){ return typeof e.goalKept === 'boolean'; });
+    R.goal = g; R.goalAns = ans.length; R.goalKept = ans.filter(function(e){ return e.goalKept; }).length; R.goalPct = ans.length ? Math.round(R.goalKept / ans.length * 100) : null;
+    return R;
+  }
+  function scoreCard(ents, mon, goals, title){
+    var R = scoreOf(ents, mon, goals), c = el('section','sc-card'), h = el('div','sc-h'); h.appendChild(el('b',null, title || 'This week')); h.appendChild(el('span',null, weekRange(mon))); c.appendChild(h);
+    if (R.goal){ var gl = el('p','sc-goal'); gl.appendChild(el('span',null,'Focus goal')); gl.appendChild(el('b',null, R.goal.text)); if (R.goalPct !== null) gl.appendChild(el('em', R.goalPct >= 80 ? 'win' : R.goalPct < 50 ? 'loss' : '', 'Kept on ' + R.goalKept + ' of ' + R.goalAns + ' (' + R.goalPct + '%)')); c.appendChild(gl); }
+    var t = el('div','sc-tiles');
+    [[R.entries ? R.rules + '%' : '—', 'Rules kept', R.entries ? (R.rules >= 80 ? 'win' : R.rules < 50 ? 'loss' : '') : ''], [R.days + ' / 5', 'Days journaled', ''], [R.trades ? money(R.pnl) : '—', 'P&L', R.pnl > 0 ? 'win' : R.pnl < 0 ? 'loss' : ''], [R.trades ? R.w + '–' + R.l + (R.be ? '–' + R.be : '') : '—', 'Win–loss', '']]
+      .forEach(function(x){ var d = el('div', x[2]); d.appendChild(el('b',null,x[0])); d.appendChild(el('span',null,x[1])); t.appendChild(d); });
+    c.appendChild(t);
+    if (R.mistake) c.appendChild(el('p','sc-l','⚠ Top mistake: ' + R.mistake));
+    return c;
+  }
+  // the focus goal box: see it, and set / change it
+  function goalBox(owner, goals, staffView, onSaved){
+    var wk = curMonday(), g = goals[wk], box = el('section','fg' + (g ? '' : ' empty'));
+    box.appendChild(el('span','fg-k','This week\'s focus'));
+    if (g){ box.appendChild(el('b','fg-t', g.text)); box.appendChild(el('small',null, (g.staff && g.by !== uid() ? 'Set by ' + g.byName : g.by === uid() ? 'Set by you' : 'Set by ' + g.byName) + ' · ' + timeAgo(g.at))); }
+    else box.appendChild(el('p','fg-none', staffView ? 'No focus goal this week. Give them one thing to work on.' : 'No focus goal yet. Pick the one thing you\'ll fix this week, or ask your mentor for one.'));
+    var lockedByMentor = !staffView && g && g.staff && g.by !== uid();
+    if (!lockedByMentor){
+      var ed = el('button','lnk', g ? 'Change' : 'Set a focus goal'); ed.type = 'button';
+      ed.addEventListener('click', function(){ ed.remove(); var row = el('div','fg-ed'), i = inputEl('text', g ? g.text : '', 'e.g. No trades before 9:45 · Max 2 trades a day · Only A+ setups'); i.maxLength = 160;
+        var sv = el('button','btn-s pri','Save'); sv.type = 'button';
+        sv.addEventListener('click', function(){ sv.disabled = true; coachPost({ action:'goal', uid: owner, text: i.value, week: wk }).then(function(r){ toast(r.goal ? 'Focus goal set for this week.' : 'Focus goal cleared.'); if (onSaved) onSaved(r.goals); }).catch(function(e){ sv.disabled = false; toast(e.message); }); });
+        row.appendChild(i); row.appendChild(sv); box.appendChild(row); i.focus(); });
+      box.appendChild(ed);
+    }
+    return box;
+  }
+
+  // ---------- progress page (a student's own, and the mentor's view of a student) ----------
+  // P: { id, name, entries, goals, accounts, tmeta, subs, level, journal } · staffView: true on the admin side
+  function progressPage(P, staffView, redraw){
+    var wrap = el('div','pp view-in'), ents = P.entries || [];
+    var top = el('div','pp-top');
+    if (staffView) top.appendChild(goalBox(P.id, P.goals || {}, staffView, function(goals){ P.goals = goals; redraw(); })); else top.classList.add('one');
+    top.appendChild(scoreCard(ents, curMonday(), P.goals, 'This week'));
+    wrap.appendChild(top);
+    // last 8 weeks
+    var wks = el('section','pp-sec'); wks.appendChild(el('h4',null,'Week by week'));
+    var tw = el('div','tbl-wrap'), t = el('table','st-t'), hr = el('tr'); ['Week','Focus goal','Goal kept','Rules kept','Days','Trades','P&L','Top mistake'].forEach(function(h){ hr.appendChild(el('th',null,h)); }); t.appendChild(hr);
+    for (var k = 0; k < 8; k++){ var mon = addDays(curMonday(), -7 * k), R = scoreOf(ents, mon, P.goals);
+      if (!R.entries && !R.goal && k > 0) continue;
+      var r = el('tr'); [weekRange(mon), R.goal ? R.goal.text : '—', R.goalPct === null ? '—' : R.goalPct + '%', R.entries ? R.rules + '%' : '—', R.days + '/5', String(R.trades), R.trades ? money(R.pnl) : '—', R.mistake || '—'].forEach(function(v, i){
+        r.appendChild(el('td', i === 6 && R.trades ? (R.pnl > 0 ? 'win' : R.pnl < 0 ? 'loss' : '') : i === 3 && R.entries ? (R.rules >= 80 ? 'win' : R.rules < 50 ? 'loss' : '') : '', v)); });
+      t.appendChild(r); }
+    tw.appendChild(t); wks.appendChild(tw); wrap.appendChild(wks);
+    // accounts
+    var ac = el('section','pp-sec'), ah = el('div','pp-h'); ah.appendChild(el('h4',null,'Prop accounts'));
+    var addB = el('button','btn-s','+ Add account'); addB.type = 'button'; ah.appendChild(addB); ac.appendChild(ah);
+    var grid = el('div','pa-grid'), live = (P.accounts || []).filter(function(a){ return a.status !== 'archived'; });
+    function edit(a){ grid.textContent = ''; addB.hidden = true; grid.appendChild(acctForm(a, P.id, function(saved){
+      if (saved) P.accounts = (P.accounts || []).filter(function(x){ return x.id !== saved.id; }).concat([saved]);
+      else if (saved === false && a) P.accounts = (P.accounts || []).filter(function(x){ return x.id !== a.id; });
+      if (!staffView) COACH.accounts = P.accounts; redraw(); })); }
+    addB.addEventListener('click', function(){ edit(null); });
+    if (!live.length) grid.appendChild(el('p','pf-none', staffView ? 'No accounts added yet.' : 'Add your evaluation and funded accounts. Pick the account on each trade and you\'ll see your distance to the target and to the drawdown limit.'));
+    live.forEach(function(a){ grid.appendChild(acctCard(a, ents, edit)); });
+    ac.appendChild(grid); wrap.appendChild(ac);
+    // conversations
+    var cv = el('section','pp-sec'); cv.appendChild(el('h4',null,'Conversations'));
+    var items = Object.keys(P.tmeta || {}).map(function(k){ return { item:k, m:P.tmeta[k] }; }).sort(function(a, b){ return String((b.m.last || {}).at).localeCompare(String((a.m.last || {}).at)); });
+    if (!items.length) cv.appendChild(el('p','pf-none', staffView ? 'No conversations yet. Open any journal entry, hand-in or day to start one.' : 'No conversations yet. Use “Talk to your mentor” on any journal entry, hand-in or trading day.'));
+    items.slice(0, 30).forEach(function(x){ var l = x.m.last || {}, waiting = staffView ? !l.staff : l.staff, row = el('button','pp-th' + (waiting ? ' wait' : '')); row.type = 'button';
+      var t1 = el('div'); t1.appendChild(el('b',null, itemTitleFor(x.item, ents))); t1.appendChild(el('span',null, (l.staff ? (l.by === uid() ? 'You' : l.name) + ' (mentor)' : (l.by === uid() ? 'You' : l.name)) + ': ' + (l.text || ''))); row.appendChild(t1);
+      row.appendChild(el('small',null, (waiting ? (staffView ? 'Waiting for a reply · ' : 'New reply · ') : '') + x.m.n + (x.m.n === 1 ? ' message · ' : ' messages · ') + timeAgo(l.at)));
+      var e = /^j:/.test(x.item) ? ents.filter(function(y){ return y.id === x.item.slice(2); })[0] : null;
+      row.addEventListener('click', function(){ openThread(P.id, x.item, itemTitleFor(x.item, ents), { staffView: staffView, shots: e ? e.files : (P.subs && /^h:/.test(x.item) && P.subs[x.item.slice(2)] ? P.subs[x.item.slice(2)].files : []), onClose: function(){ if (staffView && redraw) redraw(); } }); });
+      cv.appendChild(row); });
+    wrap.appendChild(cv);
+    return wrap;
+  }
+
+  // ---------- mentor triage: who needs attention today, most urgent first ----------
+  var TRI = { who:null, mine:false };
+  function triageOf(m){
+    var ents = m.entries || [], out = [], today = tradeDay(todayYmd());
+    var days = {}; ents.forEach(function(e){ if (entryStatus(e) === 'denied') return; (days[e.date] = days[e.date] || []).push(e); });
+    var dkeys = Object.keys(days).sort().reverse();
+    // waiting for a reply (the student wrote last)
+    var wait = Object.keys(m.tmeta || {}).filter(function(k){ var l = (m.tmeta[k] || {}).last; return l && !l.staff; });
+    if (wait.length) out.push({ w:50, cls:'bad', t: wait.length + (wait.length === 1 ? ' message waiting for a reply' : ' messages waiting for a reply'), go:'thread', item: wait.sort(function(a, b){ return String(m.tmeta[b].last.at).localeCompare(String(m.tmeta[a].last.at)); })[0] });
+    // rules broken on the last 2+ journaled days
+    var br = 0; for (var i = 0; i < dkeys.length && i < 5; i++){ if (days[dkeys[i]].some(function(e){ return e.followed === false; })) br++; else break; }
+    if (br >= 2) out.push({ w:30 + br * 5, cls:'bad', t:'Broke their rules ' + br + ' journaled days in a row' });
+    else if (br === 1 && dkeys[0] >= addDays(today, -3)) out.push({ w:12, cls:'warn', t:'Broke their rules on ' + shortDay(dkeys[0]) });
+    // a big losing day / overtrading on the latest day
+    var dayNet = function(d){ return days[d].filter(function(e){ return e.kind === 'trade'; }).reduce(function(t, e){ return t + (+e.pnl || 0); }, 0); };
+    var losses = dkeys.slice(0, 30).map(dayNet).filter(function(v){ return v < 0; }), avgL = losses.length ? losses.reduce(function(t, v){ return t + v; }, 0) / losses.length : 0;
+    if (dkeys[0] && dkeys[0] >= addDays(today, -3)){ var ln = dayNet(dkeys[0]), nt = days[dkeys[0]].filter(function(e){ return e.kind === 'trade'; }).length;
+      var tr = dkeys.slice(0, 30).map(function(d){ return days[d].filter(function(e){ return e.kind === 'trade'; }).length; }).filter(Boolean), avgT = tr.length ? tr.reduce(function(t, v){ return t + v; }, 0) / tr.length : 0;
+      if (ln < 0 && (ln <= -1000 || (losses.length >= 4 && ln <= 2 * avgL))) out.push({ w:28, cls:'bad', t:'Big losing day ' + shortDay(dkeys[0]) + ': ' + money(ln) });
+      if (nt >= Math.max(5, Math.round(avgT * 2))) out.push({ w:18, cls:'warn', t:'Overtrading: ' + nt + ' trades on ' + shortDay(dkeys[0]) });
+    }
+    // gone quiet
+    if (m.journal){ var last = dkeys[0], gap = 0, d = today; while (gap < 10 && d !== last){ if (wday(d) > 0 && wday(d) < 6) gap++; d = addDays(d, -1); } if (!last || gap >= 3) out.push({ w:20 + Math.min(gap, 10), cls:'warn', t: last ? 'No journal for ' + gap + ' trading days' : 'Hasn\'t journaled yet' }); }
+    // prop accounts close to the drawdown limit
+    (m.accounts || []).filter(function(a){ return a.status === 'active'; }).forEach(function(a){ var S = acctState(a, ents);
+      if (S.blown) out.push({ w:35, cls:'bad', t: a.name + ' is past its drawdown limit' });
+      else if (S.danger) out.push({ w:32, cls:'bad', t: a.name + ': only $' + Math.round(S.room).toLocaleString('en-US') + ' left before the drawdown limit' });
+      if (S.dailyHit) out.push({ w:20, cls:'warn', t: a.name + ': hit the daily loss limit today' }); });
+    // waiting on a review
+    var pend = ents.filter(function(e){ return entryStatus(e) === 'pending'; }).length, hin = Object.keys(m.subs || {}).filter(function(k){ return m.subs[k] && m.subs[k].status === 'submitted'; }).length;
+    if (pend) out.push({ w: Math.min(15, 4 + pend), cls:'', t: pend + (pend === 1 ? ' journal entry to review' : ' journal entries to review'), go:'journal' });
+    if (hin) out.push({ w: Math.min(15, 6 + hin), cls:'', t: hin + (hin === 1 ? ' hand-in to review' : ' hand-ins to review'), go:'review' });
+    if (m.journal && !(m.goals || {})[curMonday()]) out.push({ w:4, cls:'dim', t:'No focus goal this week' });
+    return out.sort(function(a, b){ return b.w - a.w; });
+  }
+  function coachSection(){
+    var wrap = el('div','tri'), host = el('div','tri'); wrap.appendChild(host); host.appendChild(el('p','adm-note','Loading students…'));
+    loadMembers(function(rows){ COACH.rows = rows; draw(); }, function(t, line){ host.textContent = ''; emptyState(host, t, line); });
+    function draw(){
+      host.textContent = ''; var rows = COACH.rows || [];
+      if (TRI.who){ var m = rows.filter(function(x){ return x.id === TRI.who; })[0]; if (m) return drawStudent(m); TRI.who = null; }
+      var bar = el('div','rv-bar'); bar.appendChild(seg([['all','All students'],['mine','My students']], TRI.mine ? 'mine' : 'all', function(v){ TRI.mine = v === 'mine'; draw(); })); host.appendChild(bar);
+      // the end-of-day Discord nudge
+      var nd = el('div','tri-nudge'); host.appendChild(nd);
+      if (!DEMO_MODE) fetch('/api/admin/members?nudge=status', { credentials:'same-origin' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){ if (!j) return;
+        nd.appendChild(el('span',null, j.webhook ? '📣 Discord daily recap: on (weekdays ~4:30 pm New York)' + (j.last ? ' · last sent ' + ago(j.last.at) : '') : '📣 Discord daily recap: off. Add DISCORD_RECAP_WEBHOOK in Vercel to post an end-of-day recap that @mentions students who haven’t journaled.'));
+        if (j.webhook){ var sn = el('button','btn-s','Send today’s now'); sn.type = 'button'; sn.addEventListener('click', function(){ if (!confirmInline(sn, 'Sure? Send')) return; sn.disabled = true;
+          adminPost({ action:'nudge-now' }).then(function(r){ toast(r.ok ? 'Posted: ' + r.journaled + ' of ' + r.total + ' journaled, ' + r.missing + ' reminded.' : r.skipped ? 'Nothing sent (' + r.skipped.replace('_',' ') + ').' : 'Didn’t send: ' + (r.error || 'unknown')); }).catch(function(e){ toast(admFail(e)); }).then(function(){ sn.disabled = false; }); }); nd.appendChild(sn); } });
+      host.appendChild(el('p','co-note','Who needs you today, most urgent first: messages waiting for a reply, broken rules, big losses, overtrading, accounts near their drawdown limit, students gone quiet, and reviews waiting.'));
+      var studs = rows.filter(function(m){ return !m.isAdmin && (!TRI.mine || m.mentor === uid()); }).map(function(m){ var f = triageOf(m); return { m:m, f:f, w:f.reduce(function(t, x){ return t + x.w; }, 0) }; })
+        .sort(function(a, b){ return b.w - a.w || String(b.m.lastSeen || '').localeCompare(String(a.m.lastSeen || '')); });
+      if (!studs.length){ emptyState(host, TRI.mine ? 'No students assigned to you' : 'No students yet', TRI.mine ? 'Assign students on their page (Mentor).' : 'Students show up after they sign in.'); return; }
+      var list = el('div','tri-list');
+      studs.forEach(function(x){ var m = x.m, card = el('article','tri-c' + (x.f.some(function(f){ return f.cls === 'bad'; }) ? ' hot' : x.f.length ? '' : ' calm'));
+        var who = el('button','tri-who'), av = el('span','av'); who.type = 'button'; setAvatar(av, m); who.appendChild(av);
+        var nm = el('div'), b = el('b',null, m.displayName || m.username); b.style.color = nameColor(m.id, m.isAdmin, m.roles); nm.appendChild(b);
+        var mentorName = m.mentor ? ((rows.filter(function(y){ return y.id === m.mentor; })[0] || {}).displayName || 'a mentor') : '';
+        var wk = scoreOf(m.entries || [], curMonday(), m.goals);
+        nm.appendChild(el('small',null, [levelName(m.level), mentorName ? 'Mentor: ' + mentorName : 'No mentor', wk.entries ? 'Rules ' + wk.rules + '% this week' : 'Nothing journaled this week', wk.trades ? money(wk.pnl) : ''].filter(Boolean).join(' · ')));
+        who.appendChild(nm); who.addEventListener('click', function(){ TRI.who = m.id; draw(); window.scrollTo(0, 0); }); card.appendChild(who);
+        var fl = el('div','tri-f'); if (!x.f.length) fl.appendChild(el('span','tri-chip ok','✓ On track'));
+        x.f.forEach(function(f){ var ch = el(f.go ? 'button' : 'span','tri-chip ' + f.cls, f.t); if (f.go){ ch.type = 'button';
+          ch.addEventListener('click', function(){ if (f.go === 'thread'){ var e = /^j:/.test(f.item) ? (m.entries || []).filter(function(y){ return y.id === f.item.slice(2); })[0] : null;
+              openThread(m.id, f.item, (m.displayName || m.username) + ' · ' + itemTitleFor(f.item, m.entries), { staffView:true, shots: e ? e.files : [], onClose: refresh }); }
+            else if (f.go === 'journal'){ JRV.status = 'pending'; JRV.q = m.username || ''; JRV.mode = 'list'; adm.sec = 'journal'; admRender(); }
+            else { RV.member = m.id; RV.status = 'waiting'; adm.sec = 'review'; admRender(); } }); }
+          fl.appendChild(ch); });
+        card.appendChild(fl); list.appendChild(card); });
+      host.appendChild(list);
+    }
+    function refresh(){ loadMembers(function(rows){ COACH.rows = rows; draw(); }, function(){}); }
+    function drawStudent(m){
+      var back = el('button','btn-s ghost','← All students'); back.type = 'button'; back.addEventListener('click', function(){ TRI.who = null; draw(); }); host.appendChild(back);
+      var hd = el('div','pp-head'), av = el('span','av lg'); setAvatar(av, m); hd.appendChild(av);
+      var nm = el('div'), b = el('b',null, m.displayName || m.username); b.style.color = nameColor(m.id, m.isAdmin, m.roles); nm.appendChild(b);
+      var S = streakOf(m.entries || []);
+      nm.appendChild(el('small',null, ['@' + (m.username || ''), levelName(m.level), S.current ? '🔥 ' + S.current + '-day streak' : 'No streak', 'last seen ' + (m.lastSeen ? ago(m.lastSeen) : 'never')].join(' · ')));
+      hd.appendChild(nm);
+      var ms = el('select'), o0 = el('option',null,'No mentor'); o0.value = ''; ms.appendChild(o0);
+      (COACH.rows || []).filter(function(y){ return y.isAdmin; }).forEach(function(y){ var o = el('option',null, y.displayName || y.username); o.value = y.id; ms.appendChild(o); });
+      ms.value = m.mentor || ''; ms.addEventListener('change', function(){ coachPost({ action:'mentor', uid:m.id, mentorId: ms.value }).then(function(){ m.mentor = ms.value; toast(ms.value ? 'Mentor assigned. Their messages now go to that mentor.' : 'Mentor removed.'); }).catch(function(e){ toast(e.message); }); });
+      hd.appendChild(fld('Mentor', ms)); host.appendChild(hd);
+      var fl = el('div','tri-f'); triageOf(m).forEach(function(f){ fl.appendChild(el('span','tri-chip ' + f.cls, f.t)); }); host.appendChild(fl);
+      var P = { id:m.id, name:m.displayName, entries:m.entries || [], goals:m.goals || {}, accounts:m.accounts || [], tmeta:m.tmeta || {}, subs:m.subs || {} };
+      host.appendChild(progressPage(P, true, function(){ m.goals = P.goals; m.accounts = P.accounts; refresh(); }));
+      // their curriculum, rules and latest entries
+      var cur = el('section','pp-sec'); cur.appendChild(el('h4',null,'Course progress'));
+      var subs = m.subs || {}, done = Object.keys(subs).filter(function(k){ return subs[k] && subs[k].status === 'approved'; }).length, waitN = Object.keys(subs).filter(function(k){ return subs[k] && subs[k].status === 'submitted'; }).length;
+      cur.appendChild(el('p',null, done + ' hand-ins approved · ' + waitN + ' waiting for review · level: ' + levelName(m.level)));
+      if (m.journal && m.journal.rules){ var ol = el('ol','jr-rl show'); m.journal.rules.forEach(function(r){ ol.appendChild(el('li',null,r.text)); }); cur.appendChild(el('b',null,'Their rules')); cur.appendChild(ol); }
+      host.appendChild(cur);
+      var le = el('section','pp-sec'); le.appendChild(el('h4',null,'Latest journal entries'));
+      (m.entries || []).slice(0, 8).forEach(function(e){ le.appendChild(entryCard(e, null, { owner:m.id, meta:m.tmeta, staffView:true })); });
+      if (!(m.entries || []).length) le.appendChild(el('p','pf-none','No entries yet.'));
+      host.appendChild(le);
+    }
+    return wrap;
+  }
   function renderJournal(){
     var host = document.getElementById('jr'); if (!host) return;
-    loadMe().then(function(){ drawJournal(host); });
+    Promise.all([loadMe(), coachLoad()]).then(function(){ drawJournal(host); });
   }
   function drawJournal(host){
     host.textContent = '';
@@ -3147,6 +3661,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     }
     var grid = el('div','jr-grid'), side = el('aside','jr-side'), main = el('div','jr-main');
     side.appendChild(streakCard(ME.entries || []));
+    side.appendChild(goalBox(uid(), COACH.goals || {}, false, function(g){ COACH.goals = g; drawJournal(host); }));
     // rules, always next to the form
     side.appendChild(el('h4',null,'Your rules'));
     if (JR.editing) side.appendChild(rulesEditor(ME.journal.rules, function(rules){ return memberPost({ action:'journal-rules', rules:rules }).then(function(){ JR.editing = false; toast('Rules updated.'); return loadMe(); }).then(function(){ drawJournal(host); }); }, 'Save rules'));
@@ -3165,7 +3680,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     side.appendChild(recapCard(ents, host));
     var pend = ents.filter(function(e){ return entryStatus(e) === 'pending'; }).length;
     if (pend) side.appendChild(el('p','jr-pend', pend + (pend === 1 ? ' entry is' : ' entries are') + ' waiting for an admin to approve ' + (pend === 1 ? 'it' : 'them') + ' for the leaderboard.'));
-    var vs = el('div','jr-view'); vs.appendChild(seg([['cal','Calendar'],['list','Entries'],['stats','Stats'],['new', JR.editId ? '✎ Editing' : '+ New entry'],['import','Import CSV']], JR.view, function(v){ if (v !== 'new' && JR.editId){ JR.editId = null; JR.draft = { files:[] }; } JR.view = v; drawJournal(host); }));
+    var vs = el('div','jr-view'); vs.appendChild(seg([['cal','Calendar'],['list','Entries'],['stats','Stats'],['progress','Progress'],['new', JR.editId ? '✎ Editing' : '+ New entry'],['import','Import CSV']], JR.view, function(v){ if (v !== 'new' && JR.editId){ JR.editId = null; JR.draft = { files:[] }; } JR.view = v; drawJournal(host); }));
     main.appendChild(vs);
     if (JR.view === 'stats'){
       JR.per = JR.per || 'today';
@@ -3176,6 +3691,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     }
     if (JR.view === 'cal'){ main.appendChild(journalCalendar(ents, host)); grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return; }
     if (JR.view === 'list'){ main.appendChild(entriesList(ents, host)); grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return; }
+    if (JR.view === 'progress'){ main.appendChild(progressPage({ id:uid(), entries:ME.entries || [], goals:COACH.goals || {}, accounts:COACH.accounts || [], tmeta:COACH.meta || {}, subs:{} }, false, function(){ coachLoad().then(function(){ drawJournal(host); }); })); grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return; }
     if (JR.view === 'import'){ main.appendChild(csvImportView(host)); grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return; }
     // new entry
     var f = el('section','jr-form view-in'); f.appendChild(el('h3',null, JR.editId ? 'Edit entry' : 'New entry'));
@@ -3184,8 +3700,43 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var cx = el('button','lnk','Cancel editing'); cx.type = 'button'; cx.addEventListener('click', function(){ JR.editId = null; JR.draft = { files:[] }; JR.view = 'cal'; drawJournal(host); }); f.appendChild(cx); }
     f.appendChild(seg([['trade','Trade'],['none','No trades today']], JR.kind, function(k){ JR.kind = k; drawJournal(host); }));
     var D = JR.draft; if (!D.date) D.date = tradeDay(todayYmd());
-    var grid2 = el('div','jr-fields');
-    function field(label, ctl, wide){ var w = fld(label, ctl); if (wide) w.classList.add('wide'); grid2.appendChild(w); return ctl; }
+    var grid2 = el('div','jr-body'), cur = null, LIVE = {};
+    // a titled card of fields; collapsible ones remember whether they were open
+    function sec(title, sub, collapsible, openKey, openDefault){
+      var s;
+      if (collapsible){ s = el('details','jr-sec jr-col'); if (JR[openKey] === true || (JR[openKey] === undefined && openDefault)) s.open = true;
+        s.addEventListener('toggle', function(){ JR[openKey] = s.open; });
+        var sm = el('summary'); sm.appendChild(el('b',null,title)); if (sub) sm.appendChild(el('span',null,sub)); s.appendChild(sm); }
+      else { s = el('section','jr-sec'); if (title){ var hd = el('div','jr-sec-h'); hd.appendChild(el('b',null,title)); if (sub) hd.appendChild(el('span',null,sub)); s.appendChild(hd); } }
+      cur = el('div','jr-fields'); s.appendChild(cur); grid2.appendChild(s); return cur; }
+    function field(label, ctl, wide, hint){ var w = fld(label, ctl, hint); if (wide) w.classList.add('wide'); cur.appendChild(w); return ctl; }
+    // number box that puts in commas as you type (27998 → 27,998); the draft keeps the plain number
+    function numIn(name, ph, allowNeg){
+      var i = el('input'); i.type = 'text'; i.inputMode = 'decimal'; i.autocomplete = 'off'; i.spellcheck = false; if (ph) i.placeholder = ph;
+      var raw = D[name]; i.value = raw === undefined || raw === null || raw === '' ? '' : commaNum(String(raw), allowNeg);
+      i.addEventListener('input', function(){
+        var pos = i.selectionStart || 0, keep = i.value.slice(0, pos).replace(allowNeg ? /[^0-9.\-]/g : /[^0-9.]/g, '').length;
+        var v = commaNum(i.value, allowNeg); i.value = v;
+        var k = 0, q = 0; while (q < v.length && k < keep){ if (v.charAt(q) !== ',') k++; q++; } try { i.setSelectionRange(q, q); } catch (err) {}
+        D[name] = v.replace(/,/g, ''); liveCalc(); });
+      return i; }
+    // live numbers across the top of the form, like a trade log header
+    function liveCalc(){
+      var lv = LIVE.el; if (!lv) return; lv.textContent = '';
+      var rk = numv(D.risk), e = { kind:'trade', dir:D.dir, pnl:numv(D.pnl), risk: isNum(rk) && rk !== 0 ? Math.abs(rk) : undefined, pEntry:numv(D.pEntry), pStop:numv(D.pStop), pTarget:numv(D.pTarget), pExit:numv(D.pExit), time:D.time, exitTime:D.exitTime };
+      var pr = plannedR(e), rr = rOf(e), hm = holdMin(e), pn = e.pnl, est = false;
+      if (!isNum(pn) && isNum(rr) && isNum(e.risk)){ pn = r2(rr * e.risk); est = true; }
+      var tone = function(v){ return isNum(v) ? (v > 0 ? 'win' : v < 0 ? 'loss' : '') : ''; };
+      [['Net P&L', isNum(pn) ? (est ? '≈ ' : '') + (pn > 0 ? '+' : '') + money(pn) : '—', tone(pn), est ? 'Estimate: R × stop size' : isNum(pn) ? '' : 'Enter your P&L'],
+       ['R multiple', isNum(rr) ? fmtRm(rr) : '—', tone(rr), isNum(rr) ? (isNum(e.risk) && isNum(e.pnl) ? 'P&L ÷ stop size' : 'From your prices') : 'P&L + stop size, or prices'],
+       ['Planned R', isNum(pr) ? pr.toFixed(2) + 'R' : '—', '', isNum(pr) ? 'Target vs stop' : 'Entry, stop and target'],
+       ['Held', isNum(hm) ? (hm < 60 ? hm + 'm' : Math.floor(hm / 60) + 'h ' + (hm % 60) + 'm') : '—', '', isNum(hm) ? '' : 'Entry and exit time']].forEach(function(t){
+        var d = el('div'); d.appendChild(el('span',null,t[0])); d.appendChild(el('b',t[2] || null,t[1])); if (t[3]) d.appendChild(el('small',null,t[3])); lv.appendChild(d); });
+      var warn = '';
+      if (isNum(numv(D.risk)) && numv(D.risk) < 0) warn = 'Stop size is what you’d lose if stopped, so it’s always positive. It’s been read as $' + Math.abs(numv(D.risk)).toLocaleString('en-US') + '.';
+      else if (D.outcome === 'sl' && isNum(rr) && rr > 0) warn = 'Outcome is SL but the numbers show a win. Check the outcome or the P&L.';
+      else if (D.outcome === 'tp' && isNum(rr) && rr < 0) warn = 'Outcome is TP but the numbers show a loss. Check the outcome or the P&L.';
+      if (warn) lv.appendChild(el('p','jr-warn', warn)); }
     var ENTRY_MODELS = ['BOS','MITIGATION','Chained OBs','DIV + OB'];
     if (D.model && ENTRY_MODELS.indexOf(D.model) < 0) D.model = '';
     function shotsField(required){
@@ -3204,65 +3755,59 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
             .then(function(r){ D.files.push(r); drawF(); }).catch(function(e){ toast('Upload failed: ' + String((e && e.message) || e)); })
             .then(function(){ busy--; JR.busy = busy; if (!busy) un.textContent = noteTx; }); }); }
       fb.appendChild(pl2); fb.appendChild(un); fb.appendChild(pasteHint());
-      var sw = el('div','fld wide'); sw.appendChild(document.createTextNode(required ? 'Screenshots' : 'Screenshots (optional)')); sw.appendChild(fb); grid2.appendChild(sw);
+      var sw = el('div','fld wide'); sw.appendChild(document.createTextNode(required ? 'Screenshots' : 'Screenshots (optional)')); sw.appendChild(fb); cur.appendChild(sw);
     }
-    // optional trade data: feeds "What works best" and the Excel export
-    function tradeData(){
+    // multi-pick chips (trade data that feeds "What works best")
+    function multi(name, opts){ var w = el('div','seg2 multi'); D[name] = D[name] || [];
+      opts.forEach(function(o){ var b = el('button','seg-b' + (D[name].indexOf(o) >= 0 ? ' on' : ''), o); b.type = 'button'; b.setAttribute('aria-pressed', D[name].indexOf(o) >= 0 ? 'true' : 'false');
+        b.addEventListener('click', function(){ var i = D[name].indexOf(o); if (i >= 0) D[name].splice(i, 1); else D[name].push(o);
+          if (name === 'swept' && o === 'Nothing swept' && i < 0) D[name] = ['Nothing swept']; else if (name === 'swept' && i < 0) D[name] = D[name].filter(function(x){ return x !== 'Nothing swept'; });
+          Array.prototype.forEach.call(w.children, function(c){ var on = D[name].indexOf(c.textContent) >= 0; c.classList.toggle('on', on); c.setAttribute('aria-pressed', on ? 'true' : 'false'); }); });
+        w.appendChild(b); }); return w; }
+    function tzSelect(){
       if (!D.tz){ var btz = ''; try { btz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (err) {} D.tz = btz || 'America/New_York'; }
-      var box = el('details','jr-more wide'); if (JR.more !== false) box.open = true;
-      box.addEventListener('toggle', function(){ JR.more = box.open; });
-      var sm = el('summary'); sm.appendChild(el('b',null,'Trade data')); sm.appendChild(el('span',null,'Optional, but the more you fill in, the better the stats get at showing what actually works.')); box.appendChild(sm);
-      var g = el('div','jr-fields'), put = function(label, ctl, wide, hint){ var w = fld(label, ctl, hint); if (wide) w.classList.add('wide'); g.appendChild(w); return ctl; };
-      var num = function(name, ph){ var i = txt(name,'number',ph); i.step = 'any'; i.inputMode = 'decimal'; i.addEventListener('input', calc); return i; };
-      var multi = function(name, opts){ var w = el('div','seg2 multi'); D[name] = D[name] || [];
-        opts.forEach(function(o){ var b = el('button','seg-b' + (D[name].indexOf(o) >= 0 ? ' on' : ''), o); b.type = 'button'; b.setAttribute('aria-pressed', D[name].indexOf(o) >= 0 ? 'true' : 'false');
-          b.addEventListener('click', function(){ var i = D[name].indexOf(o); if (i >= 0) D[name].splice(i, 1); else D[name].push(o);
-            if (name === 'swept' && o === 'Nothing swept' && i < 0) D[name] = ['Nothing swept']; else if (name === 'swept' && i < 0) D[name] = D[name].filter(function(x){ return x !== 'Nothing swept'; });
-            Array.prototype.forEach.call(w.children, function(c){ var on = D[name].indexOf(c.textContent) >= 0; c.classList.toggle('on', on); c.setAttribute('aria-pressed', on ? 'true' : 'false'); }); });
-          w.appendChild(b); }); return w; };
       var tzs = el('select'); var tzl = TD.TZS.slice(); if (!TD.TZS.some(function(t){ return t[0] === D.tz; })) tzl.push([D.tz, D.tz.replace(/_/g,' ')]);
-      tzl.forEach(function(t){ var o = el('option',null,t[1]); o.value = t[0]; tzs.appendChild(o); }); tzs.value = D.tz; tzs.addEventListener('change', function(){ D.tz = tzs.value; });
-      put('Direction', seg([['long','Long'],['short','Short']], D.dir || '', function(v){ D.dir = v; drawJournal(host); }));
-      put('Entry type', sel('entryType', TD.ENTRY_TYPES));
-      put('Times above are in', tzs, false, 'So everyone’s times line up in New York time.');
-      var xt = txt('exitTime','time'); xt.addEventListener('input', calc); put('Exit time', xt);
-      put('Entry price', num('pEntry','e.g. 21450.25')); put('Stop price', num('pStop'));
-      put('Target price', num('pTarget')); put('Exit price', num('pExit'));
-      put('Risk on the trade ($)', num('risk','e.g. 250'), false, 'What you’d lose at your stop.');
-      put('Most it went against you (pts)', num('mae','e.g. 8')); put('Most it went your way (pts)', num('mfe','e.g. 40'));
-      put('Bias timeframe', sel('htf', TD.HTFS));
-      put('HTF bias', seg([['bullish','Bullish'],['bearish','Bearish'],['neutral','Neutral']], D.bias || '', function(v){ D.bias = v; drawJournal(host); }));
-      put('Entry timeframe', sel('ltf', TD.LTFS));
-      put('Setup grade', seg(TD.GRADES.map(function(x){ return [x, x]; }), D.grade || '', function(v){ D.grade = v; drawJournal(host); }));
-      put('How you felt before entering', sel('emotion', TD.EMOTIONS));
-      put('Liquidity swept before entry', multi('swept', TD.SWEPT), true);
-      put('Confluence', multi('confl', TD.CONFL), true);
-      put('How you managed it', multi('manage', TD.MANAGE), true);
-      put('Mistakes (be honest, it only helps you)', multi('mistakes', TD.MISTAKES), true);
-      var cv = el('p','jr-calc'); g.appendChild(cv);
-      function calc(){ var e = { kind:'trade', dir:D.dir, pnl:+D.pnl, risk:+D.risk || undefined, pEntry:numv(D.pEntry), pStop:numv(D.pStop), pTarget:numv(D.pTarget), pExit:numv(D.pExit), time:D.time, exitTime:D.exitTime };
-        var bits = [], pr = plannedR(e), rr = rOf(e), hm = holdMin(e); if (isNum(pr)) bits.push('Planned ' + pr.toFixed(2) + 'R'); if (isNum(rr)) bits.push('Result ' + fmtRm(rr)); if (isNum(hm)) bits.push('Held ' + hm + ' min');
-        cv.textContent = bits.join(' · '); }
-      calc(); box.appendChild(g); grid2.appendChild(box);
-    }
-    function numv(v){ if (v === undefined || v === null || String(v).trim() === '') return undefined; var n = Number(v); return isFinite(n) ? n : undefined; }
+      tzl.forEach(function(t){ var o = el('option',null,t[1]); o.value = t[0]; tzs.appendChild(o); }); tzs.value = D.tz; tzs.addEventListener('change', function(){ D.tz = tzs.value; }); return tzs; }
+    function numv(v){ if (v === undefined || v === null || String(v).trim() === '') return undefined; var n = Number(String(v).replace(/,/g, '')); return isFinite(n) ? n : undefined; }
     function txt(name, type, ph, list){ var i = inputEl(type, D[name], ph); if (name === 'date') sunHint(i); i.addEventListener('input', function(){ D[name] = i.value; preview(); }); if (list){ i.setAttribute('list', list); } return i; }
     function sel(name, opts){ var x = el('select'); x.appendChild(el('option',null,'Choose…')).value = ''; opts.forEach(function(o){ var op = el('option',null,o); op.value = o; x.appendChild(op); }); x.value = D[name] || ''; x.addEventListener('change', function(){ D[name] = x.value; }); return x; }
     var SESSIONS = ['Asia','London','New York AM','New York PM'];
     if (JR.kind === 'trade'){
-      field('Pair', txt('pair','text','NQ, ES, EURUSD…','jr-pairs'));
-      field('Account type', sel('account', ['Evaluation','Funded','Personal / live','Paper','Demo']));
-      field('Session', sel('session', SESSIONS));
-      field('Trade date', txt('date','date'));
-      field('Time', txt('time','time'));
-      var ct = txt('contracts','number','1'); ct.min = '0'; ct.step = 'any'; field('Contracts', ct);
-      field('Outcome', seg([['tp','TP'],['sl','SL'],['be','BE']], D.outcome, function(v){ D.outcome = v; drawJournal(host); }));
-      var pn = txt('pnl','number','e.g. 640 or -200'); pn.step = 'any'; field('Trade P&L ($)', pn);
-      field('Entry model', sel('model', ENTRY_MODELS));
-      var ov = txt('overview','textarea','What you saw, why you took it, how you managed it'); ov.rows = 4; field('Trade overview', ov, true);
+      var tzs = tzSelect();
+      LIVE.el = el('div','jr-live'); grid2.appendChild(LIVE.el);
+      sec('Trade');
+      field('Symbol', txt('pair','text','NQ, ES, EURUSD…','jr-pairs'));
+      field('Side', seg([['long','Long'],['short','Short']], D.dir || '', function(v){ D.dir = v; liveCalc(); }));
+      field('Account', sel('account', ['Evaluation','Funded','Personal / live','Paper','Demo']));
+      var pas = (COACH.accounts || []).filter(function(a){ return a.status === 'active' || a.id === D.acctId; });
+      if (pas.length){ var ps = el('select'), p0 = el('option',null,'Not linked'); p0.value = ''; ps.appendChild(p0);
+        pas.forEach(function(a){ var o = el('option',null, a.name + ' · ' + a.kind); o.value = a.id; ps.appendChild(o); }); ps.value = D.acctId || '';
+        ps.addEventListener('change', function(){ D.acctId = ps.value; var a = pas.filter(function(x){ return x.id === ps.value; })[0]; if (a && a.kind){ D.account = a.kind; drawJournal(host); } });
+        field('Prop account', ps); }
+      field('Date', txt('date','date'));
+      var tIn = txt('time','time'); tIn.addEventListener('input', liveCalc); field('Entry time', tIn);
+      var ct = txt('contracts','number','1'); ct.min = '0'; ct.step = 'any'; ct.inputMode = 'decimal'; field('Contracts', ct);
+      field('Setup', sel('model', ENTRY_MODELS));
+      field('Entry style', sel('entryType', TD.ENTRY_TYPES));
+      sec('Result');
+      field('Outcome', seg([['tp','TP'],['sl','SL'],['be','BE']], D.outcome, function(v){ D.outcome = v; preview(); liveCalc(); }));
+      field('Net P&L ($)', numIn('pnl','e.g. 4,780 or -905', true), false, 'After fees. Put a minus in front for a loss.');
+      field('Stop size ($)', numIn('risk','e.g. 905'), false, 'What you’d lose if your stop got hit.');
+      var hasPx = [D.pEntry, D.pStop, D.pTarget, D.pExit, D.exitTime].some(function(v){ return v !== undefined && v !== null && v !== ''; });
+      sec('Prices', 'Optional: exact R, planned R and hold time', true, 'pxOpen', hasPx);
+      field('Entry price', numIn('pEntry','e.g. 27,998.25')); field('Stop price', numIn('pStop','e.g. 27,980'));
+      field('Target price', numIn('pTarget')); field('Exit price', numIn('pExit'));
+      var xt = txt('exitTime','time'); xt.addEventListener('input', liveCalc); field('Exit time', xt);
+      field('Times are in', tzs, false, 'Lines everyone up in New York time.');
+      sec('Review');
+      field('Setup grade', seg(TD.GRADES.map(function(x){ return [x, x]; }), D.grade || '', function(v){ D.grade = v; }));
+      field('How you felt going in', sel('emotion', TD.EMOTIONS));
+      field('Mistakes', multi('mistakes', TD.MISTAKES), true, 'Be honest, it only helps you.');
+      var ov = txt('overview','textarea','What you saw, why you took it, how you managed it'); ov.rows = 4; field('Notes', ov, true);
       shotsField(false);
-      tradeData();
+      liveCalc();
     } else {
+      sec(null);
       field('Date', txt('date','date'));
       field('Session', sel('session', SESSIONS));
       var ov2 = txt('overview','textarea','Why you didn\'t trade: what you were waiting for'); ov2.rows = 3; field('Overview', ov2, true);
@@ -3286,6 +3831,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var fr = el('div','jr-follow'); fr.appendChild(el('b',null,'Did you follow your rules?'));
     fr.appendChild(seg([['yes','Yes'],['no','No']], D.followed === true ? 'yes' : D.followed === false ? 'no' : '', function(v){ D.followed = v === 'yes'; drawJournal(host); }));
     f.appendChild(fr);
+    var gl = goalFor(COACH.goals, D.date || todayYmd());
+    if (gl){ var gr = el('div','jr-follow goal'), gt = el('div'); gt.appendChild(el('b',null,'Did you keep your focus goal?')); gt.appendChild(el('small',null,'“' + gl.text + '”')); gr.appendChild(gt);
+      gr.appendChild(seg([['yes','Yes'],['no','No']], D.goalKept === true ? 'yes' : D.goalKept === false ? 'no' : '', function(v){ D.goalKept = v === 'yes'; })); f.appendChild(gr); }
     var pv = el('p','jr-pts'); f.appendChild(pv);
     function preview(){ var pts = entryWorth({ kind: JR.kind, outcome: D.outcome, followed: D.followed, account: D.account }); pv.textContent = D.followed === undefined ? '' : 'Worth ' + pts + (pts === 1 ? ' point' : ' points') + ' on the psych leaderboard once an admin approves it.'; }
     preview();
@@ -3303,11 +3851,13 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       if (JR.kind === 'trade'){ if (!D.outcome) need.push('Outcome (TP / SL / BE)'); if (!D.account) need.push('Account type'); }
       if (D.followed === undefined) need.push('whether you followed your rules');
       if (need.length){ toast('Still needed: ' + need.join(', ') + '.'); return; }
-      var entry = JR.kind === 'trade' ? { kind:'trade', pair:D.pair, account:D.account, session:D.session, date:D.date, time:D.time, contracts: D.contracts === '' || D.contracts === undefined ? '' : +D.contracts, outcome:D.outcome, pnl: D.pnl === '' || D.pnl === undefined || D.pnl === null ? '' : +D.pnl, model:D.model, overview:D.overview, files:D.files, followed:D.followed,
-          dir:D.dir, entryType:D.entryType, tz:D.tz, exitTime:D.exitTime, pEntry:numv(D.pEntry), pStop:numv(D.pStop), pTarget:numv(D.pTarget), pExit:numv(D.pExit), risk:numv(D.risk), mae:numv(D.mae), mfe:numv(D.mfe),
+      var entry = JR.kind === 'trade' ? { kind:'trade', pair:D.pair, account:D.account, session: autoSession(D) || D.session, date:D.date, time:D.time, contracts: D.contracts === '' || D.contracts === undefined ? '' : +D.contracts, outcome:D.outcome, pnl: isNum(numv(D.pnl)) ? numv(D.pnl) : '', model:D.model, overview:D.overview, files:D.files, followed:D.followed,
+          dir:D.dir, entryType:D.entryType, tz:D.tz, exitTime:D.exitTime, pEntry:numv(D.pEntry), pStop:numv(D.pStop), pTarget:numv(D.pTarget), pExit:numv(D.pExit), risk: isNum(numv(D.risk)) && numv(D.risk) !== 0 ? Math.abs(numv(D.risk)) : undefined, mae:numv(D.mae), mfe:numv(D.mfe),
           htf:D.htf, bias:D.bias, ltf:D.ltf, grade:D.grade, emotion:D.emotion, swept:D.swept, confl:D.confl, manage:D.manage, mistakes:D.mistakes }
         : { kind:'none', date:D.date, session:D.session, overview:D.overview, files:D.files, followed:D.followed };
       entry.tags = D.tags || [];
+      if (typeof D.goalKept === 'boolean' && goalFor(COACH.goals, entry.date)) entry.goalKept = D.goalKept;
+      if (entry.kind === 'trade' && D.acctId) entry.acctId = D.acctId;
       entry.news = D.news; entry.newsWhat = D.news === 'yes' ? String(D.newsWhat || '').trim() : '';
       post.disabled = true;
       var editing = JR.editId;
@@ -3469,6 +4019,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       .catch(function(){ toast('Couldn\'t save. Try again.'); }).finally(function(){ sv.disabled = false; }); });
     box.appendChild(sv);
     if (n.updatedAt) box.appendChild(el('small','adm-note','Saved ' + ago(n.updatedAt)));
+    if (!DEMO_MODE) box.appendChild(threadToggle(uid(), 'd:' + day, (COACH.meta || {})['d:' + day], { }));
     return box;
   }
   var JL = { q:'', out:'all', acct:'', tag:'', model:'', n:30 };
@@ -3517,7 +4068,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function ymd(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
   function shortMoney(n){ n = +n || 0; var a = Math.abs(n), t = a >= 10000 ? (a/1000).toFixed(a >= 100000 ? 0 : 1) + 'k' : a.toLocaleString('en-US', { maximumFractionDigits: 0 }); return (n < 0 ? '−$' : n > 0 ? '+$' : '$') + t; }
   var STATUS_CHIP = { pending:['Pending review',' wait'], approved:['Approved',' ok'], denied:['Denied',' warn'] };
-  function entryCard(e, onChange){
+  function entryCard(e, onChange, ctx){
     var stt = entryStatus(e), trade = e.kind === 'trade', pnl = +e.pnl || 0;
     var card = el('article','je s-' + stt + (trade ? (pnl > 0 ? ' win' : pnl < 0 ? ' loss' : ' flat') : ' none'));
     var row = el('div','je-row'), mn = el('div','je-main'), t = el('div','je-t');
@@ -3550,6 +4101,11 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     card.appendChild(ft);
     if (stt === 'denied' && e.reviewNote) card.appendChild(el('p','je-note','Not counted: ' + e.reviewNote));
     else if (stt === 'approved' && e.reviewNote){ var mc = el('p','je-note ok'); mc.appendChild(el('b',null,'Mentor: ')); mc.appendChild(document.createTextNode(e.reviewNote)); card.appendChild(mc); }
+    if (e.goalKept !== undefined) ft.insertBefore(el('span','je-rule' + (e.goalKept ? ' ok' : ' no'), e.goalKept ? '✓ Focus goal kept' : '✕ Focus goal missed'), ft.children[1] || null);
+    if (e.acctId){ var pa0 = ((ctx && ctx.accounts) || COACH.accounts || []).filter(function(a){ return a.id === e.acctId; })[0]; if (pa0) ft.insertBefore(el('span','je-tag dim', pa0.name), ft.children[1] || null); }
+    // the conversation with the mentor about this entry
+    if (!DEMO_MODE && (ctx || onChange)){ var cx0 = ctx || { owner: uid(), meta: COACH.meta };
+      card.appendChild(threadToggle(cx0.owner, 'j:' + e.id, (cx0.meta || {})['j:' + e.id], { staffView: !!cx0.staffView, shots: e.files || [] })); }
     return card;
   }
   // month calendar: green days made money, red days lost it; click a day to see its entries
@@ -3738,6 +4294,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     ]));
     if (opts.summaryOnly){ if (!ents.length) wrap.insertBefore(el('p','pf-none','No journal entries in this period yet.'), wrap.firstChild); return wrap; }
     wrap.appendChild(dayCard(S));
+    // students see the summary first; the deeper breakdowns open on request (mentors always see everything)
+    var dst = wrap; if (!canAdmin() && !opts.deep){ dst = el('details','st-more'); dst.appendChild(el('summary',null,'Deeper stats: by time, day, session, setup, and what works best')); if (JR.moreStats) dst.open = true; dst.addEventListener('toggle', function(){ JR.moreStats = dst.open; }); }
     var grid = el('div','st-grid');
     // when trades are taken
     var hk = Object.keys(S.hours).sort(), hmax = 0, hpeak = '';
@@ -3775,10 +4333,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     grid.appendChild(statBars('By session', rowsOf(S.sess), fmtR));
     grid.appendChild(statBars('By entry model', rowsOf(S.model), fmtR));
     grid.appendChild(statBars('By account', rowsOf(S.acct), fmtR));
-    wrap.appendChild(grid);
+    dst.appendChild(grid);
     // what works best: win rate, reliable win rate, R and P&L by every factor logged
     var tcopy = S.trades.filter(function(e){ return entryStatus(e) !== 'denied'; }).map(function(e){ return Object.assign({}, e); }); numberTrades(tcopy);
-    var eg = el('div','st-grid'); eg.appendChild(edgeCard(tcopy)); wrap.appendChild(eg);
+    var eg = el('div','st-grid'); eg.appendChild(edgeCard(tcopy)); dst.appendChild(eg);
     // admins: one row per student
     if (opts.byMember && opts.byMember.length){
       var mb = el('section','st-card wide'); mb.appendChild(el('h4',null,'By student'));
@@ -3789,9 +4347,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         [tdd + ndd, tdd, ndd, q.trades.length, pct(w, q.trades.length) + '%', pct(q.followed, q.entries) + '%'].forEach(function(v){ tr.appendChild(el('td',null,String(v))); });
         tr.appendChild(el('td', q.pnl > 0 ? 'win' : q.pnl < 0 ? 'loss' : '', money(q.pnl)));
         tr.appendChild(el('td',null, String(x.ents.reduce(function(t, e){ return t + entryPoints(e); }, 0)))); t2.appendChild(tr); });
-      tw.appendChild(t2); mb.appendChild(tw); wrap.appendChild(mb);
+      tw.appendChild(t2); mb.appendChild(tw); dst.appendChild(mb);
     }
     if (!ents.length) wrap.insertBefore(el('p','pf-none','No journal entries in this period yet.'), wrap.firstChild);
+    if (dst !== wrap) wrap.appendChild(dst);
     return wrap;
   }
 
@@ -3842,15 +4401,19 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     return new Promise(function(res){ var im = new Image(); im.crossOrigin = 'anonymous';
       var done = function(v){ AVATARS[url] = v; res(v); };
       im.onload = function(){ try { var t = document.createElement('canvas'); t.width = t.height = 4; t.getContext('2d').drawImage(im, 0, 0, 4, 4); t.toDataURL(); done(im); } catch (e) { done(null); } };
-      im.onerror = function(){ done(null); }; im.src = url + (url.indexOf('?') < 0 ? '?size=256' : ''); setTimeout(function(){ if (AVATARS[url] === undefined) done(null); }, 4000); });
+      im.onerror = function(){ done(null); }; im.src = /[?&]size=\d+/.test(url) ? url.replace(/size=\d+/, 'size=512') : url + (url.indexOf('?') < 0 ? '?' : '&') + 'size=512'; setTimeout(function(){ if (AVATARS[url] === undefined) done(null); }, 4000); });
   }
   function cardKit(c){
+    // sharpest text and image scaling the browser offers
+    try { c.textRendering = 'geometricPrecision'; } catch (e) {} try { c.fontKerning = 'normal'; } catch (e) {}
+    c.imageSmoothingEnabled = true; try { c.imageSmoothingQuality = 'high'; } catch (e) {}
     var K = { INK:'#E3F1EF', MUTED:'#7F9A9B', UP:'#3BE38F', DOWN:'#F05454', TEAL:'#14A39D',
       SANS:"'Instrument Sans', system-ui, -apple-system, sans-serif", DISP:"Archivo, 'Arial Black', sans-serif", MONO:"'JetBrains Mono', ui-monospace, monospace" };
     K.F = function(st, sz, fam){ c.font = st + ' ' + sz + 'px ' + (fam || K.SANS); };
     K.rr = function(x, y, w, h, r){ c.beginPath(); if (c.roundRect) c.roundRect(x, y, w, h, r); else c.rect(x, y, w, h); };
     K.fit = function(txt, st, size, min, maxW, fam){ K.F(st, size, fam); while (c.measureText(txt).width > maxW && size > min){ size -= 4; K.F(st, size, fam); } return size; };
-    K.word = function(x, y, sc){ c.save(); c.fillStyle = K.INK; K.F('italic 200', 21 * sc, K.DISP); ['T','H','E'].forEach(function(ch, i){ c.fillText(ch, x + 4 * sc, y - 48 * sc + i * 21 * sc); });
+    // the brand mark in a card's corner: the TP logo (falls back to the typed wordmark if it hasn't loaded)
+    K.word = function(x, y, sc){ if (TPM){ var th = 82 * sc, tw = th * 576 / 273; c.save(); c.shadowColor = 'rgba(150,255,220,.35)'; c.shadowBlur = 14; c.drawImage(TPM, x, y - th + 6 * sc, tw, th); c.restore(); return; } c.save(); c.fillStyle = K.INK; K.F('italic 200', 21 * sc, K.DISP); ['T','H','E'].forEach(function(ch, i){ c.fillText(ch, x + 4 * sc, y - 48 * sc + i * 21 * sc); });
       try { c.fontStretch = 'expanded'; } catch (e) {} K.F('italic 900', 70 * sc, K.DISP); c.fillText('PROJECT', x + 30 * sc, y); try { c.fontStretch = 'normal'; } catch (e) {} c.restore(); };
     K.avatar = function(img, x, y, r, name, color){ c.save(); c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.closePath();
       if (img === 'gem'){ c.fillStyle = '#071C1E'; c.fill(); c.clip(); var gm = gemFor(true); if (gm){ var gw = r * 2.3, gh = gw * gm.height / gm.width; c.drawImage(gm, x - gw / 2, y - gh / 2 + r * .05, gw, gh); } c.restore();
@@ -3865,6 +4428,17 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       c.stroke(); c.restore(); };
     K.bg = function(Wd, Ht, up){ c.fillStyle = '#02090B'; c.fillRect(0, 0, Wd, Ht);
       var g = c.createRadialGradient(Wd * .5, Ht * .42, 0, Wd * .5, Ht * .42, Ht * .6); g.addColorStop(0, up ? 'rgba(20,163,157,.20)' : 'rgba(240,84,84,.14)'); g.addColorStop(1, 'rgba(2,9,11,0)'); c.fillStyle = g; c.fillRect(0, 0, Wd, Ht); };
+    // glow in two soft layers, then the text again on top with no shadow so its edges stay razor sharp
+    K.glow = function(txt, x, y, col, blur){ var sc = 1; try { sc = c.getTransform().a || 1; } catch (e) {} blur *= sc; c.save(); c.fillStyle = col; c.shadowColor = col;
+      c.globalAlpha = .45; c.shadowBlur = blur * 1.8; c.fillText(txt, x, y);
+      c.globalAlpha = .7; c.shadowBlur = blur * .55; c.fillText(txt, x, y);
+      c.globalAlpha = 1; c.shadowBlur = 0; c.shadowColor = 'transparent'; c.fillText(txt, x, y); c.restore(); };
+    // a faint, even grain: dark gradients and glows don't band into steps when Instagram / TikTok recompress the image
+    K.dither = function(){ var W = c.canvas.width, H = c.canvas.height; try {
+      var img = c.getImageData(0, 0, W, H), d = img.data, seed = 1337;
+      for (var i = 0; i < d.length; i += 4){ seed = (seed * 1103515245 + 12345) & 0x7fffffff; var nz = ((seed >> 16) & 7) - 3.5;   // ±3.5 of 255
+        d[i] = d[i] + nz; d[i + 1] = d[i + 1] + nz; d[i + 2] = d[i + 2] + nz; }
+      c.putImageData(img, 0, 0); } catch (e) {} };
     K.gemMark = function(x, y, h){ var gm = gemFor(true); if (gm){ var w = h * gm.width / gm.height; c.drawImage(gm, x, y, w, h); return w; } return 0; };
     return K;
   }
@@ -3886,7 +4460,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var w = q.who || {}, ay = cy + 290, ar = 72;
     K.avatar(q.avatar, cx + 56 + ar, ay, ar, w.name, w.color || K.UP);
     var nx = cx + 56 + ar * 2 + 40, ns = K.fit(w.name || 'Trader', '700', 66, 36, cw - (nx - cx) - 56);
-    c.save(); c.shadowColor = w.color || K.UP; c.shadowBlur = 18; c.fillStyle = w.color || K.UP; c.fillText(w.name || 'Trader', nx, ay - 6); c.restore();
+    K.glow(w.name || 'Trader', nx, ay - 6, w.color || K.UP, 18);
     K.F('500', 30); c.fillStyle = K.MUTED; c.fillText((w.handle ? '@' + w.handle + '  ·  ' : '') + (w.role || 'Member'), nx, ay + 46);
     // P&L panel
     var px = cx + 56, py = cy + 440, pw = cw - 112, ph = 560;
@@ -3896,7 +4470,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     c.fillText((group ? GROUP_LABEL : OWN_LABEL)[q.per], Wd / 2, py + 150);
     var big = K.money(q.net), bs = K.fit(big, '700', 150, 70, pw - 220);
     var bw = c.measureText(big).width, ax = 64, tx = Wd / 2 - (bw + ax + 24) / 2;
-    c.textAlign = 'left'; c.save(); c.shadowColor = col; c.shadowBlur = 40; c.fillStyle = col; c.fillText(big, tx, py + 150 + 70 + bs * .7); c.restore();
+    c.textAlign = 'left'; K.glow(big, tx, py + 150 + 70 + bs * .7, col, 40);
     K.arrow(tx + bw + 24, py + 150 + 70 + bs * .7 - ax * .95, ax, up, col);
     K.F('500', 30); c.fillStyle = K.MUTED; c.textAlign = 'center';
     c.fillText(q.n + (q.n === 1 ? ' trade' : ' trades') + '  ·  ' + q.sub, Wd / 2, py + ph - 70); c.textAlign = 'left';
@@ -3927,7 +4501,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     K.F('500', 24); c.fillStyle = K.MUTED; c.fillText(q.stamp, axp - ar - 24, cy + 134); c.textAlign = 'left';
     // total
     K.F('500', 34); c.fillStyle = K.INK; c.fillText((group ? GROUP_LABEL : OWN_LABEL)[q.per], cx + P, cy + 270);
-    K.F('700', bs); c.save(); c.shadowColor = col; c.shadowBlur = 36; c.fillStyle = col; c.fillText(big, cx + P - 4, cy + 290 + bs * .82); c.restore();
+    K.F('700', bs); K.glow(big, cx + P - 4, cy + 290 + bs * .82, col, 36);
     K.F('500', 32); c.fillStyle = K.MUTED; var acr = 'Across ', nt = String(group ? q.traders : q.per === 'day' ? q.n : q.days.length), rest = group ? (q.traders === 1 ? ' trader' : ' traders') + ' · ' + (q.wr === null ? '—' : q.wr + '%') + ' win rate' : q.per === 'day' ? (q.n === 1 ? ' trade' : ' trades') : (q.days.length === 1 ? ' trading day' : ' trading days');
     var ty = cy + 290 + bs * .82 + 64; c.fillText(acr, cx + P, ty); var x2 = cx + P + c.measureText(acr).width; K.F('700', 32); c.fillStyle = K.INK; c.fillText(nt, x2, ty);
     x2 += c.measureText(nt).width; K.F('500', 32); c.fillStyle = K.MUTED; c.fillText(rest, x2, ty);
@@ -3968,7 +4542,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     return '#3BE38F'; }
   function hexRgb(h){ var n = parseInt(String(h).slice(1), 16); return ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255); }
   // The Project's diamond (diamond-gem.png): as is on a green day, recoloured red on a red day
-  var GEM = null, GEMRED = null;
+  var GEM = null, GEMRED = null, TPM = null;   // TPM: the TP mark (logo-tp.svg) that brands every share card
   function gemFor(up){
     if (!GEM || up) return GEM;
     if (GEMRED) return GEMRED;
@@ -3979,9 +4553,59 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       c.putImageData(d, 0, 0); } catch (e) { return GEM; }
     return (GEMRED = cv);
   }
+  // Phones get the 9:16 story cards; computers get the wide PC card (in the style of copy-trading group cards)
+  function shcIsPhone(){ return TOUCHY && Math.min(screen.width || 9999, screen.height || 9999) <= 900; }
   function drawShareCard(cv, q){
-    if (q.mine) return SHC.style === 'ledger' ? drawLedgerCard(cv, q) : drawProfileCard(cv, q);
-    return SHC.sstyle === 'ledger' ? drawLedgerCard(cv, q) : drawProfileCard(cv, q);
+    if (SHC.pc) drawPcCard(cv, q);
+    else if (q.mine) SHC.style === 'ledger' ? drawLedgerCard(cv, q) : drawProfileCard(cv, q);
+    else SHC.sstyle === 'ledger' ? drawLedgerCard(cv, q) : drawProfileCard(cv, q);
+    var c = cv.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); cardKit(c).dither();
+  }
+
+  // PC card: 16:9, drawn at 2× (3840×2160) so it stays sharp on big screens, Discord and X.
+  function drawPcCard(cv, q){
+    var S = 2, Wd = 1920, Ht = 1080; cv.width = Wd * S; cv.height = Ht * S;
+    var c = cv.getContext('2d'); c.setTransform(S, 0, 0, S, 0, 0);
+    var K = cardKit(c), up = q.net >= 0, col = up ? K.UP : K.DOWN, group = !q.mine;
+    var w = group ? { name:'The Project', role: q.traders + (q.traders === 1 ? ' trader' : ' traders'), color:'#E3F1EF' } : (q.who || {});
+    // background
+    c.fillStyle = '#02090B'; c.fillRect(0, 0, Wd, Ht);
+    var g = c.createRadialGradient(Wd * .5, Ht * .55, 0, Wd * .5, Ht * .55, Wd * .55); g.addColorStop(0, up ? 'rgba(20,163,157,.18)' : 'rgba(240,84,84,.12)'); g.addColorStop(1, 'rgba(2,9,11,0)'); c.fillStyle = g; c.fillRect(0, 0, Wd, Ht);
+    // the card
+    var M = 90, cx = M, cy = 70, cw = Wd - M * 2, ch = Ht - 140;
+    c.save(); c.shadowColor = 'rgba(0,0,0,.6)'; c.shadowBlur = 90; c.shadowOffsetY = 30; K.rr(cx, cy, cw, ch, 36); c.fillStyle = '#071315'; c.fill(); c.restore();
+    K.rr(cx, cy, cw, ch, 36); c.strokeStyle = 'rgba(227,241,239,.09)'; c.lineWidth = 2; c.stroke();
+    // header strip: diamond + title, period on the right
+    var hy = cy + 66; if (TPM){ var gh = 40, gw = gh * 576 / 273; c.save(); c.shadowColor = 'rgba(150,255,220,.35)'; c.shadowBlur = 16; c.drawImage(TPM, cx + 44, hy - 34, gw, gh); c.restore(); }
+    K.F('700', 30); c.fillStyle = K.INK; c.fillText(group ? 'Group P&L Card' : 'P&L Card', cx + 44 + 84 + 22, hy);
+    c.save(); c.translate(cx + cw - 44, hy); c.textAlign = 'right'; K.F('600', 26); c.fillStyle = K.MUTED; c.fillText(q.sub, 0, 0); c.restore();
+    c.fillStyle = 'rgba(227,241,239,.08)'; c.fillRect(cx, cy + 112, cw, 2);
+    // who: picture tile + name (role colour) + role, a headline number on the right
+    var by = cy + 150, ts = 150;
+    K.rr(cx + 44, by, ts + 40, ts + 40, 26); c.fillStyle = 'rgba(227,241,239,.04)'; c.fill(); c.strokeStyle = 'rgba(227,241,239,.08)'; c.stroke();
+    K.avatar(group ? 'gem' : q.avatar, cx + 44 + 20 + ts / 2, by + 20 + ts / 2, ts / 2 - 8, w.name, w.color || K.UP);
+    var nx = cx + 44 + ts + 40 + 40;
+    K.fit(w.name || 'Trader', '700', 72, 40, 760); K.glow(w.name || 'Trader', nx, by + 92, w.color || K.UP, 20);
+    K.F('600', 30); c.fillStyle = group ? K.TEAL : K.MUTED; c.fillText(group ? w.role : ((w.handle ? '@' + w.handle + '  ·  ' : '') + (w.role || 'Member')), nx, by + 146);
+    var rLabel = group ? 'Win rate' : 'Trades', rVal = group ? (q.wr === null ? '—' : q.wr + '%') : String(q.n);
+    c.save(); c.textAlign = 'right'; K.F('600', 26); c.fillStyle = K.MUTED; c.fillText(rLabel, cx + cw - 44, by + 56);
+    K.F('700', 64); c.fillStyle = '#F1C40F'; c.fillText(rVal, cx + cw - 44, by + 130); c.restore();
+    // the P&L panel
+    var px = cx + 44, py = by + ts + 40 + 40, pw = cw - 88, ph = cy + ch - 44 - py - (group || q.mine ? 120 : 0);
+    var pg = c.createLinearGradient(0, py, 0, py + ph); pg.addColorStop(0, up ? 'rgba(59,227,143,.08)' : 'rgba(240,84,84,.08)'); pg.addColorStop(1, 'rgba(227,241,239,.02)');
+    K.rr(px, py, pw, ph, 30); c.fillStyle = pg; c.fill(); c.strokeStyle = 'rgba(227,241,239,.08)'; c.lineWidth = 2; c.stroke();
+    var lab = (group ? GROUP_LABEL : OWN_LABEL)[q.per];
+    c.textAlign = 'center'; K.F('600', 34); c.fillStyle = K.INK; c.fillText(lab, Wd / 2, py + ph / 2 - 70); c.textAlign = 'left';
+    var big = K.money(q.net), bs = K.fit(big, '700', 170, 80, pw - 260), bw = c.measureText(big).width, aw = 80, tx = Wd / 2 - (bw + aw + 30) / 2, ty = py + ph / 2 + bs * .55;
+    K.glow(big, tx, ty, col, 50);
+    K.arrow(tx + bw + 30, ty - bs * .62, aw, up, col);
+    // three numbers along the bottom
+    var stats = group
+      ? [['Record', q.W + '–' + q.L + (q.BE ? '–' + q.BE : '')], ['Avg win : loss', q.ratio === null ? '—' : (Math.round(q.ratio * 10) / 10) + ' : 1'], ['Trades', String(q.n)]]
+      : [['Total R', q.totalR === null ? '—' : (q.totalR >= 0 ? '+' : '−') + (Math.round(Math.abs(q.totalR) * 100) / 100) + 'R'], ['Profit factor', q.pf === null ? '—' : q.pf === Infinity ? '∞' : (Math.round(q.pf * 100) / 100).toFixed(2)], ['Best trade', (function(){ var b = null; (q.list || []).forEach(function(e){ if (!e.noPnl && (b === null || +e.pnl > b)) b = +e.pnl; }); return b === null ? '—' : K.money(b); })()]];
+    var sy = py + ph + 24, sw = (pw - 40) / 3;
+    stats.forEach(function(k, i){ var x = px + i * (sw + 20); K.rr(x, sy, sw, 96, 22); c.fillStyle = 'rgba(227,241,239,.04)'; c.fill(); c.strokeStyle = 'rgba(227,241,239,.08)'; c.stroke();
+      K.F('500', 24); c.fillStyle = K.MUTED; c.fillText(k[0], x + 30, sy + 40); K.F('700', 38); c.fillStyle = K.INK; c.fillText(k[1], x + 30, sy + 80); });
   }
   function openShareCard(scopeArg){
     var isAdm = canAdmin() && !PREVIEW; SHC.scope = isAdm ? (scopeArg === 'me' ? 'me' : SHC.scope) : 'me';
@@ -4001,9 +4625,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     if (!SHC.sstyle){ try { SHC.sstyle = localStorage.getItem('theproject.groupstyle') || ''; } catch (e) {} if (['profile','ledger'].indexOf(SHC.sstyle) < 0) SHC.sstyle = 'profile'; }
     var styleSeg = seg([['profile','Profile'],['ledger','Ledger']], SHC.style, function(v){ SHC.style = v; try { localStorage.setItem('theproject.cardstyle', v); } catch (e) {} paint(); });
     var gStyleSeg = seg([['profile','Profile'],['ledger','Ledger']], SHC.sstyle, function(v){ SHC.sstyle = v; try { localStorage.setItem('theproject.groupstyle', v); } catch (e) {} paint(); });
-    top.appendChild(perSeg); top.appendChild(styleSeg); top.appendChild(gStyleSeg); top.appendChild(save); top.appendChild(x);
+    SHC.pc = !shcIsPhone(); sc.classList.toggle('pc', SHC.pc);
+    top.appendChild(perSeg); if (!SHC.pc){ top.appendChild(styleSeg); top.appendChild(gStyleSeg); } top.appendChild(save); top.appendChild(x);
     var stage = el('div','shc-stage'), cv = document.createElement('canvas'); cv.className = 'shc-img'; cv.setAttribute('role','img'); cv.setAttribute('aria-label','Results card'); cv.hidden = true; stage.appendChild(cv);
-    var hint = el('p','shc-hint','Tap the card to hide these buttons for a clean screenshot. Tap again to bring them back.');
+    var hint = el('p','shc-hint', shcIsPhone() ? 'Tap the card to hide these buttons for a clean screenshot. Tap again to bring them back.' : 'Save image gives you a sharp 3840 × 2160 picture. On your phone you get story-sized cards instead.');
     sc.appendChild(top); sc.appendChild(hint); sc.appendChild(stage); document.body.appendChild(sc); document.documentElement.classList.add('lb-open');
     var close = function(){ sc.remove(); document.documentElement.classList.remove('lb-open'); document.removeEventListener('keydown', esc, true); };
     var esc = function(e){ if (e.key === 'Escape'){ if (sc.classList.contains('bare')) sc.classList.remove('bare'); else close(); } };
@@ -4030,13 +4655,14 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     });
     stage.appendChild(el('p','adm-note','Loading results…'));
     var gemReady = GEM ? Promise.resolve() : new Promise(function(res){ var im = new Image(); im.onload = function(){ GEM = im; res(); }; im.onerror = function(){ res(); }; im.src = 'diamond-gem.png'; });
+    var tpReady = TPM ? Promise.resolve() : new Promise(function(res){ var im = new Image(); im.onload = function(){ TPM = im; res(); }; im.onerror = function(){ res(); }; im.src = 'logo-tp.svg'; });
     var fontsReady = (document.fonts && document.fonts.load) ? Promise.all(['italic 900 100px Archivo','italic 200 100px Archivo','600 40px "Instrument Sans"','400 22px "Instrument Sans"','500 22px "JetBrains Mono"'].map(function(f){ return document.fonts.load(f).catch(function(){}); })) : Promise.resolve();
     function load(){
       stage.querySelectorAll('.adm-note').forEach(function(n){ n.remove(); }); stage.appendChild(el('p','adm-note','Loading results…'));
       var dataReady = SHC.scope === 'me' && !isAdm ? loadMe().catch(function(){})
         : SHC.scope === 'me' ? Promise.all([loadMe().catch(function(){}), new Promise(function(res){ if (SHC.rows) return res(); loadMembers(function(rows){ SHC.rows = rows; SHC.at = Date.now(); res(); }, function(){ res(); }); })])
         : new Promise(function(res){ if (SHC.rows && Date.now() - (SHC.at || 0) < 60000) return res(); loadMembers(function(rows){ SHC.rows = rows; SHC.at = Date.now(); res(); }, function(){ res(); }); });
-      Promise.all([fontsReady, dataReady, gemReady]).then(function(){ stage.querySelectorAll('.adm-note').forEach(function(n){ n.remove(); }); fillWho();
+      Promise.all([fontsReady, dataReady, gemReady, tpReady]).then(function(){ stage.querySelectorAll('.adm-note').forEach(function(n){ n.remove(); }); fillWho();
         if (!rowsNow()){ stage.appendChild(el('p','adm-note','Couldn\'t load the results. Close and try again.')); return; } paint(); });
     }
     load();
@@ -4049,15 +4675,24 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     CONFL: ['FVG','Order block','Breaker','SMT divergence','Displacement','Premium / discount','Killzone','Opening range'],
     MANAGE: ['Held to target / stop','Took partials','Moved stop to BE','Trailed stop','Closed early'],
     MISTAKES: ['Entered early','Entered late','Moved stop','Oversized','Chased','Traded through news','Revenge trade','Overtraded'],
-    GRADES: ['A+','A','B','C'], ENTRY_TYPES: ['Limit','Market','Stop'], EMOTIONS: ['Calm','Confident','Hesitant','FOMO','Frustrated','Tired'],
+    GRADES: ['A+','A','B','C'], ENTRY_TYPES: ['Limit','Market','Stop','Internal manip'], EMOTIONS: ['Calm','Confident','Hesitant','FOMO','Frustrated','Tired'],
     TZS: [['America/New_York','New York (ET)'],['America/Chicago','Chicago (CT)'],['America/Denver','Denver (MT)'],['America/Los_Angeles','Los Angeles (PT)'],['Europe/London','London (UK)']]
   };
   var isNum = function(v){ return typeof v === 'number' && isFinite(v); };
+  // "27998.5" → "27,998.5" while typing (keeps a leading minus only where allowed)
+  function commaNum(v, allowNeg){
+    v = String(v === undefined || v === null ? '' : v).replace(/[^0-9.\-]/g, '');
+    var neg = allowNeg && v.charAt(0) === '-'; v = v.replace(/-/g, '');
+    var dot = v.indexOf('.'), ip = dot < 0 ? v : v.slice(0, dot), dp = dot < 0 ? '' : '.' + v.slice(dot + 1).replace(/\./g, '');
+    ip = ip.replace(/^0+(?=\d)/, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return (neg ? '-' : '') + ip + dp; }
   var r2 = function(n){ return Math.round(n * 100) / 100; };
   // R multiple: P&L ÷ risk when risk is logged, otherwise from the prices
   function rOf(e){
     if (!e || e.kind !== 'trade') return undefined;
-    if (isNum(e.risk) && e.risk > 0 && isNum(+e.pnl)) return r2(+e.pnl / e.risk);
+    // a blank P&L is not $0: without one, R comes from the prices instead
+    var pn = e.pnl === '' || e.pnl === null || e.pnl === undefined ? NaN : +e.pnl, rk = isNum(e.risk) ? Math.abs(e.risk) : NaN;
+    if (rk > 0 && isNum(pn)) return r2(pn / rk);
     if (isNum(e.pEntry) && isNum(e.pStop) && isNum(e.pExit) && e.pEntry !== e.pStop && e.dir){
       var sgn = e.dir === 'short' ? -1 : 1; return r2((e.pExit - e.pEntry) * sgn / Math.abs(e.pEntry - e.pStop)); }
     return undefined;
@@ -4073,6 +4708,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var asUtc = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute); return (TZOFF[key] = Math.round((asUtc - ms) / 60000)); }
     catch (err){ return 0; }
   }
+  // which session a trade was in, from its entry time in New York time
+  function autoSession(e){ var t = nyTime(e); if (!t) return ''; var m = +t.slice(0,2) * 60 + +t.slice(3);
+    return m < 120 || m >= 1080 ? 'Asia' : m < 420 ? 'London' : m < 720 ? 'New York AM' : 'New York PM'; }
   function nyTime(e){
     if (!/^\d{2}:\d{2}$/.test(e.time || '')) return '';
     if (!e.tz || e.tz === 'America/New_York' || !/^\d{4}-\d{2}-\d{2}$/.test(e.date || '')) return e.time;
@@ -4370,10 +5008,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function renderBoard(){
     var host = document.getElementById('lb'); if (!host) return; host.textContent = '';
     var head = el('div','lb-head');
-    head.appendChild(seg([['psych','Psych'],['payout','Payouts']], BOARD.kind, function(k){ BOARD.kind = k; renderBoard(); }));
     head.appendChild(seg([['week','This week'],['month','This month'],['all','All time']], BOARD.period, function(p){ BOARD.period = p; renderBoard(); }));
     host.appendChild(head);
-    if (BOARD.kind === 'payout') return renderPayoutBoard(host);
     var rules = el('div','lb-rules'); rules.appendChild(el('b',null,'How points work'));
     rules.appendChild(el('p','adm-note','Only journal entries an admin has approved count.'));
     var ul = el('ul'); [['Rules followed + TP','3'],['Rules followed + SL or BE','1'],['Paper / demo + TP','1'],['Paper / demo + SL or BE','0'],['Rules followed + no trades that day','1'],['Rules not followed','0']].forEach(function(r){ var li = el('li'); li.appendChild(el('span',null,r[0])); li.appendChild(el('b',null,r[1] + (r[1] === '1' ? ' pt' : ' pts'))); ul.appendChild(li); });
@@ -4469,12 +5105,13 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function ntfMarkRead(ids){ var r = ntfRead(); ids.forEach(function(i){ r[i] = 1; }); var keep = {}; NTF.events.forEach(function(e){ if (r[e.id]) keep[e.id] = 1; }); try { localStorage.setItem(ntfReadKey(), JSON.stringify(keep)); } catch(e) {} }
   function ntfUnread(){ var seen = ntfSeen(), r = ntfRead(); return NTF.events.filter(function(e){ return e.at > seen && !r[e.id] && e.uid !== uid(); }); }
   function ago(iso){ var s2 = (Date.now() - Date.parse(iso)) / 1000; if (s2 < 60) return 'just now'; if (s2 < 3600) return Math.floor(s2 / 60) + 'm ago'; if (s2 < 86400) return Math.floor(s2 / 3600) + 'h ago'; return fmtDay(iso); }
-  var NTF_IC = { handin:'✎', journal:'◷', cert:'$', promo:'▲', review:'★' };
+  var NTF_IC = { handin:'✎', journal:'◷', cert:'$', promo:'▲', review:'★', thread:'💬' };
   function ntfText(e){
     if (e.type === 'handin') return (e.again ? 'handed in again: ' : 'handed in ') + (e.what === 'homework' ? 'homework · ' : e.what === 'breakdown' ? 'breakdown · ' : e.what === 'advanced' ? '' : '') + e.label;
     if (e.type === 'journal') return 'posted a journal entry: ' + e.label;
     if (e.type === 'cert') return e.kind === 'payout' ? 'uploaded a payout: ' + e.label.replace(/^Payout /,'') : 'uploaded a funded certificate';
     if (e.type === 'promo') return 'asked for promotion';
+    if (e.type === 'thread') return 'wrote: ' + (e.label || '');
     if (e.type === 'review') return 'wrote a testimonial ' + (e.label || '').replace(/^Testimonial /, '');
     return e.label || '';
   }
@@ -4484,6 +5121,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     else if (e.type === 'journal'){ JRV.mode = 'recap'; JRV.rday = /^\d{4}-\d{2}-\d{2}$/.test(e.date || '') ? e.date : localDay(e.at); adm.sec = 'journal'; }
     else if (e.type === 'cert'){ PRV.status = 'pending'; adm.sec = e.kind === 'payout' ? 'payouts' : 'members'; }
     else if (e.type === 'review'){ adm.sec = 'testimonials'; }
+    else if (e.type === 'thread' && e.owner && e.item){ openThread(e.owner, e.item, e.name + ' · conversation', { staffView:true }); return; }
     if ((location.hash || '') !== '#admin') location.hash = '#admin'; else if (adm.content) admRender();
     window.scrollTo(0, 0);
   }
@@ -4523,7 +5161,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     ev.stopPropagation();
     if (NTF.open){ closeNtf(); return; }
     NTF.open = true; NTF.seenAtOpen = ntfSeen(); document.getElementById('ntf').hidden = false; this.setAttribute('aria-expanded','true');
-    if (SESSION && !SESSION.isAdmin){ paintFb(); loadMe().then(paintFb); return; }
+    if (SESSION && !SESSION.isAdmin){ paintFb(); Promise.all([loadMe(), coachLoad()]).then(paintFb); return; }
     paintNtf();
   });
   document.addEventListener('click', function(ev){ if (NTF.open && !ev.target.closest('.bell-w')) closeNtf(); });
@@ -4656,6 +5294,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     ((ME && ME.certs) || []).forEach(function(c){ var r = c.review; if (c.kind !== 'payout' || !r || !r.at || r.status === 'pending') return;
       out.push({ id:'fb:c:' + c.id + ':' + r.at, where:'profile', title:'Payout certificate', kind: r.status === 'approved' ? 'approved' : 'returned', at:r.at, has:!!r.note,
         line: r.status === 'approved' ? 'Certified' + (r.amount ? ': ' + money(+r.amount) + ' added to the payout board.' : '.') + (r.note ? ' ' + r.note : '') : 'Not certified' + (r.note ? ': ' + r.note : '.') }); });
+    // new messages from a mentor
+    (COACH.unread || []).forEach(function(u){ var mt = (COACH.meta || {})[u.item] || {}, l = mt.last || {};
+      out.push({ id:'th:' + u.item + ':' + (l.at || ''), where:'thread', item:u.item, title: itemTitleFor(u.item, ME.entries), kind:'msg', at: l.at || new Date().toISOString(), has:true, line: (l.name ? l.name + ': ' : '') + (l.text || 'New message') }); });
     // Monday: last week's review
     if (ME && ME.entries && ME.entries.length){ var tm = curMonday(), lm = addDays(tm, -7), wr = weekRecap(ME.entries, lm);
       if (wr.entries) out.push({ id:'recap:' + lm, where:'recap', title:'Your week in review · ' + weekRange(lm), kind:'recap', at: tm + 'T12:00:00Z', has:true,
@@ -4671,6 +5312,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function fbMarkRead(ids){ var r = lsGet(fbReadKey()); ids.forEach(function(i){ r[i] = 1; }); lsSet(fbReadKey(), r); }
   function fbGo(x){
     closeNtf();
+    if (x.where === 'thread'){ var e0 = /^j:/.test(x.item) ? (ME.entries || []).filter(function(y){ return y.id === x.item.slice(2); })[0] : null; openThread(uid(), x.item, x.title, { shots: e0 ? e0.files : [] }); return; }
     if (x.where === 'hw'){ openHwCard(x.key.slice(3)); return; }
     if (x.where === 'journal'){ JR.view = 'cal'; JR.month = x.date.slice(0, 7); JR.day = x.date; if ((location.hash || '') === '#journal') showView(); else location.hash = '#journal'; return; }
     if (x.where === 'profile'){ location.hash = '#profile'; return; }
@@ -4685,9 +5327,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function fbRow(x, unread, onPick){
     var it = el('div','ntf-i' + (unread ? ' new' : '')); it.setAttribute('role','button'); it.tabIndex = 0;
     it.addEventListener('keydown', function(ev){ if (ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); it.click(); } });
-    it.appendChild(el('span','ntf-ic k-' + (x.kind === 'approved' ? 'ok' : x.kind === 'recap' ? 'recap' : 'back'), x.kind === 'approved' ? '✓' : x.kind === 'recap' ? '★' : '↩'));
+    it.appendChild(el('span','ntf-ic k-' + (x.kind === 'approved' ? 'ok' : x.kind === 'recap' ? 'recap' : x.kind === 'msg' ? 'msg' : 'back'), x.kind === 'approved' ? '✓' : x.kind === 'recap' ? '★' : x.kind === 'msg' ? '💬' : '↩'));
     var t = el('span','ntf-t'); t.appendChild(el('b',null, x.title)); t.appendChild(el('span', 'fb-line' + (x.has ? ' said' : ''), x.line));
-    t.appendChild(el('small',null, (x.kind === 'recap' ? 'Weekly recap' : x.kind === 'approved' ? 'Approved' : x.where === 'journal' ? 'Not counted' : x.where === 'profile' ? 'Not certified' : 'Sent back') + ' · ' + ago(x.at))); it.appendChild(t);
+    t.appendChild(el('small',null, (x.kind === 'recap' ? 'Weekly recap' : x.kind === 'msg' ? 'Message' : x.kind === 'approved' ? 'Approved' : x.where === 'journal' ? 'Not counted' : x.where === 'profile' ? 'Not certified' : 'Sent back') + ' · ' + ago(x.at))); it.appendChild(t);
     it.addEventListener('click', function(){ fbMarkRead([x.id]); onPick(x); });
     return it;
   }
@@ -4742,7 +5384,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   }
 
   /* ---------- Wins: student testimonials + certified payouts ---------- */
-  var WINS = { tab:'reviews', data:null, at:0, draft:{ rating:0, text:'', result:'' } };
+  var WINS = { tab:'payouts', data:null, at:0, draft:{ rating:0, text:'', result:'' } };
   var starStr = function(n){ return '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n); };
   function winAv(o){ var av = el('span','av'); setAvatar(av, { avatar:o.avatar, displayName:o.name, username:o.name }); return av; }
   function renderWins(force){
@@ -4759,7 +5401,12 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function drawWins(host){
     var D = WINS.data; host.textContent = '';
     var T = D.testimonials || [], P = D.payouts || [];
-    host.appendChild(seg([['reviews','Testimonials (' + T.length + ')'],['payouts','Payouts (' + P.length + ')']], WINS.tab, function(v){ WINS.tab = v; drawWins(host); }));
+    // Wins: certified payouts, the payout leaderboard and student reviews, all in one place
+    host.appendChild(seg([['payouts','Payouts (' + P.length + ')'],['board','Top earners'],['reviews','Reviews (' + T.length + ')']], WINS.tab, function(v){ WINS.tab = v; drawWins(host); }));
+    if (WINS.tab === 'board'){
+      var bh = el('div','lb-head'); bh.appendChild(seg([['week','This week'],['month','This month'],['all','All time']], BOARD.period, function(p){ BOARD.period = p; drawWins(host); })); host.appendChild(bh);
+      renderPayoutBoard(host); return;
+    }
     if (WINS.tab === 'payouts'){
       var tot = P.reduce(function(t, p){ return t + (+p.amount || 0); }, 0);
       var hd = el('div','win-sum'); hd.appendChild(el('b',null, money(tot))); hd.appendChild(el('span',null,'certified across ' + P.length + (P.length === 1 ? ' payout' : ' payouts') + ' (latest 60)')); host.appendChild(hd);
@@ -4971,7 +5618,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   }
   /* ---------- admin panel ---------- */
   function canAdmin(){ return !!(SESSION && SESSION.isAdmin) || DEMO_MODE; }
-  var adm = { content:null, sec:'announcements', dirty:false, members:null };
+  var adm = { content:null, sec:'coach', dirty:false, members:null };
   function rid(prefix){ return prefix + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
   function clone(o){ return JSON.parse(JSON.stringify(o)); }
   function currentContent(){ return { curriculum: clone(CURRICULUM), homework: clone(HOMEWORK), breakdowns: clone(BREAKDOWNS), announcements: clone(ANNOUNCEMENTS), settings: clone(SETTINGS) }; }
@@ -5575,6 +6222,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     if (x.sb.files && x.sb.files.length) c.appendChild(fileChips(x.sb.files));
     if (x.sb.link){ var a = el('a','lnk', x.sb.link); a.href = x.sb.link; a.target = '_blank'; a.rel = 'noopener noreferrer'; c.appendChild(a); }
     if (x.sb.feedback && !open){ var fb = el('div','hi-fb'); fb.appendChild(el('b',null,'Your feedback')); fb.appendChild(document.createTextNode(x.sb.feedback)); c.appendChild(fb); }
+    c.appendChild(threadToggle(x.m.id, 'h:' + x.k, (x.m.tmeta || {})['h:' + x.k], { staffView:true, shots: x.sb.files || [] }));
     var fbI = inputEl('textarea', open ? '' : x.sb.feedback, 'Feedback for the member (needed to send it back)'); fbI.rows = 3;
     var acts = el('div','rv-acts'), ok = el('button','btn-s pri','Approve'), back = el('button','btn-s warn','Send back');
     ok.type = back.type = 'button';
@@ -5894,7 +6542,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var who = el('div','who2'), av = el('span','av'); setAvatar(av, m); who.appendChild(av);
     var nm = el('div'); nm.appendChild(el('b',null, m.displayName || m.username)); nm.appendChild(el('div','adm-note','@' + (m.username || '') + ' · posted ' + fmtDay(e.createdAt) + ' ' + new Date(e.createdAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }))); who.appendChild(nm);
     card.appendChild(who);
-    card.appendChild(entryCard(e, null));
+    card.appendChild(entryCard(e, null, { owner:m.id, meta:m.tmeta, accounts:m.accounts, staffView:true }));
     if (m.journal && m.journal.rules && m.journal.rules.length){ var rd = el('details','jrv-rules'), su = el('summary',null,'Their rules (' + m.journal.rules.length + ')'); rd.appendChild(su);
       var ol = el('ol','jr-rl show'); m.journal.rules.forEach(function(r){ ol.appendChild(el('li',null,r.text)); }); rd.appendChild(ol); card.appendChild(rd); }
     var note = inputEl('text', e.reviewNote || '', 'Comment for the member (optional; needed to deny)');
@@ -5942,7 +6590,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var thumbs = el('div','jw-th');
       files.forEach(function(f, k){ var b = el('button'); b.type = 'button'; if (/^image\//.test(f.type || '')){ var im = el('img'); im.src = f.url; im.alt = ''; b.appendChild(im); } else b.textContent = 'PDF'; b.addEventListener('click', function(){ show(k); }); thumbs.appendChild(b); });
       shots.appendChild(big); if (files.length > 1) shots.appendChild(thumbs); show(0);
-      side.appendChild(entryCard(e, null));
+      side.appendChild(entryCard(e, null, { owner:m.id, meta:m.tmeta, accounts:m.accounts, staffView:true }));
       if (m.journal && m.journal.rules){ var rb = el('div','jw-rules'); rb.appendChild(el('b',null,'Their rules')); var ol = el('ol','jr-rl show'); m.journal.rules.forEach(function(r){ ol.appendChild(el('li',null,r.text)); }); rb.appendChild(ol); side.appendChild(rb); }
       var note = inputEl('text', e.reviewNote || '', 'Comment for the member (optional; needed to deny)');
       side.appendChild(fld('Comment', note)); side.appendChild(snippetBar(note));
@@ -6383,7 +7031,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       sort: function(a,b){ return bdOrderKey(b).localeCompare(bdOrderKey(a)); },
       meta:function(b){ return bdSlot(b) + ' · ' + weekLabel(b.week) + (b.video ? ' · video' : '') + (b.link ? ' · link' : ''); } }));
     else if (adm.sec === 'advanced') body.appendChild(crud({ key:'breakdowns', noun:'advanced lecture', addTitle:'Add an advanced lecture', addLabel:'Add lecture', savedMsg:'Advanced lecture added.', idPrefix:'adv', bodyField:'summary', folder:'breakdowns',
-      emptyLine:'Advanced lectures have their own tab, only for members who reached the top level. They work like breakdowns: one at a time, in the order you add them.',
+      emptyLine:'Advanced lectures show under Lectures → Advanced, only for members with the Enlightened role, moderators and admins. They work like breakdowns: one at a time, in the order you add them.',
       filter: function(b){ return bdKind(b) === 'advanced'; },
       fields:[ { name:'section', label:'Section', type:'text', ph:'e.g. SMT, Orderflow', hint:'Lectures with the same section are grouped together in the tab. Leave empty for "Advanced".' },
                { name:'title', label:'Title', type:'text', ph:'SMT divergence at the open', required:true },
@@ -6395,6 +7043,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       sort: function(a,b){ return bdOrderKey(a).localeCompare(bdOrderKey(b)); },
       meta:function(b){ return (b.section || 'Advanced') + ' · added ' + fmtDay(b.createdAt) + (b.video ? ' · video' : ''); } }));
     else if (adm.sec === 'lectures') body.appendChild(lecturesEditor());
+    else if (adm.sec === 'coach') body.appendChild(coachSection());
     else if (adm.sec === 'review') body.appendChild(reviewView());
     else if (adm.sec === 'progress') body.appendChild(progressView());
     else if (adm.sec === 'journal') body.appendChild(journalReview());
@@ -6426,7 +7075,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       if (on && !was){ Array.prototype.forEach.call(m.children, function(c, i){ c.style.setProperty('--k', i); }); m.classList.remove('entering'); void m.offsetWidth; m.classList.add('entering');
         clearTimeout(m._ent); m._ent = setTimeout(function(){ m.classList.remove('entering'); }, 900); }
     });
-    document.querySelectorAll('.tab').forEach(function(t){ if (t.getAttribute('data-tab')===v) t.setAttribute('aria-current','page'); else t.removeAttribute('aria-current'); });
+    var tv = v === 'advanced' ? 'lectures' : v;   // Advanced is part of Lectures
+    document.querySelectorAll('.tab').forEach(function(t){ if (t.getAttribute('data-tab')===tv) t.setAttribute('aria-current','page'); else t.removeAttribute('aria-current'); });
     moveInk(); tabsIntoView();
   }
   window.addEventListener('hashchange', function(){ if (!portV.hidden){ showView(); window.scrollTo(0,0); } });
@@ -6518,13 +7168,12 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var img = document.getElementById('sig-img'), ini = document.getElementById('sig-ini');
     SIG = { on:true, timers:[], iv:0 };
     o.className = 'sig'; o.style.removeProperty('--rc'); o.hidden = false; hi.textContent = ''; role.textContent = ''; img.hidden = true; ini.textContent = '';
-    var w = o.querySelector('.sig-word'); w.style.animation = 'none'; void w.getBoundingClientRect(); w.style.animation = '';
     requestAnimationFrame(function(){ o.classList.add('in'); requestAnimationFrame(function(){ o.classList.add('draw'); }); });
     var t0 = Date.now(), shown = false;
     function ready(){ return booted && (SESSION || !BACKEND); }
     SIG.iv = setInterval(function(){
       var t = Date.now() - t0;
-      if (!shown && t > (reduce ? 100 : 1700)){
+      if (!shown && t > (reduce ? 100 : 2050)){
         if (!ready()){ o.classList.add('wait'); return; }
         shown = true; clearInterval(SIG.iv); o.classList.remove('wait');
         var who = sigWho(); o.style.setProperty('--rc', who.color); ini.textContent = who.name.charAt(0).toUpperCase();
@@ -6532,12 +7181,26 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         hi.textContent = 'Welcome back, '; var b = document.createElement('b'); b.textContent = who.name; hi.appendChild(b);
         role.textContent = 'VERIFIED MEMBER · ' + who.role.toUpperCase();
         requestAnimationFrame(function(){ o.classList.add('who'); });
-        SIG.timers.push(setTimeout(function(){ o.classList.add('out'); enterPortal(); }, reduce ? 600 : 1700));
-        SIG.timers.push(setTimeout(function(){ closeSignature(); }, reduce ? 800 : 2400));
+        SIG.timers.push(setTimeout(function(){ enterPortal(); sigDock(o); }, reduce ? 600 : 1700));
+        SIG.timers.push(setTimeout(function(){ closeSignature(); }, reduce ? 800 : 2600));
       }
     }, 50);
   }
-  function closeSignature(){ var o = document.getElementById('sig'); if (!SIG.on) return; clearInterval(SIG.iv); (SIG.timers || []).forEach(clearTimeout); o.hidden = true; o.className = 'sig'; SIG.on = false; }
+  // the lockup flies from the middle of the screen into its place in the top bar while the portal fades up under it
+  function sigDock(o){
+    var lock = document.getElementById('sig-lock'), bar = document.querySelector('#portal-view .bar .brand');
+    o.classList.add('out');
+    if (reduce || !lock || !bar || !bar.offsetWidth) return;
+    var from = lock.getBoundingClientRect(), tp = bar.querySelector('.tp-svg'), to = (tp || bar).getBoundingClientRect(), tpFrom = lock.querySelector('.sig-tp').getBoundingClientRect();
+    var g = lock.cloneNode(true); g.removeAttribute('id'); g.className = 'sig-lock sig-ghost';
+    g.style.left = from.left + 'px'; g.style.top = from.top + 'px'; g.style.width = from.width + 'px'; g.style.height = from.height + 'px'; g.style.transform = 'none';
+    document.body.appendChild(g); lock.style.visibility = 'hidden'; bar.style.visibility = 'hidden';
+    var sc = to.height / tpFrom.height;
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ g.style.transform = 'translate(' + (to.left - tpFrom.left) + 'px,' + (to.top - tpFrom.top) + 'px) scale(' + sc + ')'; }); });
+    SIG.timers.push(setTimeout(function(){ bar.style.visibility = ''; g.remove(); lock.style.visibility = ''; }, 850));
+    SIG.ghost = g; SIG.bar = bar;
+  }
+  function closeSignature(){ var o = document.getElementById('sig'); if (!SIG.on) return; if (SIG.ghost && SIG.ghost.parentNode){ SIG.ghost.remove(); } if (SIG.bar) SIG.bar.style.visibility = ''; var lk = document.getElementById('sig-lock'); if (lk) lk.style.visibility = ''; clearInterval(SIG.iv); (SIG.timers || []).forEach(clearTimeout); o.hidden = true; o.className = 'sig'; SIG.on = false; }
 
   var booted = false, pendingEnter = false;
   function enterPortal(){

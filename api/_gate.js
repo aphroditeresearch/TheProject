@@ -173,15 +173,21 @@ function bdChains(breakdowns) {
   return { main: list.filter((b) => bdKind(b) !== 'advanced'), advanced: list.filter((b) => bdKind(b) === 'advanced') };
 }
 function bdKey(b) { return 'bd:' + b.id; }
-function accessForBreakdowns({ breakdowns, level, top, settings, subs, overrides, admin }) {
+// Advanced lectures: only the Enlightened Discord role, moderators and admins (not a level reached any other way)
+const MOD_IDS = String(process.env.MOD_IDS || '505505326532132868').split(',').map((x) => x.trim()).filter(Boolean);
+function advancedAllowed(userId, roles, curriculum) {
+  const top = (curriculum || [])[(curriculum || []).length - 1], role = top && top.role;
+  return MOD_IDS.includes(String(userId)) || !!(role && (roles || []).includes(role));
+}
+function accessForBreakdowns({ breakdowns, level, top, settings, subs, overrides, admin, advOk, mod }) {
   const out = {};
   const chains = bdChains(breakdowns);
-  [['main', level >= 1], ['advanced', level >= top]].forEach(([name, allowed]) => {
+  [['main', level >= 1], ['advanced', advOk === undefined ? level >= top : advOk]].forEach(([name, allowed]) => {
     let prevPassed = true;
     chains[name].forEach((b, i) => {
       const key = bdKey(b), ov = overrides[key];
       let open, passed, reason = null;
-      if (admin) { open = true; passed = true; }
+      if (admin || (mod && name === 'advanced')) { open = true; passed = true; }   // moderators can open every advanced lecture
       else if (!allowed) { open = false; passed = false; reason = name === 'advanced' ? 'hidden' : 'level'; }
       else { open = i === 0 || prevPassed; if (!open) reason = 'order'; passed = passes(subs[key], settings); }
       if (!admin && ov === 'unlock' && !open) { open = true; reason = null; }
@@ -269,7 +275,7 @@ async function memberState(userId, roles, admin, content, fresh) {
   const args = { curriculum: content.curriculum, settings: content.settings, roles: roles || [], subs, overrides, promo, admin };
   const access = accessFor(args);
   access.breakdowns = accessForBreakdowns({ breakdowns: content.breakdowns, level: access.level, top: content.curriculum.length,
-    settings: content.settings, subs, overrides, admin });
+    settings: content.settings, subs, overrides, admin, advOk: !!admin || advancedAllowed(userId, roles, content.curriculum), mod: MOD_IDS.includes(String(userId)) });
   access.homework = accessForHomework({ homework: content.homework, lessons: access.lessons, settings: content.settings, subs, admin });
   access.all = Object.assign({}, access.lessons, access.breakdowns, access.homework);
   return { content, subs, overrides, promo, access };
@@ -427,7 +433,7 @@ module.exports = {
   loadDayNotes, streakOf, nyToday, lastWorkOf, loadTestimonials, saveTestimonial, deleteTestimonial, hookReady, discordPost, testimonialPayload, payoutPayload, loadFeedSettings,
   ROLES, contentWithDefaults,
   loadSubs, saveSub, deleteSub, loadOverrides, setOverride, loadPromo, savePromo, loadCerts, saveCert, deleteCert,
-  unitsOf, passes, chapterRoles, roleLevel, promotionStep, levelFor, accessFor,
+  advancedAllowed, MOD_IDS, unitsOf, passes, chapterRoles, roleLevel, promotionStep, levelFor, accessFor,
   bdKind, bdChains, bdKey, bdOrderKey, accessForBreakdowns, BD_TASK, entryStatus, basePoints, logActivity, loadActivity,
   memberState, gateFor, findItem, allKeys, signInBlock, accessForHomework,
   loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints,
