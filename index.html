@@ -192,29 +192,25 @@ a{color:var(--blue);text-underline-offset:3px}
 
 
 /* ---------- popup ---------- */
-.dcd{position:fixed;inset:0;z-index:70;display:grid;place-items:center;--rc:#E3F1EF;background:radial-gradient(60% 50% at 50% 45%,rgba(20,163,157,.13),transparent 70%),#02090B;opacity:0;transition:opacity .2s ease}
+.dcd{position:fixed;inset:0;z-index:70;display:grid;place-items:center;--rc:#E3F1EF;background:radial-gradient(60% 50% at 50% 45%,rgba(20,163,157,.13),transparent 70%),#02090B;opacity:0;transition:opacity .35s cubic-bezier(.2,.7,.2,1)}
 .dcd.in{opacity:1}
-.dcd-in{display:flex;flex-direction:column;align-items:center;gap:26px;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));text-align:center}
-.dcd-av{position:relative;width:118px;height:118px;transform:scale(0)}
-.dcd.lock .dcd-av{animation:dcdPop .55s cubic-bezier(.3,1.6,.5,1) forwards}
-.dcd-ring{position:absolute;inset:-7px;border-radius:50%;background:conic-gradient(from 0deg,var(--rc),#8DEBDF,#19ADA5,var(--rc));animation:dcdSpin 2.4s linear infinite;box-shadow:0 0 44px color-mix(in srgb,var(--rc) 55%,transparent)}
+.dcd-in{display:flex;flex-direction:column;align-items:center;gap:28px;padding:24px 16px;text-align:center;transition:transform .7s cubic-bezier(.2,.7,.2,1),opacity .55s ease}
+.dcd-av{position:relative;width:112px;height:112px;opacity:0;transform:scale(.86);transition:opacity .5s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+.dcd.lock .dcd-av{opacity:1;transform:none}
+.dcd-ring{position:absolute;inset:-6px;border-radius:50%;background:conic-gradient(from 0deg,var(--rc),#8DEBDF,#19ADA5,var(--rc));animation:dcdSpin 3s linear infinite;box-shadow:0 0 40px color-mix(in srgb,var(--rc) 50%,transparent)}
 .dcd-av img,.dcd-ini{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover;background:#0B1A1C;border:4px solid #02090B;box-sizing:border-box}
-.dcd-ini{display:grid;place-items:center;font:700 46px var(--sans);color:var(--rc)}
-.dcd-ok{position:absolute;right:-6px;bottom:-4px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#3BE38F;color:#02090B;font:800 19px/1 var(--sans);border:4px solid #02090B;transform:scale(0)}
-.dcd.lock .dcd-ok{animation:dcdPop .4s cubic-bezier(.3,1.6,.5,1) .35s forwards}
-.dcd-code{font:700 clamp(22px,5.2vw,46px)/1.25 var(--mono);letter-spacing:.06em;color:var(--ink);max-width:22ch;overflow-wrap:anywhere;min-height:1.25em}
-.dcd-code .n{color:var(--rc);text-shadow:0 0 22px color-mix(in srgb,var(--rc) 45%,transparent)}
-.dcd-sub{font:500 12px/1.4 var(--mono);letter-spacing:.3em;padding-left:.3em;color:var(--muted);opacity:0;transition:opacity .4s ease .3s;min-height:1.4em}
-.dcd.lock .dcd-sub,.dcd.wait .dcd-sub{opacity:1}
-.dcd.zoom .dcd-in{animation:dcdZoom .6s cubic-bezier(.7,0,.2,1) forwards}
-.dcd.zoom{animation:dcdFade .45s ease .2s forwards}
-.dcd-skip{position:absolute;right:max(20px,env(safe-area-inset-right,0px));bottom:max(20px,env(safe-area-inset-bottom,0px));appearance:none;background:transparent;border:1px solid rgba(227,241,239,.18);color:var(--muted);font:600 13px var(--sans);padding:8px 16px;border-radius:999px;cursor:pointer}
-.dcd-skip:hover,.dcd-skip:focus-visible{color:var(--ink);border-color:var(--ink)}
-@keyframes dcdPop{to{transform:scale(1)}}
+.dcd-ini{display:grid;place-items:center;font:700 44px var(--sans);color:var(--rc)}
+.dcd-ok{position:absolute;right:-5px;bottom:-3px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#3BE38F;color:#02090B;font:800 18px/1 var(--sans);border:4px solid #02090B;opacity:0;transform:scale(.6);transition:opacity .35s ease .3s,transform .45s cubic-bezier(.2,.9,.3,1.2) .3s}
+.dcd.lock .dcd-ok{opacity:1;transform:none}
+.dcd-code{font:700 46px/1.2 var(--mono);letter-spacing:.06em;color:var(--ink);white-space:nowrap;min-height:1.2em}
+.dcd-code span{display:inline-block;min-width:.6em;opacity:.4;transition:opacity .25s ease,color .35s ease,text-shadow .5s ease}
+.dcd-code span.k{opacity:1}
+.dcd-code span.n.k{color:var(--rc)}
+.dcd.lock .dcd-code span.n{text-shadow:0 0 22px color-mix(in srgb,var(--rc) 45%,transparent)}
+.dcd.out{opacity:0;transition:opacity .5s ease .1s}
+.dcd.out .dcd-in{transform:scale(1.08);opacity:0}
 @keyframes dcdSpin{to{transform:rotate(360deg)}}
-@keyframes dcdZoom{to{transform:scale(2.4);opacity:0;filter:blur(6px)}}
-@keyframes dcdFade{to{opacity:0}}
-@media (prefers-reduced-motion:reduce){.dcd-ring{animation:none}.dcd.lock .dcd-av,.dcd.lock .dcd-ok{animation:none;transform:none}.dcd.zoom .dcd-in{animation:none}}
+@media (prefers-reduced-motion:reduce){.dcd-ring{animation:none}.dcd-in,.dcd-av,.dcd-ok,.dcd-code span{transition:none}}
 .scrim{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:rgba(2,3,7,.8);backdrop-filter:blur(10px)}
 .modal{position:relative;width:100%;max-width:440px;box-sizing:border-box;background:var(--panel);border:2px solid var(--ink);box-shadow:14px 14px 0 var(--blue);padding:44px 30px 30px;display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center;overflow:hidden;max-width:380px}
 .ring{position:relative;width:200px;height:200px;margin-block:8px}
@@ -1579,9 +1575,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   <div class="dcd-in">
     <div class="dcd-av" aria-hidden="true"><span class="dcd-ring"></span><span class="dcd-ini" id="dcd-ini"></span><img id="dcd-img" alt="" hidden><span class="dcd-ok">✓</span></div>
     <div class="dcd-code" id="dcd-code"></div>
-    <div class="dcd-sub" id="dcd-sub"></div>
   </div>
-  <button class="dcd-skip" id="dcd-skip" type="button">Skip</button>
 </div>
 
 <!-- WRONG BROWSER -->
@@ -6485,62 +6479,52 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   }
   function closePopup(){ cancelAnimationFrame(raf); scrim.hidden=true; document.getElementById('discord-btn').focus(); }
   /* ---------- sign-in intro: "decode" ----------
-     Scrambled letters lock into WELCOME BACK, <NAME> (name in their role colour), their Discord picture pops in
-     inside a spinning ring with a check, then everything zooms through into the portal. While the account is still
-     loading (e.g. straight back from Discord) the letters keep scrambling, so the wait is part of the intro. */
+     One line: WELCOME BACK, <NAME>. Each letter cycles through random characters and settles left to right, the name in
+     the member's role colour; their Discord picture fades in above inside a slowly turning ring with a check, then the
+     intro dissolves into the portal (about 2 seconds). While the account is still loading the letters keep cycling, so
+     the wait is part of the intro. */
   var DCD = { on:false };
   var DCD_CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&$@';
   function decodeWho(){ var u = user(), roles = (SESSION && SESSION.roles) || [];
     return { name: String(u.displayName || u.username || 'Member').trim(), avatar: u.avatar || '', color: nameColor(u.id, canAdmin(), roles), role: roleTitle(u.id, roles) }; }
   function startDecode(){
     if (DCD.on) return;
-    var o = document.getElementById('dcd'), code = document.getElementById('dcd-code'), sub = document.getElementById('dcd-sub');
+    var o = document.getElementById('dcd'), code = document.getElementById('dcd-code');
     var img = document.getElementById('dcd-img'), ini = document.getElementById('dcd-ini');
-    DCD = { on:true, t0:Date.now(), skip:false, iv:null, timers:[] };
-    o.className = 'dcd'; o.style.removeProperty('--rc'); o.hidden = false; code.textContent = ''; sub.textContent = ''; img.hidden = true; ini.textContent = '';
+    DCD = { on:true, timers:[], raf:0 };
+    o.className = 'dcd'; o.style.removeProperty('--rc'); o.hidden = false; code.textContent = ''; img.hidden = true; ini.textContent = '';
     requestAnimationFrame(function(){ o.classList.add('in'); });
-    document.getElementById('dcd-skip').focus();
-    var who = null, target = null, nameAt = 14, frame = 0, lockFrom = 0, waitShown = false;
-    function draw(){
-      var base = target || 'WELCOME BACK, ' + '••••••', out = document.createDocumentFragment(), all = true, line = '', nm = '';
-      for (var i = 0; i < base.length; i++){
-        var ch = base[i], fixed = ch === ' ' || ch === ',', lock = target && (DCD.skip || reduce || frame - lockFrom > 3 + i * 1.15);
-        var show = fixed || lock ? ch : DCD_CH[Math.floor(Math.random() * DCD_CH.length)];
-        if (!fixed && !lock) all = false;
-        if (i >= nameAt) nm += show; else line += show;
-      }
-      out.appendChild(document.createTextNode(line));
-      var sp = document.createElement('span'); sp.className = 'n'; sp.textContent = nm; out.appendChild(sp);
-      code.textContent = ''; code.appendChild(out);
-      return target && all;
-    }
+    var spans = [], text = '', nameAt = 0, t0 = performance.now(), lockAt = 0, lastSwap = 0, locked = false;
     function ready(){ return booted && (SESSION || !BACKEND); }
-    DCD.iv = setInterval(function(){
-      frame++;
-      if (!target && ready() && (DCD.skip || reduce || Date.now() - DCD.t0 > 450)){
-        who = decodeWho(); target = 'WELCOME BACK, ' + who.name.toUpperCase(); lockFrom = frame;
-        o.style.setProperty('--rc', who.color);
-        ini.textContent = who.name.charAt(0).toUpperCase();
+    // one line, sized to fit the screen
+    function build(str, nAt){
+      code.textContent = ''; spans = []; text = str; nameAt = nAt;
+      var fit = Math.min(46, (window.innerWidth - 40) / (str.length * .66)); code.style.fontSize = Math.max(14, fit) + 'px';
+      for (var i = 0; i < str.length; i++){ var sp = document.createElement('span'); if (i >= nAt) sp.className = 'n';
+        sp.textContent = str[i] === ' ' ? ' ' : str[i]; code.appendChild(sp); spans.push(sp); }
+    }
+    function tick(now){
+      if (!DCD.on) return;
+      if (!lockAt && ready() && now - t0 > 120){
+        var who = decodeWho(); o.style.setProperty('--rc', who.color); ini.textContent = who.name.charAt(0).toUpperCase();
         if (who.avatar){ img.onload = function(){ img.hidden = false; }; img.onerror = function(){ img.hidden = true; }; img.src = who.avatar; }
         code.setAttribute('aria-label', 'Welcome back, ' + who.name);
+        build('WELCOME BACK, ' + who.name.toUpperCase(), 14); lockAt = now;
+      } else if (!spans.length && now - t0 > 650) build('WELCOME BACK', 99);   // only if the account is slow to load
+      var allK = !!lockAt, swap = now - lastSwap > 70; if (swap) lastSwap = now;
+      for (var i = 0; i < spans.length; i++){
+        var ch = text[i], fixed = ch === ' ' || ch === ',', k = lockAt && (reduce || now - lockAt > 120 + i * 48);
+        if (fixed || k){ if (!spans[i].classList.contains('k')){ spans[i].textContent = ch === ' ' ? ' ' : ch; spans[i].classList.add('k'); } }
+        else { allK = false; if (swap) spans[i].textContent = DCD_CH[Math.floor(Math.random() * DCD_CH.length)]; }
       }
-      if (!target && !waitShown && Date.now() - DCD.t0 > 1800){ waitShown = true; o.classList.add('wait'); sub.textContent = 'LOADING YOUR PORTAL'; }
-      if (draw()){
-        clearInterval(DCD.iv); o.classList.remove('wait'); o.classList.add('lock');
-        sub.textContent = 'VERIFIED MEMBER · ' + who.role.toUpperCase();
-        DCD.timers.push(setTimeout(zoomIn, DCD.skip ? 250 : reduce ? 700 : 1400));
-      }
-    }, 45);
-    function zoomIn(){
-      o.classList.add('zoom'); enterPortal();
-      DCD.timers.push(setTimeout(function(){ o.hidden = true; o.className = 'dcd'; DCD.on = false; }, reduce ? 50 : 700));
+      if (allK && !locked){ locked = true; o.classList.add('lock');
+        DCD.timers.push(setTimeout(function(){ o.classList.add('out'); enterPortal(); }, reduce ? 500 : 950));
+        DCD.timers.push(setTimeout(function(){ closeDecode(); }, reduce ? 700 : 1650)); return; }
+      DCD.raf = requestAnimationFrame(tick);
     }
-    DCD.finish = function(){ if (!DCD.skip){ DCD.skip = true; if (o.classList.contains('lock')){ DCD.timers.forEach(clearTimeout); zoomIn(); } } };
+    DCD.raf = requestAnimationFrame(tick);
   }
-  function closeDecode(){ var o = document.getElementById('dcd'); if (!DCD.on) return; clearInterval(DCD.iv); (DCD.timers || []).forEach(clearTimeout); o.hidden = true; o.className = 'dcd'; DCD.on = false; }
-  document.getElementById('dcd-skip').addEventListener('click', function(e){ e.stopPropagation(); if (DCD.finish) DCD.finish(); });
-  document.getElementById('dcd').addEventListener('click', function(){ if (DCD.finish) DCD.finish(); });
-  document.addEventListener('keydown', function(e){ if (DCD.on && (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') && DCD.finish){ e.preventDefault(); DCD.finish(); } });
+  function closeDecode(){ var o = document.getElementById('dcd'); if (!DCD.on) return; cancelAnimationFrame(DCD.raf); (DCD.timers || []).forEach(clearTimeout); o.hidden = true; o.className = 'dcd'; DCD.on = false; }
 
   var booted = false, pendingEnter = false;
   function enterPortal(){
