@@ -660,6 +660,9 @@ Stats (and Journal → Stats) use one dropdown: **Today**, This week, This month
 time. Weeks start Monday, Sunday counts as Monday. The "By day" table under the totals lists P&L day by day.
 
 ## Pictures load cleanly
+Just-pasted or just-picked pictures (journal screenshots, hand-ins, certificates) show straight away from the member's
+own device, since the private storage only gives a viewing link once the entry is saved. A picture that still can't
+be shown (e.g. an unsaved draft after a refresh) appears as a tidy picture tile, never a broken-image icon.
 Screenshots, hand-in files and certificates show a soft shimmer while they load instead of an empty box or the
 browser's broken-picture icon. In the screenshot viewer every picture starts loading as soon as it opens, and moving
 to the next one keeps the current picture up (with a small spinner) until the next one is ready. Share cards are drawn
