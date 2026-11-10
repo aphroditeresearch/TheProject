@@ -640,7 +640,7 @@ last clicked or the one playing, and are ignored while typing in a text box or w
 - **Everyone card:** "Total P&L" for everyone with a journal (the same pool and numbers as Stats for that period), win
   rate (breakevens not counted), trades and traders, a running P&L curve, record (W–L–BE), average win : loss and average
   R per trade. No names.
-- **Personal card:** The Project wordmark, the diamond (`diamond-mark.png`, cut out from `diamond.jpg`), the person's name
+- **Personal card:** The Project wordmark, the diamond (`diamond-gem.png`; as is on green days, recoloured red on red days), the person's name
   in their Discord level colour (Enlightened `#00C853`, Illuminated `#AA00FF`, Awakened `#3498DB`; highest role wins;
   no level role = site green; staff: Moderator 1313595031466021026 yellow `#F1C40F`, Admin
   484654761757507584 red `#E74C3C`, set in `STAFF_COLORS` in index.html), "Daily / Weekly / Monthly P&L", the number and the date. Nothing else. The number, the diamond and the
