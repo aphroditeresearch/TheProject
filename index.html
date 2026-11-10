@@ -900,6 +900,8 @@ ul.parts{list-style:none;margin:0 0 4px 22px;padding:0 0 0 12px;border-left:1px 
 .pane{display:flex;flex-direction:column;gap:18px;min-width:0}
 .pane .kick{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--kana-c)}
 .pane h3{margin:0;font-family:var(--display);font-style:italic;font-weight:900;font-stretch:125%;font-size:clamp(30px,4vw,46px);line-height:1;letter-spacing:-.02em;text-wrap:balance}
+.seek-flash{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:6;pointer-events:none;padding:10px 18px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font:600 18px var(--sans);opacity:0}
+.seek-flash.on{animation:seekf .7s ease-out}@keyframes seekf{0%{opacity:1}60%{opacity:1}100%{opacity:0}}
 .player{position:relative;width:100%;max-width:min(100%,calc((100vh - 380px) * 16 / 9));aspect-ratio:16/9;border:1px solid var(--line);overflow:hidden;background:#000 url("poster.jpg") 38% 50%/cover no-repeat;display:grid;place-items:center}
 .player::before{content:"";position:absolute;inset:0;background:#12B5A9;mix-blend-mode:color;opacity:.7}
 .player::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(2,9,11,.85),rgba(2,9,11,.15) 55%)}
@@ -2336,6 +2338,15 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       });
       holder.tabIndex = 0;
       holder.addEventListener('keydown', function(e){ if (e.key === ' ' || e.key === 'k'){ e.preventDefault(); toggle(); } if (e.key === 'f') bFull.click(); });
+      addSeeker(pl, function(d){
+        if (!yt || !ydur || !yt.getCurrentTime) return;
+        var now = yt.getCurrentTime(), to = Math.max(0, Math.min(ydur - 0.5, now + d));
+        if (d > 0 && !free && !doneSet[cur.key]){   // first watch of a lecture: only as far as already watched
+          if (now >= yst.max - 1){ toast('No skipping ahead on your first watch. ← still goes back 10s.'); return; }
+          to = Math.min(to, yst.max);
+        }
+        yt.seekTo(to, true); seekFlash(pl, d);
+      }, function(){ return yplaying; });
       loadYT().then(function(YT){
         if (!host2.isConnected) return;
         var ywarned = false, ylast = 0, ysave = 0, ywall = 0;
@@ -2384,6 +2395,11 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var st = watch[cur.key] || (watch[cur.key] = { max:0, pos:0 }), last = 0, warned = false, saveT = 0, lastW = 0;
       v.playbackRate = v.defaultPlaybackRate = SPEED;
       v.addEventListener('ratechange', function(){ if (SPEEDS.indexOf(v.playbackRate) < 0) v.playbackRate = SPEED; });   // only 1x, 1.5x or 2x
+      addSeeker(pl, function(d){
+        if (!v.duration) return; var to = Math.max(0, Math.min(v.duration - 0.5, v.currentTime + d));
+        if (d > 0 && !free && !doneSet[cur.key]){ if (v.currentTime >= st.max - 1){ toast('No skipping ahead on your first watch. ← still goes back 10s.'); return; } to = Math.min(to, st.max); }
+        v.currentTime = to; seekFlash(pl, d);
+      }, function(){ return !v.paused; });
       var vr = el('button','vrate', speedLabel()); vr.type = 'button'; vr.setAttribute('aria-label','Playback speed');
       vr.addEventListener('click', function(){ setSpeed(nextSpeed()); v.playbackRate = SPEED; vr.textContent = speedLabel(); });
       var vOn = false; v.addEventListener('play', function(){ if (!vOn){ vOn = true; HOLD.video++; } }); var vOff = function(){ if (vOn){ vOn = false; HOLD.video = Math.max(0, HOLD.video - 1); } };
@@ -2743,6 +2759,30 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   // on touch, the first tap on a playing video shows the controls; the next one pauses
   function ctlShow(holder){ holder.classList.add('show-ctl'); clearTimeout(holder._ct); holder._ct = setTimeout(function(){ holder.classList.remove('show-ctl'); }, 3200); }
 
+
+  /* ---------- ← / → jump 10 seconds (breakdowns, rewatches, and the part of a lecture already watched) ---------- */
+  var SEEKERS = [];
+  function addSeeker(pl, seek, isPlaying){
+    var s0 = { pl: pl, seek: seek, playing: isPlaying, at: 0 }; SEEKERS.push(s0);
+    pl.addEventListener('pointerdown', function(){ s0.at = Date.now(); }, true);
+  }
+  function seekFlash(pl, d){
+    var f = pl.querySelector('.seek-flash'); if (!f){ f = el('div','seek-flash'); f.setAttribute('aria-hidden','true'); pl.appendChild(f); }
+    f.textContent = (d > 0 ? '+' : '−') + Math.abs(d) + 's'; f.classList.remove('on'); void f.offsetWidth; f.classList.add('on');
+  }
+  document.addEventListener('keydown', function(e){
+    if ((e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    var t = e.target; if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable || (t.getAttribute && t.getAttribute('role') === 'slider' && !t.closest('.player')))) return;
+    if (document.documentElement.classList.contains('lb-open') || document.getElementById('jw')) return;   // the image viewer and walkthrough use the arrows
+    SEEKERS = SEEKERS.filter(function(x){ return x.pl.isConnected; });
+    var fs = document.fullscreenElement || document.querySelector('.player.pfs');
+    var vis = SEEKERS.filter(function(x){ if (fs) return fs === x.pl || fs.contains(x.pl); var r = x.pl.getBoundingClientRect(); return x.pl.offsetParent !== null && r.bottom > 0 && r.top < innerHeight; });
+    if (!vis.length) return;
+    var pick = vis.filter(function(x){ return x.pl.contains(document.activeElement); })[0]
+      || vis.filter(function(x){ try { return x.playing(); } catch (er) { return false; } })[0]
+      || vis.slice().sort(function(a, b){ return b.at - a.at; })[0];
+    e.preventDefault(); pick.seek(e.key === 'ArrowRight' ? 10 : -10);
+  });
   // a simple player for rewatching (no completion tracking here: that happens in Lectures)
   function miniPlayer(src){
     var pl = el('div','player');
@@ -2754,6 +2794,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var yt = null, playing = false, tog = function(){ if (!yt || !yt.getPlayerState) return; if (playing) yt.pauseVideo(); else { yt.playVideo(); ytTapFallback(holder, function(){ return playing; }); } };
       cover.addEventListener('click', tog); click.addEventListener('click', tog);
       bar.addEventListener('click', function(e){ if (!yt || !yt.getDuration) return; var r = bar.getBoundingClientRect(); yt.seekTo(Math.max(0, (e.clientX - r.left) / r.width) * yt.getDuration(), true); });
+      addSeeker(pl, function(d){ if (!yt || !yt.getDuration || !yt.getDuration()) return; yt.seekTo(Math.max(0, Math.min(yt.getDuration() - 0.5, yt.getCurrentTime() + d)), true); seekFlash(pl, d); }, function(){ return playing; });
       loadYT().then(function(YT){
         if (!h2.isConnected) return;
         yt = new YT.Player(h2, { videoId: ytId(src), width:'100%', height:'100%',
@@ -2765,6 +2806,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     } else if (src && looksLikeVideoFile(src)){
       var v = document.createElement('video'); v.src = src; v.controls = true; v.playsInline = true; v.preload = 'metadata';
       v.setAttribute('controlsList','nodownload noplaybackrate noremoteplayback'); v.disablePictureInPicture = true; v.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+      addSeeker(pl, function(d){ if (!v.duration) return; v.currentTime = Math.max(0, Math.min(v.duration - 0.5, v.currentTime + d)); seekFlash(pl, d); }, function(){ return !v.paused; });
       pl.appendChild(v);
     } else { var pb = el('div','play'); pb.innerHTML = playSvg; pl.appendChild(pb); pl.appendChild(el('span','note','Video coming soon')); }
     addVideoMarks(pl);

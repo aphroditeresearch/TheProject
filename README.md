@@ -626,3 +626,9 @@ journal entries, imported trades and day notes. A Sunday-dated entry is saved un
 form says so when a Sunday is picked). Older Sunday entries and notes are shown under Monday when read, without changing
 what's saved; a Sunday plan and a Monday plan show together. Daily recap, By day, the calendar, streaks, weekly recaps
 and leaderboards all follow this. On Sunday evening the new-entry date and the admin Daily recap start on Monday.
+
+## Arrow keys: jump 10 seconds
+On any video, **→** jumps forward 10 seconds and **←** goes back 10 seconds (a "+10s" / "−10s" badge flashes on the
+video). Breakdowns and lectures already completed can be jumped through freely. On a lecture's first watch, ← always works
+and → only goes as far as already watched (no skipping ahead). Works in full screen too. The keys act on the video you
+last clicked or the one playing, and are ignored while typing in a text box or when the image viewer or walkthrough is open.
