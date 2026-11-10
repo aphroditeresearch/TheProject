@@ -450,7 +450,7 @@ module.exports = async (req, res) => {
         level: st.access.level, canPromote: st.access.canPromote,
         access: Object.assign({}, st.access.lessons, st.access.breakdowns, st.access.homework || {}), isAdmin: adminIds().includes(m.id),
         journal, entries: ents, dayNotes,
-        goals, accounts: Object.values(accounts), tmeta, mentor: mentors[m.id] || '',
+        goals, accounts: Object.values(accounts), tmeta, mentor: C.mentorOf(mentors, m.id),
       });
     }));
     await signAll(req, files, 'url');

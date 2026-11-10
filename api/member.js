@@ -143,7 +143,7 @@ async function wins(uid) {
         payouts.push({ name: m.displayName || m.username, avatar: m.avatar || null, amount: Number(c.review.amount || c.amount || 0), note: c.note || '', paidAt: c.paidAt || String(c.uploadedAt || '').slice(0, 10), at: c.review.at || '' });
       });
     }));
-    payouts.sort((a, b) => String(b.at).localeCompare(String(a.at))); payouts = payouts.slice(0, 60);
+    payouts.sort((a, b) => String(b.paidAt).localeCompare(String(a.paidAt)) || String(b.at).localeCompare(String(a.at)));   // newest payout first payouts = payouts.slice(0, 60);
     try { await kv(['SET', 'wins-cache', JSON.stringify(payouts), 'EX', 120]); } catch (e) {}
   }
   return { testimonials, mine, payouts };

@@ -38,6 +38,9 @@ async function unreadOf(reader) {
 
 // ---------- mentors ----------
 async function mentorMap() { return flatToObj(await kv(['HGETALL', 'mentors']), false); }
+// every student has a mentor: the one an admin picked, otherwise the default mentor (Osman; DEFAULT_MENTOR overrides). Nothing is written for the default.
+const DEFAULT_MENTOR = () => String(process.env.DEFAULT_MENTOR || '484654761757507584');
+function mentorOf(map, student) { const m = (map || {})[student] || DEFAULT_MENTOR(); return m === student ? '' : m; }
 async function setMentor(student, staffId) { if (staffId) await kv(['HSET', 'mentors', student, staffId]); else await kv(['HDEL', 'mentors', student]); }
 
 // ---------- weekly focus goals (week = the Monday of the trading week, New York) ----------
@@ -53,4 +56,4 @@ async function loadAccounts(uid) { return flatToObj(await kv(['HGETALL', 'paccts
 async function saveAccount(uid, a) { await kv(['HSET', 'paccts:' + uid, a.id, JSON.stringify(a)]); }
 async function deleteAccount(uid, id) { await kv(['HDEL', 'paccts:' + uid, id]); }
 
-module.exports = { ITEM, loadThread, threadMeta, addMessage, bumpUnread, clearUnread, unreadOf, mentorMap, setMentor, weekOf, loadGoals, saveGoal, loadAccounts, saveAccount, deleteAccount };
+module.exports = { ITEM, loadThread, threadMeta, addMessage, bumpUnread, clearUnread, unreadOf, mentorMap, mentorOf, DEFAULT_MENTOR, setMentor, weekOf, loadGoals, saveGoal, loadAccounts, saveAccount, deleteAccount };

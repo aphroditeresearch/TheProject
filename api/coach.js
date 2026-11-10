@@ -40,7 +40,7 @@ function cleanAccount(a, old) {
   const out = { id: old ? old.id : 'a' + crypto.randomBytes(5).toString('hex'), name: str(a.name, 40) || 'Account', firm: str(a.firm, 40),
     kind: KINDS.includes(a.kind) ? a.kind : 'Evaluation', start: num(a.start), target: num(a.target), maxDD: num(a.maxDD), dailyLoss: num(a.dailyLoss),
     ddType: DD.includes(a.ddType) ? a.ddType : 'trailing', lockAtStart: a.lockAtStart !== false, status: STATUS.includes(a.status) ? a.status : 'active',
-    startDate: /^\d{4}-\d{2}-\d{2}$/.test(str(a.startDate, 10)) ? str(a.startDate, 10) : '', createdAt: old ? old.createdAt : new Date().toISOString(), updatedAt: new Date().toISOString() };
+    pullOld: a.pullOld !== false, startDate: /^\d{4}-\d{2}-\d{2}$/.test(str(a.startDate, 10)) ? str(a.startDate, 10) : '', createdAt: old ? old.createdAt : new Date().toISOString(), updatedAt: new Date().toISOString() };
   if (!(out.start > 0)) return { error: 'need_start' };
   if (out.maxDD !== undefined && !(out.maxDD > 0)) delete out.maxDD;
   if (out.target !== undefined && !(out.target > 0)) delete out.target;
@@ -61,7 +61,8 @@ module.exports = async (req, res) => {
     if (q.get('me')) {
       const [goals, accounts, meta, unread, mentors] = await Promise.all([C.loadGoals(me), C.loadAccounts(me), C.threadMeta(me), C.unreadOf(me), C.mentorMap()]);
       let mentor = null;
-      if (mentors[me]) { const m = (await listMembers()).find((x) => x.id === mentors[me]); mentor = { id: mentors[me], name: nameOf(m), avatar: (m && m.avatar) || null }; }
+      const mid = staff ? '' : C.mentorOf(mentors, me);
+      if (mid) { const m = (await listMembers()).find((x) => x.id === mid); mentor = { id: mid, name: nameOf(m), avatar: (m && m.avatar) || null }; }
       return json(res, 200, { week: C.weekOf(nyToday()), goals, accounts: Object.values(accounts), meta, unread, mentor });
     }
     if (q.get('thread')) {
@@ -112,7 +113,7 @@ module.exports = async (req, res) => {
     // who gets told: the student when staff write; the student's mentor (or every admin if none) when the student writes
     let readers;
     if (staff && owner !== me) readers = [owner].concat(adminIds().filter((a) => a !== me));
-    else { const mentors = await C.mentorMap(); readers = mentors[owner] ? [mentors[owner]] : adminIds(); readers = readers.filter((r) => r !== me); }
+    else { const mentors = await C.mentorMap(); const mid = C.mentorOf(mentors, owner); readers = mid && adminIds().includes(mid) ? [mid] : adminIds(); readers = readers.filter((r) => r !== me); }
     await C.bumpUnread(readers, owner, item);
     // a student's message shows in the admins' bell (staff replies don't, so the feed stays about students)
     if (!(staff && owner !== me)) await logActivity(s.user, { type: 'thread', owner, item, label: meta.last.text || 'New message' });

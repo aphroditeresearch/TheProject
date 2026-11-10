@@ -737,7 +737,9 @@ Everything below adds to what's stored. Journal entries, hand-ins and notes are 
   "Conversation"). Messages can include pictures, **voice notes** (recorded in the browser, up to 3 minutes) and a
   **mark-up**: the mentor (or student) draws on one of the student's screenshots with a pen, box or arrow in four colours.
   The drawing is saved as a see-through layer over the original. The student is notified in their bell. When a student
-  writes, their assigned mentor is notified, or every admin if no mentor is assigned, and it shows in the admins' bell.
+  writes, their mentor is notified, and it shows in the admins' bell. Every student's mentor is **Osman** by default
+  (env `DEFAULT_MENTOR` changes it); an admin can pick a different mentor on the student's page. The default isn't
+  written anywhere, so nothing in the `mentors` hash changes.
   - Storage: `thread:<student>:<item>` (messages), `tmeta:<student>` (one line per thread), `tunread:<reader>`.
   - Uploads go to `members/<id>/thread/` in Blob. `vercel.json` now allows the microphone on this site
     (`microphone=(self)`) for voice notes.
@@ -753,6 +755,11 @@ Everything below adds to what's stored. Journal entries, hand-ins and notes are 
   trailing or static; it stops trailing at the starting balance unless unticked) and a daily loss limit. Pick the
   account on a journal entry (`acctId`) and the card shows the balance, distance to the target and room before the
   drawdown limit. Storage: `paccts:<id>`.
+  - **Existing trades count.** Journal trades that aren't linked to an account count toward the account of the same type
+    (Evaluation / Funded / Personal) from its **First trading day** on (empty = all of them), so a newly added account
+    shows the right balance, wins and losses straight away. The card says how many it picked up. If two accounts of the
+    same type could take a trade, the one that started latest gets it. Untick "Count trades already in my journal" to
+    count only linked trades (`pullOld`). Nothing on the trades is changed; it's worked out when the card is drawn.
 - **Admin → Coaching (first tab):**
   - **Triage:** every student, most urgent first. It flags:
     - messages waiting for a reply
@@ -775,8 +782,8 @@ Everything below adds to what's stored. Journal entries, hand-ins and notes are 
   - This uses both of the free plan's cron jobs (backup + recap).
 
 ## Simpler places
-- **Wins** is one page: certified **Payouts**, **Top earners** (the payout leaderboard, moved from Leaderboard) and
-  **Reviews**. The Leaderboard tab is the psych leaderboard only.
+- **Wins** is one page: **Payouts** (a feed of the most recent certified payouts, newest payout first), **Top earners**
+  (everyone with a certified payout, ranked by all-time total) and **Reviews**. The Leaderboard tab is the psych leaderboard only.
 - **Journal → Stats** for students opens with the summary. "Deeper stats" (time of day, day of week, session, setup,
   what works best) is one click away. Admins always see everything.
 - Kept on purpose: the Chrome-only lock, and the dev-tools shield and alerts (lesson content stays protected).
@@ -792,3 +799,7 @@ After sign-in (about 4 seconds):
 
 The intro has the same proportions as the top-bar logo, so the landing matches exactly. "Reduce motion" skips the
 movement. Markup is `#sig`/`.sig-lock`; the styles start at `.sig-lock`.
+
+## Lesson videos
+- Once a video has started, pausing it no longer darkens the frame: the paused picture shows as normal with just the
+  play button over it. Before the first play the cover stays (it hides YouTube's title and branding).

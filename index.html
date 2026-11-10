@@ -890,7 +890,7 @@ table.mem td:first-child,table.mem th:first-child{width:34px}
 .pa.danger{border-color:rgba(240,84,84,.55)}.pa.blown{border-color:var(--loss);background:rgba(240,84,84,.06)}.pa.passed{border-color:rgba(59,227,143,.5)}
 .pa-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.pa-h b{font-size:15px}.pa-k{color:var(--muted);font-size:12.5px}.pa-h .lnk{margin-left:auto}
 .pa-big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.pa-big b{font:700 22px var(--mono)}.pa-big span{font-size:13px;color:var(--muted)}.pa-big .win{color:var(--win)}.pa-big .loss{color:var(--loss)}
-.pa small{font-size:12.5px;color:var(--muted)}.pa small.warn{color:#E8D27A}.pa small.bad{color:var(--loss)}
+.pa small{font-size:12.5px;color:var(--muted)}.pa small.pa-src{font-style:italic;opacity:.85}.pa small.warn{color:#E8D27A}.pa small.bad{color:var(--loss)}
 .pa-bar{height:6px;background:var(--panel-2);border:1px solid var(--line)}.pa-bar i{display:block;height:100%;background:var(--win)}
 .pa-bar.dd i{background:linear-gradient(90deg,var(--loss),#E8D27A 40%,var(--win))}
 .pa-form{display:flex;flex-direction:column;gap:10px;grid-column:1/-1;padding:14px 16px;border:1px solid var(--line)}
@@ -1177,6 +1177,8 @@ body.returning .scene::after{opacity:0}
   background:radial-gradient(ellipse at center,rgba(2,9,11,.55),rgba(2,9,11,.96));transition:opacity .2s ease}
 .yt-cover svg{width:74px;height:74px;padding:22px;border:2px solid var(--kana-c);border-radius:50%;box-shadow:0 0 24px rgba(28,232,190,.35)}
 .yt.playing .yt-cover{opacity:0;pointer-events:none}
+.yt.started .yt-cover{background:transparent}
+.yt.started .yt-cover svg{background:rgba(2,9,11,.45);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 .ytc{position:absolute;left:0;right:0;bottom:0;z-index:6;display:flex;align-items:center;gap:10px;padding:10px 12px;background:linear-gradient(to top,rgba(2,9,11,.92),rgba(2,9,11,0));opacity:1;transition:opacity .25s ease}
 .yt.playing .ytc{opacity:0}
 .yt.playing:hover .ytc,.yt:focus-within .ytc{opacity:1}
@@ -3421,15 +3423,27 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   }
 
   // ---------- prop accounts: balance, distance to target and to the drawdown floor ----------
-  function acctState(a, ents){
-    var list = (ents || []).filter(function(e){ return e.kind === 'trade' && e.acctId === a.id && entryStatus(e) !== 'denied'; })
+  // which account a trade counts toward: the one it was linked to; otherwise (trades logged before the account was added, or never linked)
+  // the account of the same type that picks up earlier trades, from its first trading day on. If two could, the one that started latest wins.
+  function acctFor(e, all){
+    all = all || [];
+    if (e.acctId && all.some(function(a){ return a.id === e.acctId; })) return e.acctId;
+    var c = all.filter(function(a){ return a.pullOld !== false && a.status !== 'archived' && a.kind === e.account && (!a.startDate || String(e.date) >= a.startDate); });
+    if (!c.length) return null;
+    c.sort(function(x, y){ return String(y.startDate || '').localeCompare(String(x.startDate || '')) || String(y.createdAt || '').localeCompare(String(x.createdAt || '')); });
+    return c[0].id;
+  }
+  function acctState(a, ents, all){
+    all = all && all.length ? all : [a];
+    var list = (ents || []).filter(function(e){ return e.kind === 'trade' && entryStatus(e) !== 'denied' && acctFor(e, all) === a.id; })
       .sort(function(x, y){ return String(x.date + (x.time || '')).localeCompare(String(y.date + (y.time || ''))); });
     var bal = +a.start || 0, peak = bal, days = {}, today = tradeDay(todayYmd());
     list.forEach(function(e){ bal += +e.pnl || 0; days[e.date] = (days[e.date] || 0) + (+e.pnl || 0); if (a.ddType === 'trailing') peak = Math.max(peak, bal); });
     if (a.ddType === 'eod'){ var run = +a.start || 0; Object.keys(days).sort().forEach(function(d){ run += days[d]; peak = Math.max(peak, run); }); }
     var floor = null;
     if (a.maxDD){ floor = a.ddType === 'static' ? a.start - a.maxDD : peak - a.maxDD; if (a.lockAtStart !== false && a.ddType !== 'static') floor = Math.min(floor, +a.start); }
-    var S = { bal: bal, pnl: bal - (+a.start || 0), peak: peak, floor: floor, room: floor === null ? null : bal - floor, trades: list.length, today: days[today] || 0 };
+    var S = { bal: bal, pnl: bal - (+a.start || 0), peak: peak, floor: floor, room: floor === null ? null : bal - floor, trades: list.length, today: days[today] || 0,
+      unlinked: list.filter(function(e){ return e.acctId !== a.id; }).length, wins: list.filter(function(e){ return +e.pnl > 0; }).length, losses: list.filter(function(e){ return +e.pnl < 0; }).length };
     S.toTarget = a.target ? a.target - S.pnl : null;
     S.pct = a.target ? Math.max(0, Math.min(1, S.pnl / a.target)) : null;
     S.ddPct = a.maxDD && S.room !== null ? Math.max(0, Math.min(1, S.room / a.maxDD)) : null;   // 1 = full cushion, 0 = blown
@@ -3438,12 +3452,13 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     S.dailyHit = a.dailyLoss && S.today <= -a.dailyLoss;
     return S;
   }
-  function acctCard(a, ents, onEdit){
-    var S = acctState(a, ents), c = el('article','pa' + (S.blown ? ' blown' : S.danger ? ' danger' : S.passed ? ' passed' : ''));
+  function acctCard(a, ents, onEdit, all){
+    var S = acctState(a, ents, all), c = el('article','pa' + (S.blown ? ' blown' : S.danger ? ' danger' : S.passed ? ' passed' : ''));
     var h = el('div','pa-h'); h.appendChild(el('b',null, a.name)); h.appendChild(el('span','pa-k', [a.firm, a.kind, a.status !== 'active' ? cap(a.status) : ''].filter(Boolean).join(' · ')));
     if (onEdit){ var ed = el('button','lnk','Edit'); ed.type = 'button'; ed.addEventListener('click', function(){ onEdit(a); }); h.appendChild(ed); }
     c.appendChild(h);
-    var big = el('div','pa-big'); big.appendChild(el('b',null, '$' + Math.round(S.bal).toLocaleString('en-US'))); big.appendChild(el('span', S.pnl > 0 ? 'win' : S.pnl < 0 ? 'loss' : '', (S.pnl >= 0 ? '+' : '−') + '$' + Math.abs(Math.round(S.pnl)).toLocaleString('en-US') + ' · ' + S.trades + (S.trades === 1 ? ' trade' : ' trades'))); c.appendChild(big);
+    var big = el('div','pa-big'); big.appendChild(el('b',null, '$' + Math.round(S.bal).toLocaleString('en-US'))); big.appendChild(el('span', S.pnl > 0 ? 'win' : S.pnl < 0 ? 'loss' : '', (S.pnl >= 0 ? '+' : '−') + '$' + Math.abs(Math.round(S.pnl)).toLocaleString('en-US') + ' · ' + S.trades + (S.trades === 1 ? ' trade' : ' trades') + (S.trades ? ' · ' + S.wins + 'W ' + S.losses + 'L' : ''))); c.appendChild(big);
+    if (S.unlinked) c.appendChild(el('small','pa-src', 'Includes ' + S.unlinked + ' ' + a.kind + ' ' + (S.unlinked === 1 ? 'trade' : 'trades') + ' from your journal' + (a.startDate ? ' since ' + shortDay(a.startDate) : '') + ' that weren\'t linked to an account'));
     if (a.target){ var t = el('div','pa-bar'), f = el('i'); f.style.width = Math.round(S.pct * 100) + '%'; t.appendChild(f); c.appendChild(el('small',null, S.passed ? '✓ Profit target reached' : 'Target: $' + Math.round(S.toTarget).toLocaleString('en-US') + ' to go of $' + a.target.toLocaleString('en-US'))); c.appendChild(t); }
     if (a.maxDD){ var d = el('div','pa-bar dd'), f2 = el('i'); f2.style.width = Math.round((S.ddPct || 0) * 100) + '%'; d.appendChild(f2);
       c.appendChild(el('small', S.blown ? 'bad' : S.danger ? 'warn' : '', S.blown ? '✕ Below the drawdown limit ($' + Math.round(S.floor).toLocaleString('en-US') + ')' : 'Room before the drawdown limit: $' + Math.round(S.room).toLocaleString('en-US') + ' (limit at $' + Math.round(S.floor).toLocaleString('en-US') + ', ' + ({ trailing:'trailing', eod:'end-of-day trailing', static:'static' })[a.ddType] + ')'));
@@ -3459,8 +3474,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     [['Name', tx('name','e.g. Topstep 50K #2')], ['Firm', tx('firm','Topstep, Apex, Tradeify…')], ['Type', sl('kind', [['Evaluation','Evaluation'],['Funded','Funded'],['Personal / live','Personal / live']])],
      ['Starting balance ($)', tx('start','50000','number')], ['Profit target ($)', tx('target','3000','number')], ['Max drawdown ($)', tx('maxDD','2000','number')],
      ['Drawdown type', sl('ddType', [['trailing','Trailing (intraday)'],['eod','Trailing (end of day)'],['static','Static']])], ['Daily loss limit ($, optional)', tx('dailyLoss','1000','number')],
-     ['Status', sl('status', [['active','Active'],['passed','Passed'],['paid','Paid out'],['failed','Failed'],['archived','Archived']])]].forEach(function(r){ g.appendChild(fld(r[0], r[1])); });
+     ['Status', sl('status', [['active','Active'],['passed','Passed'],['paid','Paid out'],['failed','Failed'],['archived','Archived']])],
+     ['First trading day on it', tx('startDate','','date'), 'Your trades of this type from this day on count toward it. Leave empty to count all of them.']].forEach(function(r){ g.appendChild(fld(r[0], r[1], r[2])); });
     f.appendChild(g);
+    var po = el('label','tick'), pc = el('input'); pc.type = 'checkbox'; pc.checked = D.pullOld !== false; po.appendChild(pc); po.appendChild(document.createTextNode(' Count trades already in my journal that aren\'t linked to an account')); pc.addEventListener('change', function(){ D.pullOld = pc.checked; }); f.appendChild(po);
     var lk = el('label','tick'), lc = el('input'); lc.type = 'checkbox'; lc.checked = D.lockAtStart !== false; lk.appendChild(lc); lk.appendChild(document.createTextNode(' Drawdown stops trailing at the starting balance (most firms)')); lc.addEventListener('change', function(){ D.lockAtStart = lc.checked; }); f.appendChild(lk);
     var acts = el('div','jr-acts'), sv = el('button','btn-s pri', a.id ? 'Save account' : 'Add account'), cx = el('button','btn-s','Cancel'); sv.type = cx.type = 'button';
     sv.addEventListener('click', function(){ sv.disabled = true; coachPost({ action:'acct-save', uid: owner, acct: D }).then(function(r){ toast(a.id ? 'Saved.' : 'Account added.'); done(r.acct); }).catch(function(e){ sv.disabled = false; toast(e.message); }); });
@@ -3532,7 +3549,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       if (!staffView) COACH.accounts = P.accounts; redraw(); })); }
     addB.addEventListener('click', function(){ edit(null); });
     if (!live.length) grid.appendChild(el('p','pf-none', staffView ? 'No accounts added yet.' : 'Add your evaluation and funded accounts. Pick the account on each trade and you\'ll see your distance to the target and to the drawdown limit.'));
-    live.forEach(function(a){ grid.appendChild(acctCard(a, ents, edit)); });
+    live.forEach(function(a){ grid.appendChild(acctCard(a, ents, edit, P.accounts)); });
     ac.appendChild(grid); wrap.appendChild(ac);
     // conversations
     var cv = el('section','pp-sec'); cv.appendChild(el('h4',null,'Conversations'));
@@ -3572,7 +3589,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     // gone quiet
     if (m.journal){ var last = dkeys[0], gap = 0, d = today; while (gap < 10 && d !== last){ if (wday(d) > 0 && wday(d) < 6) gap++; d = addDays(d, -1); } if (!last || gap >= 3) out.push({ w:20 + Math.min(gap, 10), cls:'warn', t: last ? 'No journal for ' + gap + ' trading days' : 'Hasn\'t journaled yet' }); }
     // prop accounts close to the drawdown limit
-    (m.accounts || []).filter(function(a){ return a.status === 'active'; }).forEach(function(a){ var S = acctState(a, ents);
+    (m.accounts || []).filter(function(a){ return a.status === 'active'; }).forEach(function(a){ var S = acctState(a, ents, m.accounts);
       if (S.blown) out.push({ w:35, cls:'bad', t: a.name + ' is past its drawdown limit' });
       else if (S.danger) out.push({ w:32, cls:'bad', t: a.name + ': only $' + Math.round(S.room).toLocaleString('en-US') + ' left before the drawdown limit' });
       if (S.dailyHit) out.push({ w:20, cls:'warn', t: a.name + ': hit the daily loss limit today' }); });
@@ -3626,9 +3643,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var S = streakOf(m.entries || []);
       nm.appendChild(el('small',null, ['@' + (m.username || ''), levelName(m.level), S.current ? '🔥 ' + S.current + '-day streak' : 'No streak', 'last seen ' + (m.lastSeen ? ago(m.lastSeen) : 'never')].join(' · ')));
       hd.appendChild(nm);
-      var ms = el('select'), o0 = el('option',null,'No mentor'); o0.value = ''; ms.appendChild(o0);
+      var ms = el('select');
       (COACH.rows || []).filter(function(y){ return y.isAdmin; }).forEach(function(y){ var o = el('option',null, y.displayName || y.username); o.value = y.id; ms.appendChild(o); });
-      ms.value = m.mentor || ''; ms.addEventListener('change', function(){ coachPost({ action:'mentor', uid:m.id, mentorId: ms.value }).then(function(){ m.mentor = ms.value; toast(ms.value ? 'Mentor assigned. Their messages now go to that mentor.' : 'Mentor removed.'); }).catch(function(e){ toast(e.message); }); });
+      ms.value = m.mentor || ''; ms.addEventListener('change', function(){ coachPost({ action:'mentor', uid:m.id, mentorId: ms.value }).then(function(){ m.mentor = ms.value; toast('Mentor assigned. Their messages now go to that mentor.'); }).catch(function(e){ toast(e.message); }); });
       hd.appendChild(fld('Mentor', ms)); host.appendChild(hd);
       var fl = el('div','tri-f'); triageOf(m).forEach(function(f){ fl.appendChild(el('span','tri-chip ' + f.cls, f.t)); }); host.appendChild(fl);
       var P = { id:m.id, name:m.displayName, entries:m.entries || [], goals:m.goals || {}, accounts:m.accounts || [], tmeta:m.tmeta || {}, subs:m.subs || {} };
@@ -5035,11 +5052,11 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
 
   // payouts certified by an admin, added up per member
   function renderPayoutBoard(host){
-    var info = el('div','lb-rules'); info.appendChild(el('b',null,'Payout board'));
-    info.appendChild(el('p','adm-note','Payouts members upload on their Profile, once an admin certifies the certificate. Counted by the day of the payout.'));
+    var info = el('div','lb-rules'); info.appendChild(el('b',null,'Top earners · all time'));
+    info.appendChild(el('p','adm-note','Everyone with a certified payout, ranked by total paid out. Upload yours on your Profile; it counts once an admin certifies it.'));
     host.appendChild(info);
     var list = el('div','lb-list'); list.appendChild(el('p','adm-note','Loading…')); host.appendChild(list);
-    var got = DEMO_MODE ? Promise.resolve({ rows: [] }) : fetch('/api/member?board=' + BOARD.period + '&kind=payout', { credentials:'same-origin' }).then(function(r){ return r.ok ? r.json() : { rows:[] }; });
+    var got = DEMO_MODE ? Promise.resolve({ rows: [] }) : fetch('/api/member?board=all&kind=payout', { credentials:'same-origin' }).then(function(r){ return r.ok ? r.json() : { rows:[] }; });
     got.then(function(d){
       list.textContent = '';
       if (!d.rows.length){ emptyState(list, 'No certified payouts yet', 'Upload a payout certificate on your Profile. It shows here once an admin certifies it.'); return; }
@@ -5404,12 +5421,11 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     // Wins: certified payouts, the payout leaderboard and student reviews, all in one place
     host.appendChild(seg([['payouts','Payouts (' + P.length + ')'],['board','Top earners'],['reviews','Reviews (' + T.length + ')']], WINS.tab, function(v){ WINS.tab = v; drawWins(host); }));
     if (WINS.tab === 'board'){
-      var bh = el('div','lb-head'); bh.appendChild(seg([['week','This week'],['month','This month'],['all','All time']], BOARD.period, function(p){ BOARD.period = p; drawWins(host); })); host.appendChild(bh);
       renderPayoutBoard(host); return;
     }
     if (WINS.tab === 'payouts'){
       var tot = P.reduce(function(t, p){ return t + (+p.amount || 0); }, 0);
-      var hd = el('div','win-sum'); hd.appendChild(el('b',null, money(tot))); hd.appendChild(el('span',null,'certified across ' + P.length + (P.length === 1 ? ' payout' : ' payouts') + ' (latest 60)')); host.appendChild(hd);
+      var hd = el('div','win-sum'); hd.appendChild(el('b',null, money(tot))); hd.appendChild(el('span',null,'across the ' + P.length + ' most recent certified ' + (P.length === 1 ? 'payout' : 'payouts') + ', newest first')); host.appendChild(hd);
       if (!P.length){ emptyState(host, 'No certified payouts yet', 'Upload your payout certificate in your Profile. Once a mentor certifies it, it shows here.'); return; }
       var g = el('div','win-pays');
       P.forEach(function(p){ var c = el('article','win-pay'); c.appendChild(winAv(p)); var t = el('div'); t.appendChild(el('b',null,p.name)); t.appendChild(el('span',null, (p.note ? p.note + ' · ' : '') + (p.paidAt ? 'paid ' + fmtDay(p.paidAt) : ''))); c.appendChild(t); c.appendChild(el('strong',null, money(+p.amount))); g.appendChild(c); });
