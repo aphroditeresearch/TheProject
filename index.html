@@ -3074,7 +3074,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function seg(options, value, onPick){
     var wrap = el('div','seg2'); wrap.setAttribute('role','radiogroup');
     options.forEach(function(o){ var b = el('button','seg-b' + (value === o[0] ? ' on' : ''), o[1]); b.type = 'button'; b.setAttribute('role','radio'); b.setAttribute('aria-checked', value === o[0] ? 'true' : 'false');
-      b.addEventListener('click', function(){ onPick(o[0]); }); wrap.appendChild(b); });
+      b.addEventListener('click', function(){   // highlight the choice straight away, even where the page doesn't redraw
+        Array.prototype.forEach.call(wrap.children, function(x){ var on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-checked', on ? 'true' : 'false'); });
+        onPick(o[0]); }); wrap.appendChild(b); });
     return wrap;
   }
   function renderJournal(){
@@ -3814,13 +3816,13 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     return K;
   }
   // Profile: who it is up top, the P&L in its own panel with a trend arrow (in the spirit of copy-trading group cards)
-  function serverWho(q){ return { name:'The Project', handle:'', role: q.traders + (q.traders === 1 ? ' trader' : ' traders') + ' · Funded & Evaluation', color:'#E3F1EF' }; }
+  function serverWho(q){ return { name:'The Project', handle:'', role: q.traders + (q.traders === 1 ? ' trader' : ' traders'), color:'#E3F1EF' }; }
   var GROUP_LABEL = { day:'Today’s Group P&L', week:'This Week’s Group P&L', month:'This Month’s Group P&L' }, OWN_LABEL = { day:'Today’s P&L', week:'This Week’s P&L', month:'This Month’s P&L' };
   function drawProfileCard(cv, q){
     var c = cv.getContext('2d'), Wd = 1080, Ht = 1920, K = cardKit(c), up = q.net >= 0, col = up ? K.UP : K.DOWN, M = 80; cv.width = Wd; cv.height = Ht;
     var group = !q.mine; if (group){ q = Object.assign({}, q, { who: serverWho(q), avatar:'gem' }); }
     K.bg(Wd, Ht, up);
-    var cx = M, ch = group ? 1400 : 1240, cy = (Ht - ch) / 2, cw = Wd - M * 2;
+    var cx = M, ch = group ? 1236 : 1066, cy = (Ht - ch) / 2, cw = Wd - M * 2;
     c.save(); c.shadowColor = 'rgba(0,0,0,.6)'; c.shadowBlur = 80; c.shadowOffsetY = 30; K.rr(cx, cy, cw, ch, 48); c.fillStyle = '#071315'; c.fill(); c.restore();
     K.rr(cx, cy, cw, ch, 48); c.strokeStyle = 'rgba(227,241,239,.09)'; c.lineWidth = 2; c.stroke();
     // header strip: brand + period
@@ -3849,11 +3851,6 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       [['Win rate', q.wr === null ? '—' : q.wr + '%'], ['Record', q.W + '–' + q.L + (q.BE ? '–' + q.BE : '')], ['Avg win : loss', q.ratio === null ? '—' : (Math.round(q.ratio * 10) / 10) + ' : 1']]
         .forEach(function(k, i){ var x = px + i * (sw + 16); K.rr(x, sy, sw, 130, 24); c.fillStyle = 'rgba(227,241,239,.04)'; c.fill(); c.strokeStyle = 'rgba(227,241,239,.08)'; c.lineWidth = 2; c.stroke();
           K.F('500', 24); c.fillStyle = K.MUTED; c.fillText(k[0], x + 28, sy + 46); K.fit(k[1], '700', 44, 26, sw - 56); c.fillStyle = K.INK; c.fillText(k[1], x + 28, sy + 104); }); }
-    // footer
-    var fy = cy + ch - 110; c.fillStyle = 'rgba(227,241,239,.08)'; c.fillRect(cx + 56, fy - 50, cw - 112, 2);
-    K.F('500', 28); c.fillStyle = K.MUTED; c.fillText('Trading with', cx + 56, fy + 10);
-    var tw = c.measureText('Trading with ').width, gw = K.gemMark(cx + 56 + tw, fy - 34, 58);
-    c.save(); c.translate(cx + 56 + tw + gw + 6, fy + 12); K.word(0, 0, .42); c.restore();
   }
   // Ledger: total up top, then every trade (or every day) in a clean table (in the spirit of copy-trader account cards)
   function drawLedgerCard(cv, q){
@@ -3928,128 +3925,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       c.putImageData(d, 0, 0); } catch (e) { return GEM; }
     return (GEMRED = cv);
   }
-  // fallback: the same diamond drawn as sharp vector facets (stays crisp at any size and takes the P&L colour)
-  function drawGem(c, cx, cy, W, rgb){
-    var mix = function(k){ return 'rgb(' + rgb.map(function(v){ return Math.round(k >= 0 ? v + (255 - v) * k : v * (1 + k)); }).join(',') + ')'; };
-    var H1 = W * .26, H2 = W * .62, top = cy - (H1 + H2) / 2, gy = top + H1, cu = { x:cx, y:gy + H2 };
-    var T = [-.31, -.105, .105, .31].map(function(f){ return { x:cx + f * W, y:top }; }), G = [-.5, -.27, 0, .27, .5].map(function(f){ return { x:cx + f * W, y:gy }; });
-    var faces = [[T[0],G[0],G[1],.30],[T[0],G[1],T[1],.62],[T[1],G[1],G[2],.10],[T[1],G[2],T[2],.45],[T[2],G[2],G[3],-.05],[T[2],G[3],T[3],.25],[T[3],G[3],G[4],-.25],
-                 [G[0],G[1],cu,-.05],[G[1],G[2],cu,.22],[G[2],G[3],cu,-.28],[G[3],G[4],cu,-.5]];
-    var outline = function(){ c.beginPath(); c.moveTo(T[0].x, T[0].y); c.lineTo(T[3].x, T[3].y); c.lineTo(G[4].x, G[4].y); c.lineTo(cu.x, cu.y); c.lineTo(G[0].x, G[0].y); c.closePath(); };
-    c.save(); c.shadowColor = 'rgba(' + rgb.join(',') + ',.6)'; c.shadowBlur = W * .14; outline(); c.fillStyle = mix(-.2); c.fill(); c.restore();
-    faces.forEach(function(f){
-      c.beginPath(); c.moveTo(f[0].x, f[0].y); c.lineTo(f[1].x, f[1].y); c.lineTo(f[2].x, f[2].y); c.closePath();
-      var g = c.createLinearGradient(Math.min(f[0].x, f[1].x, f[2].x), Math.min(f[0].y, f[1].y, f[2].y), Math.max(f[0].x, f[1].x, f[2].x), Math.max(f[0].y, f[1].y, f[2].y));
-      g.addColorStop(0, mix(Math.min(.9, f[3] + .18))); g.addColorStop(1, mix(f[3] - .12)); c.fillStyle = g; c.fill();
-    });
-    c.lineJoin = 'round'; c.strokeStyle = 'rgba(255,255,255,.38)'; c.lineWidth = Math.max(1.5, W * .004);
-    faces.forEach(function(f){ c.beginPath(); c.moveTo(f[0].x, f[0].y); c.lineTo(f[1].x, f[1].y); c.lineTo(f[2].x, f[2].y); c.closePath(); c.stroke(); });
-    c.strokeStyle = 'rgba(255,255,255,.75)'; c.lineWidth = Math.max(2, W * .006); outline(); c.stroke();
-    c.beginPath(); c.moveTo(G[0].x, G[0].y); c.lineTo(G[4].x, G[4].y); c.strokeStyle = 'rgba(255,255,255,.55)'; c.stroke();
-    var r = W * .06; c.save(); c.translate(T[0].x + W * .05, top + W * .025); c.fillStyle = 'rgba(255,255,255,.95)'; c.shadowColor = '#fff'; c.shadowBlur = W * .035;
-    c.beginPath(); c.moveTo(0, -r); c.quadraticCurveTo(0, 0, r, 0); c.quadraticCurveTo(0, 0, 0, r); c.quadraticCurveTo(0, 0, -r, 0); c.quadraticCurveTo(0, 0, 0, -r); c.fill(); c.restore();
-  }
-  function drawPersonCard(cv, q){
-    var c = cv.getContext('2d'), Wd = 1080, Ht = 1920; cv.width = Wd; cv.height = Ht;
-    var INK = '#E3F1EF', MUTED = '#7F9A9B', GREEN = '#3BE38F';
-    var SANS = "'Instrument Sans', system-ui, -apple-system, sans-serif", DISP = "Archivo, 'Arial Black', sans-serif", MONO = "'JetBrains Mono', ui-monospace, monospace";
-    var F = function(st, sz, fam){ c.font = st + ' ' + sz + 'px ' + fam; };
-    c.fillStyle = '#02090B'; c.fillRect(0, 0, Wd, Ht);
-    // light behind the diamond: its own violet-blue fading into the brand teal
-    var up = q.net >= 0, RGB = up ? '59,227,143' : '240,84,84';
-    var g1 = c.createRadialGradient(Wd / 2, 760, 0, Wd / 2, 760, 760); g1.addColorStop(0, 'rgba(' + RGB + ',.22)'); g1.addColorStop(.45, 'rgba(20,163,157,.12)'); g1.addColorStop(1, 'rgba(2,9,11,0)');
-    c.fillStyle = g1; c.fillRect(0, 0, Wd, Ht);
-    var g2 = c.createRadialGradient(Wd / 2, 1560, 0, Wd / 2, 1560, 700); g2.addColorStop(0, q.net >= 0 ? 'rgba(59,227,143,.10)' : 'rgba(240,84,84,.10)'); g2.addColorStop(1, 'rgba(2,9,11,0)');
-    c.fillStyle = g2; c.fillRect(0, 0, Wd, Ht);
-    // one thin orbit ring around the diamond
-    c.save(); c.translate(Wd / 2, 770); c.scale(1, .32); c.beginPath(); c.arc(0, 0, 430, 0, Math.PI * 2); c.restore();
-    c.strokeStyle = 'rgba(227,241,239,.10)'; c.lineWidth = 2; c.stroke();
-    // header
-    var M = 84; c.fillStyle = INK; F('italic 200', 21, DISP); ['T','H','E'].forEach(function(ch, i){ c.fillText(ch, M + 4, 146 + i * 21); });
-    try { c.fontStretch = 'expanded'; } catch (e) {} F('italic 900', 70, DISP); c.fillText('PROJECT', M + 30, 194); try { c.fontStretch = 'normal'; } catch (e) {}
-    F('600', 28, SANS); var pt = q.pill, pw = c.measureText(pt).width + 46;
-    c.beginPath(); if (c.roundRect) c.roundRect(Wd - M - pw, 136, pw, 56, 28); else c.rect(Wd - M - pw, 136, pw, 56);
-    c.fillStyle = 'rgba(227,241,239,.06)'; c.fill(); c.strokeStyle = 'rgba(227,241,239,.14)'; c.lineWidth = 2; c.stroke();
-    c.fillStyle = INK; c.textBaseline = 'middle'; c.fillText(pt, Wd - M - pw + 23, 165); c.textBaseline = 'alphabetic';
-    // the diamond, floating, with a soft shadow under it
-    var sh = c.createRadialGradient(Wd / 2, 0, 0, Wd / 2, 0, 260); sh.addColorStop(0, 'rgba(' + RGB + ',.30)'); sh.addColorStop(1, 'rgba(2,9,11,0)');
-    c.save(); c.translate(0, 1130); c.scale(1, .14); c.fillStyle = sh; c.beginPath(); c.arc(Wd / 2, 0, 260, 0, Math.PI * 2); c.fill(); c.restore();
-    var gm = gemFor(up); if (gm){ var gw = 700, gh = gw * gm.height / gm.width; c.drawImage(gm, (Wd - gw) / 2, 790 - gh / 2, gw, gh); } else drawGem(c, Wd / 2, 780, 540, RGB.split(',').map(Number));
-    // name (green), what it is, the number
-    var nm = String((q.who && q.who.name) || 'Trader'), ns = 88; F('700', ns, SANS); while (c.measureText(nm).width > Wd - M * 2 && ns > 44){ ns -= 4; F('700', ns, SANS); }
-    var NC = (q.who && q.who.color) || GREEN; c.textAlign = 'center'; c.save(); c.shadowColor = 'rgba(' + hexRgb(NC) + ',.6)'; c.shadowBlur = 30; c.fillStyle = NC; c.fillText(nm, Wd / 2, 1300); c.restore();
-    F('500', 30, MONO); c.fillStyle = MUTED; c.fillText(({ day:'D A I L Y', week:'W E E K L Y', month:'M O N T H L Y' }[q.per] || '') + '   P & L', Wd / 2, 1388);
-    var big = (q.net < 0 ? '−$' : '+$') + Math.abs(Math.round(q.net)).toLocaleString('en-US'), bs = 210;
-    F('700', bs, SANS); while (c.measureText(big).width > Wd - M * 2 && bs > 100){ bs -= 6; F('700', bs, SANS); }
-    c.save(); c.shadowColor = 'rgba(' + RGB + ',.40)'; c.shadowBlur = 36; c.fillStyle = up ? GREEN : '#F05454'; c.fillText(big, Wd / 2, 1388 + 40 + bs * .8); c.restore();
-    F('500', 30, SANS); c.fillStyle = MUTED; c.fillText(q.sub, Wd / 2, 1388 + 40 + bs * .8 + 92);
-    c.textAlign = 'left';
-  }
   function drawShareCard(cv, q){
-    if (q.mine) return SHC.style === 'diamond' ? drawPersonCard(cv, q) : SHC.style === 'ledger' ? drawLedgerCard(cv, q) : drawProfileCard(cv, q);
-    if (SHC.sstyle === 'profile') return drawProfileCard(cv, q);
-    if (SHC.sstyle === 'ledger') return drawLedgerCard(cv, q);
-    var c = cv.getContext('2d'), Wd = 1080, Ht = 1920; cv.width = Wd; cv.height = Ht;
-    var INK = '#E3F1EF', MUTED = '#7F9A9B', TEAL = '#14A39D', UP = '#3BE38F', DOWN = '#F05454', col = q.net >= 0 ? UP : DOWN;
-    var SANS = "'Instrument Sans', system-ui, -apple-system, sans-serif", DISP = "Archivo, 'Arial Black', sans-serif", MONO = "'JetBrains Mono', ui-monospace, monospace";
-    var F = function(st, sz, fam){ c.font = st + ' ' + sz + 'px ' + fam; };
-    var rr = function(x, y, w, h, r){ c.beginPath(); if (c.roundRect) c.roundRect(x, y, w, h, r); else c.rect(x, y, w, h); };
-    var pill = function(x, y, txt, fg, bg, bd, fs){ F('600', fs || 30, SANS); var w = c.measureText(txt).width + 48, h = (fs || 30) + 30; rr(x, y, w, h, h / 2); c.fillStyle = bg; c.fill(); if (bd){ c.strokeStyle = bd; c.lineWidth = 2; c.stroke(); } c.fillStyle = fg; c.textBaseline = 'middle'; c.fillText(txt, x + 24, y + h / 2 + 1); c.textBaseline = 'alphabetic'; return w; };
-    // background
-    c.fillStyle = '#02090B'; c.fillRect(0, 0, Wd, Ht);
-    var g = c.createRadialGradient(Wd * .5, 620, 0, Wd * .5, 620, 1000); g.addColorStop(0, q.net >= 0 ? 'rgba(20,163,157,.28)' : 'rgba(240,84,84,.18)'); g.addColorStop(1, 'rgba(2,9,11,0)');
-    c.fillStyle = g; c.fillRect(0, 0, Wd, Ht);
-    var M = 72;
-    // header: wordmark + period
-    c.fillStyle = INK; F('italic 200', 21, DISP); ['T','H','E'].forEach(function(ch, i){ c.fillText(ch, M + 4, 226 + i * 21); });
-    try { c.fontStretch = 'expanded'; } catch (e) {}
-    F('italic 900', 76, DISP); c.fillText('PROJECT', M + 30, 276);
-    try { c.fontStretch = 'normal'; } catch (e) {}
-    F('600', 30, SANS); var pw = c.measureText(q.pill).width + 48; pill(Wd - M - pw, 214, q.pill, INK, 'rgba(227,241,239,.06)', 'rgba(227,241,239,.14)');
-    // the card
-    var cx = M, cy = 380, cw = Wd - M * 2, ch = 1250, P = 64;
-    c.save(); c.shadowColor = 'rgba(0,0,0,.55)'; c.shadowBlur = 80; c.shadowOffsetY = 30; rr(cx, cy, cw, ch, 52); c.fillStyle = '#071416'; c.fill(); c.restore();
-    var cg = c.createLinearGradient(0, cy, 0, cy + ch); cg.addColorStop(0, 'rgba(20,163,157,.10)'); cg.addColorStop(.5, 'rgba(20,163,157,0)');
-    rr(cx, cy, cw, ch, 52); c.fillStyle = cg; c.fill(); c.strokeStyle = 'rgba(227,241,239,.09)'; c.lineWidth = 2; c.stroke();
-    if (q.who){ var wn = String(q.who.name || 'Trader'); F('700', 36, SANS); while (c.measureText(wn).width > cw * .5 && wn.length > 4) wn = wn.slice(0, -2) + '…';
-      c.fillStyle = INK; c.fillText(wn, cx + P, cy + 104); var wnW = c.measureText(wn).width; F('500', 34, SANS); c.fillStyle = MUTED; c.fillText('  ·  P&L', cx + P + wnW, cy + 104); }
-    else { F('500', 34, SANS); c.fillStyle = MUTED; c.fillText('Total P&L', cx + P, cy + 104); }
-    F('400', 28, SANS); c.textAlign = 'right'; c.fillText(q.sub, cx + cw - P, cy + 104); c.textAlign = 'left';
-    var big = (q.net < 0 ? '−$' : '+$') + Math.abs(Math.round(q.net)).toLocaleString('en-US'), bs = 176;
-    F('700', bs, SANS); while (c.measureText(big).width > cw - P * 2 && bs > 90){ bs -= 6; F('700', bs, SANS); }
-    c.fillStyle = col; c.fillText(big, cx + P - 6, cy + 120 + bs * .86);
-    var py = cy + 150 + bs * .86;
-    if (!q.mine){
-    var pw1 = pill(cx + P, py, (q.wr === null ? '— ' : (q.wr >= 50 ? '▲ ' : '▼ ') + q.wr + '%') + ' win rate', q.wr === null || q.wr >= 50 ? UP : DOWN, q.wr === null || q.wr >= 50 ? 'rgba(59,227,143,.12)' : 'rgba(240,84,84,.12)', null, 28);
-    pill(cx + P + pw1 + 14, py, q.n + (q.n === 1 ? ' trade' : ' trades') + (q.mine ? '' : ' · ' + q.traders + (q.traders === 1 ? ' trader' : ' traders')), INK, 'rgba(227,241,239,.06)', null, 28);
-    }
-    // the curve
-    var gTop = q.mine ? py + 40 : py + 120, gx = cx + P, gy = gTop, gw = cw - P * 2, gh = (cy + ch - 190 - 96) - gTop, pts = q.pts.length > 1 ? q.pts : [{ v:0 }, { v:0 }];
-    var vs = pts.map(function(p){ return p.v; }), lo = Math.min.apply(null, vs.concat([0])), hi = Math.max.apply(null, vs.concat([0])); if (hi === lo){ hi += 1; lo -= 1; }
-    var X = function(i){ return gx + i / (pts.length - 1) * gw; }, Y = function(v){ return gy + 16 + (hi - v) / (hi - lo) * (gh - 32); };
-    c.setLineDash([6, 10]); c.strokeStyle = 'rgba(227,241,239,.14)'; c.lineWidth = 2; c.beginPath(); c.moveTo(gx, Y(0)); c.lineTo(gx + gw, Y(0)); c.stroke(); c.setLineDash([]);
-    var path = function(){ c.moveTo(X(0), Y(pts[0].v)); for (var i = 1; i < pts.length; i++){ var x0 = X(i - 1), x1 = X(i), y0 = Y(pts[i - 1].v), y1 = Y(pts[i].v), mx = (x0 + x1) / 2; c.bezierCurveTo(mx, y0, mx, y1, x1, y1); } };
-    var fg = c.createLinearGradient(0, gy, 0, gy + gh); fg.addColorStop(0, q.net >= 0 ? 'rgba(59,227,143,.30)' : 'rgba(240,84,84,.26)'); fg.addColorStop(1, 'rgba(59,227,143,0)');
-    c.beginPath(); path(); c.lineTo(X(pts.length - 1), gy + gh); c.lineTo(X(0), gy + gh); c.closePath(); c.fillStyle = fg; c.fill();
-    c.save(); c.shadowColor = col; c.shadowBlur = 24; c.beginPath(); path(); c.strokeStyle = col; c.lineWidth = 7; c.lineJoin = 'round'; c.lineCap = 'round'; c.stroke(); c.restore();
-    var ex = X(pts.length - 1), ey = Y(pts[pts.length - 1].v);
-    c.beginPath(); c.arc(ex, ey, 22, 0, Math.PI * 2); c.fillStyle = q.net >= 0 ? 'rgba(59,227,143,.22)' : 'rgba(240,84,84,.22)'; c.fill();
-    c.beginPath(); c.arc(ex, ey, 10, 0, Math.PI * 2); c.fillStyle = col; c.fill();
-    F('500', 24, MONO); c.fillStyle = MUTED;
-    var firstL = q.per === 'day' ? 'Open' : (pts[1] && pts[1].l) || '', lastL = q.per === 'day' ? (pts.length > 1 && pts[pts.length - 1].l) || '' : 'Today';
-    c.fillText(firstL, gx, gy + gh + 44); c.textAlign = 'right'; c.fillText(lastL, gx + gw, gy + gh + 44); c.textAlign = 'left';
-    // three numbers
-    var sy = cy + ch - 190; c.fillStyle = 'rgba(227,241,239,.08)'; c.fillRect(cx + P, sy, cw - P * 2, 2);
-    var fmtRs = function(r){ return (r >= 0 ? '+' : '−') + (Math.round(Math.abs(r) * 100) / 100) + 'R'; };
-    var cols = q.mine ? [['Total R', q.totalR === null ? '—' : fmtRs(q.totalR)], ['Profit factor', q.pf === null ? '—' : q.pf === Infinity ? '∞' : (Math.round(q.pf * 100) / 100).toFixed(2)], ['Trades', String(q.n)]]
-      : [['Record', q.W + '–' + q.L + (q.BE ? '–' + q.BE : '')], ['Avg win : loss', q.ratio === null ? '—' : (Math.round(q.ratio * 10) / 10) + ' : 1'], q.avgR !== null ? ['Avg R / trade', (q.avgR >= 0 ? '+' : '') + (Math.round(q.avgR * 100) / 100) + 'R'] : q.mine ? ['Trades', String(q.n)] : ['Traders', String(q.traders)]];
-    var colW = (cw - P * 2) / 3;
-    cols.forEach(function(k, i){ var x = cx + P + colW * i + (i ? 28 : 0);
-      if (i){ c.fillStyle = 'rgba(227,241,239,.08)'; c.fillRect(cx + P + colW * i, sy + 40, 2, 110); }
-      F('500', 26, SANS); c.fillStyle = MUTED; c.fillText(k[0], x, sy + 74);
-      var vsz = 56; F('700', vsz, SANS); while (c.measureText(k[1]).width > colW - 40 && vsz > 32){ vsz -= 4; F('700', vsz, SANS); }
-      c.fillStyle = INK; c.fillText(k[1], x, sy + 142); });
-    if (q.who && q.who.handle){ F('500', 26, MONO); c.fillStyle = 'rgba(227,241,239,.32)'; c.textAlign = 'center'; c.fillText('@' + q.who.handle, Wd / 2, cy + ch + 120); c.textAlign = 'left'; }
+    if (q.mine) return SHC.style === 'ledger' ? drawLedgerCard(cv, q) : drawProfileCard(cv, q);
+    return SHC.sstyle === 'ledger' ? drawLedgerCard(cv, q) : drawProfileCard(cv, q);
   }
   function openShareCard(scopeArg){
     var isAdm = canAdmin() && !PREVIEW; SHC.scope = isAdm ? (scopeArg === 'me' ? 'me' : SHC.scope) : 'me';
@@ -4065,10 +3943,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       (SHC.rows || []).filter(function(m){ return (m.entries || []).length && m.id !== user().id; }).sort(function(a, b){ return String(a.displayName || a.username).localeCompare(String(b.displayName || b.username)); })
         .forEach(function(m){ var o = el('option',null, m.displayName || m.username); o.value = m.id; who.appendChild(o); });
       who.value = SHC.scope; if (who.value !== SHC.scope){ SHC.scope = 'all'; who.value = 'all'; } }
-    if (!SHC.style){ try { SHC.style = localStorage.getItem('theproject.cardstyle') || ''; } catch (e) {} if (['profile','ledger','diamond'].indexOf(SHC.style) < 0) SHC.style = 'profile'; }
-    if (!SHC.sstyle){ try { SHC.sstyle = localStorage.getItem('theproject.groupstyle') || ''; } catch (e) {} if (['profile','ledger','classic'].indexOf(SHC.sstyle) < 0) SHC.sstyle = 'profile'; }
-    var styleSeg = seg([['profile','Profile'],['ledger','Ledger'],['diamond','Diamond']], SHC.style, function(v){ SHC.style = v; try { localStorage.setItem('theproject.cardstyle', v); } catch (e) {} paint(); });
-    var gStyleSeg = seg([['profile','Profile'],['ledger','Ledger'],['classic','Classic']], SHC.sstyle, function(v){ SHC.sstyle = v; try { localStorage.setItem('theproject.groupstyle', v); } catch (e) {} paint(); });
+    if (!SHC.style){ try { SHC.style = localStorage.getItem('theproject.cardstyle') || ''; } catch (e) {} if (['profile','ledger'].indexOf(SHC.style) < 0) SHC.style = 'profile'; }
+    if (!SHC.sstyle){ try { SHC.sstyle = localStorage.getItem('theproject.groupstyle') || ''; } catch (e) {} if (['profile','ledger'].indexOf(SHC.sstyle) < 0) SHC.sstyle = 'profile'; }
+    var styleSeg = seg([['profile','Profile'],['ledger','Ledger']], SHC.style, function(v){ SHC.style = v; try { localStorage.setItem('theproject.cardstyle', v); } catch (e) {} paint(); });
+    var gStyleSeg = seg([['profile','Profile'],['ledger','Ledger']], SHC.sstyle, function(v){ SHC.sstyle = v; try { localStorage.setItem('theproject.groupstyle', v); } catch (e) {} paint(); });
     top.appendChild(perSeg); top.appendChild(styleSeg); top.appendChild(gStyleSeg); top.appendChild(save); top.appendChild(x);
     var stage = el('div','shc-stage'), cv = document.createElement('canvas'); cv.className = 'shc-img'; cv.setAttribute('role','img'); cv.setAttribute('aria-label','Results card'); cv.hidden = true; stage.appendChild(cv);
     var hint = el('p','shc-hint','Tap the card to hide these buttons for a clean screenshot. Tap again to bring them back.');
@@ -5530,7 +5408,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var segB = el('div','seg');
     [['submit','On hand-in'],['approve','After I approve']].forEach(function(o){
       var b = el('button','btn-s' + (mode === o[0] ? ' pri' : ''), o[1]); b.type = 'button'; b.setAttribute('aria-pressed', mode === o[0] ? 'true' : 'false');
-      b.addEventListener('click', function(){ if (mode === o[0]) return; adm.content.settings = Object.assign({}, adm.content.settings, { unlockMode:o[0] }); SETTINGS = { unlockMode:o[0] }; admSave('Unlock setting saved.'); });
+      b.addEventListener('click', function(){ if (mode === o[0]) return; Array.prototype.forEach.call(segB.children, function(x){ x.classList.toggle('pri', x === b); x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); }); adm.content.settings = Object.assign({}, adm.content.settings, { unlockMode:o[0] }); SETTINGS = { unlockMode:o[0] }; admSave('Unlock setting saved.'); });
       segB.appendChild(b);
     });
     setBox.appendChild(segB); wrap.appendChild(setBox);

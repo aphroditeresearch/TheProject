@@ -637,19 +637,17 @@ last clicked or the one playing, and are ignored while typing in a text box or w
 **Students:** Stats → **📱 Share my P&L** (also in Journal → Stats). **Admins:** Stats → **📱 Share card**, then pick whose:
 **Everyone (the Project)** (admin-only: the data behind it only loads for admins), **Me**, or any student. Each card is a
 1080×1920 image for **Today**, **This week** or **This month**.
-- **Everyone card:** three styles (admins pick; remembered per device):
+- **Everyone card:** two styles (admins pick; remembered per device):
   - **Profile** (default): The Project with the diamond as its picture, "Today's Group P&L" with a trend arrow, then win
     rate, record and average win : loss.
   - **Ledger:** the group total ("Across 4 traders · 79% win rate"), then every trader with trades, win % and P&L,
     best first. Each name is in that person's role colour.
-  - **Classic:** the original chart card (total P&L, win rate, curve, record, average win : loss, average R).
   Same pool and numbers as Stats for that period (everyone with a journal).
-- **Personal card:** three styles, picked on the card (remembered per device):
+- **Personal card:** two styles, picked on the card (remembered per device):
   - **Profile** (default): avatar, name in their role colour, @handle · role, then the P&L in its own panel with a trend
-    arrow, and "Trading with ◆ THE PROJECT" at the bottom.
+    arrow.
   - **Ledger:** brand + who + date, the total ("Across 2 trades"), then every trade (time, market, TP/SL, P&L) or, for a
     week or month, every day. The card sizes itself to the rows (up to 9, then "+N more").
-  - **Diamond:** the big diamond (`diamond-gem.png`), the name and the P&L.
   The number, arrow and glow are green when up and red when down. Everything sits in the middle of the image, clear of
   the bars Instagram and TikTok stories put at the top and bottom. The Discord picture is used when Discord allows it;
   otherwise the first letter of the name in their colour.
@@ -666,4 +664,8 @@ Screenshots, hand-in files and certificates show a soft shimmer while they load 
 browser's broken-picture icon. In the screenshot viewer every picture starts loading as soon as it opens, and moving
 to the next one keeps the current picture up (with a small spinner) until the next one is ready. Share cards are drawn
 straight onto the page, so they appear instantly and switching style or period never flashes.
+
+## Highlighted tabs and buttons
+Every tab row and option group shows which one is selected the moment it's clicked: the main tabs, the Admin sections,
+filters, views, periods and the share card's options (including places that don't redraw the whole page).
 
