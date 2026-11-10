@@ -679,3 +679,12 @@ red, Enlightened green, Illuminated purple, Awakened blue). Their Discord pictur
 turning ring with a green check, then the intro dissolves into the portal (about 2 seconds, no Skip needed). If the
 account is slow to load, the letters keep cycling until the name is known. With reduced motion on, the welcome shows
 briefly without the animation. No Discord picture: the first letter of the name in their colour.
+
+## Name colours and titles
+Names on share cards and in the sign-in intro use Discord role colours. Staff are set by Discord user ID in
+`STAFF_COLORS` / `STAFF_TITLES` in index.html (colour and title only; admin access is still `ADMIN_DISCORD_IDS`):
+- `1313595031466021026`: Moderator, yellow `#F1C40F` (also an admin)
+- `505505326532132868`: Moderator, yellow `#F1C40F` (not an admin)
+- `484654761757507584`: Admin, red `#E74C3C`
+Everyone else: Enlightened `#00C853`, Illuminated `#AA00FF`, Awakened `#3498DB` (highest level role wins), otherwise the
+site's green.

@@ -3929,10 +3929,11 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   // staff use Discord's default role colours: the Moderator yellow, admins red
   var STAFF_COLORS = {
     '1313595031466021026': '#F1C40F',   // Moderator (Discord yellow)
-    '484654761757507584': '#E74C3C'     // Admin, Osman (Discord red)
+    '484654761757507584': '#E74C3C',    // Admin, Osman (Discord red)
+    '505505326532132868': '#F1C40F'     // Moderator (Discord yellow); a name colour and title only, no admin access
   };
   function nameColor(id, isAdm, roles){ return STAFF_COLORS[id] || tierColor(roles); }
-  var STAFF_TITLES = { '1313595031466021026':'Moderator', '484654761757507584':'Admin' };
+  var STAFF_TITLES = { '1313595031466021026':'Moderator', '484654761757507584':'Admin', '505505326532132868':'Moderator' };
   function roleTitle(id, roles){ roles = roles || []; if (STAFF_TITLES[id]) return STAFF_TITLES[id];
     return roles.indexOf(ROLES.chapter3) >= 0 ? 'Enlightened' : roles.indexOf(ROLES.chapter2) >= 0 ? 'Illuminated' : roles.indexOf(ROLES.chapter1) >= 0 ? 'Awakened' : 'Member'; }
   function tierColor(roles){ roles = roles || [];
