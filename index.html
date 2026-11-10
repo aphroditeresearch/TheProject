@@ -907,8 +907,13 @@ ul.parts{list-style:none;margin:0 0 4px 22px;padding:0 0 0 12px;border-left:1px 
 .shc-top input{min-height:38px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--ink);padding:0 10px;font:14px var(--sans);width:170px}
 .shc-hint{margin:0;font-size:12px;color:var(--muted);text-align:center}
 .shc-stage{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:0}
-.shc-img{display:block;max-width:100%;max-height:calc(100vh - 140px);aspect-ratio:9/16;object-fit:contain;cursor:pointer}
-.shc.bare{padding:0;justify-content:center}.shc.bare .shc-top,.shc.bare .shc-hint{display:none}.shc.bare .shc-img{max-height:100vh;max-width:100vw}
+.shc-img{display:block;height:min(calc(100vh - 150px),calc((100vw - 32px) * 16 / 9));width:auto;max-width:100%;cursor:pointer}
+.shc.bare{padding:0;justify-content:center}.shc.bare .shc-top,.shc.bare .shc-hint{display:none}.shc.bare .shc-img{height:min(100vh,calc(100vw * 16 / 9))}
+.ld{color:transparent!important;background:linear-gradient(100deg,rgba(227,241,239,.04) 30%,rgba(227,241,239,.10) 50%,rgba(227,241,239,.04) 70%) 0 0/300% 100%!important;animation:ldsh 1.2s linear infinite}
+@keyframes ldsh{from{background-position:100% 0}to{background-position:0 0}}
+img{transition:opacity .2s}
+.lb.busy .lb-s::after{content:'';position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;border:3px solid rgba(227,241,239,.2);border-top-color:#E3F1EF;animation:lbspin .8s linear infinite;pointer-events:none}
+@keyframes lbspin{to{transform:rotate(360deg)}}
 .seek-flash{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:6;pointer-events:none;padding:10px 18px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font:600 18px var(--sans);opacity:0}
 .seek-flash.on{animation:seekf .7s ease-out}@keyframes seekf{0%{opacity:1}60%{opacity:1}100%{opacity:0}}
 .player{position:relative;width:100%;max-width:min(100%,calc((100vh - 380px) * 16 / 9));aspect-ratio:16/9;border:1px solid var(--line);overflow:hidden;background:#000 url("poster.jpg") 38% 50%/cover no-repeat;display:grid;place-items:center}
@@ -3748,8 +3753,11 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     else { from = today.slice(0, 8) + '01'; pill = D(today, { month:'long' }); sub = D(today, { month:'long', year:'numeric' }); }
     var trades = [], traders = {};
     // same pool as Stats: everyone with a journal, admins included
+    var per_ = {};
     rows.forEach(function(m){ (m.entries || []).forEach(function(e){
-      if (e.kind === 'trade' && e.date >= from && e.date <= to && countsInStats(e)){ trades.push(e); traders[m.id] = 1; } }); });
+      if (e.kind === 'trade' && e.date >= from && e.date <= to && countsInStats(e)){ trades.push(e); traders[m.id] = 1;
+        var t = per_[m.id] || (per_[m.id] = { name: m.displayName || m.username || 'Trader', color: nameColor(m.id, m.isAdmin, m.roles), n:0, w:0, l:0, pnl:0 });
+        t.n++; if (e.outcome === 'tp') t.w++; if (e.outcome === 'sl') t.l++; t.pnl += e.noPnl ? 0 : (+e.pnl || 0); } }); });
     var W = 0, L = 0, BE = 0, net = 0, wins = [], losses = [], rs = [], byDay = {};
     trades.forEach(function(e){ var p = e.noPnl ? 0 : (+e.pnl || 0);
       if (e.outcome === 'tp') W++; else if (e.outcome === 'sl') L++; else BE++;
@@ -3764,8 +3772,132 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     return { pill:pill, sub:sub, per:per, n:trades.length, W:W, L:L, BE:BE, net:net, wr: W + L ? Math.round(W / (W + L) * 100) : null,
       ratio: wins.length && losses.length ? avg(wins) / avg(losses) : null, avgR: rs.length >= 3 ? avg(rs) : null,
       traders: Object.keys(traders).length, pts:pts, from:from, mine: !!who, who: who || null,
+      list: trades.slice().sort(function(a, b){ return (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')); }),
+      days: Object.keys(byDay).sort().map(function(d){ return { d:d, label: D(d, { weekday:'short', month:'short', day:'numeric' }), pnl: byDay[d], n: trades.filter(function(e){ return e.date === d; }).length }; }),
+      stamp: D(today, { month:'short', day:'numeric', year:'numeric' }),
+      board: Object.keys(per_).map(function(k){ return per_[k]; }).sort(function(a, b){ return b.pnl - a.pnl; }),
       totalR: rs.length ? rs.reduce(function(t, x){ return t + x; }, 0) : null,
       pf: losses.length ? wins.reduce(function(t, x){ return t + x; }, 0) / losses.reduce(function(t, x){ return t + x; }, 0) : (wins.length ? Infinity : null) };
+  }
+
+  /* ---- personal card styles (Instagram / TikTok stories: key content kept between y 260 and 1600, clear of the app's bars) ---- */
+  var AVATARS = {};
+  function loadAvatar(url){
+    if (!url) return Promise.resolve(null); if (AVATARS[url] !== undefined) return Promise.resolve(AVATARS[url]);
+    return new Promise(function(res){ var im = new Image(); im.crossOrigin = 'anonymous';
+      var done = function(v){ AVATARS[url] = v; res(v); };
+      im.onload = function(){ try { var t = document.createElement('canvas'); t.width = t.height = 4; t.getContext('2d').drawImage(im, 0, 0, 4, 4); t.toDataURL(); done(im); } catch (e) { done(null); } };
+      im.onerror = function(){ done(null); }; im.src = url + (url.indexOf('?') < 0 ? '?size=256' : ''); setTimeout(function(){ if (AVATARS[url] === undefined) done(null); }, 4000); });
+  }
+  function cardKit(c){
+    var K = { INK:'#E3F1EF', MUTED:'#7F9A9B', UP:'#3BE38F', DOWN:'#F05454', TEAL:'#14A39D',
+      SANS:"'Instrument Sans', system-ui, -apple-system, sans-serif", DISP:"Archivo, 'Arial Black', sans-serif", MONO:"'JetBrains Mono', ui-monospace, monospace" };
+    K.F = function(st, sz, fam){ c.font = st + ' ' + sz + 'px ' + (fam || K.SANS); };
+    K.rr = function(x, y, w, h, r){ c.beginPath(); if (c.roundRect) c.roundRect(x, y, w, h, r); else c.rect(x, y, w, h); };
+    K.fit = function(txt, st, size, min, maxW, fam){ K.F(st, size, fam); while (c.measureText(txt).width > maxW && size > min){ size -= 4; K.F(st, size, fam); } return size; };
+    K.word = function(x, y, sc){ c.save(); c.fillStyle = K.INK; K.F('italic 200', 21 * sc, K.DISP); ['T','H','E'].forEach(function(ch, i){ c.fillText(ch, x + 4 * sc, y - 48 * sc + i * 21 * sc); });
+      try { c.fontStretch = 'expanded'; } catch (e) {} K.F('italic 900', 70 * sc, K.DISP); c.fillText('PROJECT', x + 30 * sc, y); try { c.fontStretch = 'normal'; } catch (e) {} c.restore(); };
+    K.avatar = function(img, x, y, r, name, color){ c.save(); c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.closePath();
+      if (img === 'gem'){ c.fillStyle = '#071C1E'; c.fill(); c.clip(); var gm = gemFor(true); if (gm){ var gw = r * 2.3, gh = gw * gm.height / gm.width; c.drawImage(gm, x - gw / 2, y - gh / 2 + r * .05, gw, gh); } c.restore();
+        c.beginPath(); c.arc(x, y, r + 5, 0, Math.PI * 2); c.strokeStyle = 'rgba(20,163,157,.8)'; c.lineWidth = 4; c.stroke(); return; }
+      if (img){ c.clip(); c.drawImage(img, x - r, y - r, r * 2, r * 2); }
+      else { c.fillStyle = '#0B1A1C'; c.fill(); K.F('700', r * .9); c.fillStyle = color; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(String(name || '?').charAt(0).toUpperCase(), x, y + r * .05); c.textAlign = 'left'; c.textBaseline = 'alphabetic'; }
+      c.restore(); c.beginPath(); c.arc(x, y, r + 5, 0, Math.PI * 2); c.strokeStyle = color; c.lineWidth = 4; c.stroke(); };
+    K.money = function(n){ return (n < 0 ? '−$' : '+$') + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 }); };
+    K.arrow = function(x, y, sz, up, col){ c.save(); c.strokeStyle = col; c.lineWidth = sz * .14; c.lineCap = 'round'; c.lineJoin = 'round'; c.beginPath();
+      if (up){ c.moveTo(x, y + sz * .7); c.lineTo(x + sz * .35, y + sz * .35); c.lineTo(x + sz * .55, y + sz * .55); c.lineTo(x + sz, y); c.moveTo(x + sz * .62, y); c.lineTo(x + sz, y); c.lineTo(x + sz, y + sz * .38); }
+      else { c.moveTo(x, y); c.lineTo(x + sz * .35, y + sz * .35); c.lineTo(x + sz * .55, y + sz * .15); c.lineTo(x + sz, y + sz * .7); c.moveTo(x + sz * .62, y + sz * .7); c.lineTo(x + sz, y + sz * .7); c.lineTo(x + sz, y + sz * .32); }
+      c.stroke(); c.restore(); };
+    K.bg = function(Wd, Ht, up){ c.fillStyle = '#02090B'; c.fillRect(0, 0, Wd, Ht);
+      var g = c.createRadialGradient(Wd * .5, Ht * .42, 0, Wd * .5, Ht * .42, Ht * .6); g.addColorStop(0, up ? 'rgba(20,163,157,.20)' : 'rgba(240,84,84,.14)'); g.addColorStop(1, 'rgba(2,9,11,0)'); c.fillStyle = g; c.fillRect(0, 0, Wd, Ht); };
+    K.gemMark = function(x, y, h){ var gm = gemFor(true); if (gm){ var w = h * gm.width / gm.height; c.drawImage(gm, x, y, w, h); return w; } return 0; };
+    return K;
+  }
+  // Profile: who it is up top, the P&L in its own panel with a trend arrow (in the spirit of copy-trading group cards)
+  function serverWho(q){ return { name:'The Project', handle:'', role: q.traders + (q.traders === 1 ? ' trader' : ' traders') + ' · Funded & Evaluation', color:'#E3F1EF' }; }
+  var GROUP_LABEL = { day:'Today’s Group P&L', week:'This Week’s Group P&L', month:'This Month’s Group P&L' }, OWN_LABEL = { day:'Today’s P&L', week:'This Week’s P&L', month:'This Month’s P&L' };
+  function drawProfileCard(cv, q){
+    var c = cv.getContext('2d'), Wd = 1080, Ht = 1920, K = cardKit(c), up = q.net >= 0, col = up ? K.UP : K.DOWN, M = 80; cv.width = Wd; cv.height = Ht;
+    var group = !q.mine; if (group){ q = Object.assign({}, q, { who: serverWho(q), avatar:'gem' }); }
+    K.bg(Wd, Ht, up);
+    var cx = M, ch = group ? 1400 : 1240, cy = (Ht - ch) / 2, cw = Wd - M * 2;
+    c.save(); c.shadowColor = 'rgba(0,0,0,.6)'; c.shadowBlur = 80; c.shadowOffsetY = 30; K.rr(cx, cy, cw, ch, 48); c.fillStyle = '#071315'; c.fill(); c.restore();
+    K.rr(cx, cy, cw, ch, 48); c.strokeStyle = 'rgba(227,241,239,.09)'; c.lineWidth = 2; c.stroke();
+    // header strip: brand + period
+    K.word(cx + 56, cy + 118, .62);
+    K.F('600', 28); c.fillStyle = K.MUTED; c.textAlign = 'right'; c.fillText(q.pill, cx + cw - 56, cy + 104); c.textAlign = 'left';
+    c.fillStyle = 'rgba(227,241,239,.08)'; c.fillRect(cx + 56, cy + 160, cw - 112, 2);
+    // who
+    var w = q.who || {}, ay = cy + 290, ar = 72;
+    K.avatar(q.avatar, cx + 56 + ar, ay, ar, w.name, w.color || K.UP);
+    var nx = cx + 56 + ar * 2 + 40, ns = K.fit(w.name || 'Trader', '700', 66, 36, cw - (nx - cx) - 56);
+    c.save(); c.shadowColor = w.color || K.UP; c.shadowBlur = 18; c.fillStyle = w.color || K.UP; c.fillText(w.name || 'Trader', nx, ay - 6); c.restore();
+    K.F('500', 30); c.fillStyle = K.MUTED; c.fillText((w.handle ? '@' + w.handle + '  ·  ' : '') + (w.role || 'Member'), nx, ay + 46);
+    // P&L panel
+    var px = cx + 56, py = cy + 440, pw = cw - 112, ph = 560;
+    var pg = c.createLinearGradient(0, py, 0, py + ph); pg.addColorStop(0, up ? 'rgba(59,227,143,.10)' : 'rgba(240,84,84,.10)'); pg.addColorStop(1, 'rgba(227,241,239,.02)');
+    K.rr(px, py, pw, ph, 36); c.fillStyle = pg; c.fill(); c.strokeStyle = up ? 'rgba(59,227,143,.25)' : 'rgba(240,84,84,.25)'; c.lineWidth = 2; c.stroke();
+    K.F('600', 34); c.fillStyle = K.INK; c.textAlign = 'center';
+    c.fillText((group ? GROUP_LABEL : OWN_LABEL)[q.per], Wd / 2, py + 150);
+    var big = K.money(q.net), bs = K.fit(big, '700', 150, 70, pw - 220);
+    var bw = c.measureText(big).width, ax = 64, tx = Wd / 2 - (bw + ax + 24) / 2;
+    c.textAlign = 'left'; c.save(); c.shadowColor = col; c.shadowBlur = 40; c.fillStyle = col; c.fillText(big, tx, py + 150 + 70 + bs * .7); c.restore();
+    K.arrow(tx + bw + 24, py + 150 + 70 + bs * .7 - ax * .95, ax, up, col);
+    K.F('500', 30); c.fillStyle = K.MUTED; c.textAlign = 'center';
+    c.fillText(q.n + (q.n === 1 ? ' trade' : ' trades') + '  ·  ' + q.sub, Wd / 2, py + ph - 70); c.textAlign = 'left';
+    if (group){ var sy = py + ph + 40, sw = (pw - 32) / 3;
+      [['Win rate', q.wr === null ? '—' : q.wr + '%'], ['Record', q.W + '–' + q.L + (q.BE ? '–' + q.BE : '')], ['Avg win : loss', q.ratio === null ? '—' : (Math.round(q.ratio * 10) / 10) + ' : 1']]
+        .forEach(function(k, i){ var x = px + i * (sw + 16); K.rr(x, sy, sw, 130, 24); c.fillStyle = 'rgba(227,241,239,.04)'; c.fill(); c.strokeStyle = 'rgba(227,241,239,.08)'; c.lineWidth = 2; c.stroke();
+          K.F('500', 24); c.fillStyle = K.MUTED; c.fillText(k[0], x + 28, sy + 46); K.fit(k[1], '700', 44, 26, sw - 56); c.fillStyle = K.INK; c.fillText(k[1], x + 28, sy + 104); }); }
+    // footer
+    var fy = cy + ch - 110; c.fillStyle = 'rgba(227,241,239,.08)'; c.fillRect(cx + 56, fy - 50, cw - 112, 2);
+    K.F('500', 28); c.fillStyle = K.MUTED; c.fillText('Trading with', cx + 56, fy + 10);
+    var tw = c.measureText('Trading with ').width, gw = K.gemMark(cx + 56 + tw, fy - 34, 58);
+    c.save(); c.translate(cx + 56 + tw + gw + 6, fy + 12); K.word(0, 0, .42); c.restore();
+  }
+  // Ledger: total up top, then every trade (or every day) in a clean table (in the spirit of copy-trader account cards)
+  function drawLedgerCard(cv, q){
+    var c = cv.getContext('2d'), Wd = 1080, Ht = 1920, K = cardKit(c), up = q.net >= 0, col = up ? K.UP : K.DOWN, M = 80; cv.width = Wd; cv.height = Ht;
+    K.bg(Wd, Ht, up);
+    var group = !q.mine; if (group) q = Object.assign({}, q, { who: Object.assign(serverWho(q), { name:'All traders' }), avatar:'gem' });
+    var day = q.per === 'day', rows = group ? q.board.map(function(t){ return [t.name, t.n + (t.n === 1 ? ' trade' : ' trades'), t.w + t.l ? Math.round(t.w / (t.w + t.l) * 100) + '%' : '—', t.pnl, t.color]; })
+      : day ? q.list.map(function(e){ return [(e.time || '—'), (e.pair || 'Trade') + (e.dir ? ' ' + (e.dir === 'long' ? '▲' : '▼') : ''), ({ tp:'TP', sl:'SL', be:'BE' })[e.outcome] || '', e.noPnl ? null : (+e.pnl || 0)]; })
+      : q.days.slice().reverse().map(function(d){ return [d.label, d.n + (d.n === 1 ? ' trade' : ' trades'), '', d.pnl]; });
+    var rh = 86, maxRows = 9, shown = rows.slice(0, maxRows), more = rows.length > shown.length;
+    var big = K.money(q.net), bs = K.fit(big, '700', 150, 70, Wd - M * 2 - 128);
+    var tableH = 180 + Math.max(1, shown.length) * rh + (more ? 70 : 24);
+    var ch = 290 + bs * .82 + 124 + tableH + 50, cx = M, cy = Math.max(200, (Ht - ch) / 2), cw = Wd - M * 2, P = 64, w = q.who || {};
+    var cg = c.createLinearGradient(0, cy, 0, cy + ch); cg.addColorStop(0, '#0A2326'); cg.addColorStop(1, '#061416');
+    c.save(); c.shadowColor = 'rgba(0,0,0,.6)'; c.shadowBlur = 80; c.shadowOffsetY = 30; K.rr(cx, cy, cw, ch, 48); c.fillStyle = cg; c.fill(); c.restore();
+    K.rr(cx, cy, cw, ch, 48); c.strokeStyle = 'rgba(20,163,157,.30)'; c.lineWidth = 2; c.stroke();
+    // header: brand left, who right
+    K.word(cx + P, cy + 130, .7);
+    var ar = 44, axp = cx + cw - P - ar; K.avatar(q.avatar, axp, cy + 102, ar, w.name, w.color || K.UP);
+    c.textAlign = 'right'; K.fit(w.name || 'Trader', '700', 36, 24, 380); c.fillStyle = w.color || K.UP; c.fillText(w.name || 'Trader', axp - ar - 24, cy + 96);
+    K.F('500', 24); c.fillStyle = K.MUTED; c.fillText(q.stamp, axp - ar - 24, cy + 134); c.textAlign = 'left';
+    // total
+    K.F('500', 34); c.fillStyle = K.INK; c.fillText((group ? GROUP_LABEL : OWN_LABEL)[q.per], cx + P, cy + 270);
+    K.F('700', bs); c.save(); c.shadowColor = col; c.shadowBlur = 36; c.fillStyle = col; c.fillText(big, cx + P - 4, cy + 290 + bs * .82); c.restore();
+    K.F('500', 32); c.fillStyle = K.MUTED; var acr = 'Across ', nt = String(group ? q.traders : q.per === 'day' ? q.n : q.days.length), rest = group ? (q.traders === 1 ? ' trader' : ' traders') + ' · ' + (q.wr === null ? '—' : q.wr + '%') + ' win rate' : q.per === 'day' ? (q.n === 1 ? ' trade' : ' trades') : (q.days.length === 1 ? ' trading day' : ' trading days');
+    var ty = cy + 290 + bs * .82 + 64; c.fillText(acr, cx + P, ty); var x2 = cx + P + c.measureText(acr).width; K.F('700', 32); c.fillStyle = K.INK; c.fillText(nt, x2, ty);
+    x2 += c.measureText(nt).width; K.F('500', 32); c.fillStyle = K.MUTED; c.fillText(rest, x2, ty);
+    // the table
+    var tx = cx + 40, tyy = ty + 60, tw = cw - 80, th = tableH;
+    K.rr(tx, tyy, tw, th, 32); c.fillStyle = 'rgba(227,241,239,.04)'; c.fill(); c.strokeStyle = 'rgba(227,241,239,.08)'; c.lineWidth = 2; c.stroke();
+    K.F('600', 30); c.fillStyle = K.INK; c.fillText(group ? 'Traders' : day ? 'Today’s trades' : 'By day', tx + 36, tyy + 64);
+    var hy = tyy + 110; c.fillStyle = 'rgba(227,241,239,.05)'; c.fillRect(tx, hy - 6, tw, 64);
+    K.F('500', 22, K.MONO); c.fillStyle = K.MUTED;
+    var c1 = tx + 36, c2 = tx + (group ? 370 : day ? 220 : 330), c3 = tx + tw - 300, c4 = tx + tw - 36;
+    c.fillText(group ? 'TRADER' : day ? 'TIME' : 'DAY', c1, hy + 34); c.fillText(group ? 'TRADES' : day ? 'MARKET' : 'TRADES', c2, hy + 34); if (day || group) c.fillText(group ? 'WIN %' : 'RESULT', c3, hy + 34); c.textAlign = 'right'; c.fillText('P&L', c4, hy + 34); c.textAlign = 'left';
+    shown.forEach(function(r, i){ var y = hy + 70 + i * rh + 54;
+      if (i) { c.fillStyle = 'rgba(227,241,239,.06)'; c.fillRect(tx + 36, y - 54, tw - 72, 2); }
+      var n0 = r[0]; K.F('600', 30); if (group){ while (c.measureText(n0).width > 310 && n0.length > 3) n0 = n0.slice(0, -2) + '…'; }
+      c.fillStyle = group ? r[4] : K.INK; c.fillText(n0, c1, y); K.F('500', 30); c.fillStyle = K.MUTED; c.fillText(r[1], c2, y);
+      if (group){ K.F('600', 28); c.fillStyle = K.INK; c.fillText(r[2], c3, y); }
+      if (day && !group && r[2]){ K.F('600', 26); c.fillStyle = r[2] === 'TP' ? K.UP : r[2] === 'SL' ? K.DOWN : K.MUTED; c.fillText(r[2], c3, y); }
+      c.textAlign = 'right'; K.F('700', 30); c.fillStyle = r[3] === null ? K.MUTED : r[3] > 0 ? K.UP : r[3] < 0 ? K.DOWN : K.INK; c.fillText(r[3] === null ? '—' : K.money(r[3]), c4, y); c.textAlign = 'left'; });
+    if (rows.length > shown.length){ K.F('500', 26); c.fillStyle = K.MUTED; c.textAlign = 'center'; c.fillText('+' + (rows.length - shown.length) + ' more', tx + tw / 2, tyy + th - 36); c.textAlign = 'left'; }
+    if (!rows.length){ K.F('500', 30); c.fillStyle = K.MUTED; c.textAlign = 'center'; c.fillText('No trades yet', tx + tw / 2, hy + 160); c.textAlign = 'left'; }
   }
   // a person's card: The Project wordmark, the diamond, their name in green, and the P&L. Nothing else.
   // name colour = their Discord level role (highest one wins); anyone else gets the site green
@@ -3775,6 +3907,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     '484654761757507584': '#E74C3C'     // Admin, Osman (Discord red)
   };
   function nameColor(id, isAdm, roles){ return STAFF_COLORS[id] || tierColor(roles); }
+  var STAFF_TITLES = { '1313595031466021026':'Moderator', '484654761757507584':'Admin' };
+  function roleTitle(id, roles){ roles = roles || []; if (STAFF_TITLES[id]) return STAFF_TITLES[id];
+    return roles.indexOf(ROLES.chapter3) >= 0 ? 'Enlightened' : roles.indexOf(ROLES.chapter2) >= 0 ? 'Illuminated' : roles.indexOf(ROLES.chapter1) >= 0 ? 'Awakened' : 'Member'; }
   function tierColor(roles){ roles = roles || [];
     if (ROLES.chapter3 && roles.indexOf(ROLES.chapter3) >= 0) return '#00C853';   // Enlightened
     if (ROLES.chapter2 && roles.indexOf(ROLES.chapter2) >= 0) return '#AA00FF';   // Illuminated
@@ -3851,7 +3986,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     c.textAlign = 'left';
   }
   function drawShareCard(cv, q){
-    if (q.mine) return drawPersonCard(cv, q);
+    if (q.mine) return SHC.style === 'diamond' ? drawPersonCard(cv, q) : SHC.style === 'ledger' ? drawLedgerCard(cv, q) : drawProfileCard(cv, q);
+    if (SHC.sstyle === 'profile') return drawProfileCard(cv, q);
+    if (SHC.sstyle === 'ledger') return drawLedgerCard(cv, q);
     var c = cv.getContext('2d'), Wd = 1080, Ht = 1920; cv.width = Wd; cv.height = Ht;
     var INK = '#E3F1EF', MUTED = '#7F9A9B', TEAL = '#14A39D', UP = '#3BE38F', DOWN = '#F05454', col = q.net >= 0 ? UP : DOWN;
     var SANS = "'Instrument Sans', system-ui, -apple-system, sans-serif", DISP = "Archivo, 'Arial Black', sans-serif", MONO = "'JetBrains Mono', ui-monospace, monospace";
@@ -3928,8 +4065,12 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       (SHC.rows || []).filter(function(m){ return (m.entries || []).length && m.id !== user().id; }).sort(function(a, b){ return String(a.displayName || a.username).localeCompare(String(b.displayName || b.username)); })
         .forEach(function(m){ var o = el('option',null, m.displayName || m.username); o.value = m.id; who.appendChild(o); });
       who.value = SHC.scope; if (who.value !== SHC.scope){ SHC.scope = 'all'; who.value = 'all'; } }
-    top.appendChild(perSeg); top.appendChild(save); top.appendChild(x);
-    var stage = el('div','shc-stage'), cv = document.createElement('canvas'), img = el('img','shc-img'); img.alt = 'Results card'; stage.appendChild(img);
+    if (!SHC.style){ try { SHC.style = localStorage.getItem('theproject.cardstyle') || ''; } catch (e) {} if (['profile','ledger','diamond'].indexOf(SHC.style) < 0) SHC.style = 'profile'; }
+    if (!SHC.sstyle){ try { SHC.sstyle = localStorage.getItem('theproject.groupstyle') || ''; } catch (e) {} if (['profile','ledger','classic'].indexOf(SHC.sstyle) < 0) SHC.sstyle = 'profile'; }
+    var styleSeg = seg([['profile','Profile'],['ledger','Ledger'],['diamond','Diamond']], SHC.style, function(v){ SHC.style = v; try { localStorage.setItem('theproject.cardstyle', v); } catch (e) {} paint(); });
+    var gStyleSeg = seg([['profile','Profile'],['ledger','Ledger'],['classic','Classic']], SHC.sstyle, function(v){ SHC.sstyle = v; try { localStorage.setItem('theproject.groupstyle', v); } catch (e) {} paint(); });
+    top.appendChild(perSeg); top.appendChild(styleSeg); top.appendChild(gStyleSeg); top.appendChild(save); top.appendChild(x);
+    var stage = el('div','shc-stage'), cv = document.createElement('canvas'); cv.className = 'shc-img'; cv.setAttribute('role','img'); cv.setAttribute('aria-label','Results card'); cv.hidden = true; stage.appendChild(cv);
     var hint = el('p','shc-hint','Tap the card to hide these buttons for a clean screenshot. Tap again to bring them back.');
     sc.appendChild(top); sc.appendChild(hint); sc.appendChild(stage); document.body.appendChild(sc); document.documentElement.classList.add('lb-open');
     var close = function(){ sc.remove(); document.documentElement.classList.remove('lb-open'); document.removeEventListener('keydown', esc, true); };
@@ -3942,9 +4083,12 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var m = (SHC.rows || []).filter(function(x){ return x.id === SHC.scope; })[0]; return m ? [m] : null; }
     function whoNow(){
       if (SHC.scope === 'all') return null;
-      if (SHC.scope === 'me'){ var u = user(); return { name: u.displayName || u.username || 'Me', handle: u.username || '', color: nameColor(u.id, canAdmin(), (SESSION && SESSION.roles) || []) }; }
-      var m = (SHC.rows || []).filter(function(x){ return x.id === SHC.scope; })[0]; return m ? { name: m.displayName || m.username || 'Trader', handle: m.username || '', color: nameColor(m.id, m.isAdmin, m.roles) } : null; }
-    function paint(){ var r = rowsNow(); if (!r) return; drawShareCard(cv, shcData(r, SHC.per, whoNow())); img.src = cv.toDataURL('image/png'); }
+      if (SHC.scope === 'me'){ var u = user(); return { id: u.id, name: u.displayName || u.username || 'Me', handle: u.username || '', avatar: u.avatar || '', role: roleTitle(u.id, (SESSION && SESSION.roles) || []), color: nameColor(u.id, canAdmin(), (SESSION && SESSION.roles) || []) }; }
+      var m = (SHC.rows || []).filter(function(x){ return x.id === SHC.scope; })[0]; return m ? { id: m.id, name: m.displayName || m.username || 'Trader', handle: m.username || '', avatar: m.avatar || '', role: roleTitle(m.id, m.roles), color: nameColor(m.id, m.isAdmin, m.roles) } : null; }
+    function paint(){ var r = rowsNow(); if (!r) return; var w = whoNow(), q = shcData(r, SHC.per, w);
+      styleSeg.style.display = w ? '' : 'none'; gStyleSeg.style.display = w ? 'none' : '';
+      var go = function(av){ q.avatar = av; drawShareCard(cv, q); cv.hidden = false; };
+      if (w && w.avatar && AVATARS[w.avatar] === undefined){ go(null); loadAvatar(w.avatar).then(function(av){ if (av) paint(); }); } else go(w && w.avatar ? AVATARS[w.avatar] : null); }
     save.addEventListener('click', function(){
       cv.toBlob(function(b){ if (!b) return;
         var wq = whoNow(), fn = 'the-project-' + (wq ? String(wq.handle || wq.name).toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' : '') + ({ day:'daily', week:'weekly', month:'monthly' }[SHC.per]) + '-' + tradeDay(todayYmd()) + '.png', f = null;
@@ -5018,6 +5162,16 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   // thumbnails for uploaded images and PDFs
   /* ---------- screenshot viewer: opens over the page; arrows, keys, scroll, swipe or thumbnails move between files ---------- */
   var isImg = function(f){ return !!f && /^image\//.test(f.type || ''); };
+
+  (function(){
+    function prep(im){ if (im.dataset.ld) return; im.dataset.ld = '1';
+      if (im.complete && im.naturalWidth) return;
+      im.classList.add('ld'); var done = function(){ im.classList.remove('ld'); };
+      im.addEventListener('load', done); im.addEventListener('error', done); }
+    var scan = function(root){ if (root.tagName === 'IMG') prep(root); else if (root.querySelectorAll) Array.prototype.forEach.call(root.querySelectorAll('img'), prep); };
+    new MutationObserver(function(ms){ ms.forEach(function(m){ Array.prototype.forEach.call(m.addedNodes, function(n){ if (n.nodeType === 1) scan(n); }); }); })
+      .observe(document.documentElement, { childList:true, subtree:true });
+  })();
   function lightbox(files, start){
     files = (files || []).filter(function(f){ return f && f.url; }); if (!files.length) return;
     var i = Math.max(0, Math.min(start || 0, files.length - 1)), zoom = false, back = document.activeElement;
@@ -5032,25 +5186,28 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     next.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
     var strip = el('div','lb-t'), hint = el('div','lb-h', files.length > 1 ? '← → or scroll to move · click the image to zoom · Esc to close' : 'Click the image to zoom · Esc to close');
     files.forEach(function(f, k){ var b = el('button'); b.type = 'button'; b.setAttribute('aria-label','Show ' + (f.name || 'file ' + (k + 1)));
-      if (isImg(f)){ var im = el('img'); im.src = f.url; im.alt = ''; im.loading = 'lazy'; b.appendChild(im); } else b.appendChild(el('span',null,'PDF'));
+      if (isImg(f)){ var im = el('img'); im.src = f.url; im.alt = ''; im.decoding = 'async'; b.appendChild(im); } else b.appendChild(el('span',null,'PDF'));
       b.addEventListener('click', function(){ go(k); }); strip.appendChild(b); });
     lb.appendChild(top); lb.appendChild(stage); lb.appendChild(prev); lb.appendChild(next);
     if (files.length > 1) lb.appendChild(strip); lb.appendChild(hint);
     if (files.length < 2){ prev.hidden = next.hidden = true; }
     function draw(){
-      var f = files[i]; zoom = false; lb.classList.remove('zoom'); stage.textContent = ''; stage.scrollTop = stage.scrollLeft = 0;
+      var f = files[i]; zoom = false; lb.classList.remove('zoom'); stage.scrollTop = stage.scrollLeft = 0;
       cnt.textContent = files.length > 1 ? (i + 1) + ' / ' + files.length : ''; nm.textContent = f.name || ''; orig.href = f.url;
-      if (isImg(f)){ var im = el('img','lb-i'); im.src = f.url; im.alt = f.name || 'Screenshot'; im.draggable = false;
+      if (isImg(f)){ var im = el('img','lb-i'); im.alt = f.name || 'Screenshot'; im.draggable = false;
         im.addEventListener('click', function(ev){ ev.stopPropagation(); zoom = !zoom; lb.classList.toggle('zoom', zoom);
           if (zoom){ var r = im.getBoundingClientRect(), fx = (ev.clientX - r.left) / r.width, fy = (ev.clientY - r.top) / r.height;
             requestAnimationFrame(function(){ stage.scrollLeft = fx * stage.scrollWidth - stage.clientWidth / 2; stage.scrollTop = fy * stage.scrollHeight - stage.clientHeight / 2; }); } });
-        stage.appendChild(im); }
-      else { var pc = el('div','lb-pdf'); pc.appendChild(el('b',null,'PDF')); pc.appendChild(el('span',null, f.name || 'Document'));
+        var want = i, put = function(){ if (want !== i) return; stage.textContent = ''; stage.appendChild(im); lb.classList.remove('busy'); };
+        var old = stage.querySelector('.lb-i'); if (old) old.style.opacity = '.35'; else stage.textContent = '';
+        lb.classList.add('busy'); im.src = f.url;
+        if (im.decode) im.decode().then(put, put); else { im.onload = put; im.onerror = put; } }
+      else { stage.textContent = ''; var pc = el('div','lb-pdf'); pc.appendChild(el('b',null,'PDF')); pc.appendChild(el('span',null, f.name || 'Document'));
         var oa = el('a','btn-s pri','Open PDF'); oa.href = f.url; oa.target = '_blank'; oa.rel = 'noopener noreferrer'; pc.appendChild(oa); pc.addEventListener('click', function(ev){ ev.stopPropagation(); }); stage.appendChild(pc); }
       prev.disabled = i === 0; next.disabled = i === files.length - 1;
       Array.prototype.forEach.call(strip.children, function(b, k){ b.classList.toggle('on', k === i); if (k === i && b.scrollIntoView) b.scrollIntoView({ block:'nearest', inline:'center' }); });
-      // load the neighbours so moving is instant
-      [i - 1, i + 1].forEach(function(k){ if (isImg(files[k])){ var pre = new Image(); pre.src = files[k].url; } });
+      // load the neighbours first, then the rest, so moving is instant
+      [i - 1, i + 1].concat(files.map(function(_, k){ return k; })).forEach(function(k){ if (isImg(files[k]) && !files[k]._pre){ files[k]._pre = new Image(); files[k]._pre.src = files[k].url; } });
     }
     function go(k){ if (k < 0 || k >= files.length || k === i) return; i = k; draw(); }
     function close(){ window.removeEventListener('keydown', key, true); document.documentElement.classList.remove('lb-open'); lb.remove(); try { if (back && back.focus) back.focus(); } catch (err) {} }
