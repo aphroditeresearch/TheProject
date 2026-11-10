@@ -902,6 +902,7 @@ ul.parts{list-style:none;margin:0 0 4px 22px;padding:0 0 0 12px;border-left:1px 
 .pane h3{margin:0;font-family:var(--display);font-style:italic;font-weight:900;font-stretch:125%;font-size:clamp(30px,4vw,46px);line-height:1;letter-spacing:-.02em;text-wrap:balance}
 .shc{position:fixed;inset:0;z-index:300;background:#02090B;display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));overflow:auto}
 .shc-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;width:100%;max-width:720px}
+.per-sel{min-height:40px;background:#0B1A1C;border:1px solid var(--line);color:var(--ink);padding:0 34px 0 12px;font:500 14px var(--sans)}
 .shc-top select{min-height:38px;background:#0B1A1C;border:1px solid var(--line);color:var(--ink);padding:0 8px;font:14px var(--sans);max-width:220px}
 .shc-top input{min-height:38px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--ink);padding:0 10px;font:14px var(--sans);width:170px}
 .shc-hint{margin:0;font-size:12px;color:var(--muted);text-align:center}
@@ -3108,7 +3109,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     main.appendChild(vs);
     if (JR.view === 'stats'){
       JR.per = JR.per || 'all';
-      var sbar = el('div','rv-bar'); sbar.appendChild(seg([['week','This week'],['month','This month'],['30','30 days'],['90','90 days'],['year','This year'],['all','All time']], JR.per, function(v){ JR.per = v; drawJournal(host); }));
+      var sbar = el('div','rv-bar'); sbar.appendChild(periodSelect(JR.per, function(v){ JR.per = v; drawJournal(host); }));
       var shb = el('button','btn-s pri','📱 Share my P&L'); shb.type = 'button'; shb.addEventListener('click', function(){ openShareCard('me'); }); sbar.appendChild(shb); main.appendChild(sbar);
       var fromS = periodFrom(JR.per); main.appendChild(statsView(ents.filter(function(e){ return e.date >= fromS && countsInStats(e); })));
       grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return;
@@ -3558,7 +3559,22 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
 
   /* ---------- journal statistics (members: their own; admins: everyone or one student) ---------- */
   var DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  function periodFrom(p){ var t = new Date(); if (p === 'week'){ var d = new Date(t.getFullYear(), t.getMonth(), t.getDate()); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return ymd(d); } if (p === '30'){ var d2 = new Date(); d2.setDate(d2.getDate() - 29); return ymd(d2); } if (p === 'month') return ymd(t).slice(0, 8) + '01'; if (p === '90'){ var d3 = new Date(); d3.setDate(d3.getDate() - 89); return ymd(d3); } if (p === 'year') return ymd(t).slice(0, 4) + '-01-01'; return '0000-00-00'; }
+  var PERIODS = [['today','Today'],['week','This week'],['month','This month'],['30','Last 30 days'],['60','Last 60 days'],['90','Last 90 days'],['365','Last year'],['all','All time']];
+  function periodFrom(p){
+    var today = tradeDay(todayYmd());
+    if (p === 'today') return today;
+    if (p === 'week') return mondayOf(today);
+    if (p === 'month') return today.slice(0, 8) + '01';
+    if (p === 'year') return today.slice(0, 4) + '-01-01';
+    if (/^\d+$/.test(p)) return addDays(today, -(+p - 1));
+    return '0000-00-00';
+  }
+  function periodSelect(cur, onPick){
+    var sl = el('select','per-sel'); sl.setAttribute('aria-label','Period');
+    PERIODS.forEach(function(x){ var o = el('option',null,x[1]); o.value = x[0]; sl.appendChild(o); });
+    sl.value = cur; if (sl.value !== cur) sl.value = '30';
+    sl.addEventListener('change', function(){ onPick(sl.value); }); return sl;
+  }
   function pct(a, b){ return b ? Math.round(a / b * 100) : 0; }
   // Stats only count real-account trades: Funded and Evaluation. Paper, demo and personal trades stay in the journal
   // (and the leaderboard) but are left out of every stat. No-trade days always count.
@@ -3731,7 +3747,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     else if (per === 'week'){ from = mondayOf(today); to = addDays(from, 4); pill = 'This week'; sub = D(from, { month:'short', day:'numeric' }) + ' – ' + D(to, { month:'short', day:'numeric' }); }
     else { from = today.slice(0, 8) + '01'; pill = D(today, { month:'long' }); sub = D(today, { month:'long', year:'numeric' }); }
     var trades = [], traders = {};
-    rows.filter(function(m){ return who || !m.isAdmin; }).forEach(function(m){ (m.entries || []).forEach(function(e){
+    // same pool as Stats: everyone with a journal, admins included
+    rows.forEach(function(m){ (m.entries || []).forEach(function(e){
       if (e.kind === 'trade' && e.date >= from && e.date <= to && countsInStats(e)){ trades.push(e); traders[m.id] = 1; } }); });
     var W = 0, L = 0, BE = 0, net = 0, wins = [], losses = [], rs = [], byDay = {};
     trades.forEach(function(e){ var p = e.noPnl ? 0 : (+e.pnl || 0);
@@ -3750,7 +3767,76 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       totalR: rs.length ? rs.reduce(function(t, x){ return t + x; }, 0) : null,
       pf: losses.length ? wins.reduce(function(t, x){ return t + x; }, 0) / losses.reduce(function(t, x){ return t + x; }, 0) : (wins.length ? Infinity : null) };
   }
+  // a person's card: The Project wordmark, the diamond, their name in green, and the P&L. Nothing else.
+  // name colour = their Discord level role (highest one wins); anyone else gets the site green
+  // staff use Discord's default role colours: the Moderator yellow, admins red
+  var STAFF_COLORS = {
+    '1313595031466021026': '#F1C40F',   // Moderator (Discord yellow)
+    '484654761757507584': '#E74C3C'     // Admin, Osman (Discord red)
+  };
+  function nameColor(id, isAdm, roles){ return STAFF_COLORS[id] || tierColor(roles); }
+  function tierColor(roles){ roles = roles || [];
+    if (ROLES.chapter3 && roles.indexOf(ROLES.chapter3) >= 0) return '#00C853';   // Enlightened
+    if (ROLES.chapter2 && roles.indexOf(ROLES.chapter2) >= 0) return '#AA00FF';   // Illuminated
+    if (ROLES.chapter1 && roles.indexOf(ROLES.chapter1) >= 0) return '#3498DB';   // Awakened
+    return '#3BE38F'; }
+  function hexRgb(h){ var n = parseInt(String(h).slice(1), 16); return ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255); }
+  var DIAMOND = null, DTINT = {};
+  // the diamond recoloured: green when the P&L is up, red when it's down (keeps its facets and highlights)
+  function tintedDiamond(up){
+    var k = up ? 'up' : 'down'; if (DTINT[k]) return DTINT[k]; if (!DIAMOND) return null;
+    var t = up ? [59, 227, 143] : [240, 84, 84];
+    var cv = document.createElement('canvas'); cv.width = DIAMOND.width; cv.height = DIAMOND.height;
+    var c = cv.getContext('2d'); c.drawImage(DIAMOND, 0, 0);
+    try {
+      var d = c.getImageData(0, 0, cv.width, cv.height), p = d.data;
+      for (var i = 0; i < p.length; i += 4){
+        var l = (0.3 * p[i] + 0.59 * p[i + 1] + 0.11 * p[i + 2]) / 255, hi = Math.max(0, l - 0.62) / 0.38;   // keep bright edges near white
+        p[i] = Math.min(255, t[0] * l * 1.25 + 255 * hi * .55); p[i + 1] = Math.min(255, t[1] * l * 1.25 + 255 * hi * .55); p[i + 2] = Math.min(255, t[2] * l * 1.25 + 255 * hi * .55);
+      }
+      c.putImageData(d, 0, 0);
+    } catch (e) { return DIAMOND; }
+    return (DTINT[k] = cv);
+  }
+  function drawPersonCard(cv, q){
+    var c = cv.getContext('2d'), Wd = 1080, Ht = 1920; cv.width = Wd; cv.height = Ht;
+    var INK = '#E3F1EF', MUTED = '#7F9A9B', GREEN = '#3BE38F';
+    var SANS = "'Instrument Sans', system-ui, -apple-system, sans-serif", DISP = "Archivo, 'Arial Black', sans-serif", MONO = "'JetBrains Mono', ui-monospace, monospace";
+    var F = function(st, sz, fam){ c.font = st + ' ' + sz + 'px ' + fam; };
+    c.fillStyle = '#02090B'; c.fillRect(0, 0, Wd, Ht);
+    // light behind the diamond: its own violet-blue fading into the brand teal
+    var up = q.net >= 0, RGB = up ? '59,227,143' : '240,84,84';
+    var g1 = c.createRadialGradient(Wd / 2, 760, 0, Wd / 2, 760, 760); g1.addColorStop(0, 'rgba(' + RGB + ',.22)'); g1.addColorStop(.45, 'rgba(20,163,157,.12)'); g1.addColorStop(1, 'rgba(2,9,11,0)');
+    c.fillStyle = g1; c.fillRect(0, 0, Wd, Ht);
+    var g2 = c.createRadialGradient(Wd / 2, 1560, 0, Wd / 2, 1560, 700); g2.addColorStop(0, q.net >= 0 ? 'rgba(59,227,143,.10)' : 'rgba(240,84,84,.10)'); g2.addColorStop(1, 'rgba(2,9,11,0)');
+    c.fillStyle = g2; c.fillRect(0, 0, Wd, Ht);
+    // one thin orbit ring around the diamond
+    c.save(); c.translate(Wd / 2, 770); c.scale(1, .32); c.beginPath(); c.arc(0, 0, 430, 0, Math.PI * 2); c.restore();
+    c.strokeStyle = 'rgba(227,241,239,.10)'; c.lineWidth = 2; c.stroke();
+    // header
+    var M = 84; c.fillStyle = INK; F('italic 200', 21, DISP); ['T','H','E'].forEach(function(ch, i){ c.fillText(ch, M + 4, 146 + i * 21); });
+    try { c.fontStretch = 'expanded'; } catch (e) {} F('italic 900', 70, DISP); c.fillText('PROJECT', M + 30, 194); try { c.fontStretch = 'normal'; } catch (e) {}
+    F('600', 28, SANS); var pt = q.pill, pw = c.measureText(pt).width + 46;
+    c.beginPath(); if (c.roundRect) c.roundRect(Wd - M - pw, 136, pw, 56, 28); else c.rect(Wd - M - pw, 136, pw, 56);
+    c.fillStyle = 'rgba(227,241,239,.06)'; c.fill(); c.strokeStyle = 'rgba(227,241,239,.14)'; c.lineWidth = 2; c.stroke();
+    c.fillStyle = INK; c.textBaseline = 'middle'; c.fillText(pt, Wd - M - pw + 23, 165); c.textBaseline = 'alphabetic';
+    // the diamond, floating, with a soft shadow under it
+    var dw = 620, dh = DIAMOND ? dw * DIAMOND.height / DIAMOND.width : 0, dy = 770 - dh / 2;
+    var sh = c.createRadialGradient(Wd / 2, 0, 0, Wd / 2, 0, 260); sh.addColorStop(0, 'rgba(' + RGB + ',.30)'); sh.addColorStop(1, 'rgba(2,9,11,0)');
+    c.save(); c.translate(0, 1130); c.scale(1, .14); c.fillStyle = sh; c.beginPath(); c.arc(Wd / 2, 0, 260, 0, Math.PI * 2); c.fill(); c.restore();
+    var DI = tintedDiamond(up); if (DI){ c.save(); c.shadowColor = 'rgba(' + RGB + ',.55)'; c.shadowBlur = 60; c.drawImage(DI, (Wd - dw) / 2, dy, dw, dh); c.restore(); }
+    // name (green), what it is, the number
+    var nm = String((q.who && q.who.name) || 'Trader'), ns = 88; F('700', ns, SANS); while (c.measureText(nm).width > Wd - M * 2 && ns > 44){ ns -= 4; F('700', ns, SANS); }
+    var NC = (q.who && q.who.color) || GREEN; c.textAlign = 'center'; c.save(); c.shadowColor = 'rgba(' + hexRgb(NC) + ',.6)'; c.shadowBlur = 30; c.fillStyle = NC; c.fillText(nm, Wd / 2, 1300); c.restore();
+    F('500', 30, MONO); c.fillStyle = MUTED; c.fillText(({ day:'D A I L Y', week:'W E E K L Y', month:'M O N T H L Y' }[q.per] || '') + '   P & L', Wd / 2, 1388);
+    var big = (q.net < 0 ? '−$' : '+$') + Math.abs(Math.round(q.net)).toLocaleString('en-US'), bs = 210;
+    F('700', bs, SANS); while (c.measureText(big).width > Wd - M * 2 && bs > 100){ bs -= 6; F('700', bs, SANS); }
+    c.save(); c.shadowColor = 'rgba(' + RGB + ',.40)'; c.shadowBlur = 36; c.fillStyle = up ? GREEN : '#F05454'; c.fillText(big, Wd / 2, 1388 + 40 + bs * .8); c.restore();
+    F('500', 30, SANS); c.fillStyle = MUTED; c.fillText(q.sub, Wd / 2, 1388 + 40 + bs * .8 + 92);
+    c.textAlign = 'left';
+  }
   function drawShareCard(cv, q){
+    if (q.mine) return drawPersonCard(cv, q);
     var c = cv.getContext('2d'), Wd = 1080, Ht = 1920; cv.width = Wd; cv.height = Ht;
     var INK = '#E3F1EF', MUTED = '#7F9A9B', TEAL = '#14A39D', UP = '#3BE38F', DOWN = '#F05454', col = q.net >= 0 ? UP : DOWN;
     var SANS = "'Instrument Sans', system-ui, -apple-system, sans-serif", DISP = "Archivo, 'Arial Black', sans-serif", MONO = "'JetBrains Mono', ui-monospace, monospace";
@@ -3775,7 +3861,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     rr(cx, cy, cw, ch, 52); c.fillStyle = cg; c.fill(); c.strokeStyle = 'rgba(227,241,239,.09)'; c.lineWidth = 2; c.stroke();
     if (q.who){ var wn = String(q.who.name || 'Trader'); F('700', 36, SANS); while (c.measureText(wn).width > cw * .5 && wn.length > 4) wn = wn.slice(0, -2) + '…';
       c.fillStyle = INK; c.fillText(wn, cx + P, cy + 104); var wnW = c.measureText(wn).width; F('500', 34, SANS); c.fillStyle = MUTED; c.fillText('  ·  P&L', cx + P + wnW, cy + 104); }
-    else { F('500', 34, SANS); c.fillStyle = MUTED; c.fillText('Students’ P&L', cx + P, cy + 104); }
+    else { F('500', 34, SANS); c.fillStyle = MUTED; c.fillText('Total P&L', cx + P, cy + 104); }
     F('400', 28, SANS); c.textAlign = 'right'; c.fillText(q.sub, cx + cw - P, cy + 104); c.textAlign = 'left';
     var big = (q.net < 0 ? '−$' : '+$') + Math.abs(Math.round(q.net)).toLocaleString('en-US'), bs = 176;
     F('700', bs, SANS); while (c.measureText(big).width > cw - P * 2 && bs > 90){ bs -= 6; F('700', bs, SANS); }
@@ -3841,8 +3927,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var m = (SHC.rows || []).filter(function(x){ return x.id === SHC.scope; })[0]; return m ? [m] : null; }
     function whoNow(){
       if (SHC.scope === 'all') return null;
-      if (SHC.scope === 'me'){ var u = user(); return { name: u.displayName || u.username || 'Me', handle: u.username || '' }; }
-      var m = (SHC.rows || []).filter(function(x){ return x.id === SHC.scope; })[0]; return m ? { name: m.displayName || m.username || 'Trader', handle: m.username || '' } : null; }
+      if (SHC.scope === 'me'){ var u = user(); return { name: u.displayName || u.username || 'Me', handle: u.username || '', color: nameColor(u.id, canAdmin(), (SESSION && SESSION.roles) || []) }; }
+      var m = (SHC.rows || []).filter(function(x){ return x.id === SHC.scope; })[0]; return m ? { name: m.displayName || m.username || 'Trader', handle: m.username || '', color: nameColor(m.id, m.isAdmin, m.roles) } : null; }
     function paint(){ var r = rowsNow(); if (!r) return; drawShareCard(cv, shcData(r, SHC.per, whoNow())); img.src = cv.toDataURL('image/png'); }
     save.addEventListener('click', function(){
       cv.toBlob(function(b){ if (!b) return;
@@ -3852,13 +3938,14 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         downloadBlob(b, fn); toast('Saved ' + fn); }, 'image/png');
     });
     stage.appendChild(el('p','adm-note','Loading results…'));
+    var diaReady = DIAMOND ? Promise.resolve() : new Promise(function(res){ var im = new Image(); im.onload = function(){ DIAMOND = im; res(); }; im.onerror = function(){ res(); }; im.src = 'diamond-mark.png'; });
     var fontsReady = (document.fonts && document.fonts.load) ? Promise.all(['italic 900 100px Archivo','italic 200 100px Archivo','600 40px "Instrument Sans"','400 22px "Instrument Sans"','500 22px "JetBrains Mono"'].map(function(f){ return document.fonts.load(f).catch(function(){}); })) : Promise.resolve();
     function load(){
       stage.querySelectorAll('.adm-note').forEach(function(n){ n.remove(); }); stage.appendChild(el('p','adm-note','Loading results…'));
       var dataReady = SHC.scope === 'me' && !isAdm ? loadMe().catch(function(){})
         : SHC.scope === 'me' ? Promise.all([loadMe().catch(function(){}), new Promise(function(res){ if (SHC.rows) return res(); loadMembers(function(rows){ SHC.rows = rows; SHC.at = Date.now(); res(); }, function(){ res(); }); })])
         : new Promise(function(res){ if (SHC.rows && Date.now() - (SHC.at || 0) < 60000) return res(); loadMembers(function(rows){ SHC.rows = rows; SHC.at = Date.now(); res(); }, function(){ res(); }); });
-      Promise.all([fontsReady, dataReady]).then(function(){ stage.querySelectorAll('.adm-note').forEach(function(n){ n.remove(); }); fillWho();
+      Promise.all([fontsReady, dataReady, diaReady]).then(function(){ stage.querySelectorAll('.adm-note').forEach(function(n){ n.remove(); }); fillWho();
         if (!rowsNow()){ stage.appendChild(el('p','adm-note','Couldn\'t load the results. Close and try again.')); return; } paint(); });
     }
     load();
@@ -4134,7 +4221,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       sel.addEventListener('change', function(){ STX.who = sel.value; renderStatsTab(); });
       bar.appendChild(sel);
     }
-    bar.appendChild(seg([['week','This week'],['month','This month'],['30','30 days'],['90','90 days'],['year','This year'],['all','All time']], STX.per, function(v){ STX.per = v; renderStatsTab(); }));
+    bar.appendChild(periodSelect(STX.per, function(v){ STX.per = v; renderStatsTab(); }));
     if (admin){ var xb = el('button','btn-s xl-btn','Export to Excel'); xb.type = 'button';
     xb.title = admin ? 'Downloads what you are looking at: ' + (STX.who === 'all' ? 'every student' : 'this student') + ', this period' : 'Downloads your own journal for this period';
     xb.addEventListener('click', function(){ exportStats(); }); bar.appendChild(xb); }
@@ -4172,7 +4259,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var count = people.reduce(function(t, p){ return t + p.entries.length; }, 0);
       if (!count){ toast('No journal entries in this period to export.'); return; }
       var tag = STX.who === 'all' && admin ? 'all-students' : people.length === 1 ? String(people[0].name).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'journal' : 'journal';
-      try { downloadBlob(journalWorkbook(people), 'the-project-' + tag + '-' + ({ week:'this-week', month:'this-month', '30':'last-30-days', '90':'last-90-days', year:'this-year', all:'all-time' }[STX.per] || STX.per) + '-' + todayYmd() + '.xlsx'); toast('Exported ' + count + (count === 1 ? ' entry.' : ' entries.')); }
+      try { downloadBlob(journalWorkbook(people), 'the-project-' + tag + '-' + ({ today:'today', week:'this-week', month:'this-month', '30':'last-30-days', '60':'last-60-days', '90':'last-90-days', '365':'last-year', year:'this-year', all:'all-time' }[STX.per] || STX.per) + '-' + todayYmd() + '.xlsx'); toast('Exported ' + count + (count === 1 ? ' entry.' : ' entries.')); }
       catch (err){ toast('Couldn\'t build the file: ' + ((err && err.message) || err)); }
     }
     var need = [];

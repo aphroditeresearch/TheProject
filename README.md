@@ -634,18 +634,21 @@ and → only goes as far as already watched (no skipping ahead). Works in full s
 last clicked or the one playing, and are ignored while typing in a text box or when the image viewer or walkthrough is open.
 
 ## Share cards: results for TikTok / Instagram
-**Students:** Stats → **📱 Share my P&L** (also in Journal → Stats) makes the same card from their own journal only
-("My P&L"). **Admins:** Stats → **📱 Share card**, then pick whose: **Everyone (the Project)** (the whole community, admin-only: the
-data behind it only loads for admins), **Me**, or any student. A personal card shows the person's name at the top
-("Ava · P&L") and a faint @username under the card; the Everyone card shows no name.
-Personal cards stay minimal: P&L, the curve, **Total R** (sum of R on trades with risk or prices logged), **Profit
-factor** (gross profit ÷ gross loss, ∞ with no losing trades) and **Trades**. No win rate or win : loss ratio.
-
-The card is A clean 9:16 image (1080×1920) of every student's combined results for **Today**, **This
-week** or **This month**: net P&L, win rate (breakevens not counted), trades and traders, a running P&L curve, record
-(W–L–BE), average win : loss, and average R per trade (when at least 3 trades have risk or prices logged).
-- Only students' trades count (admins' own trades don't), Funded / Evaluation accounts only, denied entries left out:
-  the same rules as Stats. Sunday counts as Monday.
-- No web address or disclaimer text on the image.
+**Students:** Stats → **📱 Share my P&L** (also in Journal → Stats). **Admins:** Stats → **📱 Share card**, then pick whose:
+**Everyone (the Project)** (admin-only: the data behind it only loads for admins), **Me**, or any student. Each card is a
+1080×1920 image for **Today**, **This week** or **This month**.
+- **Everyone card:** "Total P&L" for everyone with a journal (the same pool and numbers as Stats for that period), win
+  rate (breakevens not counted), trades and traders, a running P&L curve, record (W–L–BE), average win : loss and average
+  R per trade. No names.
+- **Personal card:** The Project wordmark, the diamond (`diamond-mark.png`, cut out from `diamond.jpg`), the person's name
+  in their Discord level colour (Enlightened `#00C853`, Illuminated `#AA00FF`, Awakened `#3498DB`; highest role wins;
+  no level role = site green; staff: Moderator 1313595031466021026 yellow `#F1C40F`, Admin
+  484654761757507584 red `#E74C3C`, set in `STAFF_COLORS` in index.html), "Daily / Weekly / Monthly P&L", the number and the date. Nothing else. The number, the diamond and the
+  glow turn green when the P&L is up and red when it's down.
+- Funded / Evaluation trades only, denied entries left out, Sunday counts as Monday.
 - **Save image** shares the PNG straight to apps on a phone (Instagram, TikTok, Photos) or downloads it on a computer.
   Or tap the card to hide the buttons and take a normal screenshot; tap again to bring them back.
+
+## Stats periods
+Stats (and Journal → Stats) use one dropdown: **Today**, This week, This month, Last 30 / 60 / 90 days, Last year, All
+time. Weeks start Monday, Sunday counts as Monday. The "By day" table under the totals lists P&L day by day.
