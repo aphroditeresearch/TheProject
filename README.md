@@ -672,3 +672,12 @@ straight onto the page, so they appear instantly and switching style or period n
 Every tab row and option group shows which one is selected the moment it's clicked: the main tabs, the Admin sections,
 filters, views, periods and the share card's options (including places that don't redraw the whole page).
 
+## Sign-in intro: Decode
+After "Continue as …" (or straight back from Discord), scrambled letters lock into **WELCOME BACK, NAME** with the name
+in the member's role colour (Moderator yellow, Admin red, Enlightened green, Illuminated purple, Awakened blue). Their
+Discord picture pops in inside a spinning ring with a green check, "VERIFIED MEMBER · ROLE" fades in, then everything
+zooms through into the portal (about 2.5 seconds). While the account is still loading the letters keep scrambling, and
+after a moment "LOADING YOUR PORTAL" shows. Skip (or a click, Enter, Space or Esc) jumps straight in. With reduced
+motion turned on it shows the welcome for a moment and goes in without the animation. No picture on Discord: the first
+letter of the name in their colour. The old countdown + stamp popup is no longer used.
+
