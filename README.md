@@ -672,13 +672,14 @@ straight onto the page, so they appear instantly and switching style or period n
 Every tab row and option group shows which one is selected the moment it's clicked: the main tabs, the Admin sections,
 filters, views, periods and the share card's options (including places that don't redraw the whole page).
 
-## Sign-in intro: Decode
-After "Continue as …" (or straight back from Discord) one line appears: **WELCOME BACK, NAME**. Each letter cycles
-through random characters and settles left to right, the name in the member's role colour (Moderator yellow, Admin
-red, Enlightened green, Illuminated purple, Awakened blue). Their Discord picture fades in above it inside a slowly
-turning ring with a green check, then the intro dissolves into the portal (about 2 seconds, no Skip needed). If the
-account is slow to load, the letters keep cycling until the name is known. With reduced motion on, the welcome shows
-briefly without the animation. No Discord picture: the first letter of the name in their colour.
+## Sign-in intro: Signature
+After "Continue as …" (or straight back from Discord) the PROJECT wordmark is drawn on stroke by stroke like an ink
+signature ("THE" fading in beside it), fills in, and a glowing teal line draws underneath. Then the member appears
+below: their Discord picture inside a slowly turning ring in their role colour with a green check, "Welcome back,
+Name" revealed left to right (name in role colour), and "VERIFIED MEMBER · ROLE". Then it dissolves into the portal
+(about 3.5 seconds). If the account is still loading, the teal line gently pulses until it's ready. With reduced motion
+on, it shows briefly without the animation. No Discord picture: the first letter of the name in their colour. On phones
+the picture sits above the welcome line.
 
 ## Name colours and titles
 Names on share cards and in the sign-in intro use Discord role colours. Staff are set by Discord user ID in

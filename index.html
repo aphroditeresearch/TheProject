@@ -192,25 +192,43 @@ a{color:var(--blue);text-underline-offset:3px}
 
 
 /* ---------- popup ---------- */
-.dcd{position:fixed;inset:0;z-index:70;display:grid;place-items:center;--rc:#E3F1EF;background:radial-gradient(60% 50% at 50% 45%,rgba(20,163,157,.13),transparent 70%),#02090B;opacity:0;transition:opacity .35s cubic-bezier(.2,.7,.2,1)}
-.dcd.in{opacity:1}
-.dcd-in{display:flex;flex-direction:column;align-items:center;gap:28px;padding:24px 16px;text-align:center;transition:transform .7s cubic-bezier(.2,.7,.2,1),opacity .55s ease}
-.dcd-av{position:relative;width:112px;height:112px;opacity:0;transform:scale(.86);transition:opacity .5s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
-.dcd.lock .dcd-av{opacity:1;transform:none}
-.dcd-ring{position:absolute;inset:-6px;border-radius:50%;background:conic-gradient(from 0deg,var(--rc),#8DEBDF,#19ADA5,var(--rc));animation:dcdSpin 3s linear infinite;box-shadow:0 0 40px color-mix(in srgb,var(--rc) 50%,transparent)}
-.dcd-av img,.dcd-ini{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover;background:#0B1A1C;border:4px solid #02090B;box-sizing:border-box}
-.dcd-ini{display:grid;place-items:center;font:700 44px var(--sans);color:var(--rc)}
-.dcd-ok{position:absolute;right:-5px;bottom:-3px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#3BE38F;color:#02090B;font:800 18px/1 var(--sans);border:4px solid #02090B;opacity:0;transform:scale(.6);transition:opacity .35s ease .3s,transform .45s cubic-bezier(.2,.9,.3,1.2) .3s}
-.dcd.lock .dcd-ok{opacity:1;transform:none}
-.dcd-code{font:700 46px/1.2 var(--mono);letter-spacing:.06em;color:var(--ink);white-space:nowrap;min-height:1.2em}
-.dcd-code span{display:inline-block;min-width:.6em;opacity:.4;transition:opacity .25s ease,color .35s ease,text-shadow .5s ease}
-.dcd-code span.k{opacity:1}
-.dcd-code span.n.k{color:var(--rc)}
-.dcd.lock .dcd-code span.n{text-shadow:0 0 22px color-mix(in srgb,var(--rc) 45%,transparent)}
-.dcd.out{opacity:0;transition:opacity .5s ease .1s}
-.dcd.out .dcd-in{transform:scale(1.08);opacity:0}
-@keyframes dcdSpin{to{transform:rotate(360deg)}}
-@media (prefers-reduced-motion:reduce){.dcd-ring{animation:none}.dcd-in,.dcd-av,.dcd-ok,.dcd-code span{transition:none}}
+.sig{position:fixed;inset:0;z-index:70;display:grid;place-items:center;--rc:#E3F1EF;background:radial-gradient(60% 50% at 50% 45%,rgba(20,163,157,.13),transparent 70%),#02090B;opacity:0;transition:opacity .35s cubic-bezier(.2,.7,.2,1)}
+.sig.in{opacity:1}
+#sig:not([hidden]){display:flex;align-items:center;justify-content:center}   /* centred, whatever else styles this page */
+.sig-in{display:flex;flex-direction:column;align-items:center;gap:30px;padding:24px 16px;transition:transform .7s cubic-bezier(.2,.7,.2,1),opacity .55s ease}
+.sig-mark{display:flex;align-items:center;gap:14px;width:min(640px,86vw)}
+.sig-the{display:flex;flex-direction:column;font:italic 200 22px/.92 var(--display);font-stretch:125%;color:var(--ink)}
+.sig-the span{opacity:0;transform:translateY(4px);transition:opacity .4s ease,transform .5s cubic-bezier(.2,.8,.2,1)}
+.sig.draw .sig-the span{opacity:1;transform:none}
+.sig.draw .sig-the span:nth-child(2){transition-delay:.12s}.sig.draw .sig-the span:nth-child(3){transition-delay:.24s}
+.sig-svg{flex:1;min-width:0;overflow:visible}
+.sig-word{font:italic 900 112px var(--display);font-stretch:125%;fill:transparent;stroke:var(--ink);stroke-width:1.4;stroke-dasharray:1400;stroke-dashoffset:1400;stroke-linejoin:round}
+.sig.draw .sig-word{animation:sigInk 1.25s cubic-bezier(.45,0,.25,1) forwards,sigFill .55s ease 1.05s forwards}
+.sig-line{width:min(560px,76vw);height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,#14A39D 18%,#14A39D 82%,transparent);box-shadow:0 0 18px rgba(20,163,157,.7);transform:scaleX(0);transition:transform .7s cubic-bezier(.2,.8,.2,1) 1.25s;margin-top:-14px}
+.sig.draw .sig-line{transform:scaleX(1)}
+.sig.wait .sig-line{animation:sigPulse 1.4s ease-in-out infinite}
+.sig-who{display:flex;align-items:center;gap:22px;min-height:96px}
+.sig-av{position:relative;width:84px;height:84px;flex:none;opacity:0;transform:scale(.88);transition:opacity .5s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+.sig.who .sig-av{opacity:1;transform:none}
+.sig-ring{position:absolute;inset:-5px;border-radius:50%;background:conic-gradient(from 0deg,var(--rc),#8DEBDF,#19ADA5,var(--rc));animation:sigSpin 3s linear infinite;box-shadow:0 0 34px color-mix(in srgb,var(--rc) 50%,transparent)}
+.sig-av img,.sig-ini{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover;background:#0B1A1C;border:4px solid #02090B;box-sizing:border-box}
+.sig-ini{display:grid;place-items:center;font:700 34px var(--sans);color:var(--rc)}
+.sig-ok{position:absolute;right:-6px;bottom:-4px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#3BE38F;color:#02090B;font:800 15px/1 var(--sans);border:3px solid #02090B;opacity:0;transform:scale(.6);transition:opacity .35s ease .45s,transform .45s cubic-bezier(.2,.9,.3,1.2) .45s}
+.sig.who .sig-ok{opacity:1;transform:none}
+.sig-txt{display:flex;flex-direction:column;gap:8px;text-align:left;min-width:0}
+.sig-hi{font:600 38px/1.15 var(--sans);color:var(--ink);white-space:nowrap;clip-path:inset(-20% 100% -20% 0);filter:blur(3px);opacity:.2;transition:clip-path .9s cubic-bezier(.45,0,.2,1) .15s,filter .9s ease .15s,opacity .5s ease .15s}
+.sig-hi b{font-weight:700;color:var(--rc);text-shadow:0 0 22px color-mix(in srgb,var(--rc) 45%,transparent)}
+.sig.who .sig-hi{clip-path:inset(-20% -2% -20% 0);filter:none;opacity:1}
+.sig-role{font:500 12px/1.4 var(--mono);letter-spacing:.3em;color:var(--muted);opacity:0;transform:translateY(4px);transition:opacity .5s ease .75s,transform .6s cubic-bezier(.2,.8,.2,1) .75s}
+.sig.who .sig-role{opacity:1;transform:none}
+.sig.out{opacity:0;transition:opacity .55s ease .1s}
+.sig.out .sig-in{transform:scale(1.05);opacity:0}
+@keyframes sigInk{to{stroke-dashoffset:0}}
+@keyframes sigFill{to{fill:var(--ink);stroke:transparent}}
+@keyframes sigSpin{to{transform:rotate(360deg)}}
+@keyframes sigPulse{50%{opacity:.45}}
+@media (max-width:560px){.sig-who{flex-direction:column;gap:16px}.sig-txt{text-align:center;align-items:center}.sig-hi{font-size:28px}}
+@media (prefers-reduced-motion:reduce){.sig *{transition:none!important;animation:none!important}.sig-word{fill:var(--ink);stroke:transparent}.sig-line{transform:none}}
 .scrim{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:rgba(2,3,7,.8);backdrop-filter:blur(10px)}
 .modal{position:relative;width:100%;max-width:440px;box-sizing:border-box;background:var(--panel);border:2px solid var(--ink);box-shadow:14px 14px 0 var(--blue);padding:44px 30px 30px;display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center;overflow:hidden;max-width:380px}
 .ring{position:relative;width:200px;height:200px;margin-block:8px}
@@ -1570,11 +1588,18 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   </div>
 </div>
 
-<!-- SIGN-IN INTRO: the welcome decodes into the member's name, their Discord picture pops in, then the portal zooms in -->
-<div class="dcd" id="dcd" role="status" aria-live="polite" hidden>
-  <div class="dcd-in">
-    <div class="dcd-av" aria-hidden="true"><span class="dcd-ring"></span><span class="dcd-ini" id="dcd-ini"></span><img id="dcd-img" alt="" hidden><span class="dcd-ok">✓</span></div>
-    <div class="dcd-code" id="dcd-code"></div>
+<!-- SIGN-IN INTRO: the wordmark signs itself on, then the member's picture, name (role colour) and role appear -->
+<div class="sig" id="sig" role="status" aria-live="polite" hidden>
+  <div class="sig-in">
+    <div class="sig-mark" aria-hidden="true">
+      <span class="sig-the"><span>T</span><span>H</span><span>E</span></span>
+      <svg class="sig-svg" viewBox="0 0 640 120"><text x="4" y="98" class="sig-word">PROJECT</text></svg>
+    </div>
+    <div class="sig-line" aria-hidden="true"></div>
+    <div class="sig-who">
+      <div class="sig-av" aria-hidden="true"><span class="sig-ring"></span><span class="sig-ini" id="sig-ini"></span><img id="sig-img" alt="" hidden><span class="sig-ok">✓</span></div>
+      <div class="sig-txt"><div class="sig-hi" id="sig-hi"></div><div class="sig-role" id="sig-role"></div></div>
+    </div>
   </div>
 </div>
 
@@ -6479,53 +6504,40 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     raf=requestAnimationFrame(step);
   }
   function closePopup(){ cancelAnimationFrame(raf); scrim.hidden=true; document.getElementById('discord-btn').focus(); }
-  /* ---------- sign-in intro: "decode" ----------
-     One line: WELCOME BACK, <NAME>. Each letter cycles through random characters and settles left to right, the name in
-     the member's role colour; their Discord picture fades in above inside a slowly turning ring with a check, then the
-     intro dissolves into the portal (about 2 seconds). While the account is still loading the letters keep cycling, so
-     the wait is part of the intro. */
-  var DCD = { on:false };
-  var DCD_CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&$@';
-  function decodeWho(){ var u = user(), roles = (SESSION && SESSION.roles) || [];
+  /* ---------- sign-in intro: "signature" ----------
+     The PROJECT wordmark is drawn on like an ink signature, fills in, and a teal line underlines it. Then the member
+     appears under it: Discord picture in a ring of their role colour with a check, "Welcome back, Name" (name in role
+     colour) revealed left to right, and "VERIFIED MEMBER · ROLE". Then it dissolves into the portal (about 3.5 seconds).
+     If the account is still loading, the line under the wordmark gently pulses until it's ready. */
+  var SIG = { on:false };
+  function sigWho(){ var u = user(), roles = (SESSION && SESSION.roles) || [];
     return { name: String(u.displayName || u.username || 'Member').trim(), avatar: u.avatar || '', color: nameColor(u.id, canAdmin(), roles), role: roleTitle(u.id, roles) }; }
-  function startDecode(){
-    if (DCD.on) return;
-    var o = document.getElementById('dcd'), code = document.getElementById('dcd-code');
-    var img = document.getElementById('dcd-img'), ini = document.getElementById('dcd-ini');
-    DCD = { on:true, timers:[], raf:0 };
-    o.className = 'dcd'; o.style.removeProperty('--rc'); o.hidden = false; code.textContent = ''; img.hidden = true; ini.textContent = '';
-    requestAnimationFrame(function(){ o.classList.add('in'); });
-    var spans = [], text = '', nameAt = 0, t0 = performance.now(), lockAt = 0, lastSwap = 0, locked = false;
+  function startSignature(){
+    if (SIG.on) return;
+    var o = document.getElementById('sig'), hi = document.getElementById('sig-hi'), role = document.getElementById('sig-role');
+    var img = document.getElementById('sig-img'), ini = document.getElementById('sig-ini');
+    SIG = { on:true, timers:[], iv:0 };
+    o.className = 'sig'; o.style.removeProperty('--rc'); o.hidden = false; hi.textContent = ''; role.textContent = ''; img.hidden = true; ini.textContent = '';
+    var w = o.querySelector('.sig-word'); w.style.animation = 'none'; void w.getBoundingClientRect(); w.style.animation = '';
+    requestAnimationFrame(function(){ o.classList.add('in'); requestAnimationFrame(function(){ o.classList.add('draw'); }); });
+    var t0 = Date.now(), shown = false;
     function ready(){ return booted && (SESSION || !BACKEND); }
-    // one line, sized to fit the screen
-    function build(str, nAt){
-      code.textContent = ''; spans = []; text = str; nameAt = nAt;
-      var fit = Math.min(46, (window.innerWidth - 40) / (str.length * .66)); code.style.fontSize = Math.max(14, fit) + 'px';
-      for (var i = 0; i < str.length; i++){ var sp = document.createElement('span'); if (i >= nAt) sp.className = 'n';
-        sp.textContent = str[i] === ' ' ? ' ' : str[i]; code.appendChild(sp); spans.push(sp); }
-    }
-    function tick(now){
-      if (!DCD.on) return;
-      if (!lockAt && ready() && now - t0 > 120){
-        var who = decodeWho(); o.style.setProperty('--rc', who.color); ini.textContent = who.name.charAt(0).toUpperCase();
+    SIG.iv = setInterval(function(){
+      var t = Date.now() - t0;
+      if (!shown && t > (reduce ? 100 : 1700)){
+        if (!ready()){ o.classList.add('wait'); return; }
+        shown = true; clearInterval(SIG.iv); o.classList.remove('wait');
+        var who = sigWho(); o.style.setProperty('--rc', who.color); ini.textContent = who.name.charAt(0).toUpperCase();
         if (who.avatar){ img.onload = function(){ img.hidden = false; }; img.onerror = function(){ img.hidden = true; }; img.src = who.avatar; }
-        code.setAttribute('aria-label', 'Welcome back, ' + who.name);
-        build('WELCOME BACK, ' + who.name.toUpperCase(), 14); lockAt = now;
-      } else if (!spans.length && now - t0 > 650) build('WELCOME BACK', 99);   // only if the account is slow to load
-      var allK = !!lockAt, swap = now - lastSwap > 70; if (swap) lastSwap = now;
-      for (var i = 0; i < spans.length; i++){
-        var ch = text[i], fixed = ch === ' ' || ch === ',', k = lockAt && (reduce || now - lockAt > 120 + i * 48);
-        if (fixed || k){ if (!spans[i].classList.contains('k')){ spans[i].textContent = ch === ' ' ? ' ' : ch; spans[i].classList.add('k'); } }
-        else { allK = false; if (swap) spans[i].textContent = DCD_CH[Math.floor(Math.random() * DCD_CH.length)]; }
+        hi.textContent = 'Welcome back, '; var b = document.createElement('b'); b.textContent = who.name; hi.appendChild(b);
+        role.textContent = 'VERIFIED MEMBER · ' + who.role.toUpperCase();
+        requestAnimationFrame(function(){ o.classList.add('who'); });
+        SIG.timers.push(setTimeout(function(){ o.classList.add('out'); enterPortal(); }, reduce ? 600 : 1700));
+        SIG.timers.push(setTimeout(function(){ closeSignature(); }, reduce ? 800 : 2400));
       }
-      if (allK && !locked){ locked = true; o.classList.add('lock');
-        DCD.timers.push(setTimeout(function(){ o.classList.add('out'); enterPortal(); }, reduce ? 500 : 950));
-        DCD.timers.push(setTimeout(function(){ closeDecode(); }, reduce ? 700 : 1650)); return; }
-      DCD.raf = requestAnimationFrame(tick);
-    }
-    DCD.raf = requestAnimationFrame(tick);
+    }, 50);
   }
-  function closeDecode(){ var o = document.getElementById('dcd'); if (!DCD.on) return; cancelAnimationFrame(DCD.raf); (DCD.timers || []).forEach(clearTimeout); o.hidden = true; o.className = 'dcd'; DCD.on = false; }
+  function closeSignature(){ var o = document.getElementById('sig'); if (!SIG.on) return; clearInterval(SIG.iv); (SIG.timers || []).forEach(clearTimeout); o.hidden = true; o.className = 'sig'; SIG.on = false; }
 
   var booted = false, pendingEnter = false;
   function enterPortal(){
@@ -6536,7 +6548,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   }
   document.getElementById('discord-btn').addEventListener('click', function(){
     if (BACKEND && !SESSION){ window.location.href = '/api/login'; return; }   // real Discord sign-in
-    startDecode();
+    startSignature();
   });
   document.getElementById('m-close').addEventListener('click', closePopup);
   scrim.addEventListener('click', function(e){ if(e.target===scrim) closePopup(); });
@@ -6581,7 +6593,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       signinErr(ERRORS[errMatch[1]] || 'Sign-in didn\'t work. Try again.');
     }
     booted = true;
-    if (RETURNING && !SESSION){ closePopup(); closeDecode(); signinErr('Sign-in didn\'t finish. Tap the button below to try again.'); }
+    if (RETURNING && !SESSION){ closePopup(); closeSignature(); signinErr('Sign-in didn\'t finish. Tap the button below to try again.'); }
     if (pendingEnter){ pendingEnter = false; enter.disabled = false; enter.textContent = 'Enter the portal'; if (SESSION || !BACKEND) enterPortal(); }
   }
   // Coming back from Discord: skip the landing page and start the welcome intro straight away,
@@ -6590,7 +6602,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   if (RETURNING){
     document.body.classList.add('returning');
     try { history.replaceState(null,'',location.pathname + location.hash); } catch(e) {}
-    if (CHROME) startDecode();
+    if (CHROME) startSignature();
   }
   if (window.PROJECT_SESSION && window.PROJECT_SESSION.user){ SESSION = window.PROJECT_SESSION; BACKEND = true; boot(); }
   else if (location.protocol === 'file:'){ boot(); }
