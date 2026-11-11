@@ -18,7 +18,7 @@
 // Files are uploaded straight from the browser to Vercel Blob first (see /api/upload), into members/<their id>/…
 const crypto = require('crypto');
 const { readSession, isAdmin, kvConfigured, loadProgress, json, kv, clientIp, rateLimit, staffAlert } = require('./_lib');
-const { logActivity, gateFor, saveSub, findItem, loadCerts, saveCert, deleteCert, loadPromo, savePromo, loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints, entryStatus, basePoints, streakOf, nyToday, tradeDay, loadDayNotes, loadTestimonials, saveTestimonial, deleteTestimonial } = require('./_gate');
+const { logActivity, gateFor, saveSub, findItem, loadCerts, saveCert, deleteCert, loadPromo, savePromo, loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints, entryStatus, basePoints, streakOf, nyToday, tradeDay, tradeDayOf, loadDayNotes, loadTestimonials, saveTestimonial, deleteTestimonial } = require('./_gate');
 const { listMembers } = require('./_lib');
 const { signAll, cleanFile } = require('./_blob');
 
@@ -86,7 +86,7 @@ function buildEntry(e, uid, old) {
   const kind = e.kind === 'none' ? 'none' : 'trade';
   const rawDate = str(e.date, 10);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(rawDate) || isNaN(Date.parse(rawDate)) || Date.parse(rawDate) > Date.now() + 36 * 3600 * 1000) return { error: 'bad_date' };
-  const date = tradeDay(rawDate);   // a Sunday-open trade is saved under Monday
+  const date = tradeDayOf(rawDate, kind === 'trade' ? str(e.time, 5) : '', str(e.tz, 60));   // Sunday's open → Monday; an Asia trade (6 pm+ New York) → the next day
   if (typeof e.followed !== 'boolean') return { error: 'missing', fields: ['followed'] };
   const files = (Array.isArray(e.files) ? e.files : []).slice(0, MAX_FILES).map((f) => cleanFile(f, uid, 'journal'));
   if (files.some((f) => !f)) return { error: 'bad_file' };
@@ -96,7 +96,7 @@ function buildEntry(e, uid, old) {
     news: ['yes', 'no'].includes(e.news) ? e.news : '', newsWhat: e.news === 'yes' ? str(e.newsWhat, 60) : '' };
   if (tags.length) entry.tags = tags;
   if (typeof e.goalKept === 'boolean') entry.goalKept = e.goalKept;   // did they keep this week's focus goal
-  if (date !== rawDate) entry.sunday = rawDate;   // the day it was actually traded (Sunday open)
+  if (date !== rawDate) entry.sunday = rawDate;   // the day it was logged on (Sunday open, or the evening before for Asia)
   if (kind === 'none') return { entry };
   const num = (v) => { if (v === '' || v === null || v === undefined) return undefined; const n = Number(v); return isFinite(n) && Math.abs(n) < 1e9 ? n : undefined; };
   const pick = (v, list) => (list.includes(v) ? v : undefined);

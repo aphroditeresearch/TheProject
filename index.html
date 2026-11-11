@@ -896,6 +896,7 @@ table.mem td:first-child,table.mem th:first-child{width:34px}
 .pa-form{display:flex;flex-direction:column;gap:10px;grid-column:1/-1;padding:14px 16px;border:1px solid var(--line)}
 /* ---------- mentor triage ---------- */
 .tri{display:flex;flex-direction:column;gap:14px}
+.join-box{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--panel,rgba(255,255,255,.02))}.join-box>summary{cursor:pointer;font-weight:600;font-size:14px;min-height:28px;display:flex;align-items:center}.join-body{display:flex;flex-direction:column;gap:10px;padding-top:8px}.join-body .btn-s{align-self:flex-start}.join-list{display:flex;flex-wrap:wrap;gap:6px}.join-p{display:inline-flex;align-items:center;gap:7px;padding:4px 10px 4px 4px;border:1px solid var(--line);border-radius:999px;font-size:13px;min-width:0}.join-p .av{width:24px;height:24px;border-radius:50%;flex:none}.join-p small{color:var(--muted)}
 .tri-nudge{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:13.5px;color:var(--muted)}.tri-nudge:empty{display:none}
 .co-note{margin:0;color:var(--muted);font-size:14px;line-height:1.5;max-width:80ch}
 .tri-list{display:flex;flex-direction:column;gap:8px}
@@ -3460,7 +3461,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     all = all && all.length ? all : [a];
     var list = (ents || []).filter(function(e){ return e.kind === 'trade' && entryStatus(e) !== 'denied' && acctFor(e, all) === a.id; })
       .sort(function(x, y){ return String(x.date + (x.time || '')).localeCompare(String(y.date + (y.time || ''))); });
-    var bal = +a.start || 0, peak = bal, days = {}, today = tradeDay(todayYmd());
+    var bal = +a.start || 0, peak = bal, days = {}, today = tradeToday();
     list.forEach(function(e){ bal += +e.pnl || 0; days[e.date] = (days[e.date] || 0) + (+e.pnl || 0); if (a.ddType === 'trailing') peak = Math.max(peak, bal); });
     if (a.ddType === 'eod'){ var run = +a.start || 0; Object.keys(days).sort().forEach(function(d){ run += days[d]; peak = Math.max(peak, run); }); }
     var floor = null;
@@ -3601,7 +3602,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   // ---------- mentor triage: who needs attention today, most urgent first ----------
   var TRI = { who:null, mine:false };
   function triageOf(m){
-    var ents = m.entries || [], out = [], today = tradeDay(todayYmd());
+    var ents = m.entries || [], out = [], today = tradeToday();
     var days = {}; ents.forEach(function(e){ if (entryStatus(e) === 'denied') return; (days[e.date] = days[e.date] || []).push(e); });
     var dkeys = Object.keys(days).sort().reverse();
     // waiting for a reply (the student wrote last)
@@ -3644,9 +3645,39 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       // the end-of-day Discord nudge
       var nd = el('div','tri-nudge'); host.appendChild(nd);
       if (!DEMO_MODE) fetch('/api/admin/members?nudge=status', { credentials:'same-origin' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){ if (!j) return;
-        nd.appendChild(el('span',null, j.webhook ? '📣 Discord daily recap: on (weekdays ~4:30 pm New York)' + (j.last ? ' · last sent ' + ago(j.last.at) : '') : '📣 Discord daily recap: off. Add DISCORD_RECAP_WEBHOOK in Vercel to post an end-of-day recap that tags students with a warning (no journal today, breakdown notes overdue, no reply to their mentor, or inactive).'));
+        nd.appendChild(el('span',null, j.webhook ? '📣 Discord daily recap: on, weekdays ~4:30 pm New York' + alsoMine('16:30') + (j.last ? ' · last sent ' + ago(j.last.at) : '') : '📣 Discord daily recap: off. Add DISCORD_RECAP_WEBHOOK in Vercel to post an end-of-day recap that tags students with a warning (no journal today, breakdown notes overdue, no reply to their mentor, or inactive).'));
         if (j.webhook){ var sn = el('button','btn-s','Send today’s now'); sn.type = 'button'; sn.addEventListener('click', function(){ if (!confirmInline(sn, 'Sure? Send')) return; sn.disabled = true;
           adminPost({ action:'nudge-now' }).then(function(r){ toast(r.ok ? 'Posted: ' + r.journaled + ' of ' + r.total + ' journaled, ' + (r.warned || 0) + (r.warned === 1 ? ' warning' : ' warnings') + ' sent.' : r.skipped ? 'Nothing sent (' + r.skipped.replace('_',' ') + ').' : 'Didn’t send: ' + (r.error || 'unknown')); }).catch(function(e){ toast(admFail(e)); }).then(function(){ sn.disabled = false; }); }); nd.appendChild(sn); } });
+      // Discord members with a program role who have never signed in (read live from Discord when opened)
+      if (!DEMO_MODE){
+        var jb = el('details','join-box'), js = el('summary',null,'👋 In the Discord but not on the website'), jbody = el('div','join-body'); jb.appendChild(js); jb.appendChild(jbody); host.appendChild(jb);
+        var ERR = { no_bot:'Not set up yet. Add DISCORD_BOT_TOKEN in Vercel (see the README, “Not on the website yet”), then redeploy.', bad_token:'Discord rejected the bot token. Copy a fresh one from the Developer Portal (Bot → Reset Token) into DISCORD_BOT_TOKEN.',
+          no_intent:'Discord won’t share the member list. Check the bot is in your server and “Server Members Intent” is on (Developer Portal → Bot).', no_webhook:'No Discord webhook. Add DISCORD_RECAP_WEBHOOK (or JOIN_WEBHOOK) in Vercel.' };
+        var showJoins = function(j){
+          jbody.textContent = '';
+          if (j.error){ jbody.appendChild(el('p','adm-note', ERR[j.error] || ('Couldn’t read the Discord member list (' + j.error + ').'))); return; }
+          var n = (j.list || []).length;
+          js.textContent = '👋 In the Discord but not on the website (' + n + ')';
+          jbody.appendChild(el('p','adm-note', (n ? n + (n === 1 ? ' member has a program role in Discord but has never signed in. ' : ' members have a program role in Discord but have never signed in. ') : 'Everyone with a program role has signed in. ') +
+            (j.schedule === 'off' ? 'The automatic callout is off.' : 'They’re tagged automatically ' + (j.schedule === 'daily' ? 'every weekday' : 'on Mondays') + ' with the 4:30 pm New York' + alsoMine('16:30') + ' recap.') + (j.last ? ' Last callout ' + ago(j.last.at) + '.' : '')));
+          if (!n) return;
+          var ul = el('div','join-list');
+          j.list.forEach(function(m){ var c = el('span','join-p'); var av = el('span','av'); setAvatar(av, { avatar: m.avatar, displayName: m.name }); c.appendChild(av); c.appendChild(el('b',null, m.name)); if (m.username && m.username !== m.name) c.appendChild(el('small',null,'@' + m.username)); ul.appendChild(c); });
+          jbody.appendChild(ul);
+          var cb = el('button','btn-s pri','Call them out now'); cb.type = 'button';
+          cb.addEventListener('click', function(){ if (!confirmInline(cb, 'Sure? Tag ' + n + ' in Discord')) return; cb.disabled = true;
+            adminPost({ action:'join-callout' }).then(function(r){ toast(r.ok ? 'Posted: ' + (r.tagged || 0) + ' tagged in Discord.' : (ERR[r.error] || 'Didn’t send: ' + (r.error || 'unknown'))); if (r.ok){ TRI.joins = null; } })
+              .catch(function(e){ toast(admFail(e)); }).then(function(){ cb.disabled = false; }); });
+          jbody.appendChild(cb);
+        };
+        var loadJoins = function(){
+          if (TRI.joins && Date.now() - TRI.joins.at < 120000) return showJoins(TRI.joins.j);
+          jbody.textContent = ''; jbody.appendChild(el('p','adm-note','Checking the Discord member list…'));
+          fetch('/api/admin/members?joins=1', { credentials:'same-origin', cache:'no-store' }).then(function(r){ return r.ok ? r.json() : { error:'http_' + r.status }; })
+            .then(function(j){ if (!j.error) TRI.joins = { at: Date.now(), j: j }; showJoins(j); }, function(){ showJoins({ error:'network' }); });
+        };
+        jb.addEventListener('toggle', function(){ if (jb.open) loadJoins(); });
+      }
       host.appendChild(el('p','co-note','Who needs you today, most urgent first: messages waiting for a reply, broken rules, big losses, overtrading, accounts near their drawdown limit, students gone quiet, and reviews waiting.'));
       var studs = rows.filter(function(m){ return !m.isAdmin && (!TRI.mine || m.mentor === uid()); }).map(function(m){ var f = triageOf(m); return { m:m, f:f, w:f.reduce(function(t, x){ return t + x.w; }, 0) }; })
         .sort(function(a, b){ return b.w - a.w || String(b.m.lastSeen || '').localeCompare(String(a.m.lastSeen || '')); });
@@ -3818,7 +3849,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     function tzSelect(){
       if (!D.tz){ var btz = ''; try { btz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (err) {} D.tz = btz || 'America/New_York'; }
       var tzs = el('select'); var tzl = TD.TZS.slice(); if (!TD.TZS.some(function(t){ return t[0] === D.tz; })) tzl.push([D.tz, D.tz.replace(/_/g,' ')]);
-      tzl.forEach(function(t){ var o = el('option',null,t[1]); o.value = t[0]; tzs.appendChild(o); }); tzs.value = D.tz; tzs.addEventListener('change', function(){ D.tz = tzs.value; }); return tzs; }
+      tzl.forEach(function(t){ var o = el('option',null,t[1]); o.value = t[0]; tzs.appendChild(o); }); tzs.value = D.tz; tzs.addEventListener('change', function(){ D.tz = tzs.value; if (JR.dayHint) JR.dayHint(); }); return tzs; }
     function numv(v){ if (v === undefined || v === null || String(v).trim() === '') return undefined; var n = Number(String(v).replace(/,/g, '')); return isFinite(n) ? n : undefined; }
     function txt(name, type, ph, list){ var i = inputEl(type, D[name], ph); if (name === 'date') sunHint(i); i.addEventListener('input', function(){ D[name] = i.value; preview(); }); if (list){ i.setAttribute('list', list); } return i; }
     function sel(name, opts){ var x = el('select'); x.appendChild(el('option',null,'Choose…')).value = ''; opts.forEach(function(o){ var op = el('option',null,o); op.value = o; x.appendChild(op); }); x.value = D[name] || ''; x.addEventListener('change', function(){ D[name] = x.value; }); return x; }
@@ -3836,7 +3867,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         ps.addEventListener('change', function(){ D.acctId = ps.value; var a = pas.filter(function(x){ return x.id === ps.value; })[0]; if (a && a.kind){ D.account = a.kind; drawJournal(host); } });
         field('Prop account', ps); }
       field('Date', txt('date','date'));
-      var tIn = txt('time','time'); tIn.addEventListener('input', liveCalc); field('Entry time', tIn);
+      var tIn = txt('time','time'); tIn.addEventListener('input', liveCalc); tIn.addEventListener('input', function(){ if (JR.dayHint) JR.dayHint(); }); field('Entry time', tIn);
       var ct = txt('contracts','number','1'); ct.min = '0'; ct.step = 'any'; ct.inputMode = 'decimal'; field('Contracts', ct);
       field('Setup', sel('model', ENTRY_MODELS));
       field('Entry style', sel('entryType', TD.ENTRY_TYPES));
@@ -4049,6 +4080,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function allTags(ents){ var c = {}; (ents || []).forEach(function(e){ (e.tags || []).forEach(function(t){ c[t] = (c[t] || 0) + 1; }); }); return Object.keys(c).sort(function(a, b){ return c[b] - c[a]; }); }
   function editEntry(e){
     var d = JSON.parse(JSON.stringify(e)); d.files = (e.files || []).slice(); d.tags = (e.tags || []).slice();
+    if (e.sunday){ d.date = e.sunday; delete d.sunday; }   // edit the day it was logged on; the server works out the trading day again
     if (e.noPnl) d.pnl = ''; ['status','points','worth','awarded','reviewNote','reviewedAt','reviewedBy','createdAt','editedAt','void','reopened','importKey','src','noPnl'].forEach(function(k){ delete d[k]; });
     JR.editId = e.id; JR.kind = e.kind === 'none' ? 'none' : 'trade'; JR.draft = d; JR.view = 'new';
     if ((location.hash || '') !== '#journal') location.hash = '#journal'; else showView();
@@ -4128,7 +4160,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     else t.appendChild(el('b',null,'No trades'));
     if (e.src === 'csv') t.appendChild(el('span','je-tag dim','Imported'));
     if (e.editedAt) t.appendChild(el('span','je-tag dim','Edited'));
-    if (e.sunday) t.appendChild(el('span','je-tag dim','Sunday open'));
+    if (e.sunday) t.appendChild(el('span','je-tag dim', shiftLabel(e)));
     mn.appendChild(t);
     if (e.tags && e.tags.length){ var tw2 = el('div','je-tags'); e.tags.forEach(function(x){ tw2.appendChild(el('span','jr-tag sm','#' + x)); }); mn.appendChild(tw2); }
     mn.appendChild(el('div','je-meta', [e.time, e.session, trade ? e.account : '', trade && e.contracts ? e.contracts + (+e.contracts === 1 ? ' contract' : ' contracts') : '', e.news === 'yes' ? 'News: ' + (e.newsWhat || 'yes') : ''].filter(Boolean).join(' · ')));
@@ -4184,8 +4216,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     wrap.appendChild(sm);
     // grid
     var g = el('div','cal-g'); g.setAttribute('role','grid');
-    ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(function(w){ g.appendChild(el('span','cal-w', w)); });
-    var lead = (first.getDay() + 6) % 7; for (var i = 0; i < lead; i++) g.appendChild(el('span','cal-c empty'));
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(function(w){ g.appendChild(el('span','cal-w', w)); });
+    var lead = first.getDay(); for (var i = 0; i < lead; i++) g.appendChild(el('span','cal-c empty'));
     var tdy = todayYmd();
     for (var dn = 1; dn <= days; dn++){
       (function(dn){
@@ -4229,7 +4261,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   var DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var PERIODS = [['today','Today'],['week','This week'],['month','This month'],['30','Last 30 days'],['60','Last 60 days'],['90','Last 90 days'],['365','Last year'],['all','All time']];
   function periodFrom(p){
-    var today = tradeDay(todayYmd());
+    var today = tradeToday();
     if (p === 'today') return today;
     if (p === 'week') return mondayOf(today);
     if (p === 'month') return today.slice(0, 8) + '01';
@@ -4354,7 +4386,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     hk.forEach(function(k){ if (S.hours[k] > hmax){ hmax = S.hours[k]; hpeak = k; } });
     var endOf = function(k){ var h = +k.slice(0,2), m = +k.slice(3,5) + 30; if (m >= 60){ h++; m -= 60; } return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'); };
     grid.appendChild(statBars('When trades are taken', hk.map(function(k){ return { k: k + '–' + endOf(k), v: S.hours[k], hi: k === hpeak }; }), function(r){ return r.v + (r.v === 1 ? ' trade' : ' trades'); },
-      hpeak ? 'Most trades: ' + hpeak + '–' + endOf(hpeak) + ' New York time' : ''));
+      hpeak ? 'Most trades: ' + hpeak + '–' + endOf(hpeak) + ' New York time' + (sameAsNY() ? '' : ' (' + nyToMine(hpeak) + '–' + nyToMine(endOf(hpeak)) + ' ' + zoneLabel() + ')') : ''));
     // weekdays
     var days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].filter(function(d){ return S.dow[d]; });
     var dbox = el('section','st-card'); dbox.appendChild(el('h4',null,'By weekday'));
@@ -4412,7 +4444,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   // Funded / Evaluation trades, same rules as Stats. Tap the card to hide the controls for a clean phone screenshot.
   var SHC = { per:'day', rows:null, scope:'all' };   // scope: 'all', 'me' or a member id (admins)
   function shcData(rows, per, who){
-    var today = tradeDay(todayYmd()), from, to = today, pill, sub;
+    var today = tradeToday(), from, to = today, pill, sub;
     var D = function(d, o){ return new Date(d + 'T12:00:00').toLocaleDateString('en-US', o); };
     if (per === 'day'){ from = today; pill = 'Today'; sub = D(today, { weekday:'long', month:'long', day:'numeric' }); }
     else if (per === 'week'){ from = mondayOf(today); to = addDays(from, 4); pill = 'This week'; sub = D(from, { month:'short', day:'numeric' }) + ' – ' + D(to, { month:'short', day:'numeric' }); }
@@ -4700,7 +4732,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       if (w && w.avatar && AVATARS[w.avatar] === undefined){ go(null); loadAvatar(w.avatar).then(function(av){ if (av) paint(); }); } else go(w && w.avatar ? AVATARS[w.avatar] : null); }
     save.addEventListener('click', function(){
       cv.toBlob(function(b){ if (!b) return;
-        var wq = whoNow(), fn = 'the-project-' + (wq ? String(wq.handle || wq.name).toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' : '') + ({ day:'daily', week:'weekly', month:'monthly' }[SHC.per]) + '-' + tradeDay(todayYmd()) + '.png', f = null;
+        var wq = whoNow(), fn = 'the-project-' + (wq ? String(wq.handle || wq.name).toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' : '') + ({ day:'daily', week:'weekly', month:'monthly' }[SHC.per]) + '-' + tradeToday() + '.png', f = null;
         try { f = new File([b], fn, { type:'image/png' }); } catch (e) {}
         if (f && navigator.canShare && navigator.canShare({ files:[f] }) && TOUCHY){ navigator.share({ files:[f] }).catch(function(){}); return; }
         downloadBlob(b, fn); toast('Saved ' + fn); }, 'image/png');
@@ -5250,9 +5282,39 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   // same rules as streakOf() in api/_gate.js: weekdays in a row with an entry (not denied), New York dates
   // Futures open Sunday evening for Monday's session: anything dated Sunday counts as Monday (the server does the same)
   function tradeDay(d){ return /^\d{4}-\d{2}-\d{2}$/.test(d || '') && wday(d) === 0 ? addDays(d, 1) : d; }
+  // and the Asia session belongs to the next day: 6 pm New York or later counts for the next trading day (same as tradeDayOf() on the server)
+  function nyAt(date, time, tz){
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date || '') || !/^\d{2}:\d{2}$/.test(time || '')) return null;
+    var h = +time.slice(0,2), mi = +time.slice(3,5);
+    if (!tz || tz === 'America/New_York') return { date: date, mins: h * 60 + mi };
+    var guess = Date.UTC(+date.slice(0,4), +date.slice(5,7) - 1, +date.slice(8,10), h, mi), utc = guess - tzOffsetMin(tz, guess) * 60000, ny = new Date(utc + tzOffsetMin('America/New_York', utc) * 60000);
+    return { date: ny.toISOString().slice(0,10), mins: ny.getUTCHours() * 60 + ny.getUTCMinutes() };
+  }
+  function tradeDayFor(date, time, tz){ var n = nyAt(date, time, tz), d = date; if (n){ d = n.date; if (n.mins >= 1080) d = addDays(d, 1); } return tradeDay(d); }
+  function shiftLabel(e){ var asia = e.kind === 'trade' && (nyAt(e.sunday, e.time, e.tz) || {}).mins >= 1080;
+    return asia ? 'Asia · ' + new Date(e.sunday + 'T12:00:00').toLocaleDateString('en-GB', { weekday:'short' }) + ' night' : 'Sunday open'; }
+  // ---------- clocks: market times are New York times; everyone also sees them on their own clock (Osman: UK) ----------
+  function myTz(){ try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York'; } catch (e){ return 'America/New_York'; } }
+  function zoneLabel(tz){ tz = tz || myTz(); if (tz === 'Europe/London') return 'UK'; if (tz === 'America/New_York') return 'NY';
+    try { var n = ''; new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName:'short' }).formatToParts(new Date()).forEach(function(p){ if (p.type === 'timeZoneName') n = p.value; }); return n || tz; } catch (e){ return tz; } }
+  function sameAsNY(){ var now = Date.now(); return tzOffsetMin(myTz(), now) === tzOffsetMin('America/New_York', now); }
+  function clockStr(ms){ var uk = /^Europe\//.test(myTz()); return new Date(ms).toLocaleTimeString(uk ? 'en-GB' : 'en-US', uk ? { hour:'2-digit', minute:'2-digit' } : { hour:'numeric', minute:'2-digit' }).toLowerCase(); }
+  function nyNowParts(){ var p = {}; new Intl.DateTimeFormat('en-US', { timeZone:'America/New_York', hourCycle:'h23', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }).formatToParts(new Date()).forEach(function(x){ p[x.type] = x.value; });
+    return { date: p.year + '-' + p.month + '-' + p.day, time: String(+p.hour % 24).padStart(2,'0') + ':' + p.minute }; }
+  // a New York clock time today ("16:30") on the viewer's own clock ("21:30")
+  function nyToMine(hhmm){ var d = nyNowParts().date, guess = Date.UTC(+d.slice(0,4), +d.slice(5,7) - 1, +d.slice(8,10), +hhmm.slice(0,2), +hhmm.slice(3,5));
+    return clockStr(guess - tzOffsetMin('America/New_York', guess) * 60000); }
+  function alsoMine(hhmm){ return sameAsNY() ? '' : ' (' + nyToMine(hhmm) + ' ' + zoneLabel() + ')'; }
+  // "today" for the market, the same for everyone wherever they are: New York's date (Sunday counts as Monday). It doesn't jump at 6 pm,
+  // so the evening review still shows the day; that night's Asia trades are already dated tomorrow and show from tomorrow.
+  function tradeToday(){ return tradeDay(nyNowParts().date); }
   function sunHint(i){
     var h = el('small','sun-hint');
-    var upd = function(){ var on = /^\d{4}-\d{2}-\d{2}$/.test(i.value) && wday(i.value) === 0; h.textContent = on ? 'Sunday\'s open counts as Monday: this will be saved under ' + new Date(addDays(i.value, 1) + 'T12:00:00').toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'short' }) + '.' : ''; h.style.display = on ? '' : 'none'; };
+    var upd = function(){ var D = JR.draft || {}, dv = i.value, ok = /^\d{4}-\d{2}-\d{2}$/.test(dv), td = ok ? tradeDayFor(dv, JR.kind === 'none' ? '' : D.time, D.tz) : dv, on = ok && td !== dv;
+      var day = on ? new Date(td + 'T12:00:00').toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'short' }) : '';
+      h.textContent = !on ? '' : wday(dv) === 0 && td === addDays(dv, 1) && !((nyAt(dv, D.time, D.tz) || {}).mins >= 1080) ? 'Sunday\'s open counts as Monday: this will be saved under ' + day + '.' : 'Asia session (6 pm New York' + alsoMine('18:00') + ' or later) counts for the next trading day: this will be saved under ' + day + '.';
+      h.style.display = on ? '' : 'none'; };
+    JR.dayHint = upd;
     i.addEventListener('input', upd); i.addEventListener('change', upd);
     setTimeout(function(){ if (i.parentNode && !h.parentNode) i.parentNode.insertBefore(h, i.nextSibling); upd(); }, 0);
   }
@@ -6417,7 +6479,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         var key = function(x){ return JRV.basis === 'up' ? localDay(x.e.createdAt) : x.e.date; };
         var byDay = {}; all.forEach(function(x){ var d = key(x); if (d) (byDay[d] = byDay[d] || []).push(x); });
         var days = Object.keys(byDay).sort().reverse();
-        if (!JRV.day) JRV.day = JRV.basis === 'up' ? todayYmd() : tradeDay(todayYmd());
+        if (!JRV.day) JRV.day = JRV.basis === 'up' ? todayYmd() : tradeToday();
         var bar2 = el('div','rv-bar');
         bar2.appendChild(seg([['trade','Trade date'],['up','Day uploaded']], JRV.basis, function(v){ JRV.basis = v; JRV.day = null; admRender(); }));
         var pick = inputEl('date', JRV.day); pick.setAttribute('aria-label','Pick a day'); pick.addEventListener('change', function(){ if (pick.value){ JRV.day = JRV.basis === 'up' ? pick.value : tradeDay(pick.value); admRender(); } });
@@ -6470,7 +6532,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   }
   /* ---------- daily recap: one trading day across every student, built for the group call ---------- */
   function dailyRecap(rows, all){
-    var box = el('section','dr' + (JRV.live ? '' : ' view-in')), today = tradeDay(todayYmd()); JRV.live = false;
+    var box = el('section','dr' + (JRV.live ? '' : ' view-in')), today = tradeToday(); JRV.live = false;
     JRV.rday = JRV.rday ? tradeDay(JRV.rday) : today;
     // what's already been seen, so new or edited journals can be highlighted when they flow in
     var sigOf = function(rs){ return rs.map(function(m){ return m.id + ':' + (m.entries || []).map(function(e){ return e.id + (e.editedAt || '') + (e.status || ''); }).join(',') + ':' + JSON.stringify(m.dayNotes || {}); }).join('|'); };
@@ -6553,7 +6615,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         if (entryStatus(e) === 'pending') top.appendChild(el('span','chip','Waiting'));
         if (e.editedAt) top.appendChild(el('span','chip','Edited'));
         if (e.src === 'csv') top.appendChild(el('span','chip','Imported'));
-        if (e.sunday) top.appendChild(el('span','chip','Sunday open'));
+        if (e.sunday) top.appendChild(el('span','chip', shiftLabel(e)));
         else if (e.createdAt && localDay(e.createdAt) !== e.date) top.appendChild(el('span','chip','Posted ' + new Date(e.createdAt).toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' })));
         r.appendChild(top);
         var meta = [e.model, e.session, e.account, (e.tags || []).map(function(t){ return '#' + t; }).join(' '), (e.files || []).length ? (e.files.length + (e.files.length === 1 ? ' screenshot' : ' screenshots')) : ''].filter(Boolean).join(' · ');
@@ -7159,7 +7221,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     else if (t >= 20 * 60 || t < 2 * 60) name = 'Asia';
     else { name = t >= 16 * 60 && t < 20 * 60 ? 'After hours' : 'Pre-market'; live = false; }
     box.classList.toggle('live', live);
-    box.querySelector('b').textContent = name; box.querySelector('small').textContent = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ' NY';
+    box.querySelector('b').textContent = name; box.querySelector('small').textContent = sameAsNY() ? String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ' NY' : clockStr(Date.now()) + ' ' + zoneLabel();   // your own clock; sessions follow New York hours
+    box.title = 'Market session (New York hours) · New York ' + String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + (sameAsNY() ? '' : ' · your time ' + clockStr(Date.now()) + ' ' + zoneLabel());
   }
   paintSession(); setInterval(paintSession, 30000);
 

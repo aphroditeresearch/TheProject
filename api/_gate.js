@@ -235,9 +235,34 @@ function tradeDay(d) {
   const t = new Date(d + 'T12:00:00Z'); if (isNaN(t) || t.getUTCDay() !== 0) return d;
   t.setUTCDate(t.getUTCDate() + 1); return t.toISOString().slice(0, 10);
 }
+// The Asia session belongs to the next day: a trade taken at or after 6 pm New York time counts for the next trading day
+// (Tuesday night's Asia trade is Wednesday's), the way futures sessions run. The entry time is read in the time zone it was
+// logged in and turned into New York time first.
+function tzOff(tz, ms) {
+  try {
+    const p = {}; new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+      .formatToParts(new Date(ms)).forEach((x) => { p[x.type] = x.value; });
+    return Math.round((Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute) - ms) / 60000);
+  } catch (e) { return 0; }
+}
+function nyAt(date, time, tz) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date || '')) || !/^\d{2}:\d{2}$/.test(String(time || ''))) return null;
+  const h = +time.slice(0, 2), mi = +time.slice(3, 5);
+  if (!tz || tz === 'America/New_York') return { date, mins: h * 60 + mi };
+  const guess = Date.UTC(+date.slice(0, 4), +date.slice(5, 7) - 1, +date.slice(8, 10), h, mi);
+  const utc = guess - tzOff(tz, guess) * 60000, ny = new Date(utc + tzOff('America/New_York', utc) * 60000);
+  return { date: ny.toISOString().slice(0, 10), mins: ny.getUTCHours() * 60 + ny.getUTCMinutes() };
+}
+function tradeDayOf(date, time, tz) {
+  const n = nyAt(date, time, tz); let d = date;
+  if (n) { d = n.date; if (n.mins >= 18 * 60) { const t = new Date(d + 'T12:00:00Z'); t.setUTCDate(t.getUTCDate() + 1); d = t.toISOString().slice(0, 10); } }
+  return tradeDay(d);
+}
 async function loadEntries(userId) {
   const all = kvConfigured() ? hashToObj(await kv(['HGETALL', 'jentries:' + userId]), true) : {};
-  Object.keys(all).forEach((k) => { const e = all[k]; if (e && e.date && tradeDay(e.date) !== e.date) { e.sunday = e.date; e.date = tradeDay(e.date); } });
+  // older entries are shown under their trading day when read (what's saved isn't touched); `sunday` keeps the day it was logged on
+  Object.keys(all).forEach((k) => { const e = all[k]; if (!e || !e.date || e.sunday) return;
+    const td = tradeDayOf(e.date, e.kind === 'trade' ? e.time : '', e.tz); if (td !== e.date) { e.sunday = e.date; e.date = td; } });
   return all;
 }
 async function saveEntry(userId, e) { await kv(['HSET', 'jentries:' + userId, e.id, JSON.stringify(e)]); }
@@ -429,7 +454,7 @@ async function loadDayNotes(userId) {
 }
 
 module.exports = {
-  tradeDay,
+  tradeDay, tradeDayOf,
   loadDayNotes, streakOf, nyToday, lastWorkOf, loadTestimonials, saveTestimonial, deleteTestimonial, hookReady, discordPost, testimonialPayload, payoutPayload, loadFeedSettings,
   ROLES, contentWithDefaults,
   loadSubs, saveSub, deleteSub, loadOverrides, setOverride, loadPromo, savePromo, loadCerts, saveCert, deleteCert,

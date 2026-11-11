@@ -32,7 +32,7 @@
 const { kvPipeline, KEY_PREFIX, staffAlert, clientIp, loadAlerts, staffHook } = require('../_lib');
 const zlib = require('zlib');
 const { readSession, isAdmin, adminIds, kvConfigured, kv, listMembers, loadProgress, saveProgress, loadFlags, json } = require('../_lib');
-const { nyToday, loadActivity, saveCert, contentWithDefaults, memberState, loadSubs, saveSub, deleteSub, setOverride, loadCerts, loadPromo, savePromo, findItem, loadJournal, loadEntries, saveEntry, entryPoints, lastWorkOf, loadDayNotes, loadTestimonials, saveTestimonial, deleteTestimonial, hookReady, discordPost, testimonialPayload, payoutPayload, loadFeedSettings, entryStatus, basePoints } = require('../_gate');
+const { nyToday, loadActivity, saveCert, contentWithDefaults, memberState, loadSubs, saveSub, deleteSub, setOverride, loadCerts, loadPromo, savePromo, findItem, loadJournal, loadEntries, saveEntry, entryPoints, lastWorkOf, loadDayNotes, loadTestimonials, saveTestimonial, deleteTestimonial, hookReady, discordPost, testimonialPayload, payoutPayload, loadFeedSettings, entryStatus, basePoints, ROLES, chapterRoles } = require('../_gate');
 const { signAll, makeSigner } = require('../_blob');
 const C = require('../_coach');
 
@@ -147,6 +147,87 @@ async function restoreKeys(keys, mode) {
 // daily: a compressed copy goes to a private Discord channel (outside Vercel and Upstash), and the result is noted
 // End-of-day nudge in Discord (DISCORD_RECAP_WEBHOOK): who journaled, the group's P&L and rules kept, and an @mention for
 // every student who hasn't journaled today. Runs from Vercel Cron on weekdays, or from Admin → Coaching → "Send today's now".
+// posts one line per person, tagging them: up to 20 per Discord message, spaced out for Discord's webhook rate limit
+async function postTagged(hook, items) {
+  let chunk = [], sent = 0;
+  const flush = async () => {
+    if (!chunk.length) return;
+    const ids = chunk.map((x) => x.id);
+    const rr = await discordPost(hook, { content: chunk.map((x) => x.line).join('\n'), allowed_mentions: { parse: [], users: ids } });
+    if (rr.ok) sent += ids.length;
+    chunk = []; await new Promise((ok) => setTimeout(ok, 600));
+  };
+  for (const it of items) {
+    if (chunk.length >= 20 || chunk.reduce((t, x) => t + x.line.length + 1, 0) + it.line.length > 1900) await flush();
+    chunk.push(it);
+  }
+  await flush();
+  return sent;
+}
+
+// ---------- people in the Discord with a program role who have never signed in to the website ----------
+// Needs a bot in the server (DISCORD_BOT_TOKEN, with "Server Members Intent" on) to read the member list.
+const skipRolesList = () => String(process.env.NUDGE_SKIP_ROLES || '1569879952361529494').split(',').map((x) => x.trim()).filter(Boolean);
+const modIdsList = () => String(process.env.MOD_IDS || '505505326532132868').split(',').map((x) => x.trim()).filter(Boolean);
+function siteLink() {
+  const u = process.env.SITE_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? 'https://' + process.env.VERCEL_PROJECT_PRODUCTION_URL : '');
+  return String(u).replace(/\/$/, '');
+}
+async function guildMembers() {
+  const token = process.env.DISCORD_BOT_TOKEN || '', guild = process.env.DISCORD_GUILD_ID || '';
+  if (!token || !guild) return { error: 'no_bot' };
+  const api = process.env.DISCORD_API_BASE || 'https://discord.com/api/v10';
+  const out = []; let after = '0';
+  for (let page = 0; page < 25; page++) {   // 1000 a page: up to 25,000 members
+    let r = await fetch(api + '/guilds/' + guild + '/members?limit=1000&after=' + after, { headers: { Authorization: 'Bot ' + token } });
+    if (r.status === 429) { const j = await r.json().catch(() => ({})); await new Promise((ok) => setTimeout(ok, Math.min(5000, (+j.retry_after || 1) * 1000))); page--; continue; }
+    if (r.status === 401) return { error: 'bad_token' };
+    if (r.status === 403) return { error: 'no_intent' };   // the bot isn't in the server, or "Server Members Intent" is off
+    if (!r.ok) return { error: 'discord_' + r.status };
+    const list = await r.json();
+    if (!Array.isArray(list) || !list.length) break;
+    out.push(...list); after = list[list.length - 1].user.id;
+    if (list.length < 1000) break;
+  }
+  return { members: out };
+}
+async function notJoined() {
+  const g = await guildMembers(); if (g.error) return g;
+  const content = await contentWithDefaults();
+  const extra = String(process.env.JOIN_ROLES || '').split(',').map((x) => x.trim()).filter(Boolean);
+  const program = new Set(chapterRoles(content.curriculum).concat(Object.values(ROLES || {}), extra).map(String).filter((x) => /^\d{5,25}$/.test(x)));
+  const site = new Set((await listMembers()).map((m) => m.id)), skip = skipRolesList(), staff = adminIds().concat(modIdsList());
+  const list = g.members.filter((gm) => gm && gm.user && !gm.user.bot && !site.has(gm.user.id) && !staff.includes(gm.user.id) &&
+      (gm.roles || []).some((r) => program.has(String(r))) && !(gm.roles || []).some((r) => skip.includes(String(r))))
+    .map((gm) => ({ id: gm.user.id, name: gm.nick || gm.user.global_name || gm.user.username, username: gm.user.username, joinedDiscord: gm.joined_at || null,
+      avatar: gm.user.avatar ? 'https://cdn.discordapp.com/avatars/' + gm.user.id + '/' + gm.user.avatar + '.png?size=64' : null }))
+    .sort((a, b) => String(a.joinedDiscord || '').localeCompare(String(b.joinedDiscord || '')));
+  return { list, checked: g.members.length };
+}
+async function joinCallout() {
+  const hook = process.env.JOIN_WEBHOOK || process.env.DISCORD_RECAP_WEBHOOK || '';
+  if (!hookReady(hook)) return { ok: false, error: 'no_webhook' };
+  const r = await notJoined(); if (r.error) return { ok: false, error: r.error };
+  const status = { at: new Date().toISOString(), ok: true, count: r.list.length, tagged: 0 };
+  if (r.list.length) {
+    const link = siteLink() || 'the website';
+    const tpl = String(process.env.JOIN_MESSAGE || "@member, you haven't joined the website yet. Sign in at @site with Discord to start your journal and lectures.").slice(0, 300);
+    const say = (id) => { let t = tpl.indexOf('@member') >= 0 ? tpl.split('@member').join('<@' + id + '>') : '<@' + id + '> ' + tpl; return t.split('@site').join(link); };
+    const head = await discordPost(hook, { content: '👋 **Not on the website yet** · ' + r.list.length + (r.list.length === 1 ? ' member' : ' members'), allowed_mentions: { parse: [] } });
+    status.ok = head.ok;
+    status.tagged = await postTagged(hook, r.list.slice(0, 200).map((m) => ({ id: m.id, line: say(m.id) })));
+  }
+  await kv(['SET', 'join-last', JSON.stringify(status)]);
+  return status;
+}
+// which days the callout goes out with the 4:30 pm recap: JOIN_CALLOUT = monday (default) · daily · off
+function joinDue(today) {
+  const mode = String(process.env.JOIN_CALLOUT || 'monday').toLowerCase();
+  if (mode === 'off') return false;
+  if (mode === 'daily') return true;
+  return new Date(today + 'T12:00:00Z').getUTCDay() === 1;
+}
+
 async function dailyNudge() {
   const hook = process.env.DISCORD_RECAP_WEBHOOK || '';
   if (!hookReady(hook)) return { ok: false, error: 'no_webhook' };
@@ -155,7 +236,7 @@ async function dailyNudge() {
   // students only: not admins, not moderators, not the skipped roles
   const mods = String(process.env.MOD_IDS || '505505326532132868').split(',').map((x) => x.trim());
   // members with these Discord roles never get the daily warnings and aren't counted as students in the recap (NUDGE_SKIP_ROLES, comma-separated)
-  const skipRoles = String(process.env.NUDGE_SKIP_ROLES || '1569879952361529494').split(',').map((x) => x.trim()).filter(Boolean);
+  const skipRoles = skipRolesList();
   const admins = adminIds(), everyone = await listMembers(), members = everyone.filter((m) => !admins.includes(m.id) && !mods.includes(m.id) && !(m.roles || []).some((r) => skipRoles.includes(String(r))));
   let journaled = 0, total = 0, pnl = 0, followed = 0, answered = 0; const missing = [], clean = [], warn = {};
   const content = await contentWithDefaults().catch(() => null), now = Date.now();
@@ -208,20 +289,7 @@ async function dailyNudge() {
   const tpl = String(process.env.NUDGE_MESSAGE || "@member, you're on a warning. If you continue the lack of effort, you will be demoted. Reason why: @reason").slice(0, 300);
   const say = (id) => { const reason = warn[id].join(', '); let t = tpl.indexOf('@member') >= 0 ? tpl.split('@member').join('<@' + id + '>') : '<@' + id + '> ' + tpl;
     return t.indexOf('@reason') >= 0 ? t.split('@reason').join(reason) : t + ' Reason why: ' + reason; };
-  let chunk = [], sent = 0;
-  const flush = async () => {
-    if (!chunk.length) return;
-    const ids = chunk.map((x) => x.id);
-    const rr = await discordPost(hook, { content: chunk.map((x) => x.line).join('\n'), allowed_mentions: { parse: [], users: ids } });
-    if (rr.ok) sent += ids.length;
-    chunk = []; await new Promise((ok) => setTimeout(ok, 600));   // stay under Discord's webhook rate limit
-  };
-  for (const id of ping) {
-    const line = say(id);
-    if (chunk.length >= 20 || chunk.reduce((t, x) => t + x.line.length + 1, 0) + line.length > 1900) await flush();
-    chunk.push({ id, line });
-  }
-  await flush();
+  const sent = await postTagged(hook, ping.map((id) => ({ id, line: say(id) })));
   await kv(['SET', 'nudge-last', JSON.stringify({ at: new Date().toISOString(), ok: r.ok, journaled, total, tagged: sent, warned: ping.length })]);
   return Object.assign({ journaled, total, missing: missing.length, tagged: sent, warned: ping.length }, r);
 }
@@ -252,6 +320,7 @@ module.exports = async (req, res) => {
     if (!secret || (req.headers.authorization || '') !== 'Bearer ' + secret) return json(res, 401, { error: 'not_cron' });
     if (!kvConfigured()) return json(res, 503, { error: 'no_storage' });
     const st = await dailyNudge();
+    if (!st.skipped && joinDue(nyToday())) { try { st.join = await joinCallout(); } catch (e) { st.join = { ok: false, error: String(e.message || e).slice(0, 120) }; } }
     return json(res, st.ok ? 200 : 500, st);
   }
   if (/[?&]cron=backup\b/.test(req.url || '')) {
@@ -298,6 +367,7 @@ module.exports = async (req, res) => {
       return json(res, 200, { saved: true, snippets: list });
     }
     if (body.action === 'nudge-now') return json(res, 200, await dailyNudge());
+    if (body.action === 'join-callout') return json(res, 200, await joinCallout());
     if (body.action === 'staff-test') {   // "send a test alert" (not throttled per kind: a fresh key each time)
       if (!staffHook()) return json(res, 400, { error: 'no_webhook' });
       const ok = await staffAlert('test', { id: s.user.id, name: who }, 'If you can read this in your staff channel, alerts are working.', 1);
@@ -448,6 +518,12 @@ module.exports = async (req, res) => {
     } catch (e) { return json(res, 502, { error: 'storage', detail: String(e.message || e).slice(0, 200) }); }
   }
   // notifications: the latest things members handed in, and how much is waiting in each admin section
+  // who's in the Discord with a program role but has never signed in (read live from Discord)
+  if (/[?&]joins=1/.test(req.url || '')) {
+    let last = null; try { last = JSON.parse(await kv(['GET', 'join-last']) || 'null'); } catch (e) {}
+    const r = await notJoined().catch((e) => ({ error: 'discord', detail: String(e.message || e).slice(0, 120) }));
+    return json(res, 200, Object.assign({ bot: !!(process.env.DISCORD_BOT_TOKEN && process.env.DISCORD_GUILD_ID), schedule: String(process.env.JOIN_CALLOUT || 'monday').toLowerCase(), last }, r));
+  }
   if (/[?&]nudge=status/.test(req.url || '')) {
     let last = null; try { last = JSON.parse(await kv(['GET', 'nudge-last']) || 'null'); } catch (e) {}
     return json(res, 200, { webhook: hookReady(process.env.DISCORD_RECAP_WEBHOOK || ''), cron: !!process.env.CRON_SECRET, last });

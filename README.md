@@ -835,3 +835,43 @@ the Discord recap, share cards and the leaderboards. Denied entries don't count 
 The logo now lands exactly on the top bar's logo: the TP, the divider and the name ease into the bar's spacing and glow
 on the way, and the flight is aimed at where the bar's logo is on every frame (checked to within a quarter of a pixel on
 computer and phone).
+
+## Not on the website yet (Discord callout)
+Finds everyone in the Discord server who has one of the program roles (Grounded, Awakened, Illuminated, Enlightened,
+every chapter's role, plus any in `JOIN_ROLES`) but has never signed in to the website, and tags them in Discord:
+`@member, you haven't joined the website yet. Sign in at <site> with Discord to start your journal and lectures.`
+- Left out: admins, the moderator(s), bots, and anyone with a role in `NUDGE_SKIP_ROLES` (default 1569879952361529494).
+- **Automatic:** posted with the weekday 4:30 pm recap, on Mondays by default (no extra cron job). `JOIN_CALLOUT` =
+  `monday` (default) · `daily` · `off`.
+- **By hand:** Admin → Coaching → "👋 In the Discord but not on the website" shows the list (read live from Discord when
+  opened) and has a **Call them out now** button.
+- Needs a bot so the site can read the member list:
+  1. discord.com/developers/applications → your app (the one used for "Sign in with Discord") → **Bot**.
+  2. Turn on **Server Members Intent** → Save. Press **Reset Token**, copy it.
+  3. **OAuth2 → URL Generator**: tick **bot** (no permissions needed) → open the URL → add it to your server.
+  4. Vercel → Settings → Environment Variables: `DISCORD_BOT_TOKEN` = the token. Redeploy.
+- Optional: `SITE_URL` (the link in the message; defaults to your Vercel production address), `JOIN_MESSAGE`
+  (`@member` = tag, `@site` = link), `JOIN_WEBHOOK` (a different channel; defaults to `DISCORD_RECAP_WEBHOOK`),
+  `JOIN_ROLES` (extra role IDs, comma-separated).
+- Uses `DISCORD_GUILD_ID` (already set). Nothing is stored except when the last callout went out (`join-last`).
+
+## Asia session = the next trading day
+A trade taken at **6 pm New York time or later** counts for the **next** trading day, the way futures sessions run:
+Tuesday night's Asia trade is Wednesday's, Sunday night's is Monday's. The entry time is read in the time zone it was
+logged in (a Chicago 5:30 pm trade is 6:30 pm New York, so it moves too). This applies everywhere the trading day is
+used: calendar, stats, streaks, weekly recap, prop accounts and the next day's Discord daily recap (Wednesday's 4:30 pm
+recap includes Tuesday night's Asia trades).
+- Older entries are shown under their trading day when read; nothing saved is rewritten. The entry keeps the day it was
+  logged on (`sunday`) and shows a tag like "Asia · Tue night". Editing works from the logged day, so it never moves twice.
+- The form says "Asia session … this will be saved under Wednesday" as soon as the date and time put it there.
+- The journal calendar now runs **Sun · Mon · Tue · Wed · Thu · Fri · Sat**.
+
+## Times for people outside New York (Osman: UK)
+Market hours and sessions stay on New York time (that's how the futures day runs), but everyone also sees them on their
+own clock, worked out from their browser's time zone, with summer/winter time handled:
+- The session pill in the top bar shows **your** time (UK shows "04:34 UK"; New York shows "23:34 NY"); hover for both.
+- "Discord daily recap: on, weekdays ~4:30 pm New York (21:30 UK)", the "Not on the website" box, the Asia hint
+  ("6 pm New York (23:00 UK) or later") and Stats' "Most trades: … New York time (… UK)" add your own time.
+- "Today" (Stats, Triage, prop accounts, the admin day view) is New York's trading day for everyone, so a UK admin after
+  midnight still sees the same day as the students in America; that night's Asia trades show from the next day.
+- Trades are still logged in whatever time zone the student picks under "Times are in" (UK time works as is).
