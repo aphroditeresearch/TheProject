@@ -169,6 +169,7 @@ const ALERT_TEXT = {
   'admin-probe': 'Tried to use admin-only actions without being an admin',
   'bad-origin': 'Request from another website was blocked',
   'test': 'Test alert from the admin panel',
+  'timeout': 'Timed out for 5 minutes (automatic)',
 };
 function staffHook() { const h = String(process.env.DISCORD_STAFF_WEBHOOK || '').trim(); return STAFF_HOOK.test(h) ? h : ''; }
 async function staffAlert(kind, who, detail, everySec) {
@@ -193,6 +194,25 @@ async function staffAlert(kind, who, detail, everySec) {
     }
     return true;
   } catch (e) { return false; }
+}
+/* ---------- automatic timeouts: heavy abuse locks a member out of the site for a few minutes ---------- */
+// While timed out, every API call answers 423 { error:'timeout', until, reason } (admins are never timed out).
+const TIMEOUT_SECS = 300;
+async function timeoutOf(uid) {
+  if (!kvConfigured() || !uid) return null;
+  try { const [v] = await kvPipeline([['GET', KEY_PREFIX + 'timeout:' + uid]]); const t = v ? JSON.parse(v) : null; return t && Date.parse(t.until) > Date.now() ? t : null; }
+  catch (e) { return null; }
+}
+async function timeoutUser(who, reason, secs) {
+  if (!kvConfigured() || !who || !who.id) return null;
+  const s = secs || TIMEOUT_SECS, t = { until: new Date(Date.now() + s * 1000).toISOString(), reason: String(reason || 'Abusing the website').slice(0, 120), at: new Date().toISOString() };
+  try {
+    const [ok] = await kvPipeline([['SET', KEY_PREFIX + 'timeout:' + who.id, JSON.stringify(t), 'EX', String(s), 'NX']]);
+    if (ok !== 'OK') return await timeoutOf(who.id);   // already timed out: the first one stands
+    await kvPipeline([['HINCRBY', KEY_PREFIX + 'flags:' + who.id, 'timeouts', '1']]);
+    await staffAlert('timeout', who, t.reason + '. Locked out until ' + t.until.slice(11, 16) + ' UTC.', 60);
+  } catch (e) {}
+  return t;
 }
 async function loadAlerts(n) {
   if (!kvConfigured()) return [];
@@ -303,6 +323,11 @@ function guard(handler, kind) {
         await staffAlert('bad-origin', s0 ? { id: s0.user.id, name: s0.user.displayName || s0.user.username, ip: clientIp(req) } : { ip: clientIp(req) }, 'From ' + String(req.headers.origin).slice(0, 120) + ' to ' + String(req.url || '').split('?')[0]);
         return json(res, 403, { error: 'bad_origin' });
       }
+      // timed out: nothing works for a few minutes (signing in, signing out and the session check still answer, so the page can say so)
+      if (kind !== 'page' && !/^\/api\/(session|logout|login|callback)\b/.test(req.url || '')) {
+        const s1 = readSession(req);
+        if (s1 && !isAdmin(s1)) { const t = await timeoutOf(s1.user.id); if (t) return json(res, 423, Object.assign({ error: 'timeout' }, t)); }
+      }
       return await handler(req, res);
     } catch (e) {
       console.error('[the-project]', req.url, (e && e.stack) || e);
@@ -315,7 +340,7 @@ function guard(handler, kind) {
 }
 
 module.exports = {
-  guard,
+  guard, timeoutOf, timeoutUser, TIMEOUT_SECS,
   DISCORD_API, SESSION_COOKIE, STATE_COOKIE, ROLE_REFRESH_MS, SESSION_DAYS,
   env, parseCookies, cookie, clearCookie, sign, verify, readSession, writeSession, kvPipeline, KEY_PREFIX, rateLimit, staffAlert, loadAlerts, staffHook,
   redirectUri, discord, profileFrom, kvConfigured, kv, loadProgress, saveProgress, redirect, json,

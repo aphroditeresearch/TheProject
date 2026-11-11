@@ -2,7 +2,7 @@
 // 401 means nobody is signed in. Roles are re-checked with Discord every few minutes,
 // so giving or removing a role in Discord shows up on the site without signing out.
 const {
-  readSession, writeSession, clearCookie, SESSION_COOKIE, ROLE_REFRESH_MS,
+  readSession, writeSession, clearCookie, SESSION_COOKIE, ROLE_REFRESH_MS, timeoutOf,
   env, discord, profileFrom, loadProgress, json, isAdmin, recordMember, clientIp,
 } = require('./_lib');
 const { signInBlock } = require('./_gate');
@@ -42,7 +42,8 @@ module.exports = async (req, res) => {
   let progress = {};
   try { progress = await loadProgress(s.user.id); } catch (e) { progress = {}; }
 
-  json(res, 200, { user: s.user, roles: s.roles, progress, isAdmin: isAdmin(s), ip: clientIp(req) }, cookies);
+  const timeout = isAdmin(s) ? null : await timeoutOf(s.user.id);   // automatic 5-minute timeout, if they're in one
+  json(res, 200, { user: s.user, roles: s.roles, progress, isAdmin: isAdmin(s), ip: clientIp(req), timeout }, cookies);
 };
 
 module.exports = require('./_lib').guard(module.exports, 'json');

@@ -17,12 +17,13 @@
 //                          what the Stats tab summary needs (admins get the full detail from /api/admin/members)
 // Files are uploaded straight from the browser to Vercel Blob first (see /api/upload), into members/<their id>/…
 const crypto = require('crypto');
-const { readSession, isAdmin, kvConfigured, loadProgress, json, kv, clientIp, rateLimit, staffAlert } = require('./_lib');
+const { readSession, isAdmin, kvConfigured, loadProgress, json, kv, clientIp, rateLimit, staffAlert, timeoutUser } = require('./_lib');
 const { logActivity, gateFor, saveSub, findItem, loadCerts, saveCert, deleteCert, loadPromo, savePromo, loadJournal, saveJournal, loadEntries, saveEntry, deleteEntry, entryPoints, entryStatus, basePoints, streakOf, nyToday, tradeDay, tradeDayOf, loadDayNotes, loadTestimonials, saveTestimonial, deleteTestimonial } = require('./_gate');
 const { listMembers } = require('./_lib');
 const { signAll, cleanFile } = require('./_blob');
 
 const FLAG_KINDS = ['right-click', 'devtools-keys', 'devtools-open', 'save', 'view-source', 'print', 'screenshot'];
+const LIGHT_FLAGS = ['right-click', 'save', 'print'];   // still accepted from older pages, but never alerted or counted toward a timeout
 function byEntry(a, b) { return (String(b.date) + String(b.time || '') + b.createdAt).localeCompare(String(a.date) + String(a.time || '') + a.createdAt); }
 // The psych leaderboard: points from journal entries in the period (dates are the trade dates members enter)
 async function leaderboard(period, me) {
@@ -185,16 +186,20 @@ module.exports = async (req, res) => {
       await kv(['HINCRBY', key, fb.kind, 1]);
       await kv(['HINCRBY', key, 'total', 1]);
       await kv(['HSET', key, 'last', new Date().toISOString(), 'lastKind', fb.kind, 'lastIp', ip || '']);
-      // tell staff: dev tools opened, or 5+ blocked actions inside 10 minutes
-      if (!isAdmin(s)) {
+      // tell staff: dev tools opened, or 5+ blocked actions inside 10 minutes. Heavy abuse = an automatic 5-minute timeout:
+      // 5+ serious flags in 10 minutes, or developer tools opened twice in 30 minutes. Right-click, save and print never count.
+      let timeout = null;
+      if (!isAdmin(s) && !LIGHT_FLAGS.includes(fb.kind)) {
         const who = { id: uid, name: s.user.displayName || s.user.username, ip };
         const under = await rateLimit('flagburst:' + uid, 4, 600);
+        if (!under) timeout = await timeoutUser(who, 'Kept trying blocked actions (5+ in 10 minutes)');
+        if (fb.kind === 'devtools-open' && !(await rateLimit('dtburst:' + uid, 1, 1800))) timeout = timeout || await timeoutUser(who, 'Opened developer tools again');
         if (fb.kind === 'devtools-open') { const size = /^[\dx .z]{3,40}$/.test(String(fb.size || '')) ? String(fb.size) : '';
-          await staffAlert('devtools', who, 'Dev tools (or a browser side panel) were open on the site. Lessons are hidden while they are.' + (size ? ' Window / page size: ' + size + '.' : '')); }
+          await staffAlert('devtools', who, 'Opened developer tools on the site (confirmed). The portal was cleared on their screen and stays locked until they close them.' + (size ? ' Window / page size: ' + size + '.' : '')); }
         else if (!under) { const f = await kv(['HGETALL', key]); const m = {}; if (Array.isArray(f)) for (let i = 0; i < f.length; i += 2) m[f[i]] = f[i + 1];
           await staffAlert('flags', who, '5+ blocked actions in 10 minutes. Latest: ' + fb.kind + '. All time: ' + FLAG_KINDS.filter((k) => m[k]).map((k) => k + ' ×' + m[k]).join(', ')); }
       }
-      return json(res, 200, { recorded: true, ip });
+      return json(res, 200, { recorded: true, ip, timeout });
     }
   }
   if (!kvConfigured()) return json(res, 503, { error: 'no_storage' });
@@ -218,6 +223,7 @@ module.exports = async (req, res) => {
   const action = body && body.action;
   if (!(await rateLimit('member:' + uid, 300, 600))) {   // 300 actions per 10 minutes
     await staffAlert('rate-limit', { id: uid, name: s.user.displayName || s.user.username, ip: clientIp(req) }, 'Over 300 actions in 10 minutes. Last one: ' + String(action || 'unknown').slice(0, 40));
+    if (!isAdmin(s)) { const t = await timeoutUser({ id: uid, name: s.user.displayName || s.user.username, ip: clientIp(req) }, 'Sent requests too fast (300+ in 10 minutes)'); if (t) return json(res, 423, Object.assign({ error: 'timeout' }, t)); };
     return json(res, 429, { error: 'slow_down' });
   }
 

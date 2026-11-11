@@ -1163,6 +1163,7 @@ body.returning .scene::after{opacity:0}
 @keyframes wdrift{to{transform:translate(640px,380px)}}
 #pshield{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(2,9,11,.94);-webkit-backdrop-filter:blur(28px);backdrop-filter:blur(28px);cursor:pointer;text-align:center;padding:24px}
 #pshield[hidden]{display:none}
+.wall .to-clock{font:700 44px/1 var(--mono);letter-spacing:.04em;color:#FFB347;margin:4px 0 2px;font-variant-numeric:tabular-nums}
 #pshield b{display:block;font-family:var(--display);font-style:italic;font-weight:900;font-stretch:125%;font-size:34px;margin-bottom:8px;color:var(--ink)}
 #pshield span{color:var(--muted);font-size:15px;max-width:34ch;display:inline-block}
 .lnotice{display:flex;align-items:center;gap:16px;flex-wrap:wrap;width:100%;max-width:min(100%,calc((100vh - 380px) * 16 / 9));box-sizing:border-box;margin:0 0 16px;padding:14px 18px;border:1px solid var(--blue);border-left-width:4px;background:color-mix(in srgb,var(--blue) 10%,var(--panel))}
@@ -1793,12 +1794,21 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
 <div class="wall" id="shield" role="alertdialog" aria-modal="true" aria-labelledby="sh-h" hidden>
   <div class="wall-in">
     <div class="wm sm brand lockup" aria-label="The Project"><span class="wm-g tp-g" aria-hidden="true"><span class="tp-svg"></span></span><i class="lk-div" aria-hidden="true"></i><span class="wm-g" aria-hidden="true"><span class="wm-svg"></span></span></div>
-    <h2 id="sh-h">Close developer tools.</h2>
-    <p>The portal is paused while developer tools are open. Close them to keep going.</p>
+    <h2 id="sh-h">Developer tools aren't allowed.</h2>
+    <p>The portal has been cleared. Close developer tools and the page comes back. Opening them is reported to the admins.</p>
     <p class="sh-hint">Not using developer tools? Close Chrome's side panel (bookmarks, reading list, Google Lens or an extension's sidebar) if it's open.</p>
   </div>
 </div>
 
+<div class="wall" id="tout" role="alertdialog" aria-modal="true" aria-labelledby="to-h" hidden>
+  <div class="wall-in">
+    <div class="wm sm brand lockup" aria-label="The Project"><span class="wm-g tp-g" aria-hidden="true"><span class="tp-svg"></span></span><i class="lk-div" aria-hidden="true"></i><span class="wm-g" aria-hidden="true"><span class="wm-svg"></span></span></div>
+    <h2 id="to-h">Timed out</h2>
+    <p class="to-clock" id="to-clock" aria-live="polite">5:00</p>
+    <p id="to-why"></p>
+    <p class="sh-hint">Heavy misuse of the site locks you out for 5 minutes, and the admins are told. The page comes back by itself when the time's up.</p>
+  </div>
+</div>
 <div id="pshield" role="status" hidden><div><b>Paused</b><span>Lessons hide while this window isn't in focus. Click here to keep going.</span></div></div>
 
 <script>
@@ -1877,6 +1887,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     document.querySelectorAll('video').forEach(function(v){ if (!v.paused && !v.closest('.moon')){ v.pause(); } });
   }
   function blocked(kind){
+    if (typeof TO !== 'undefined' && TO.until > Date.now()) return;   // already timed out: the timeout screen is up
     alarm();
     var now = Date.now();
     if (!warnEl.hidden && now - lastWarn < 1500) return;
@@ -1884,7 +1895,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     if (typeof SESSION !== 'undefined' && SESSION && SESSION.user && BACKEND){
       fetch('/api/member', { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ action:'flag', kind: kind, size: kind === 'devtools-open' ? winSize() : undefined }) })
         .then(function(r){ return r.json(); })
-        .then(function(j){ if (j && j.ip && !SESSION.ip){ SESSION.ip = j.ip; if (!warnEl.hidden) showWarning(); } })
+        .then(function(j){ if (j && j.ip && !SESSION.ip){ SESSION.ip = j.ip; if (!warnEl.hidden) showWarning(); } if (j && j.timeout) showTimeout(j.timeout); })
         .catch(function(){});
     }
   }
@@ -1895,7 +1906,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   var MOBILE_DEV = /Android|iPhone|iPad|iPod|Mobile|CriOS/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   var lastPtr = 'mouse';
   document.addEventListener('pointerdown', function(e){ lastPtr = e.pointerType || 'mouse'; }, true);
-  document.addEventListener('contextmenu', function(e){ e.preventDefault(); if (lastPtr === 'touch' || lastPtr === 'pen' || (MOBILE_DEV && lastPtr !== 'mouse')) return; blocked('right-click'); }, true);
+  // right-click: the normal menu works in text boxes (spelling suggestions); everywhere else there's simply no menu.
+  // Not flagged: it's almost always harmless. Opening developer tools is what gets caught (below).
+  function isTextField(t){ return !!(t && t.closest && t.closest('input:not([type=button]):not([type=submit]):not([type=checkbox]):not([type=radio]):not([type=file]),textarea,[contenteditable=""],[contenteditable=true]')); }
+  document.addEventListener('contextmenu', function(e){ if (isTextField(e.target)) return; e.preventDefault(); }, true);
   document.addEventListener('dragstart', function(e){ e.preventDefault(); }, true);
   document.addEventListener('selectstart', function(e){ var t = e.target; if (!(t && t.closest && t.closest('input,textarea,.linkbox'))) e.preventDefault(); }, true);
   document.addEventListener('copy', function(e){ var t = document.activeElement; if (!(t && /INPUT|TEXTAREA/.test(t.tagName)) && !getSelection().toString().match(/^https?:/)) e.preventDefault(); }, true);
@@ -1907,12 +1921,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     else if (e.key === 'F12' || (mod && e.shiftKey && (c === 'KeyI' || c === 'KeyJ' || c === 'KeyC' || c === 'KeyK')) ||
         (e.metaKey && e.altKey && (c === 'KeyI' || c === 'KeyJ' || c === 'KeyC'))) kind = 'devtools-keys';      // devtools, console, inspector
     else if (mod && c === 'KeyU') kind = 'view-source';
-    else if (mod && c === 'KeyS') kind = 'save';
-    else if (mod && c === 'KeyP') kind = 'print';
-    if (kind){
-      var t = e.target; if (kind === 'save' && t && t.closest && t.closest('.adm')) { e.preventDefault(); return; }   // Cmd+S habit in the admin forms
-      e.preventDefault(); e.stopPropagation(); blocked(kind);
-    }
+    else if (mod && (c === 'KeyS' || c === 'KeyP')){ e.preventDefault(); return; }   // save / print: just don't (no warning, no flag: usually a habit)
+    if (kind){ e.preventDefault(); e.stopPropagation(); blocked(kind); }
   }, true);
   document.addEventListener('keyup', function(e){
     if (e.key === 'PrintScreen' || e.code === 'PrintScreen'){ shieldFlash(); try { var cw = navigator.clipboard && navigator.clipboard.writeText(''); if (cw && cw.catch) cw.catch(function(){}); } catch(err) {} blocked('screenshot'); }
@@ -1961,20 +1971,59 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     return bars < -40 || bars > 230;             // tools at the side make z too big; tools at the bottom leave too much
   }
   function winSize(){ return window.outerWidth + 'x' + window.outerHeight + ' ' + window.innerWidth + 'x' + window.innerHeight + ' z' + (Math.round((window.devicePixelRatio || 1) * 100) / 100); }
-  // Docked developer tools shrink the page area; pause everything while they're open.
-  // Skipped when the page is shown inside another page (a preview), where the sizes don't apply.
-  var shield = document.getElementById('shield');
-  // (skipped on phones and tablets: they have no developer tools, and the keyboard or pinch-zoom changes these sizes)
+  /* ---------- developer tools: caught and locked out ----------
+     Two checks, every half second (members only; admins and phones are skipped):
+       1. docked tools: the page area shrinks on one side (see devtoolsDocked). Chrome's side panel can look the same,
+          so this alone only covers the page; it isn't flagged.
+       2. a debugger trap: a `debugger;` line does nothing in a normal browser, but freezes the page whenever developer
+          tools are open (docked or in their own window). If it took time, they're open: that's the one that's flagged.
+     Either way the portal is emptied (lesson text, videos and data are removed from the page, so there's nothing left
+     to inspect) and the page reloads clean once they're closed. A browser can't refuse to open its own tools; this
+     makes them useless here and tells the admins who tried. */
+  /* ---------- automatic 5-minute timeout (decided by the server: see timeoutUser in api/_lib.js) ---------- */
+  var TO = { until: 0, timer: 0 };
+  function showTimeout(t){
+    var until = Date.parse(t && t.until); if (!(until > Date.now())) return;
+    warnEl.hidden = true;
+    if (TO.until >= until && TO.timer) return; TO.until = until;
+    var w = document.getElementById('tout'); w.hidden = false;
+    document.getElementById('to-why').textContent = 'Reason: ' + ((t && t.reason) || 'misusing the site') + '.';
+    document.querySelectorAll('video').forEach(function(v){ try { v.pause(); } catch (e) {} });
+    (typeof ytPlayers !== 'undefined' ? ytPlayers : []).forEach(function(p){ try { p.stopVideo(); } catch (e) {} });
+    document.querySelectorAll('.lb, .shc, .cm-sc, .mk-sc').forEach(function(x){ x.remove(); });   // the wall covers the page; the server refuses everything meanwhile
+    clearInterval(TO.timer);
+    var tick = function(){ var left = Math.max(0, Math.ceil((TO.until - Date.now()) / 1000));
+      document.getElementById('to-clock').textContent = Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0');
+      if (!left){ clearInterval(TO.timer); location.reload(); } };
+    tick(); TO.timer = setInterval(tick, 1000);
+  }
+  // any request the server refuses with "timeout" puts the timeout screen up
+  (function(){ var f0 = window.fetch; if (!f0) return;
+    window.fetch = function(){ return f0.apply(this, arguments).then(function(r){
+      if (r && r.status === 423) r.clone().json().then(function(j){ if (j && j.error === 'timeout') showTimeout(j); }, function(){});
+      return r; }); }; })();
+  var shield = document.getElementById('shield'), DT = { locked: false, flagged: false, quiet: 0 };
+  function trapOpen(){ var t = performance.now(); debugger; return performance.now() - t > 100; }   // eslint-disable-line no-debugger
+  function dtGuardOn(){ return window.top === window.self && !MOBILE_DEV && typeof SESSION !== 'undefined' && !!(SESSION && SESSION.user) && !SESSION.isAdmin; }   // signed-in members only
+  function lockOut(confirmed){
+    if (!DT.locked){
+      DT.locked = true; shield.hidden = false;
+      document.querySelectorAll('video').forEach(function(v){ try { v.pause(); } catch (e) {} });
+      (typeof ytPlayers !== 'undefined' ? ytPlayers : []).forEach(function(p){ try { p.stopVideo(); } catch (e) {} });
+      var pv = document.getElementById('portal-view'); if (pv) pv.innerHTML = '';              // nothing left to inspect
+      document.querySelectorAll('.lb, .shc, .cm-sc, .mk-sc, #warn').forEach(function(x){ if (x.id !== 'warn') x.remove(); });
+    }
+    if (confirmed && !DT.flagged){ DT.flagged = true; blocked('devtools-open'); }
+  }
   if (window.top === window.self && !MOBILE_DEV){
-    setInterval(function(){
-      var open = devtoolsDocked();
-      if (open !== !shield.hidden){
-        shield.hidden = !open;
-        if (open) blocked('devtools-open');
-        if (open) document.querySelectorAll('video').forEach(function(v){ if (!v.paused){ v.pause(); v.dataset.resume = '1'; } });
-        else document.querySelectorAll('video[data-resume]').forEach(function(v){ delete v.dataset.resume; if (v.closest('.moon')) v.play().catch(function(){}); });
-      }
-    }, 1000);
+    var dtTick = function(){
+      if (!dtGuardOn()) return;
+      var docked = devtoolsDocked(), trapped = trapOpen();
+      if (docked || trapped){ DT.quiet = 0; lockOut(trapped); return; }
+      if (DT.locked && ++DT.quiet >= 3) location.reload();                                    // closed for 1.5 s: start again clean
+    };
+    setInterval(dtTick, 500);
+    window.addEventListener('resize', function(){ if (dtGuardOn() && devtoolsDocked()) lockOut(false); });
   }
 
   var vid = document.querySelector('.moon video');
@@ -7420,12 +7469,13 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       .then(function(j){
         if (!(j && j.user)) return;
         SESSION = j; loadPreview();
+        if (j.timeout){ showTimeout(j.timeout); return; }
         // developer tools already open (e.g. opened, then the page refreshed): don't load any lesson data until they're closed
         var touchDev = /Android|iPhone|iPad|iPod|Mobile|CriOS/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        var dtOpen = devtoolsDocked;
+        var dtOpen = function(){ return devtoolsDocked() || trapOpen(); };
         if (!j.isAdmin && !touchDev && window.top === window.self && dtOpen()){
           var wall = document.getElementById('shield'); if (wall) wall.hidden = false;
-          try { navigator.sendBeacon && navigator.sendBeacon('/api/member', new Blob([JSON.stringify({ action:'flag', kind:'devtools-open', size: winSize() })], { type:'application/json' })); } catch (e) {}
+          if (trapOpen()) try { navigator.sendBeacon && navigator.sendBeacon('/api/member', new Blob([JSON.stringify({ action:'flag', kind:'devtools-open', size: winSize() })], { type:'application/json' })); } catch (e) {}
           var tw = setInterval(function(){ if (!dtOpen()){ clearInterval(tw); location.reload(); } }, 800);
           return;
         }

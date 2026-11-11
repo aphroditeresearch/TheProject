@@ -883,3 +883,32 @@ own clock, worked out from their browser's time zone, with summer/winter time ha
 - Share card: the card now fits the space under the buttons on any phone height (it used to slide up over the hint and
   buttons on shorter screens). Tapping the card for a clean screenshot still fills the screen.
 - Sign-in welcome on phones: smaller avatar (56 px), name (21 px) and role line, in proportion with the logo above.
+
+## Developer tools lock-out (and calmer flags)
+- **Caught two ways**, every half second, for signed-in members on a computer (admins and phones are skipped):
+  docked tools shrink the page on one side, and a `debugger;` trap that does nothing normally but freezes the page
+  whenever developer tools are open, docked or in their own window.
+- **What happens:** the portal is emptied straight away (lessons, videos, data removed from the page, so the Elements
+  panel shows nothing worth taking), a wall says developer tools aren't allowed, and the page reloads clean once they're
+  closed. While they stay open, the trap keeps freezing the page, so it can't be used.
+- **Flagged and reported to admins** only when the trap confirms tools were opened (once per visit). Chrome's side panel
+  can look like docked tools; that only covers the page, it's never flagged.
+- **Still blocked + flagged:** F12, Ctrl/Cmd+Shift+I/J/C/K, Cmd+Option+I/J/C (tools shortcuts), Ctrl/Cmd+U (view source),
+  screenshot keys.
+- **No longer flagged (pointless ones):** right-click, save (Ctrl/Cmd+S), print (Ctrl/Cmd+P). Save and print are still
+  stopped quietly.
+- **Right-click works in text boxes** (journal, chat, forms) so spelling suggestions show; elsewhere there's simply no
+  menu, with no warning.
+- Honest limit: no website can stop a browser opening its own tools (the Chrome menu always can). What this does is
+  make them useless on the site and tell you who tried.
+
+## Automatic 5-minute timeout
+Heavy abuse locks a member out of the whole site for 5 minutes, automatically:
+- 5+ serious flags in 10 minutes (developer tools shortcuts, view source, screenshot keys, developer tools opened),
+- developer tools opened twice in 30 minutes,
+- 300+ requests in 10 minutes, or 60+ uploads in 10 minutes.
+Right-clicks, save and print never count. Admins are never timed out.
+- While timed out every request is refused (423) and the page shows "Timed out" with a countdown and the reason; it
+  comes back by itself when the time's up (refreshing doesn't skip it). Staff get a "Timed out for 5 minutes" alert,
+  and the member's flags show a `timeouts` count.
+- Stored as `timeout:<id>` in Redis with a 5-minute expiry; nothing else about the member changes.

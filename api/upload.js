@@ -8,7 +8,7 @@
 //   - older stores: BLOB_READ_WRITE_TOKEN (client-token uploads)
 const { handleUpload, handleUploadPresigned } = require('@vercel/blob/client');
 const { issueSignedToken } = require('@vercel/blob');
-const { readSession, isAdmin, json, rateLimit, staffAlert, clientIp } = require('./_lib');
+const { readSession, isAdmin, json, rateLimit, staffAlert, clientIp, timeoutUser } = require('./_lib');
 const { storeId, rwToken, oidcToken } = require('./_blob');
 
 const VIDEO = { types: ['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v'], max: 5 * 1024 * 1024 * 1024 };      // 5 GB
@@ -92,7 +92,7 @@ module.exports = async (req, res) => {
     const p = body.payload && body.payload.pathname;
     rules = typeof p === 'string' ? rulesFor(p, s) : null;
     if (!rules) return json(res, 403, { error: 'You can\'t upload there.' });
-    if (!isAdmin(s) && !(await rateLimit('upload:' + s.user.id, 60, 600))) return (await staffAlert('upload-limit', { id: s.user.id, name: s.user.displayName || s.user.username, ip: clientIp(req) }, 'Over 60 uploads in 10 minutes.'), json(res, 429, { error: 'Too many uploads in a row. Wait a few minutes and try again.' }));
+    if (!isAdmin(s) && !(await rateLimit('upload:' + s.user.id, 60, 600))) return (await staffAlert('upload-limit', { id: s.user.id, name: s.user.displayName || s.user.username, ip: clientIp(req) }, 'Over 60 uploads in 10 minutes.'), await timeoutUser({ id: s.user.id, name: s.user.displayName || s.user.username, ip: clientIp(req) }, 'Uploaded too many files too fast (60+ in 10 minutes)'), json(res, 429, { error: 'Too many uploads in a row. Wait a few minutes and try again.' }));
   }
   const r = rules || FILE;
 
