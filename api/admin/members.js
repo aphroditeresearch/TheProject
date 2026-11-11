@@ -167,7 +167,9 @@ async function postTagged(hook, items) {
 
 // ---------- people in the Discord with a program role who have never signed in to the website ----------
 // Needs a bot in the server (DISCORD_BOT_TOKEN, with "Server Members Intent" on) to read the member list.
-const skipRolesList = () => String(process.env.NUDGE_SKIP_ROLES || '1569879952361529494').split(',').map((x) => x.trim()).filter(Boolean);
+const skipRolesList = () => String(process.env.NUDGE_SKIP_ROLES || '1569879952361529494,1553546449474555964').split(',').map((x) => x.trim()).filter(Boolean);
+// people who are never called out (daily warnings or the "not on the website" callout), whatever their roles
+const skipUsersList = () => String(process.env.NUDGE_SKIP_USERS || '533891270771343391').split(',').map((x) => x.trim()).filter(Boolean);
 const modIdsList = () => String(process.env.MOD_IDS || '505505326532132868').split(',').map((x) => x.trim()).filter(Boolean);
 function siteLink() {
   const u = process.env.SITE_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? 'https://' + process.env.VERCEL_PROJECT_PRODUCTION_URL : '');
@@ -196,7 +198,7 @@ async function notJoined() {
   const content = await contentWithDefaults();
   const extra = String(process.env.JOIN_ROLES || '').split(',').map((x) => x.trim()).filter(Boolean);
   const program = new Set(chapterRoles(content.curriculum).concat(Object.values(ROLES || {}), extra).map(String).filter((x) => /^\d{5,25}$/.test(x)));
-  const site = new Set((await listMembers()).map((m) => m.id)), skip = skipRolesList(), staff = adminIds().concat(modIdsList());
+  const site = new Set((await listMembers()).map((m) => m.id)), skip = skipRolesList(), staff = adminIds().concat(modIdsList(), skipUsersList());
   const list = g.members.filter((gm) => gm && gm.user && !gm.user.bot && !site.has(gm.user.id) && !staff.includes(gm.user.id) &&
       (gm.roles || []).some((r) => program.has(String(r))) && !(gm.roles || []).some((r) => skip.includes(String(r))))
     .map((gm) => ({ id: gm.user.id, name: gm.nick || gm.user.global_name || gm.user.username, username: gm.user.username, joinedDiscord: gm.joined_at || null,
@@ -237,7 +239,7 @@ async function dailyNudge() {
   const mods = String(process.env.MOD_IDS || '505505326532132868').split(',').map((x) => x.trim());
   // members with these Discord roles never get the daily warnings and aren't counted as students in the recap (NUDGE_SKIP_ROLES, comma-separated)
   const skipRoles = skipRolesList();
-  const admins = adminIds(), everyone = await listMembers(), members = everyone.filter((m) => !admins.includes(m.id) && !mods.includes(m.id) && !(m.roles || []).some((r) => skipRoles.includes(String(r))));
+  const admins = adminIds(), everyone = await listMembers(), members = everyone.filter((m) => !admins.includes(m.id) && !mods.includes(m.id) && !(m.roles || []).some((r) => skipRoles.includes(String(r))) && !skipUsersList().includes(m.id));
   let journaled = 0, total = 0, pnl = 0, followed = 0, answered = 0; const missing = [], clean = [], warn = {};
   const content = await contentWithDefaults().catch(() => null), now = Date.now();
   const dayAgo = new Date(now - 864e5).toISOString(), quiet = new Date(now - 5 * 864e5).toISOString(), bdDue = new Date(now - 3 * 864e5).toISOString();

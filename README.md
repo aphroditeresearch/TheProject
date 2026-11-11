@@ -789,7 +789,9 @@ Everything below adds to what's stored. Journal entries, hand-ins and notes are 
     `@member, you're on a warning. If you continue the lack of effort, you will be demoted. Reason why: @reason`
   - The recap's **Group P&L** is the same number as Stats → Everyone combined → Today: every journal (staff included),
     funded + evaluation trades only, denied entries left out, to the cent.
-  - Members with the Discord role **1569879952361529494** are never warned and aren't counted as students in the recap
+  - Never called out (daily warnings or the "not on the website" callout): roles **1569879952361529494** and
+    **1553546449474555964**, and user **533891270771343391** (`NUDGE_SKIP_USERS`, comma-separated user IDs).
+  - Members with a skipped role are never warned and aren't counted as students in the recap
     (their funded/eval trades still count in Group P&L, same as Stats). Change or add roles with **`NUDGE_SKIP_ROLES`**
     (comma-separated role IDs). Roles are read from the member's last sign-in.
   - Reasons (several can show, comma-separated):
@@ -840,7 +842,8 @@ computer and phone).
 Finds everyone in the Discord server who has one of the program roles (Grounded, Awakened, Illuminated, Enlightened,
 every chapter's role, plus any in `JOIN_ROLES`) but has never signed in to the website, and tags them in Discord:
 `@member, you haven't joined the website yet. Sign in at <site> with Discord to start your journal and lectures.`
-- Left out: admins, the moderator(s), bots, and anyone with a role in `NUDGE_SKIP_ROLES` (default 1569879952361529494).
+- Left out: admins, the moderator(s), bots, and anyone with a role in `NUDGE_SKIP_ROLES` (default 1569879952361529494, 1553546449474555964) or listed in
+  `NUDGE_SKIP_USERS` (default 533891270771343391).
 - **Automatic:** posted with the weekday 4:30 pm recap, on Mondays by default (no extra cron job). `JOIN_CALLOUT` =
   `monday` (default) · `daily` · `off`.
 - **By hand:** Admin → Coaching → "👋 In the Discord but not on the website" shows the list (read live from Discord when
