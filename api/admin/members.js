@@ -152,9 +152,11 @@ async function dailyNudge() {
   if (!hookReady(hook)) return { ok: false, error: 'no_webhook' };
   const today = nyToday(), wd = new Date(today + 'T12:00:00Z').getUTCDay();
   if (wd === 0 || wd === 6) return { ok: true, skipped: 'weekend' };
-  // students only: not admins, not moderators
+  // students only: not admins, not moderators, not the skipped roles
   const mods = String(process.env.MOD_IDS || '505505326532132868').split(',').map((x) => x.trim());
-  const admins = adminIds(), everyone = await listMembers(), members = everyone.filter((m) => !admins.includes(m.id) && !mods.includes(m.id));
+  // members with these Discord roles never get the daily warnings and aren't counted as students in the recap (NUDGE_SKIP_ROLES, comma-separated)
+  const skipRoles = String(process.env.NUDGE_SKIP_ROLES || '1569879952361529494').split(',').map((x) => x.trim()).filter(Boolean);
+  const admins = adminIds(), everyone = await listMembers(), members = everyone.filter((m) => !admins.includes(m.id) && !mods.includes(m.id) && !(m.roles || []).some((r) => skipRoles.includes(String(r))));
   let journaled = 0, total = 0, pnl = 0, followed = 0, answered = 0; const missing = [], clean = [], warn = {};
   const content = await contentWithDefaults().catch(() => null), now = Date.now();
   const dayAgo = new Date(now - 864e5).toISOString(), quiet = new Date(now - 5 * 864e5).toISOString(), bdDue = new Date(now - 3 * 864e5).toISOString();
