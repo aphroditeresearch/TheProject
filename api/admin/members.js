@@ -154,7 +154,7 @@ async function dailyNudge() {
   if (wd === 0 || wd === 6) return { ok: true, skipped: 'weekend' };
   // students only: not admins, not moderators
   const mods = String(process.env.MOD_IDS || '505505326532132868').split(',').map((x) => x.trim());
-  const admins = adminIds(), members = (await listMembers()).filter((m) => !admins.includes(m.id) && !mods.includes(m.id));
+  const admins = adminIds(), everyone = await listMembers(), members = everyone.filter((m) => !admins.includes(m.id) && !mods.includes(m.id));
   let journaled = 0, total = 0, pnl = 0, followed = 0, answered = 0; const missing = [], clean = [], warn = {};
   const content = await contentWithDefaults().catch(() => null), now = Date.now();
   const dayAgo = new Date(now - 864e5).toISOString(), quiet = new Date(now - 5 * 864e5).toISOString(), bdDue = new Date(now - 3 * 864e5).toISOString();
@@ -166,7 +166,7 @@ async function dailyNudge() {
     if (!ents.length) { missing.push(m.id); why.push('lack of journals'); }
     else {
       journaled++;
-      ents.forEach((e) => { if (typeof e.followed === 'boolean') { answered++; if (e.followed) followed++; } if (e.kind === 'trade' && /^(funded|evaluation)$/i.test(String(e.account || '').trim())) pnl += +e.pnl || 0; });
+      ents.forEach((e) => { if (typeof e.followed === 'boolean') { answered++; if (e.followed) followed++; } });
       if (ents.every((e) => e.followed === true)) clean.push(m.displayName || m.username || 'A student');
     }
     // the breakdown they're on (open, not handed in) has been out for 3+ days with no notes
@@ -184,8 +184,14 @@ async function dailyNudge() {
     if (why.length) warn[m.id] = why;
   }));
   if (!total) return { ok: true, skipped: 'no_journals' };
+  // group P&L: exactly what Stats → Everyone combined → Today shows (every journal, staff included, funded + evaluation, not denied)
+  await Promise.all(everyone.map(async (m) => {
+    Object.values(await loadEntries(m.id)).forEach((e) => {
+      if (e.kind === 'trade' && e.date === today && entryStatus(e) !== 'denied' && /^(funded|evaluation)$/i.test(String(e.account || '').trim())) pnl += +e.pnl || 0; });
+  }));
+  pnl = Math.round(pnl * 100) / 100;
   const day = new Date(today + 'T12:00:00Z').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
-  const money = (n) => (n < 0 ? '−$' : '+$') + Math.abs(Math.round(n)).toLocaleString('en-US');
+  const money = (n) => (n < 0 ? '−$' : '+$') + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 2 });
   const lines = ['📊 **Daily recap · ' + day + '**',
     '✅ ' + journaled + ' of ' + total + ' students journaled' + (answered ? ' · rules kept ' + Math.round(followed / answered * 100) + '%' : ''),
     '💰 Group P&L (funded + evaluation): ' + money(pnl)];

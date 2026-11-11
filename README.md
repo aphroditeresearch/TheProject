@@ -787,6 +787,8 @@ Everything below adds to what's stored. Journal entries, hand-ins and notes are 
     funded + evaluation P&L and who kept every rule. Then it posts a warning for every student (not admins or mods)
     with at least one reason, one line each:
     `@member, you're on a warning. If you continue the lack of effort, you will be demoted. Reason why: @reason`
+  - The recap's **Group P&L** is the same number as Stats → Everyone combined → Today: every journal (staff included),
+    funded + evaluation trades only, denied entries left out, to the cent.
   - Reasons (several can show, comma-separated):
     - **lack of journals**: nothing journaled today (or no journal set up)
     - **lack of breakdown notes**: the breakdown they're on has been out 3+ days and they haven't handed in notes
