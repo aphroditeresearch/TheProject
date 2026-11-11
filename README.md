@@ -740,6 +740,10 @@ Everything below adds to what's stored. Journal entries, hand-ins and notes are 
   writes, their mentor is notified, and it shows in the admins' bell. Every student's mentor is **Osman** by default
   (env `DEFAULT_MENTOR` changes it); an admin can pick a different mentor on the student's page. The default isn't
   written anywhere, so nothing in the `mentors` hash changes.
+  - **Live:** an open conversation checks for new messages every 4 seconds (every 15 after 3 quiet minutes, paused when
+    the tab is in the background), so replies show up without a refresh, for students and mentors alike. New messages
+    are added at the bottom, so a voice note that's playing keeps playing. With the conversation closed, a student's
+    bell picks up a mentor reply within about 45 seconds, with a "New message from your mentor" pop-up.
   - Storage: `thread:<student>:<item>` (messages), `tmeta:<student>` (one line per thread), `tunread:<reader>`.
   - Uploads go to `members/<id>/thread/` in Blob. `vercel.json` now allows the microphone on this site
     (`microphone=(self)`) for voice notes.
@@ -760,6 +764,10 @@ Everything below adds to what's stored. Journal entries, hand-ins and notes are 
     shows the right balance, wins and losses straight away. The card says how many it picked up. If two accounts of the
     same type could take a trade, the one that started latest gets it. Untick "Count trades already in my journal" to
     count only linked trades (`pullOld`). Nothing on the trades is changed; it's worked out when the card is drawn.
+  - **Consistency rule (%)**, for evaluation and funded accounts alike: the best trading day can't be more than this
+    share of the total profit. The card shows the best day as a % of profit and, if it's over, how much more profit is
+    needed (without a bigger day) to meet it. "Profit target reached" only counts once the rule is met, and Triage flags
+    a student who is at the target but not consistent yet.
 - **Admin → Coaching (first tab):**
   - **Triage:** every student, most urgent first. It flags:
     - messages waiting for a reply
@@ -776,8 +784,16 @@ Everything below adds to what's stored. Journal entries, hand-ins and notes are 
     course progress, their rules and latest entries (each with its conversation).
 - **Discord daily recap:** add **`DISCORD_RECAP_WEBHOOK`** (a Discord channel webhook) in Vercel.
   - Weekdays around 4:30 pm New York, the second Vercel Cron posts how many students journaled, rules kept %, the group's
-    funded + evaluation P&L and who kept every rule. It also @mentions every student with a journal who hasn't journaled
-    that day.
+    funded + evaluation P&L and who kept every rule. Then it posts a warning for every student (not admins or mods)
+    with at least one reason, one line each:
+    `@member, you're on a warning. If you continue the lack of effort, you will be demoted. Reason why: @reason`
+  - Reasons (several can show, comma-separated):
+    - **lack of journals**: nothing journaled today (or no journal set up)
+    - **lack of breakdown notes**: the breakdown they're on has been out 3+ days and they haven't handed in notes
+    - **no response**: a mentor wrote to them over a day ago and they haven't replied
+    - **inactivity**: not on the site and no work for 5+ days
+  - To change the wording, add **`NUDGE_MESSAGE`** in Vercel: `@member` becomes the tag and `@reason` the reasons. Up to 20 tags per
+    Discord message, so a big list goes out as a few messages.
   - It needs `CRON_SECRET`, as the backup does. "Send today's now" in Admin → Coaching posts it on demand.
   - This uses both of the free plan's cron jobs (backup + recap).
 
@@ -803,3 +819,14 @@ movement. Markup is `#sig`/`.sig-lock`; the styles start at `.sig-lock`.
 ## Lesson videos
 - Once a video has started, pausing it no longer darkens the frame: the paused picture shows as normal with just the
   play button over it. Before the first play the cover stays (it hides YouTube's title and branding).
+
+## P&L only counts funded + evaluation
+Paper, demo and personal/live trades stay in the journal but never count toward P&L, win rate or stats. That now
+holds everywhere: Stats, the journal sidebar, the calendar (a paper-only day shows "Not counted"), the entry list summary
+(it says how many trades weren't counted), Triage, the admin journal day view, the daily report and its copied summary,
+the Discord recap, share cards and the leaderboards. Denied entries don't count either.
+
+## Sign-in → top bar
+The logo now lands exactly on the top bar's logo: the TP, the divider and the name ease into the bar's spacing and glow
+on the way, and the flight is aimed at where the bar's logo is on every frame (checked to within a quarter of a pixel on
+computer and phone).

@@ -7,7 +7,7 @@
 // GET  /api/coach?inbox=1                  → { items:[{ owner, ownerName, item, n, last }] } unread conversations for the reader
 // POST { action:'say', item, uid?, text, files?, audio?, mark? } → add a message (mark = a drawing over one of the student's screenshots)
 // POST { action:'goal', uid?, text, week? }      → set (or clear, with empty text) the focus goal for a week (default: this week)
-// POST { action:'acct-save', uid?, acct } / { action:'acct-delete', uid?, id } → a prop account (start, target, drawdown…)
+// POST { action:'acct-save', uid?, acct } / { action:'acct-delete', uid?, id } → a prop account (start, target, drawdown, daily loss, consistency %…)
 // POST { action:'mentor', uid, mentorId }        → assign a student to a mentor (staff only; '' = nobody)
 const crypto = require('crypto');
 const { readSession, isAdmin, adminIds, kvConfigured, json, rateLimit, listMembers } = require('./_lib');
@@ -45,6 +45,8 @@ function cleanAccount(a, old) {
   if (out.maxDD !== undefined && !(out.maxDD > 0)) delete out.maxDD;
   if (out.target !== undefined && !(out.target > 0)) delete out.target;
   if (out.dailyLoss !== undefined && !(out.dailyLoss > 0)) delete out.dailyLoss;
+  // consistency rule: the best day can't be more than this % of the total profit (e.g. 50 on a Topstep eval, 30 at Apex)
+  const cons = num(a.consistency); if (cons > 0 && cons <= 100) out.consistency = Math.round(cons * 10) / 10;
   return { acct: out };
 }
 

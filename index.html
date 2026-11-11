@@ -229,7 +229,7 @@ a{color:var(--blue);text-underline-offset:3px}
 .sig.draw .sig-lock{animation:sigSlide .7s cubic-bezier(.6,0,.2,1) 1.25s forwards}
 .sig.draw .sig-div{animation:sigGrow .4s ease 1.2s forwards}
 .sig.draw .sig-wm{animation:sigWipe .7s cubic-bezier(.6,0,.2,1) 1.3s forwards}
-.sig-ghost{position:fixed;z-index:75;margin:0;pointer-events:none;transform-origin:0 0;transition:transform .8s cubic-bezier(.65,0,.2,1)}
+.sig-ghost{position:fixed;z-index:75;margin:0;pointer-events:none;transform-origin:0 0;will-change:transform}
 .sig-ghost *{animation:none!important}.sig-ghost .sig-wm{clip-path:none}.sig-ghost .sig-div{transform:none}.sig-ghost .sig-tpp{fill:url(#sigmint);stroke:transparent;stroke-dashoffset:0}
 .sig-line{width:min(560px,76vw);height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,#14A39D 18%,#14A39D 82%,transparent);box-shadow:0 0 18px rgba(20,163,157,.7);transform:scaleX(0);transition:transform .7s cubic-bezier(.2,.8,.2,1) 1.75s;margin-top:-6px}
 .sig.draw .sig-line{transform:scaleX(1)}
@@ -890,7 +890,7 @@ table.mem td:first-child,table.mem th:first-child{width:34px}
 .pa.danger{border-color:rgba(240,84,84,.55)}.pa.blown{border-color:var(--loss);background:rgba(240,84,84,.06)}.pa.passed{border-color:rgba(59,227,143,.5)}
 .pa-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.pa-h b{font-size:15px}.pa-k{color:var(--muted);font-size:12.5px}.pa-h .lnk{margin-left:auto}
 .pa-big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.pa-big b{font:700 22px var(--mono)}.pa-big span{font-size:13px;color:var(--muted)}.pa-big .win{color:var(--win)}.pa-big .loss{color:var(--loss)}
-.pa small{font-size:12.5px;color:var(--muted)}.pa small.pa-src{font-style:italic;opacity:.85}.pa small.warn{color:#E8D27A}.pa small.bad{color:var(--loss)}
+.pa small{font-size:12.5px;color:var(--muted)}.pa small.pa-src{font-style:italic;opacity:.85}.pa small.ok{color:var(--win)}.pa small.warn{color:#E8D27A}.pa small.bad{color:var(--loss)}
 .pa-bar{height:6px;background:var(--panel-2);border:1px solid var(--line)}.pa-bar i{display:block;height:100%;background:var(--win)}
 .pa-bar.dd i{background:linear-gradient(90deg,var(--loss),#E8D27A 40%,var(--win))}
 .pa-form{display:flex;flex-direction:column;gap:10px;grid-column:1/-1;padding:14px 16px;border:1px solid var(--line)}
@@ -2095,7 +2095,13 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     if (DEMO_MODE || !BACKEND || !SESSION || adminView() || document.hidden || Date.now() - lastPoll < 10000) return;
     var pv = document.getElementById('portal-view'); if (!pv || pv.hidden) return;
     lastPoll = Date.now();
-    if (!SESSION.isAdmin && (++pollN % 3 === 0)) Promise.all([loadMe(), coachLoad()]).then(paintFb);   // journal + certificate reviews, about every 2 minutes
+    if (!SESSION.isAdmin){
+      // mentor replies: checked every poll so the bell lights up without a refresh; journal + certificate reviews about every 2 minutes
+      var before = (COACH.unread || []).reduce(function(t, u){ return t + (+u.n || 0); }, 0);
+      Promise.all([(++pollN % 3 === 0) ? loadMe() : null, coachLoad()]).then(function(){ paintFb();
+        var after = (COACH.unread || []).reduce(function(t, u){ return t + (+u.n || 0); }, 0);
+        if (after > before) toast('💬 New message from your mentor. Open the bell to read it.'); });
+    }
     fetch(contentUrl(), { credentials:'same-origin', cache:'no-store' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
       if (!j || !j.content || !LAST_SIG) return;
       var a = accessSig(j.content); if (a.sig === LAST_SIG) return;
@@ -3289,18 +3295,35 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       if (m.files && m.files.length) b.appendChild(fileChips(m.files));
       n.appendChild(b); return n;
     }
-    function draw(msgs){
-      list.textContent = '';
-      if (!msgs.length) list.appendChild(el('p','th-empty', opts.staffView ? 'No messages yet. Say what you see: they get a notification.' : 'No messages yet. Ask your mentor anything about this: they get a notification.'));
-      msgs.forEach(function(m){ list.appendChild(msgNode(m)); });
-      list.scrollTop = list.scrollHeight;
+    // messages are added, never redrawn, so a voice note that's playing keeps playing when a new message comes in
+    var seen = {}, loaded = false;
+    function add(arr){
+      var fresh = (arr || []).filter(function(m){ return m && m.id && !seen[m.id]; }); if (!fresh.length && loaded) return 0;
+      var nearEnd = list.scrollHeight - list.scrollTop - list.clientHeight < 80;
+      if (!loaded){ list.textContent = ''; loaded = true; }
+      var em = list.querySelector('.th-empty'); if (em && fresh.length) em.remove();
+      fresh.forEach(function(m){ seen[m.id] = 1; list.appendChild(msgNode(m)); });
+      if (!list.children.length) list.appendChild(el('p','th-empty', opts.staffView ? 'No messages yet. Say what you see: they get a notification.' : 'No messages yet. Ask your mentor anything about this: they get a notification.'));
+      if (nearEnd || fresh.some(function(m){ return m.by === me; })) list.scrollTop = list.scrollHeight;
+      return fresh.length;
     }
-    var msgs = [];
-    if (DEMO_MODE) draw([]);
-    else fetch('/api/coach?thread=' + encodeURIComponent(item) + (owner !== me ? '&uid=' + owner : ''), { credentials:'same-origin', cache:'no-store' })
-      .then(function(r){ return r.ok ? r.json() : { messages:[] }; }).then(function(j){ msgs = j.messages || []; draw(msgs);
-        COACH.unread = (COACH.unread || []).filter(function(u){ return !(u.owner === owner && u.item === item); }); if (typeof paintFb === 'function') paintFb(); })
-      .catch(function(){ list.textContent = ''; list.appendChild(el('p','th-empty','Couldn\'t load the conversation.')); });
+    var url = '/api/coach?thread=' + encodeURIComponent(item) + (owner !== me ? '&uid=' + owner : ''), busyGet = false, lastNew = Date.now();
+    function pull(first){
+      if (busyGet) return Promise.resolve(); busyGet = true;
+      return fetch(url, { credentials:'same-origin', cache:'no-store' }).then(function(r){ return r.ok ? r.json() : { messages:[] }; }).then(function(j){
+        busyGet = false; var arr = j.messages || [], n = add(arr);
+        if (n && !first){ lastNew = Date.now(); var last = arr[arr.length - 1]; if (opts.onSent && last) opts.onSent({ n: arr.length }); }
+        COACH.unread = (COACH.unread || []).filter(function(u){ return !(u.owner === owner && u.item === item); }); if (typeof paintFb === 'function') paintFb();
+      }, function(){ busyGet = false; if (first){ list.textContent = ''; list.appendChild(el('p','th-empty','Couldn\'t load the conversation.')); } });
+    }
+    if (DEMO_MODE) add([]);
+    else {
+      pull(true);
+      // live: new messages show up on their own while the conversation is open (every 4 s; every 15 s after 3 quiet minutes; paused in a background tab)
+      (function loop(){ setTimeout(function(){ if (!box.isConnected) return; if (!document.hidden) pull(false); loop(); }, Date.now() - lastNew > 180000 ? 15000 : 4000); })();
+      var vis = function(){ if (!box.isConnected){ document.removeEventListener('visibilitychange', vis); return; } if (!document.hidden) pull(false); };
+      document.addEventListener('visibilitychange', vis);
+    }
     // composer
     var cmp = el('div','th-new'), ta = inputEl('textarea','', opts.staffView ? 'Reply to the student…' : 'Write to your mentor…'); ta.rows = 2; ta.maxLength = 2000;
     var pend = el('div','th-pend'), tools = el('div','th-tools');
@@ -3350,7 +3373,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var text = ta.value.trim(); if (!text && !P.files.length && !P.audio && !P.mark){ ta.focus(); return; }
       send.disabled = true;
       coachPost({ action:'say', uid: owner, item: item, text: text, files: P.files, audio: P.audio, mark: P.mark }).then(function(r){
-        msgs.push(r.message); draw(msgs); ta.value = ''; P.files = []; P.audio = null; P.mark = null; drawPend();
+        add([r.message]); lastNew = Date.now(); ta.value = ''; P.files = []; P.audio = null; P.mark = null; drawPend();
         if (owner === me){ COACH.meta[item] = r.meta; } if (opts.onSent) opts.onSent(r.meta);
       }).catch(function(e){ toast((e && e.message) || 'Couldn\'t send.'); }).then(function(){ send.disabled = false; });
     });
@@ -3447,7 +3470,11 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     S.toTarget = a.target ? a.target - S.pnl : null;
     S.pct = a.target ? Math.max(0, Math.min(1, S.pnl / a.target)) : null;
     S.ddPct = a.maxDD && S.room !== null ? Math.max(0, Math.min(1, S.room / a.maxDD)) : null;   // 1 = full cushion, 0 = blown
-    S.blown = S.room !== null && S.room <= 0; S.passed = a.target && S.pnl >= a.target;
+    // consistency: the best day as a share of the total profit
+    if (a.consistency){ var best = 0, bestD = ''; Object.keys(days).forEach(function(d){ if (days[d] > best){ best = days[d]; bestD = d; } });
+      var lim = a.consistency / 100; S.best = best; S.bestDay = bestD; S.consPct = S.pnl > 0 ? best / S.pnl : null;
+      S.consOk = S.pnl > 0 && best <= lim * S.pnl + 0.005; S.consNeed = S.pnl > 0 || best > 0 ? Math.max(0, best / lim - S.pnl) : 0; }
+    S.blown = S.room !== null && S.room <= 0; S.hitTarget = !!(a.target && S.pnl >= a.target); S.passed = S.hitTarget && (!a.consistency || S.consOk);
     S.danger = !S.blown && S.ddPct !== null && S.ddPct < .25;
     S.dailyHit = a.dailyLoss && S.today <= -a.dailyLoss;
     return S;
@@ -3459,7 +3486,12 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     c.appendChild(h);
     var big = el('div','pa-big'); big.appendChild(el('b',null, '$' + Math.round(S.bal).toLocaleString('en-US'))); big.appendChild(el('span', S.pnl > 0 ? 'win' : S.pnl < 0 ? 'loss' : '', (S.pnl >= 0 ? '+' : '−') + '$' + Math.abs(Math.round(S.pnl)).toLocaleString('en-US') + ' · ' + S.trades + (S.trades === 1 ? ' trade' : ' trades') + (S.trades ? ' · ' + S.wins + 'W ' + S.losses + 'L' : ''))); c.appendChild(big);
     if (S.unlinked) c.appendChild(el('small','pa-src', 'Includes ' + S.unlinked + ' ' + a.kind + ' ' + (S.unlinked === 1 ? 'trade' : 'trades') + ' from your journal' + (a.startDate ? ' since ' + shortDay(a.startDate) : '') + ' that weren\'t linked to an account'));
-    if (a.target){ var t = el('div','pa-bar'), f = el('i'); f.style.width = Math.round(S.pct * 100) + '%'; t.appendChild(f); c.appendChild(el('small',null, S.passed ? '✓ Profit target reached' : 'Target: $' + Math.round(S.toTarget).toLocaleString('en-US') + ' to go of $' + a.target.toLocaleString('en-US'))); c.appendChild(t); }
+    if (a.target){ var t = el('div','pa-bar'), f = el('i'); f.style.width = Math.round(S.pct * 100) + '%'; t.appendChild(f); c.appendChild(el('small',null, S.passed ? '✓ Profit target reached' : S.hitTarget ? 'Profit target reached, but the consistency rule isn\'t met yet' : 'Target: $' + Math.round(S.toTarget).toLocaleString('en-US') + ' to go of $' + a.target.toLocaleString('en-US'))); c.appendChild(t); }
+    if (a.consistency){ var ct;
+      if (!S.trades || S.best <= 0) ct = 'Consistency ' + a.consistency + '%: no green day yet';
+      else if (S.consOk) ct = '✓ Consistency ' + a.consistency + '%: best day ' + money(S.best) + ' is ' + Math.round(S.consPct * 100) + '% of your ' + money(S.pnl) + ' profit';
+      else ct = 'Consistency ' + a.consistency + '%: best day ' + money(S.best) + (S.pnl > 0 ? ' is ' + Math.round(S.consPct * 100) + '% of your profit' : '') + '. Make ' + money(Math.ceil(S.consNeed)).replace('+', '') + ' more without a bigger day to meet it';
+      c.appendChild(el('small', S.consOk ? 'ok' : S.trades && S.best > 0 ? 'warn' : '', ct)); }
     if (a.maxDD){ var d = el('div','pa-bar dd'), f2 = el('i'); f2.style.width = Math.round((S.ddPct || 0) * 100) + '%'; d.appendChild(f2);
       c.appendChild(el('small', S.blown ? 'bad' : S.danger ? 'warn' : '', S.blown ? '✕ Below the drawdown limit ($' + Math.round(S.floor).toLocaleString('en-US') + ')' : 'Room before the drawdown limit: $' + Math.round(S.room).toLocaleString('en-US') + ' (limit at $' + Math.round(S.floor).toLocaleString('en-US') + ', ' + ({ trailing:'trailing', eod:'end-of-day trailing', static:'static' })[a.ddType] + ')'));
       c.appendChild(d); }
@@ -3474,6 +3506,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     [['Name', tx('name','e.g. Topstep 50K #2')], ['Firm', tx('firm','Topstep, Apex, Tradeify…')], ['Type', sl('kind', [['Evaluation','Evaluation'],['Funded','Funded'],['Personal / live','Personal / live']])],
      ['Starting balance ($)', tx('start','50000','number')], ['Profit target ($)', tx('target','3000','number')], ['Max drawdown ($)', tx('maxDD','2000','number')],
      ['Drawdown type', sl('ddType', [['trailing','Trailing (intraday)'],['eod','Trailing (end of day)'],['static','Static']])], ['Daily loss limit ($, optional)', tx('dailyLoss','1000','number')],
+     ['Consistency rule (%, optional)', tx('consistency','50','number'), 'Best day can\'t be more than this % of your total profit. Check your firm\'s rule for this account (eval and funded can differ).'],
      ['Status', sl('status', [['active','Active'],['passed','Passed'],['paid','Paid out'],['failed','Failed'],['archived','Archived']])],
      ['First trading day on it', tx('startDate','','date'), 'Your trades of this type from this day on count toward it. Leave empty to count all of them.']].forEach(function(r){ g.appendChild(fld(r[0], r[1], r[2])); });
     f.appendChild(g);
@@ -3579,7 +3612,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     if (br >= 2) out.push({ w:30 + br * 5, cls:'bad', t:'Broke their rules ' + br + ' journaled days in a row' });
     else if (br === 1 && dkeys[0] >= addDays(today, -3)) out.push({ w:12, cls:'warn', t:'Broke their rules on ' + shortDay(dkeys[0]) });
     // a big losing day / overtrading on the latest day
-    var dayNet = function(d){ return days[d].filter(function(e){ return e.kind === 'trade'; }).reduce(function(t, e){ return t + (+e.pnl || 0); }, 0); };
+    var dayNet = function(d){ return days[d].filter(function(e){ return e.kind === 'trade' && countsInStats(e); }).reduce(function(t, e){ return t + (+e.pnl || 0); }, 0); };
     var losses = dkeys.slice(0, 30).map(dayNet).filter(function(v){ return v < 0; }), avgL = losses.length ? losses.reduce(function(t, v){ return t + v; }, 0) / losses.length : 0;
     if (dkeys[0] && dkeys[0] >= addDays(today, -3)){ var ln = dayNet(dkeys[0]), nt = days[dkeys[0]].filter(function(e){ return e.kind === 'trade'; }).length;
       var tr = dkeys.slice(0, 30).map(function(d){ return days[d].filter(function(e){ return e.kind === 'trade'; }).length; }).filter(Boolean), avgT = tr.length ? tr.reduce(function(t, v){ return t + v; }, 0) / tr.length : 0;
@@ -3592,7 +3625,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     (m.accounts || []).filter(function(a){ return a.status === 'active'; }).forEach(function(a){ var S = acctState(a, ents, m.accounts);
       if (S.blown) out.push({ w:35, cls:'bad', t: a.name + ' is past its drawdown limit' });
       else if (S.danger) out.push({ w:32, cls:'bad', t: a.name + ': only $' + Math.round(S.room).toLocaleString('en-US') + ' left before the drawdown limit' });
-      if (S.dailyHit) out.push({ w:20, cls:'warn', t: a.name + ': hit the daily loss limit today' }); });
+      if (S.dailyHit) out.push({ w:20, cls:'warn', t: a.name + ': hit the daily loss limit today' });
+      if (S.hitTarget && a.consistency && !S.consOk) out.push({ w:16, cls:'warn', t: a.name + ': at the profit target but not consistent yet (best day ' + Math.round((S.consPct || 0) * 100) + '%, rule ' + a.consistency + '%)' }); });
     // waiting on a review
     var pend = ents.filter(function(e){ return entryStatus(e) === 'pending'; }).length, hin = Object.keys(m.subs || {}).filter(function(k){ return m.subs[k] && m.subs[k].status === 'submitted'; }).length;
     if (pend) out.push({ w: Math.min(15, 4 + pend), cls:'', t: pend + (pend === 1 ? ' journal entry to review' : ' journal entries to review'), go:'journal' });
@@ -3610,9 +3644,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       // the end-of-day Discord nudge
       var nd = el('div','tri-nudge'); host.appendChild(nd);
       if (!DEMO_MODE) fetch('/api/admin/members?nudge=status', { credentials:'same-origin' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){ if (!j) return;
-        nd.appendChild(el('span',null, j.webhook ? '📣 Discord daily recap: on (weekdays ~4:30 pm New York)' + (j.last ? ' · last sent ' + ago(j.last.at) : '') : '📣 Discord daily recap: off. Add DISCORD_RECAP_WEBHOOK in Vercel to post an end-of-day recap that @mentions students who haven’t journaled.'));
+        nd.appendChild(el('span',null, j.webhook ? '📣 Discord daily recap: on (weekdays ~4:30 pm New York)' + (j.last ? ' · last sent ' + ago(j.last.at) : '') : '📣 Discord daily recap: off. Add DISCORD_RECAP_WEBHOOK in Vercel to post an end-of-day recap that tags students with a warning (no journal today, breakdown notes overdue, no reply to their mentor, or inactive).'));
         if (j.webhook){ var sn = el('button','btn-s','Send today’s now'); sn.type = 'button'; sn.addEventListener('click', function(){ if (!confirmInline(sn, 'Sure? Send')) return; sn.disabled = true;
-          adminPost({ action:'nudge-now' }).then(function(r){ toast(r.ok ? 'Posted: ' + r.journaled + ' of ' + r.total + ' journaled, ' + r.missing + ' reminded.' : r.skipped ? 'Nothing sent (' + r.skipped.replace('_',' ') + ').' : 'Didn’t send: ' + (r.error || 'unknown')); }).catch(function(e){ toast(admFail(e)); }).then(function(){ sn.disabled = false; }); }); nd.appendChild(sn); } });
+          adminPost({ action:'nudge-now' }).then(function(r){ toast(r.ok ? 'Posted: ' + r.journaled + ' of ' + r.total + ' journaled, ' + (r.warned || 0) + (r.warned === 1 ? ' warning' : ' warnings') + ' sent.' : r.skipped ? 'Nothing sent (' + r.skipped.replace('_',' ') + ').' : 'Didn’t send: ' + (r.error || 'unknown')); }).catch(function(e){ toast(admFail(e)); }).then(function(){ sn.disabled = false; }); }); nd.appendChild(sn); } });
       host.appendChild(el('p','co-note','Who needs you today, most urgent first: messages waiting for a reply, broken rules, big losses, overtrading, accounts near their drawdown limit, students gone quiet, and reviews waiting.'));
       var studs = rows.filter(function(m){ return !m.isAdmin && (!TRI.mine || m.mentor === uid()); }).map(function(m){ var f = triageOf(m); return { m:m, f:f, w:f.reduce(function(t, x){ return t + x.w; }, 0) }; })
         .sort(function(a, b){ return b.w - a.w || String(b.m.lastSeen || '').localeCompare(String(a.m.lastSeen || '')); });
@@ -3686,7 +3720,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var ed = el('button','lnk','Edit rules'); ed.type = 'button'; ed.addEventListener('click', function(){ JR.editing = true; drawJournal(host); }); side.appendChild(ed); }
     // stats
     var ents = ME.entries || [], month = todayYmd().slice(0,7), mEnts = ents.filter(function(e){ return String(e.date).slice(0,7) === month && entryStatus(e) !== 'denied'; });
-    var trades = mEnts.filter(function(e){ return e.kind === 'trade'; }), wins = trades.filter(function(e){ return e.outcome === 'tp'; }).length;
+    var trades = mEnts.filter(function(e){ return e.kind === 'trade' && countsInStats(e); }), wins = trades.filter(function(e){ return e.outcome === 'tp'; }).length;   // funded + evaluation only
     var st = el('div','jr-stats');
     [['Points this month', mEnts.reduce(function(t, e){ return t + entryPoints(e); }, 0)],
      ['Rules followed', mEnts.length ? Math.round(mEnts.filter(function(e){ return e.followed; }).length / mEnts.length * 100) + '%' : '—'],
@@ -4062,8 +4096,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         if (JL.acct && e.account !== JL.acct) return false; if (JL.model && e.model !== JL.model) return false; if (JL.tag && (e.tags || []).indexOf(JL.tag) < 0) return false;
         if (qq && [e.pair, e.overview, e.model, e.session, e.account, (e.tags || []).join(' '), e.newsWhat].join(' ').toLowerCase().indexOf(qq) < 0) return false;
         return true; }).sort(function(a, b){ return String(b.date + (b.time || '')).localeCompare(String(a.date + (a.time || ''))); });
-      var tr = rows.filter(function(e){ return e.kind === 'trade'; }), pnl = tr.reduce(function(t, e){ return t + (+e.pnl || 0); }, 0), w = tr.filter(function(e){ return e.outcome === 'tp'; }).length;
-      sum.textContent = rows.length + (rows.length === 1 ? ' entry' : ' entries') + (tr.length ? ' · ' + tr.length + ' trades · ' + Math.round(w / tr.length * 100) + '% TP · ' + money(pnl) : '');
+      var tr = rows.filter(function(e){ return e.kind === 'trade' && countsInStats(e); }), pnl = tr.reduce(function(t, e){ return t + (+e.pnl || 0); }, 0), w = tr.filter(function(e){ return e.outcome === 'tp'; }).length;
+      var other = rows.filter(function(e){ return e.kind === 'trade' && !countsInStats(e); }).length;
+      sum.textContent = rows.length + (rows.length === 1 ? ' entry' : ' entries') + (tr.length ? ' · ' + tr.length + ' funded/eval ' + (tr.length === 1 ? 'trade' : 'trades') + ' · ' + Math.round(w / tr.length * 100) + '% TP · ' + money(pnl) : '') + (other ? ' · ' + other + ' not counted (paper, demo, personal or denied)' : '');
       list.textContent = '';
       if (!rows.length) list.appendChild(el('p','pf-none','Nothing matches. Try clearing a filter.'));
       rows.slice(0, JL.n).forEach(function(e){
@@ -4141,7 +4176,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     hd.appendChild(prev); hd.appendChild(ttl); hd.appendChild(next); hd.appendChild(today); wrap.appendChild(hd);
     // month summary
     var mDays = Object.keys(byDay).filter(function(d){ return d.slice(0,7) === JR.month; });
-    var dayPnl = function(d){ return (byDay[d] || []).filter(function(e){ return e.kind === 'trade'; }).reduce(function(t, e){ return t + (+e.pnl || 0); }, 0); };   // real P&L, approved or not
+    var dayPnl = function(d){ return (byDay[d] || []).filter(function(e){ return e.kind === 'trade' && countsInStats(e); }).reduce(function(t, e){ return t + (+e.pnl || 0); }, 0); };   // funded + evaluation only, like Stats
     var net = mDays.reduce(function(t, d){ return t + dayPnl(d); }, 0), gd = mDays.filter(function(d){ return dayPnl(d) > 0; }).length, rd = mDays.filter(function(d){ return dayPnl(d) < 0; }).length;
     var sm = el('div','cal-sum');
     [[money(net), 'Net P&L', net > 0 ? 'win' : net < 0 ? 'loss' : ''], [String(gd), 'Green days', 'win'], [String(rd), 'Red days', 'loss'], [String(mDays.length), 'Days logged', '']].forEach(function(x){
@@ -4155,7 +4190,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     for (var dn = 1; dn <= days; dn++){
       (function(dn){
         var d = JR.month + '-' + String(dn).padStart(2,'0'), es = byDay[d] || [];
-        var pnl = dayPnl(d), trades = es.filter(function(e){ return e.kind === 'trade'; }).length;
+        var pnl = dayPnl(d), allTr = es.filter(function(e){ return e.kind === 'trade'; }).length, trades = es.filter(function(e){ return e.kind === 'trade' && countsInStats(e); }).length;
         var cls = 'cal-c' + (es.length ? (trades ? (pnl > 0 ? ' win' : pnl < 0 ? ' loss' : ' flat') : ' none') : '') + (d === tdy ? ' today' : '') + (JR.day === d ? ' sel' : '')
           + (es.some(function(e){ return entryStatus(e) === 'pending'; }) ? ' pend' : '');
         var open = es.length || d <= tdy || (ME.dayNotes && ME.dayNotes[d]);
@@ -4163,9 +4198,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         c.style.setProperty('--i', dn);
         c.appendChild(el('span','cal-n', String(dn)));
         if (es.length){
-          c.appendChild(el('b','cal-p', trades ? shortMoney(pnl) : 'No trade'));
+          c.appendChild(el('b','cal-p', trades ? shortMoney(pnl) : allTr ? 'Not counted' : 'No trade'));
           c.appendChild(el('span','cal-k', es.length + (es.length === 1 ? ' entry' : ' entries')));
-          c.setAttribute('aria-label', d + ': ' + (trades ? money(pnl) : 'no trades') + ', ' + es.length + ' entries');
+          c.setAttribute('aria-label', d + ': ' + (trades ? money(pnl) : allTr ? 'paper or demo trades only' : 'no trades') + ', ' + es.length + ' entries');
         }
         if (open) c.addEventListener('click', function(){ var dd = tradeDay(d); JR.day = JR.day === dd ? null : dd; drawJournal(host); });   // Sunday opens Monday
         g.appendChild(c);
@@ -6402,7 +6437,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         var head = el('div','jd-h'), ht = el('div');
         ht.appendChild(el('h3',null, new Date(JRV.day + 'T12:00:00').toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' })));
         var people = {}; xs.forEach(function(x){ people[x.m.id] = 1; });
-        var net = xs.filter(function(x){ return x.e.kind === 'trade'; }).reduce(function(t, x){ return t + (+x.e.pnl || 0); }, 0);
+        var net = xs.filter(function(x){ return x.e.kind === 'trade' && countsInStats(x.e); }).reduce(function(t, x){ return t + (+x.e.pnl || 0); }, 0);
         ht.appendChild(el('span','adm-note', xs.length + (xs.length === 1 ? ' entry' : ' entries') + ' from ' + Object.keys(people).length + (Object.keys(people).length === 1 ? ' member' : ' members') + ' · net ' + money(net) + ' · ' + xs.filter(function(x){ return x.st === 'pending'; }).length + ' waiting'));
         head.appendChild(ht);
         if (xs.length){ var go = el('button','btn-s pri','▶ Walk through on a call'); go.type = 'button'; go.addEventListener('click', function(){ openWalk(xs, 0); }); head.appendChild(go); }
@@ -6461,11 +6496,12 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         .sort(function(a, b){ return String(a.time || '').localeCompare(String(b.time || '')); });
       var note = (m.dayNotes || {})[D] || null;
       var tr = es.filter(function(e){ return e.kind === 'trade'; });
-      return { m:m, es:es, note:note, tr:tr, pnl: tr.reduce(function(t, e){ return t + (+e.pnl || 0); }, 0) };
+      return { m:m, es:es, note:note, tr:tr, pnl: tr.filter(countsInStats).reduce(function(t, e){ return t + (+e.pnl || 0); }, 0) };   // P&L: funded + evaluation only
     });
     var did = per.filter(function(x){ return x.es.length || x.note; }), missing = per.filter(function(x){ return !x.es.length && !x.note && !x.m.isAdmin; });
     did.sort(function(a, b){ return (b.es.length ? 1 : 0) - (a.es.length ? 1 : 0) || String(a.m.displayName || a.m.username).localeCompare(String(b.m.displayName || b.m.username)); });
     var allTr = [], allEs = []; did.forEach(function(x){ allTr = allTr.concat(x.tr); x.es.forEach(function(e){ allEs.push({ m:x.m, e:e, st: entryStatus(e) }); }); });
+    allTr = allTr.filter(countsInStats);
     var c = { tp:0, sl:0, be:0 }; allTr.forEach(function(e){ if (c[e.outcome] !== undefined) c[e.outcome]++; });
     var nt = did.filter(function(x){ return x.es.length && !x.tr.length; }).length;
     var foll = allEs.length ? Math.round(allEs.filter(function(x){ return x.e.followed; }).length / allEs.length * 100) : null;
@@ -7207,13 +7243,37 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var lock = document.getElementById('sig-lock'), bar = document.querySelector('#portal-view .bar .brand');
     o.classList.add('out');
     if (reduce || !lock || !bar || !bar.offsetWidth) return;
-    var from = lock.getBoundingClientRect(), tp = bar.querySelector('.tp-svg'), to = (tp || bar).getBoundingClientRect(), tpFrom = lock.querySelector('.sig-tp').getBoundingClientRect();
+    var tp = bar.querySelector('.tp-svg') || bar, from = lock.getBoundingClientRect(), tpFrom = lock.querySelector('.sig-tp').getBoundingClientRect();
+    // the TP drawing sits 2 units inside its 580 × 277 box (room for the outline); the bar's TP fills its box exactly
+    var gx = tpFrom.left + tpFrom.width * 2 / 580, gy = tpFrom.top + tpFrom.height * 2 / 277, gh = tpFrom.height * 273 / 277;
     var g = lock.cloneNode(true); g.removeAttribute('id'); g.className = 'sig-lock sig-ghost';
     g.style.left = from.left + 'px'; g.style.top = from.top + 'px'; g.style.width = from.width + 'px'; g.style.height = from.height + 'px'; g.style.transform = 'none';
     document.body.appendChild(g); lock.style.visibility = 'hidden'; bar.style.visibility = 'hidden';
-    var sc = to.height / tpFrom.height;
-    requestAnimationFrame(function(){ requestAnimationFrame(function(){ g.style.transform = 'translate(' + (to.left - tpFrom.left) + 'px,' + (to.top - tpFrom.top) + 'px) scale(' + sc + ')'; }); });
-    SIG.timers.push(setTimeout(function(){ bar.style.visibility = ''; g.remove(); lock.style.visibility = ''; }, 850));
+    // the sign-in lockup is spaced a little wider than the top bar's, so the gap, divider and wordmark ease into the bar's
+    // proportions on the way (otherwise the TP lands but the name next to it jumps)
+    var gtp = g.querySelector('.sig-tp'), gdv = g.querySelector('.sig-div'), gwm = g.querySelector('.sig-wm'), bdv = bar.querySelector('.lk-div'), bwm = bar.querySelector('.wm-svg');
+    var dv0 = gdv.getBoundingClientRect(), A = { gap: parseFloat(getComputedStyle(g).columnGap) || 0, dw: dv0.width || 1, dh: dv0.height, wh: gwm.getBoundingClientRect().height };
+    g.style.width = 'max-content'; g.style.gap = A.gap + 'px'; gdv.style.width = A.dw + 'px'; gdv.style.height = A.dh + 'px'; gwm.style.height = A.wh + 'px';
+    // driven frame by frame and aimed at where the bar's logo is *now*, so it still lands exactly if the page shifts while it flies
+    var t0 = 0, D = 820, done = false;
+    var ease = function(t){ return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+    function place(e){
+      var to = tp.getBoundingClientRect(), s = to.height / gh;
+      var tx = to.left - from.left - (gx - from.left) * s, ty = to.top - from.top - (gy - from.top) * s;
+      g.style.transform = 'translate(' + (tx * e) + 'px,' + (ty * e) + 'px) scale(' + (1 + (s - 1) * e) + ')';
+      if (bdv && bwm){ var d = bdv.getBoundingClientRect(), w = bwm.getBoundingClientRect(), mix = function(a, b){ return a + (b - a) * e; };
+        g.style.gap = mix(A.gap, (d.left - to.left) / s - tpFrom.width * 578 / 580) + 'px';
+        gdv.style.width = mix(A.dw, d.width / s) + 'px'; gdv.style.height = mix(A.dh, d.height / s) + 'px'; gwm.style.height = mix(A.wh, w.height / s) + 'px'; }
+      // and the glow becomes the bar's glow (blur is in the copy's own units, so it's divided by the current scale)
+      var sc = 1 + (s - 1) * e, bl = (10 + (8 - 10) * e) / sc;
+      gwm.style.filter = 'drop-shadow(0 0 ' + bl + 'px rgba(120,255,210,' + (.3 + .02 * e) + '))';
+      gtp.style.filter = 'drop-shadow(0 0 ' + bl + 'px rgba(120,255,210,' + (.32 * e) + '))';
+    }
+    function finish(){ if (done) return; done = true; place(1); bar.style.visibility = ''; lock.style.visibility = '';
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ if (g.parentNode) g.remove(); }); }); }   // the bar's logo is painted before the copy goes, so there's no blink
+    function step(ts){ if (done || !g.parentNode) return; if (!t0) t0 = ts; var k = Math.min(1, (ts - t0) / D); place(ease(k)); if (k < 1) requestAnimationFrame(step); else finish(); }
+    requestAnimationFrame(step);
+    SIG.timers.push(setTimeout(finish, D + 400));
     SIG.ghost = g; SIG.bar = bar;
   }
   function closeSignature(){ var o = document.getElementById('sig'); if (!SIG.on) return; if (SIG.ghost && SIG.ghost.parentNode){ SIG.ghost.remove(); } if (SIG.bar) SIG.bar.style.visibility = ''; var lk = document.getElementById('sig-lock'); if (lk) lk.style.visibility = ''; clearInterval(SIG.iv); (SIG.timers || []).forEach(clearTimeout); o.hidden = true; o.className = 'sig'; SIG.on = false; }

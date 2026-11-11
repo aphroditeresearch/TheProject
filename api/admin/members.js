@@ -152,16 +152,36 @@ async function dailyNudge() {
   if (!hookReady(hook)) return { ok: false, error: 'no_webhook' };
   const today = nyToday(), wd = new Date(today + 'T12:00:00Z').getUTCDay();
   if (wd === 0 || wd === 6) return { ok: true, skipped: 'weekend' };
-  const admins = adminIds(), members = (await listMembers()).filter((m) => !admins.includes(m.id));
-  let journaled = 0, total = 0, pnl = 0, followed = 0, answered = 0; const missing = [], clean = [];
+  // students only: not admins, not moderators
+  const mods = String(process.env.MOD_IDS || '505505326532132868').split(',').map((x) => x.trim());
+  const admins = adminIds(), members = (await listMembers()).filter((m) => !admins.includes(m.id) && !mods.includes(m.id));
+  let journaled = 0, total = 0, pnl = 0, followed = 0, answered = 0; const missing = [], clean = [], warn = {};
+  const content = await contentWithDefaults().catch(() => null), now = Date.now();
+  const dayAgo = new Date(now - 864e5).toISOString(), quiet = new Date(now - 5 * 864e5).toISOString(), bdDue = new Date(now - 3 * 864e5).toISOString();
   await Promise.all(members.map(async (m) => {
-    const j = await loadJournal(m.id); if (!j) return;   // only students who keep a journal
-    total++;
-    const ents = Object.values(await loadEntries(m.id)).filter((e) => e.date === today && entryStatus(e) !== 'denied');
-    if (!ents.length) { missing.push(m.id); return; }
-    journaled++;
-    ents.forEach((e) => { if (typeof e.followed === 'boolean') { answered++; if (e.followed) followed++; } if (e.kind === 'trade' && /^(funded|evaluation)$/i.test(String(e.account || '').trim())) pnl += +e.pnl || 0; });
-    if (ents.every((e) => e.followed === true)) clean.push(m.displayName || m.username || 'A student');
+    total++;   // every student, journal set up or not: everyone is expected to journal each trading day
+    const why = [];
+    const [j, all, tmeta, progress] = await Promise.all([loadJournal(m.id), loadEntries(m.id), C.threadMeta(m.id).catch(() => ({})), loadProgress(m.id).catch(() => ({}))]);
+    const ents = j ? Object.values(all).filter((e) => e.date === today && entryStatus(e) !== 'denied') : [];
+    if (!ents.length) { missing.push(m.id); why.push('lack of journals'); }
+    else {
+      journaled++;
+      ents.forEach((e) => { if (typeof e.followed === 'boolean') { answered++; if (e.followed) followed++; } if (e.kind === 'trade' && /^(funded|evaluation)$/i.test(String(e.account || '').trim())) pnl += +e.pnl || 0; });
+      if (ents.every((e) => e.followed === true)) clean.push(m.displayName || m.username || 'A student');
+    }
+    // the breakdown they're on (open, not handed in) has been out for 3+ days with no notes
+    let st = null; try { if (content) st = await memberState(m.id, m.roles || [], false, content); } catch (e) {}
+    if (st && content) {
+      const late = (content.breakdowns || []).some((b) => { const k = 'bd:' + b.id, a = st.access.breakdowns[k];
+        return a && a.open && !a.passed && !st.subs[k] && String(b.createdAt || '') && String(b.createdAt) < bdDue; });
+      if (late) why.push('lack of breakdown notes');
+    }
+    // a mentor wrote to them over a day ago and they haven't answered
+    if (Object.values(tmeta || {}).some((t) => t && t.last && t.last.staff && String(t.last.at || '') < dayAgo)) why.push('no response');
+    // nothing on the site for 5+ days (not signed in and no work)
+    const lastAny = [m.lastSeen || '', lastWorkOf(st ? st.subs : {}, all, progress) || ''].sort().pop();
+    if (!lastAny || lastAny < quiet) why.push('inactivity');
+    if (why.length) warn[m.id] = why;
   }));
   if (!total) return { ok: true, skipped: 'no_journals' };
   const day = new Date(today + 'T12:00:00Z').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
@@ -170,12 +190,32 @@ async function dailyNudge() {
     '✅ ' + journaled + ' of ' + total + ' students journaled' + (answered ? ' · rules kept ' + Math.round(followed / answered * 100) + '%' : ''),
     '💰 Group P&L (funded + evaluation): ' + money(pnl)];
   if (clean.length) lines.push('🏆 Kept every rule today: ' + clean.slice(0, 15).map((n) => '**' + n.replace(/[*_`~|]/g, '') + '**').join(', '));
-  const ping = missing.slice(0, 90);
-  if (ping.length) lines.push('⏰ Still to journal today: ' + ping.map((id) => '<@' + id + '>').join(' ') + '\nPost your trades, or log a no-trade day. It keeps your streak.');
-  else lines.push('🔥 Everyone journaled today. That\'s how it\'s done.');
-  const r = await discordPost(hook, { content: lines.join('\n').slice(0, 1990), allowed_mentions: { parse: [], users: ping } });
-  await kv(['SET', 'nudge-last', JSON.stringify({ at: new Date().toISOString(), ok: r.ok, journaled, total })]);
-  return Object.assign({ journaled, total, missing: missing.length }, r);
+  // everyone with at least one reason gets a warning (most urgent first: the more reasons, the higher)
+  const ping = Object.keys(warn).sort((a, b) => warn[b].length - warn[a].length).slice(0, 100);
+  if (!missing.length) lines.push('🔥 Everyone journaled today. That\'s how it\'s done.');
+  else lines.push('⏰ ' + missing.length + (missing.length === 1 ? ' student still has' : ' students still have') + ' to journal today.');
+  if (ping.length) lines.push('⚠️ Warnings:');
+  const r = await discordPost(hook, { content: lines.join('\n').slice(0, 1990), allowed_mentions: { parse: [] } });
+  // one line per student, tagging them. The wording comes from NUDGE_MESSAGE: "@member" = the tag, "@reason" = why.
+  const tpl = String(process.env.NUDGE_MESSAGE || "@member, you're on a warning. If you continue the lack of effort, you will be demoted. Reason why: @reason").slice(0, 300);
+  const say = (id) => { const reason = warn[id].join(', '); let t = tpl.indexOf('@member') >= 0 ? tpl.split('@member').join('<@' + id + '>') : '<@' + id + '> ' + tpl;
+    return t.indexOf('@reason') >= 0 ? t.split('@reason').join(reason) : t + ' Reason why: ' + reason; };
+  let chunk = [], sent = 0;
+  const flush = async () => {
+    if (!chunk.length) return;
+    const ids = chunk.map((x) => x.id);
+    const rr = await discordPost(hook, { content: chunk.map((x) => x.line).join('\n'), allowed_mentions: { parse: [], users: ids } });
+    if (rr.ok) sent += ids.length;
+    chunk = []; await new Promise((ok) => setTimeout(ok, 600));   // stay under Discord's webhook rate limit
+  };
+  for (const id of ping) {
+    const line = say(id);
+    if (chunk.length >= 20 || chunk.reduce((t, x) => t + x.line.length + 1, 0) + line.length > 1900) await flush();
+    chunk.push({ id, line });
+  }
+  await flush();
+  await kv(['SET', 'nudge-last', JSON.stringify({ at: new Date().toISOString(), ok: r.ok, journaled, total, tagged: sent, warned: ping.length })]);
+  return Object.assign({ journaled, total, missing: missing.length, tagged: sent, warned: ping.length }, r);
 }
 async function cronBackup() {
   const hook = process.env.DISCORD_BACKUP_WEBHOOK || '';
