@@ -875,3 +875,8 @@ own clock, worked out from their browser's time zone, with summer/winter time ha
 - "Today" (Stats, Triage, prop accounts, the admin day view) is New York's trading day for everyone, so a UK admin after
   midnight still sees the same day as the students in America; that night's Asia trades show from the next day.
 - Trades are still logged in whatever time zone the student picks under "Times are in" (UK time works as is).
+
+## Phone fixes
+- Share card: the card now fits the space under the buttons on any phone height (it used to slide up over the hint and
+  buttons on shorter screens). Tapping the card for a clean screenshot still fills the screen.
+- Sign-in welcome on phones: smaller avatar (56 px), name (21 px) and role line, in proportion with the logo above.

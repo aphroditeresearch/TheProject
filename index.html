@@ -257,7 +257,7 @@ a{color:var(--blue);text-underline-offset:3px}
 @keyframes sigWipe{to{clip-path:inset(0 0 0 0)}}
 @keyframes sigSpin{to{transform:rotate(360deg)}}
 @keyframes sigPulse{50%{opacity:.45}}
-@media (max-width:560px){.sig-who{flex-direction:column;gap:16px}.sig-txt{text-align:center;align-items:center}.sig-hi{font-size:28px}}
+@media (max-width:560px){.sig-who{flex-direction:column;gap:12px;min-height:0}.sig-txt{text-align:center;align-items:center;gap:6px}.sig-hi{font-size:21px}.sig-hi b{text-shadow:0 0 14px color-mix(in srgb,var(--rc) 45%,transparent)}.sig-av{width:56px;height:56px}.sig-ring{inset:-3px;box-shadow:0 0 20px color-mix(in srgb,var(--rc) 45%,transparent)}.sig-av img,.sig-ini{border-width:3px}.sig-ini{font-size:22px}.sig-ok{width:20px;height:20px;font-size:11px;border-width:2px;right:-4px;bottom:-3px}.sig-role{font-size:10px;letter-spacing:.22em}}
 @media (prefers-reduced-motion:reduce){.sig *{transition:none!important;animation:none!important}.sig-tpp{fill:url(#sigmint);stroke:transparent}.sig-lock{transform:none}.sig-div{transform:none}.sig-wm{clip-path:none}.sig-line{transform:none}}
 .scrim{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:rgba(2,3,7,.8);backdrop-filter:blur(10px)}
 .modal{position:relative;width:100%;max-width:440px;box-sizing:border-box;background:var(--panel);border:2px solid var(--ink);box-shadow:14px 14px 0 var(--blue);padding:44px 30px 30px;display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center;overflow:hidden;max-width:380px}
@@ -1085,9 +1085,10 @@ ul.parts{list-style:none;margin:0 0 4px 22px;padding:0 0 0 12px;border-left:1px 
 .shc-top select{min-height:38px;background:#0B1A1C;border:1px solid var(--line);color:var(--ink);padding:0 8px;font:14px var(--sans);max-width:220px}
 .shc-top input{min-height:38px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--ink);padding:0 10px;font:14px var(--sans);width:170px}
 .shc-hint{margin:0;font-size:12px;color:var(--muted);text-align:center}
-.shc-stage{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:0}
-.shc-img{display:block;height:min(calc(100vh - 150px),calc((100vw - 32px) * 16 / 9));width:auto;max-width:100%;cursor:pointer}
-.shc.pc .shc-img{height:auto;width:min(100%,calc((100vh - 170px) * 16 / 9))}
+.shc-stage{flex:1 1 0;display:flex;align-items:center;justify-content:center;width:100%;min-height:0;overflow:hidden}
+/* the card fits the space left under the buttons (it never slides under them, whatever the phone's height or toolbars) */
+.shc-img{display:block;width:auto;height:auto;max-width:100%;max-height:100%;cursor:pointer}
+.shc.pc .shc-img{height:auto;width:min(100%,calc((100vh - 170px) * 16 / 9));max-height:100%}
 .shc.pc.bare .shc-img{height:auto;width:min(100vw,calc(100vh * 16 / 9))}
 .shc.bare{padding:0;justify-content:center}.shc.bare .shc-top,.shc.bare .shc-hint{display:none}.shc.bare .shc-img{height:min(100vh,calc(100vw * 16 / 9))}
 .img-ph{display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-height:90px;background:rgba(227,241,239,.04);color:var(--muted)}
