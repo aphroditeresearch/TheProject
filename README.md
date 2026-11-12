@@ -928,3 +928,10 @@ Chrome's own right-click menu always includes "Inspect", so it's never shown any
 a small menu of the site's own appears instead: Cut, Copy, Paste, Select all (Paste may ask for clipboard permission
 once; Ctrl/Cmd+V always works). Spelling mistakes are still underlined as you type, but Chrome's spelling suggestions
 lived in its menu, so they're no longer offered on right-click. Phones are unchanged (long-press keeps working).
+
+## Skipped roles: always on, and read live
+- The Japan, Bum, Hustla and Friend roles and user 533891270771343391 are built in. `NUDGE_SKIP_ROLES` /
+  `NUDGE_SKIP_USERS` now only **add** to them (before, setting either replaced the list, which could let them back in).
+- With the bot set up (`DISCORD_BOT_TOKEN`), the daily recap reads everyone's roles live from Discord, so a role given
+  since someone's last sign-in counts straight away, and anyone who has left the server isn't warned. Without the bot it
+  uses the roles from their last sign-in.

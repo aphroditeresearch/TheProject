@@ -168,9 +168,13 @@ async function postTagged(hook, items) {
 // ---------- people in the Discord with a program role who have never signed in to the website ----------
 // Needs a bot in the server (DISCORD_BOT_TOKEN, with "Server Members Intent" on) to read the member list.
 // Japan, Bum, Hustla, Friend: never warned, never called out
-const skipRolesList = () => String(process.env.NUDGE_SKIP_ROLES || '1569879952361529494,1570233175882338455,1553546449474555964,1570237524784193667').split(',').map((x) => x.trim()).filter(Boolean);
+// always skipped, plus anything added in NUDGE_SKIP_ROLES / NUDGE_SKIP_USERS (adding there never drops these)
+const SKIP_ROLES = ['1569879952361529494', '1570233175882338455', '1553546449474555964', '1570237524784193667'];
+const SKIP_USERS = ['533891270771343391'];
+const idList = (v) => String(v || '').split(',').map((x) => x.trim()).filter((x) => /^\d{5,25}$/.test(x));
+const skipRolesList = () => [...new Set(SKIP_ROLES.concat(idList(process.env.NUDGE_SKIP_ROLES)))];
 // people who are never called out (daily warnings or the "not on the website" callout), whatever their roles
-const skipUsersList = () => String(process.env.NUDGE_SKIP_USERS || '533891270771343391').split(',').map((x) => x.trim()).filter(Boolean);
+const skipUsersList = () => [...new Set(SKIP_USERS.concat(idList(process.env.NUDGE_SKIP_USERS)))];
 const modIdsList = () => String(process.env.MOD_IDS || '505505326532132868').split(',').map((x) => x.trim()).filter(Boolean);
 function siteLink() {
   const u = process.env.SITE_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? 'https://' + process.env.VERCEL_PROJECT_PRODUCTION_URL : '');
@@ -240,8 +244,14 @@ async function dailyNudge() {
   // students only: not admins, not moderators, not the skipped roles
   const mods = String(process.env.MOD_IDS || '505505326532132868').split(',').map((x) => x.trim());
   // members with these Discord roles never get the daily warnings and aren't counted as students in the recap (NUDGE_SKIP_ROLES, comma-separated)
-  const skipRoles = skipRolesList();
-  const admins = adminIds(), everyone = await listMembers(), members = everyone.filter((m) => !admins.includes(m.id) && !mods.includes(m.id) && !(m.roles || []).some((r) => skipRoles.includes(String(r))) && !skipUsersList().includes(m.id));
+  const skipRoles = skipRolesList(), skipUsers = skipUsersList();
+  // roles: read live from Discord when the bot is set up (a role given since their last sign-in counts straight away,
+  // and anyone who has left the server is left out); otherwise the roles from their last sign-in
+  let live = null;
+  try { const g = await guildMembers(); if (g.members) { live = {}; g.members.forEach((gm) => { if (gm && gm.user) live[gm.user.id] = (gm.roles || []).map(String); }); } } catch (e) { live = null; }
+  const rolesOf = (m) => (live ? live[m.id] : null) || (m.roles || []).map(String);
+  const admins = adminIds(), everyone = await listMembers(), members = everyone.filter((m) => !admins.includes(m.id) && !mods.includes(m.id) && !skipUsers.includes(m.id)
+    && !(live && !live[m.id]) && !rolesOf(m).some((r) => skipRoles.includes(r)));
   let journaled = 0, total = 0, pnl = 0, followed = 0, answered = 0; const missing = [], clean = [], warn = {};
   const content = await contentWithDefaults().catch(() => null), now = Date.now();
   const dayAgo = new Date(now - 864e5).toISOString(), quiet = new Date(now - 5 * 864e5).toISOString(), bdDue = new Date(now - 3 * 864e5).toISOString();
