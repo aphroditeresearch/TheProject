@@ -1163,6 +1163,7 @@ body.returning .scene::after{opacity:0}
 @keyframes wdrift{to{transform:translate(640px,380px)}}
 #pshield{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(2,9,11,.94);-webkit-backdrop-filter:blur(28px);backdrop-filter:blur(28px);cursor:pointer;text-align:center;padding:24px}
 #pshield[hidden]{display:none}
+.ctx{position:fixed;z-index:300;min-width:150px;padding:5px;display:flex;flex-direction:column;background:#0B1A1C;border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.5)}.ctx button{all:unset;box-sizing:border-box;padding:8px 12px;border-radius:6px;font:500 13.5px/1.2 var(--sans,system-ui);color:var(--ink,#E3F1EF);cursor:pointer}.ctx button:hover:not(:disabled){background:rgba(20,163,157,.18)}.ctx button:disabled{opacity:.4;cursor:default}
 .wall .to-clock{font:700 44px/1 var(--mono);letter-spacing:.04em;color:#FFB347;margin:4px 0 2px;font-variant-numeric:tabular-nums}
 #pshield b{display:block;font-family:var(--display);font-style:italic;font-weight:900;font-stretch:125%;font-size:34px;margin-bottom:8px;color:var(--ink)}
 #pshield span{color:var(--muted);font-size:15px;max-width:34ch;display:inline-block}
@@ -1905,10 +1906,37 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   var MOBILE_DEV = /Android|iPhone|iPad|iPod|Mobile|CriOS/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   var lastPtr = 'mouse';
   document.addEventListener('pointerdown', function(e){ lastPtr = e.pointerType || 'mouse'; }, true);
-  // right-click: the normal menu works in text boxes (spelling suggestions); everywhere else there's simply no menu.
-  // Not flagged: it's almost always harmless. Opening developer tools is what gets caught (below).
+  // right-click: never flagged (it's almost always harmless). Opening developer tools is what gets caught (below).
   function isTextField(t){ return !!(t && t.closest && t.closest('input:not([type=button]):not([type=submit]):not([type=checkbox]):not([type=radio]):not([type=file]),textarea,[contenteditable=""],[contenteditable=true]')); }
-  document.addEventListener('contextmenu', function(e){ if (isTextField(e.target)) return; e.preventDefault(); }, true);
+  // Chrome's own right-click menu always has "Inspect" in it, so it's never shown. In text boxes a small menu of our own
+  // appears instead (cut, copy, paste, select all). Spelling mistakes are still underlined as you type.
+  var CTX = null;
+  function ctxClose(){ if (CTX){ CTX.remove(); CTX = null; } }
+  function ctxMenu(e, field){
+    ctxClose();
+    var m = document.createElement('div'), sel = ''; m.className = 'ctx'; m.setAttribute('role','menu');
+    try { sel = field.value !== undefined ? field.value.slice(field.selectionStart, field.selectionEnd) : String(getSelection()); } catch (er) { sel = String(getSelection() || ''); }
+    var ro = field.readOnly || field.disabled;
+    var item = function(label, ok, fn){ var b = document.createElement('button'); b.textContent = label; b.type = 'button'; b.setAttribute('role','menuitem'); b.disabled = !ok;
+      b.addEventListener('mousedown', function(ev){ ev.preventDefault(); });   // keep the text box focused and the selection intact
+      b.addEventListener('click', function(){ ctxClose(); field.focus(); fn(); }); m.appendChild(b); };
+    item('Cut', !!sel && !ro, function(){ document.execCommand('cut'); });
+    item('Copy', !!sel, function(){ document.execCommand('copy'); });
+    item('Paste', !ro && !!(navigator.clipboard && navigator.clipboard.readText), function(){
+      navigator.clipboard.readText().then(function(t){ if (t) document.execCommand('insertText', false, t); }, function(){ if (typeof toast === 'function') toast('Paste with Ctrl+V (Cmd+V on Mac).'); }); });
+    item('Select all', true, function(){ if (field.select) field.select(); else document.execCommand('selectAll'); });
+    document.body.appendChild(m); CTX = m;
+    var w = m.offsetWidth, h = m.offsetHeight;
+    m.style.left = Math.min(e.clientX, innerWidth - w - 8) + 'px'; m.style.top = Math.min(e.clientY, innerHeight - h - 8) + 'px';
+  }
+  document.addEventListener('contextmenu', function(e){
+    e.preventDefault();
+    var t = e.target, f = t && t.closest && t.closest('input,textarea,[contenteditable=""],[contenteditable=true]');
+    if (f && isTextField(f) && !(lastPtr === 'touch' || lastPtr === 'pen')) ctxMenu(e, f); else ctxClose();
+  }, true);
+  document.addEventListener('mousedown', function(e){ if (CTX && !CTX.contains(e.target)) ctxClose(); }, true);
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') ctxClose(); });
+  window.addEventListener('blur', ctxClose); window.addEventListener('scroll', ctxClose, true);
   document.addEventListener('dragstart', function(e){ e.preventDefault(); }, true);
   document.addEventListener('selectstart', function(e){ var t = e.target; if (!(t && t.closest && t.closest('input,textarea,.linkbox'))) e.preventDefault(); }, true);
   document.addEventListener('copy', function(e){ var t = document.activeElement; if (!(t && /INPUT|TEXTAREA/.test(t.tagName)) && !getSelection().toString().match(/^https?:/)) e.preventDefault(); }, true);

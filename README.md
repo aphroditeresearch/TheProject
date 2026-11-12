@@ -921,3 +921,9 @@ Right-clicks, save and print never count. Admins are never timed out.
 - What's flagged now: **developer tools opened** (confirmed) and **screenshot keys**.
 - Timeouts: developer tools opened twice in 30 minutes, or request / upload spam. Screenshots alert staff at 5 in
   10 minutes but never time anyone out. (This replaces the earlier lists above.)
+
+## Right-click menu (no "Inspect")
+Chrome's own right-click menu always includes "Inspect", so it's never shown anywhere on the site now. In text boxes
+a small menu of the site's own appears instead: Cut, Copy, Paste, Select all (Paste may ask for clipboard permission
+once; Ctrl/Cmd+V always works). Spelling mistakes are still underlined as you type, but Chrome's spelling suggestions
+lived in its menu, so they're no longer offered on right-click. Phones are unchanged (long-press keeps working).
