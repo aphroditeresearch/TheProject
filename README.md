@@ -152,7 +152,7 @@ The diamond video comes from a third-party wallpaper site. Confirm you have the 
 
 | Discord role | Sign in? | What they see |
 |---|---|---|
-| Grounded `1546326599119671407` (free) | no: "Grounded is free Discord access" | — |
+| Free content `1546326599119671407` | no (treated like no role at all) | — |
 | Awakened `1546326866875646084` | yes | Awakened only, one lesson (or lesson part) at a time |
 | Illuminated `1554996401979654165` | yes | Awakened (all open) + Illuminated one at a time |
 | Enlightened `1546326926099222538` | yes | everything below open + Enlightened one at a time |
@@ -839,8 +839,9 @@ on the way, and the flight is aimed at where the bar's logo is on every frame (c
 computer and phone).
 
 ## Not on the website yet (Discord callout)
-Finds everyone in the Discord server who has one of the program roles (Grounded, Awakened, Illuminated, Enlightened,
-every chapter's role, plus any in `JOIN_ROLES`) but has never signed in to the website, and tags them in Discord:
+Finds everyone in the Discord server who has one of the program roles (Awakened, Illuminated, Enlightened,
+plus any in `JOIN_ROLES`; the free-content role
+1546326599119671407 is never involved) but has never signed in to the website, and tags them in Discord:
 `@member, you haven't joined the website yet. Sign in at <site> with Discord to start your journal and lectures.`
 - Left out: admins, the moderator(s), bots, and anyone with a role in `NUDGE_SKIP_ROLES` (default: the Japan, Bum, Hustla and Friend roles) or listed in
   `NUDGE_SKIP_USERS` (default 533891270771343391).

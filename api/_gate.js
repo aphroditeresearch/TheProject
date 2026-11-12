@@ -336,15 +336,15 @@ function findItem(content, key) {
   return null;
 }
 // Can this Discord account use the site? Admins always; members need a chapter role
-// (Awakened, Illuminated or Enlightened). Grounded is free Discord access only.
-// Returns null when they're allowed, or the reason they're not: 'grounded' or 'no_access'.
+// (Awakened, Illuminated or Enlightened). Any other role, including the free-content role, means nothing to the site.
+// Returns null when they're allowed, or 'no_access'.
 async function signInBlock(userId, roles, admin) {
   if (admin) return null;
   let curriculum = CURRICULUM;
   try { curriculum = (await contentWithDefaults()).curriculum; } catch (e) {}
   const allowed = chapterRoles(curriculum).concat([ROLES.awakened, ROLES.illuminated, ROLES.enlightened]);
   if ((roles || []).some((r) => allowed.includes(r))) return null;
-  return (roles || []).includes(ROLES.grounded) ? 'grounded' : 'no_access';
+  return 'no_access';
 }
 
 // every unit and breakdown key in order (for admin panels)

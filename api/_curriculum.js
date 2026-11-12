@@ -13,7 +13,6 @@
 //                           an admin approves it → Enlightened opens
 //   Enlightened role → everything below already done + Enlightened one at a time
 const ROLES = {
-  grounded: '1546326599119671407',
   awakened: '1546326866875646084',
   illuminated: '1554996401979654165',
   enlightened: '1546326926099222538',

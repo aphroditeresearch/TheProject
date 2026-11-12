@@ -198,7 +198,8 @@ async function notJoined() {
   const g = await guildMembers(); if (g.error) return g;
   const content = await contentWithDefaults();
   const extra = String(process.env.JOIN_ROLES || '').split(',').map((x) => x.trim()).filter(Boolean);
-  const program = new Set(chapterRoles(content.curriculum).concat(Object.values(ROLES || {}), extra).map(String).filter((x) => /^\d{5,25}$/.test(x)));
+  // program roles = the chapter roles only (Awakened, Illuminated, Enlightened…); the free-content role never counts
+  const program = new Set(chapterRoles(content.curriculum).concat([ROLES.awakened, ROLES.illuminated, ROLES.enlightened], extra).map(String).filter((x) => /^\d{5,25}$/.test(x)));
   const site = new Set((await listMembers()).map((m) => m.id)), skip = skipRolesList(), staff = adminIds().concat(modIdsList(), skipUsersList());
   const list = g.members.filter((gm) => gm && gm.user && !gm.user.bot && !site.has(gm.user.id) && !staff.includes(gm.user.id) &&
       (gm.roles || []).some((r) => program.has(String(r))) && !(gm.roles || []).some((r) => skip.includes(String(r))))
