@@ -23,7 +23,9 @@ const { listMembers } = require('./_lib');
 const { signAll, cleanFile } = require('./_blob');
 
 const FLAG_KINDS = ['right-click', 'devtools-keys', 'devtools-open', 'save', 'view-source', 'print', 'screenshot'];
-const LIGHT_FLAGS = ['right-click', 'save', 'print'];   // still accepted from older pages, but never alerted or counted toward a timeout
+// only real actions count now: developer tools actually opened, and screenshot keys. The rest are still accepted from older
+// pages (so nothing errors) but never alerted or counted toward a timeout.
+const LIGHT_FLAGS = ['right-click', 'save', 'print', 'devtools-keys', 'view-source'];
 function byEntry(a, b) { return (String(b.date) + String(b.time || '') + b.createdAt).localeCompare(String(a.date) + String(a.time || '') + a.createdAt); }
 // The psych leaderboard: points from journal entries in the period (dates are the trade dates members enter)
 async function leaderboard(period, me) {
@@ -192,12 +194,12 @@ module.exports = async (req, res) => {
       if (!isAdmin(s) && !LIGHT_FLAGS.includes(fb.kind)) {
         const who = { id: uid, name: s.user.displayName || s.user.username, ip };
         const under = await rateLimit('flagburst:' + uid, 4, 600);
-        if (!under) timeout = await timeoutUser(who, 'Kept trying blocked actions (5+ in 10 minutes)');
+        // screenshots alone never time anyone out (only alert staff); developer tools opened twice in 30 minutes does
         if (fb.kind === 'devtools-open' && !(await rateLimit('dtburst:' + uid, 1, 1800))) timeout = timeout || await timeoutUser(who, 'Opened developer tools again');
         if (fb.kind === 'devtools-open') { const size = /^[\dx .z]{3,40}$/.test(String(fb.size || '')) ? String(fb.size) : '';
           await staffAlert('devtools', who, 'Opened developer tools on the site (confirmed). The portal was cleared on their screen and stays locked until they close them.' + (size ? ' Window / page size: ' + size + '.' : '')); }
         else if (!under) { const f = await kv(['HGETALL', key]); const m = {}; if (Array.isArray(f)) for (let i = 0; i < f.length; i += 2) m[f[i]] = f[i + 1];
-          await staffAlert('flags', who, '5+ blocked actions in 10 minutes. Latest: ' + fb.kind + '. All time: ' + FLAG_KINDS.filter((k) => m[k]).map((k) => k + ' ×' + m[k]).join(', ')); }
+          await staffAlert('flags', who, '5+ screenshot attempts in 10 minutes. Latest: ' + fb.kind + '. All time: ' + FLAG_KINDS.filter((k) => m[k]).map((k) => k + ' ×' + m[k]).join(', ')); }
       }
       return json(res, 200, { recorded: true, ip, timeout });
     }

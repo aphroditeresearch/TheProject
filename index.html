@@ -1796,7 +1796,6 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     <div class="wm sm brand lockup" aria-label="The Project"><span class="wm-g tp-g" aria-hidden="true"><span class="tp-svg"></span></span><i class="lk-div" aria-hidden="true"></i><span class="wm-g" aria-hidden="true"><span class="wm-svg"></span></span></div>
     <h2 id="sh-h">Developer tools aren't allowed.</h2>
     <p>The portal has been cleared. Close developer tools and the page comes back. Opening them is reported to the admins.</p>
-    <p class="sh-hint">Not using developer tools? Close Chrome's side panel (bookmarks, reading list, Google Lens or an extension's sidebar) if it's open.</p>
   </div>
 </div>
 
@@ -1922,7 +1921,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         (e.metaKey && e.altKey && (c === 'KeyI' || c === 'KeyJ' || c === 'KeyC'))) kind = 'devtools-keys';      // devtools, console, inspector
     else if (mod && c === 'KeyU') kind = 'view-source';
     else if (mod && (c === 'KeyS' || c === 'KeyP')){ e.preventDefault(); return; }   // save / print: just don't (no warning, no flag: usually a habit)
-    if (kind){ e.preventDefault(); e.stopPropagation(); blocked(kind); }
+    if (kind === 'screenshot'){ e.preventDefault(); e.stopPropagation(); blocked(kind); }
+    else if (kind){ e.preventDefault(); e.stopPropagation(); }   // tools shortcuts / view source: simply don't work. Not flagged: pressing a key
+                                                                   // changes nothing; actually opening developer tools is what's caught and flagged
   }, true);
   document.addEventListener('keyup', function(e){
     if (e.key === 'PrintScreen' || e.code === 'PrintScreen'){ shieldFlash(); try { var cw = navigator.clipboard && navigator.clipboard.writeText(''); if (cw && cw.catch) cw.catch(function(){}); } catch(err) {} blocked('screenshot'); }
@@ -1961,22 +1962,12 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   window.addEventListener('afterprint', function(){ document.body.style.visibility = ''; });
 
 
-  // Docked dev tools take space from the page on one side only. Browser zoom shrinks the page in both directions
-  // evenly, so it's measured first and not mistaken for dev tools (that used to flag anyone not at 100% zoom).
-  function devtoolsDocked(){
-    var ow = window.outerWidth, oh = window.outerHeight, iw = window.innerWidth, ih = window.innerHeight;
-    if (!ow || !oh || !iw || !ih) return false;
-    var z = Math.max(ow - 16, 1) / iw;          // page zoom, if nothing is docked at the side
-    var bars = oh - ih * z;                      // what that leaves for tabs, address bar and bookmarks
-    return bars < -40 || bars > 230;             // tools at the side make z too big; tools at the bottom leave too much
-  }
   function winSize(){ return window.outerWidth + 'x' + window.outerHeight + ' ' + window.innerWidth + 'x' + window.innerHeight + ' z' + (Math.round((window.devicePixelRatio || 1) * 100) / 100); }
   /* ---------- developer tools: caught and locked out ----------
-     Two checks, every half second (members only; admins and phones are skipped):
-       1. docked tools: the page area shrinks on one side (see devtoolsDocked). Chrome's side panel can look the same,
-          so this alone only covers the page; it isn't flagged.
-       2. a debugger trap: a `debugger;` line does nothing in a normal browser, but freezes the page whenever developer
-          tools are open (docked or in their own window). If it took time, they're open: that's the one that's flagged.
+     One check, every half second (members only; admins and phones are skipped): a debugger trap. A `debugger;` line
+     does nothing in a normal browser, but freezes the page whenever developer tools are open (docked or in their own
+     window). If it took time, they're open. Window size isn't used any more: full-screen video, zoom and Chrome's side
+     panel all change it, and that caused false alarms.
      Either way the portal is emptied (lesson text, videos and data are removed from the page, so there's nothing left
      to inspect) and the page reloads clean once they're closed. A browser can't refuse to open its own tools; this
      makes them useless here and tells the admins who tried. */
@@ -2018,12 +2009,11 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   if (window.top === window.self && !MOBILE_DEV){
     var dtTick = function(){
       if (!dtGuardOn()) return;
-      var docked = devtoolsDocked(), trapped = trapOpen();
-      if (docked || trapped){ DT.quiet = 0; lockOut(trapped); return; }
+      // only the debugger trap counts: it can't be set off by full-screen video, zoom, side panels or resizing the window
+      if (trapOpen()){ DT.quiet = 0; lockOut(true); return; }
       if (DT.locked && ++DT.quiet >= 3) location.reload();                                    // closed for 1.5 s: start again clean
     };
     setInterval(dtTick, 500);
-    window.addEventListener('resize', function(){ if (dtGuardOn() && devtoolsDocked()) lockOut(false); });
   }
 
   var vid = document.querySelector('.moon video');
@@ -7472,7 +7462,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         if (j.timeout){ showTimeout(j.timeout); return; }
         // developer tools already open (e.g. opened, then the page refreshed): don't load any lesson data until they're closed
         var touchDev = /Android|iPhone|iPad|iPod|Mobile|CriOS/i.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        var dtOpen = function(){ return devtoolsDocked() || trapOpen(); };
+        var dtOpen = trapOpen;   // the debugger trap only (window size can't fool it: full screen, zoom, side panels)
         if (!j.isAdmin && !touchDev && window.top === window.self && dtOpen()){
           var wall = document.getElementById('shield'); if (wall) wall.hidden = false;
           if (trapOpen()) try { navigator.sendBeacon && navigator.sendBeacon('/api/member', new Blob([JSON.stringify({ action:'flag', kind:'devtools-open', size: winSize() })], { type:'application/json' })); } catch (e) {}

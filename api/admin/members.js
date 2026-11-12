@@ -167,7 +167,8 @@ async function postTagged(hook, items) {
 
 // ---------- people in the Discord with a program role who have never signed in to the website ----------
 // Needs a bot in the server (DISCORD_BOT_TOKEN, with "Server Members Intent" on) to read the member list.
-const skipRolesList = () => String(process.env.NUDGE_SKIP_ROLES || '1569879952361529494,1553546449474555964').split(',').map((x) => x.trim()).filter(Boolean);
+// Japan, Bum, Hustla, Friend: never warned, never called out
+const skipRolesList = () => String(process.env.NUDGE_SKIP_ROLES || '1569879952361529494,1570233175882338455,1553546449474555964,1570237524784193667').split(',').map((x) => x.trim()).filter(Boolean);
 // people who are never called out (daily warnings or the "not on the website" callout), whatever their roles
 const skipUsersList = () => String(process.env.NUDGE_SKIP_USERS || '533891270771343391').split(',').map((x) => x.trim()).filter(Boolean);
 const modIdsList = () => String(process.env.MOD_IDS || '505505326532132868').split(',').map((x) => x.trim()).filter(Boolean);

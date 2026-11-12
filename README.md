@@ -789,8 +789,8 @@ Everything below adds to what's stored. Journal entries, hand-ins and notes are 
     `@member, you're on a warning. If you continue the lack of effort, you will be demoted. Reason why: @reason`
   - The recap's **Group P&L** is the same number as Stats → Everyone combined → Today: every journal (staff included),
     funded + evaluation trades only, denied entries left out, to the cent.
-  - Never called out (daily warnings or the "not on the website" callout): roles **1569879952361529494** and
-    **1553546449474555964**, and user **533891270771343391** (`NUDGE_SKIP_USERS`, comma-separated user IDs).
+  - Never called out (daily warnings or the "not on the website" callout): roles **1569879952361529494** (Japan),
+    **1570233175882338455** (Bum), **1553546449474555964** (Hustla), **1570237524784193667** (Friend), and user **533891270771343391** (`NUDGE_SKIP_USERS`, comma-separated user IDs).
   - Members with a skipped role are never warned and aren't counted as students in the recap
     (their funded/eval trades still count in Group P&L, same as Stats). Change or add roles with **`NUDGE_SKIP_ROLES`**
     (comma-separated role IDs). Roles are read from the member's last sign-in.
@@ -842,7 +842,7 @@ computer and phone).
 Finds everyone in the Discord server who has one of the program roles (Grounded, Awakened, Illuminated, Enlightened,
 every chapter's role, plus any in `JOIN_ROLES`) but has never signed in to the website, and tags them in Discord:
 `@member, you haven't joined the website yet. Sign in at <site> with Discord to start your journal and lectures.`
-- Left out: admins, the moderator(s), bots, and anyone with a role in `NUDGE_SKIP_ROLES` (default 1569879952361529494, 1553546449474555964) or listed in
+- Left out: admins, the moderator(s), bots, and anyone with a role in `NUDGE_SKIP_ROLES` (default: the Japan, Bum, Hustla and Friend roles) or listed in
   `NUDGE_SKIP_USERS` (default 533891270771343391).
 - **Automatic:** posted with the weekday 4:30 pm recap, on Mondays by default (no extra cron job). `JOIN_CALLOUT` =
   `monday` (default) · `daily` · `off`.
@@ -912,3 +912,12 @@ Right-clicks, save and print never count. Admins are never timed out.
   comes back by itself when the time's up (refreshing doesn't skip it). Staff get a "Timed out for 5 minutes" alert,
   and the member's flags show a `timeouts` count.
 - Stored as `timeout:<id>` in Redis with a 5-minute expiry; nothing else about the member changes.
+
+## Flags = real actions only (update)
+- Developer tools are now caught **only** by the debugger trap, which fires only when they're really open. Window size
+  is no longer used, so full-screen video, zoom, resizing and Chrome's side panel can't set anything off.
+- Tools shortcuts (F12, Ctrl/Cmd+Shift+I/J/C, view source) still don't work, but pressing them is **no longer flagged**;
+  only actually opening developer tools is.
+- What's flagged now: **developer tools opened** (confirmed) and **screenshot keys**.
+- Timeouts: developer tools opened twice in 30 minutes, or request / upload spam. Screenshots alert staff at 5 in
+  10 minutes but never time anyone out. (This replaces the earlier lists above.)
