@@ -859,15 +859,14 @@ plus any in `JOIN_ROLES`; the free-content role
   `JOIN_ROLES` (extra role IDs, comma-separated).
 - Uses `DISCORD_GUILD_ID` (already set). Nothing is stored except when the last callout went out (`join-last`).
 
-## Asia session = the next trading day
-A trade taken at **6 pm New York time or later** counts for the **next** trading day, the way futures sessions run:
-Tuesday night's Asia trade is Wednesday's, Sunday night's is Monday's. The entry time is read in the time zone it was
-logged in (a Chicago 5:30 pm trade is 6:30 pm New York, so it moves too). This applies everywhere the trading day is
-used: calendar, stats, streaks, weekly recap, prop accounts and the next day's Discord daily recap (Wednesday's 4:30 pm
-recap includes Tuesday night's Asia trades).
-- Older entries are shown under their trading day when read; nothing saved is rewritten. The entry keeps the day it was
-  logged on (`sunday`) and shows a tag like "Asia · Tue night". Editing works from the logged day, so it never moves twice.
-- The form says "Asia session … this will be saved under Wednesday" as soon as the date and time put it there.
+## The day you pick is the day it counts
+Journal as many entries a day as you like: every entry stays on the date picked in the form, whatever time it was
+taken or logged. (An earlier rule moved trades logged at 6 pm New York or later to the next day; students already pick
+the trading day for Asia trades, so that pushed some a day too far. It's gone, and every entry it moved shows on its
+original day again. Nothing saved was rewritten; editing one of them keeps its review.)
+- For an Asia trade, pick the trading day it belongs to (Wednesday night's Asia → Thursday). The next day's 4:30 pm
+  recap includes it.
+- Only a **Sunday** date still counts as Monday (the Sunday open), tagged "Sunday open".
 - The journal calendar now runs **Sun · Mon · Tue · Wed · Thu · Fri · Sat**.
 
 ## Times for people outside New York (Osman: UK)
@@ -935,3 +934,5 @@ lived in its menu, so they're no longer offered on right-click. Phones are uncha
 - With the bot set up (`DISCORD_BOT_TOKEN`), the daily recap reads everyone's roles live from Discord, so a role given
   since someone's last sign-in counts straight away, and anyone who has left the server isn't warned. Without the bot it
   uses the roles from their last sign-in.
+- Sign-in diamond on iPhone: when the phone refuses to autoplay (Low Power Mode, data saver) it used to show a play
+  button on the diamond. Now the diamond shows as a still picture instead and starts moving on the first tap.

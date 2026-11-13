@@ -89,7 +89,7 @@ function buildEntry(e, uid, old) {
   const kind = e.kind === 'none' ? 'none' : 'trade';
   const rawDate = str(e.date, 10);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(rawDate) || isNaN(Date.parse(rawDate)) || Date.parse(rawDate) > Date.now() + 36 * 3600 * 1000) return { error: 'bad_date' };
-  const date = tradeDayOf(rawDate, kind === 'trade' ? str(e.time, 5) : '', str(e.tz, 60));   // Sunday's open → Monday; an Asia trade (6 pm+ New York) → the next day
+  const date = tradeDay(rawDate);   // the day picked; only a Sunday date counts as Monday
   if (typeof e.followed !== 'boolean') return { error: 'missing', fields: ['followed'] };
   const files = (Array.isArray(e.files) ? e.files : []).slice(0, MAX_FILES).map((f) => cleanFile(f, uid, 'journal'));
   if (files.some((f) => !f)) return { error: 'bad_file' };
@@ -99,7 +99,7 @@ function buildEntry(e, uid, old) {
     news: ['yes', 'no'].includes(e.news) ? e.news : '', newsWhat: e.news === 'yes' ? str(e.newsWhat, 60) : '' };
   if (tags.length) entry.tags = tags;
   if (typeof e.goalKept === 'boolean') entry.goalKept = e.goalKept;   // did they keep this week's focus goal
-  if (date !== rawDate) entry.sunday = rawDate;   // the day it was logged on (Sunday open, or the evening before for Asia)
+  if (date !== rawDate) entry.sunday = rawDate;   // the Sunday it was logged on
   if (kind === 'none') return { entry };
   const num = (v) => { if (v === '' || v === null || v === undefined) return undefined; const n = Number(v); return isFinite(n) && Math.abs(n) < 1e9 ? n : undefined; };
   const pick = (v, list) => (list.includes(v) ? v : undefined);
@@ -295,9 +295,9 @@ module.exports = async (req, res) => {
     if (entry.kind === 'none' && Object.values(entries).some((x) => x.kind === 'none' && x.date === entry.date && x.id !== entry.id)) return json(res, 409, { error: 'none_exists' });
     if (old) {
       // editing keeps the review, unless something that decides points changed: then it goes back to the mentor
-      const keyChanged = ['kind', 'date', 'outcome', 'account', 'followed'].some((k) => String(old[k] === undefined ? '' : old[k]) !== String(entry[k] === undefined ? '' : entry[k]));
+      const was = Object.assign({}, old, { date: tradeDay(old.sunday || old.date) });   // as it's shown now (entries the old evening rule moved are back on their day)
+      const keyChanged = ['kind', 'date', 'outcome', 'account', 'followed'].some((k) => String(was[k] === undefined ? '' : was[k]) !== String(entry[k] === undefined ? '' : entry[k]));
       ['createdAt', 'status', 'void', 'awarded', 'reviewedAt', 'reviewedBy', 'reviewNote', 'src', 'importKey'].forEach((k) => { if (old[k] !== undefined) entry[k] = old[k]; });
-      if (old.sunday && !entry.sunday && entry.date === old.date) entry.sunday = old.sunday;
       if (keyChanged && entryStatus(old) !== 'pending') { entry.status = 'pending'; entry.void = false; delete entry.awarded; delete entry.reviewedAt; delete entry.reviewedBy; delete entry.reviewNote; entry.reopened = true; }
       entry.editedAt = new Date().toISOString();
     }

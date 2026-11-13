@@ -114,9 +114,11 @@ a{color:var(--blue);text-underline-offset:3px}
 .hero::after{content:"";position:absolute;z-index:-1;pointer-events:none;left:-30%;right:-30%;top:50%;height:4.2em;transform:translateY(-50%);
   background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(46,240,140,.12),rgba(30,220,130,.05) 45%,transparent 72%);filter:blur(34px);opacity:.75}
 .moon{position:relative;flex:none;height:2.8em;aspect-ratio:1080/1240;margin:-.925em -.42em -.875em -.54em;z-index:1}
-.moon video{--vt:translate(0,0);position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;max-width:none;transform:var(--vt);
+.moon video,.moon .moon-still{--vt:translate(0,0);position:absolute;pointer-events:none;inset:0;width:100%;height:100%;object-fit:cover;display:block;max-width:none;transform:var(--vt);
   filter:hue-rotate(-44deg) saturate(1.2) contrast(1.25) brightness(.98);
   -webkit-mask-image:radial-gradient(ellipse 44% 40% at 50% 47%,#000 45%,transparent 100%);mask-image:radial-gradient(ellipse 44% 40% at 50% 47%,#000 45%,transparent 100%)}
+/* phones in Low Power Mode refuse to autoplay and draw a play button on the video: never show it */
+.moon video::-webkit-media-controls,.moon video::-webkit-media-controls-start-playback-button,.moon video::-webkit-media-controls-overlay-play-button,.moon video::-webkit-media-controls-panel{display:none!important;-webkit-appearance:none;opacity:0}
 /* soft glow behind the diamond */
 .moon::before{content:"";position:absolute;inset:-20%;z-index:-1;pointer-events:none;
   background:radial-gradient(ellipse 30% 26% at 50% 47%,rgba(46,240,170,.18),transparent 72%)}
@@ -162,7 +164,7 @@ a{color:var(--blue);text-underline-offset:3px}
   .kana-v{animation:fadeup 1.8s cubic-bezier(.4,0,.2,1) .4s both}
   .word .wm{animation:slam .75s cubic-bezier(.16,1,.3,1) 1s both}
   .impact{animation:impact 1.4s cubic-bezier(.4,0,.2,1) 1.15s both}
-  .moon video{animation:pulse 1.2s cubic-bezier(.16,1,.3,1) 1.15s both}
+  .moon video,.moon .moon-still{animation:pulse 1.2s cubic-bezier(.16,1,.3,1) 1.15s both}
   .word .tag{animation:fadeup .9s cubic-bezier(.4,0,.2,1) 1.55s both}
   #gate-view{animation:settle .5s cubic-bezier(.3,0,.2,1) 1.2s both}
   .laser{animation:beam 1s cubic-bezier(.6,0,.2,1) 1.6s both}
@@ -2047,7 +2049,18 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   var vid = document.querySelector('.moon video');
   if (vid){ var mk=function(){ vid.parentNode.classList.add('ready'); }; if (vid.readyState>=2) mk(); else { vid.addEventListener('loadeddata', mk); } }
   if (reduce && vid){ vid.removeAttribute('autoplay'); vid.pause(); }
-  else if (vid){ var pp = vid.play(); if (pp && pp.catch) pp.catch(function(){}); }
+  else if (vid){
+    // if the phone won't autoplay (Low Power Mode, data saver), show the diamond as a still picture instead of a video
+    // with a play button on it, and start the animation on the first tap anywhere
+    var still = null;
+    var toStill = function(){ if (still || !vid.parentNode) return; still = document.createElement('img'); still.className = 'moon-still'; still.src = vid.getAttribute('poster') || 'diamond.jpg'; still.alt = '';
+      still.setAttribute('aria-hidden', 'true'); vid.style.visibility = 'hidden'; vid.parentNode.insertBefore(still, vid); vid.parentNode.classList.add('ready');
+      var retry = function(){ document.removeEventListener('touchstart', retry, true); document.removeEventListener('click', retry, true);
+        var p2 = vid.play(); if (p2 && p2.then) p2.then(function(){ vid.style.visibility = ''; if (still){ still.remove(); still = null; } }, function(){}); };
+      document.addEventListener('touchstart', retry, true); document.addEventListener('click', retry, true); };
+    var pp = vid.play(); if (pp && pp.catch) pp.catch(toStill);
+    setTimeout(function(){ if (vid.paused && !reduce) toStill(); }, 2500);   // some phones never answer: same fallback
+  }
 
   /* ---------- rays ---------- */
   function rays(cv, cxF, cyF, n, alpha){
@@ -5358,9 +5371,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var guess = Date.UTC(+date.slice(0,4), +date.slice(5,7) - 1, +date.slice(8,10), h, mi), utc = guess - tzOffsetMin(tz, guess) * 60000, ny = new Date(utc + tzOffsetMin('America/New_York', utc) * 60000);
     return { date: ny.toISOString().slice(0,10), mins: ny.getUTCHours() * 60 + ny.getUTCMinutes() };
   }
-  function tradeDayFor(date, time, tz){ var n = nyAt(date, time, tz), d = date; if (n){ d = n.date; if (n.mins >= 1080) d = addDays(d, 1); } return tradeDay(d); }
-  function shiftLabel(e){ var asia = e.kind === 'trade' && (nyAt(e.sunday, e.time, e.tz) || {}).mins >= 1080;
-    return asia ? 'Asia · ' + new Date(e.sunday + 'T12:00:00').toLocaleDateString('en-GB', { weekday:'short' }) + ' night' : 'Sunday open'; }
+  function tradeDayFor(date){ return tradeDay(date); }   // the day picked is the day it counts (only Sunday → Monday)
+  function shiftLabel(e){ return 'Sunday open'; }
   // ---------- clocks: market times are New York times; everyone also sees them on their own clock (Osman: UK) ----------
   function myTz(){ try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York'; } catch (e){ return 'America/New_York'; } }
   function zoneLabel(tz){ tz = tz || myTz(); if (tz === 'Europe/London') return 'UK'; if (tz === 'America/New_York') return 'NY';
@@ -5380,7 +5392,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var h = el('small','sun-hint');
     var upd = function(){ var D = JR.draft || {}, dv = i.value, ok = /^\d{4}-\d{2}-\d{2}$/.test(dv), td = ok ? tradeDayFor(dv, JR.kind === 'none' ? '' : D.time, D.tz) : dv, on = ok && td !== dv;
       var day = on ? new Date(td + 'T12:00:00').toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'short' }) : '';
-      h.textContent = !on ? '' : wday(dv) === 0 && td === addDays(dv, 1) && !((nyAt(dv, D.time, D.tz) || {}).mins >= 1080) ? 'Sunday\'s open counts as Monday: this will be saved under ' + day + '.' : 'Asia session (6 pm New York' + alsoMine('18:00') + ' or later) counts for the next trading day: this will be saved under ' + day + '.';
+      h.textContent = on ? 'Sunday\'s open counts as Monday: this will be saved under ' + day + '.' : '';
       h.style.display = on ? '' : 'none'; };
     JR.dayHint = upd;
     i.addEventListener('input', upd); i.addEventListener('change', upd);
