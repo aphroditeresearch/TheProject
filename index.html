@@ -1150,8 +1150,6 @@ ul.parts{list-style:none;margin:0 0 4px 22px;padding:0 0 0 12px;border-left:1px 
 .shc-stage{flex:1 1 0;display:flex;align-items:center;justify-content:center;width:100%;min-height:0;overflow:hidden}
 /* the card fits the space left under the buttons (it never slides under them, whatever the phone's height or toolbars) */
 .shc-img{display:block;width:auto;height:auto;max-width:100%;max-height:100%;cursor:pointer}
-.shc.pc .shc-img{height:auto;width:min(100%,calc((100vh - 170px) * 16 / 9));max-height:100%}
-.shc.pc.bare .shc-img{height:auto;width:min(100vw,calc(100vh * 16 / 9))}
 .shc.bare{padding:0;justify-content:center}.shc.bare .shc-top,.shc.bare .shc-hint{display:none}.shc.bare .shc-img{height:min(100vh,calc(100vw * 16 / 9))}
 .img-ph{display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-height:90px;background:rgba(227,241,239,.04);color:var(--muted)}
 .ld{color:transparent!important;background:linear-gradient(100deg,rgba(227,241,239,.04) 30%,rgba(227,241,239,.10) 50%,rgba(227,241,239,.04) 70%) 0 0/300% 100%!important;animation:ldsh 1.2s linear infinite}
@@ -4992,57 +4990,11 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   // Phones get the 9:16 story cards; computers get the wide PC card (in the style of copy-trading group cards)
   function shcIsPhone(){ return TOUCHY && Math.min(screen.width || 9999, screen.height || 9999) <= 900; }
   function drawShareCard(cv, q){
-    if (SHC.pc) drawPcCard(cv, q);
-    else if (q.mine) SHC.style === 'ledger' ? drawLedgerCard(cv, q) : drawProfileCard(cv, q);
+    if (q.mine) SHC.style === 'ledger' ? drawLedgerCard(cv, q) : drawProfileCard(cv, q);
     else SHC.sstyle === 'ledger' ? drawLedgerCard(cv, q) : drawProfileCard(cv, q);
     var c = cv.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); cardKit(c).dither();
   }
 
-  // PC card: 16:9, drawn at 2× (3840×2160) so it stays sharp on big screens, Discord and X.
-  function drawPcCard(cv, q){
-    var S = 2, Wd = 1920, Ht = 1080; cv.width = Wd * S; cv.height = Ht * S;
-    var c = cv.getContext('2d'); c.setTransform(S, 0, 0, S, 0, 0);
-    var K = cardKit(c), up = q.net >= 0, col = up ? K.UP : K.DOWN, group = !q.mine;
-    var w = group ? { name:'The Project', role: q.traders + (q.traders === 1 ? ' trader' : ' traders'), color:'#E3F1EF' } : (q.who || {});
-    // background
-    c.fillStyle = '#02090B'; c.fillRect(0, 0, Wd, Ht);
-    var g = c.createRadialGradient(Wd * .5, Ht * .55, 0, Wd * .5, Ht * .55, Wd * .55); g.addColorStop(0, up ? 'rgba(20,163,157,.18)' : 'rgba(240,84,84,.12)'); g.addColorStop(1, 'rgba(2,9,11,0)'); c.fillStyle = g; c.fillRect(0, 0, Wd, Ht);
-    // the card
-    var M = 90, cx = M, cy = 70, cw = Wd - M * 2, ch = Ht - 140;
-    c.save(); c.shadowColor = 'rgba(0,0,0,.6)'; c.shadowBlur = 90; c.shadowOffsetY = 30; K.rr(cx, cy, cw, ch, 36); c.fillStyle = '#071315'; c.fill(); c.restore();
-    K.rr(cx, cy, cw, ch, 36); c.strokeStyle = 'rgba(227,241,239,.09)'; c.lineWidth = 2; c.stroke();
-    // header strip: diamond + title, period on the right
-    var hy = cy + 66; if (TPM){ var gh = 40, gw = gh * 576 / 273; c.save(); c.shadowColor = 'rgba(150,255,220,.35)'; c.shadowBlur = 16; c.drawImage(TPM, cx + 44, hy - 34, gw, gh); c.restore(); }
-    K.F('700', 30); c.fillStyle = K.INK; c.fillText(group ? 'Group P&L Card' : 'P&L Card', cx + 44 + 84 + 22, hy);
-    c.save(); c.translate(cx + cw - 44, hy); c.textAlign = 'right'; K.F('600', 26); c.fillStyle = K.MUTED; c.fillText(q.sub, 0, 0); c.restore();
-    c.fillStyle = 'rgba(227,241,239,.08)'; c.fillRect(cx, cy + 112, cw, 2);
-    // who: picture tile + name (role colour) + role, a headline number on the right
-    var by = cy + 150, ts = 150;
-    K.rr(cx + 44, by, ts + 40, ts + 40, 26); c.fillStyle = 'rgba(227,241,239,.04)'; c.fill(); c.strokeStyle = 'rgba(227,241,239,.08)'; c.stroke();
-    K.avatar(group ? 'gem' : q.avatar, cx + 44 + 20 + ts / 2, by + 20 + ts / 2, ts / 2 - 8, w.name, w.color || K.UP);
-    var nx = cx + 44 + ts + 40 + 40;
-    K.fit(w.name || 'Trader', '700', 72, 40, 760); K.glow(w.name || 'Trader', nx, by + 92, w.color || K.UP, 20);
-    K.F('600', 30); c.fillStyle = group ? K.TEAL : K.MUTED; c.fillText(group ? w.role : ((w.handle ? '@' + w.handle + '  ·  ' : '') + (w.role || 'Member')), nx, by + 146);
-    var rLabel = group ? 'Win rate' : 'Trades', rVal = group ? (q.wr === null ? '—' : q.wr + '%') : String(q.n);
-    c.save(); c.textAlign = 'right'; K.F('600', 26); c.fillStyle = K.MUTED; c.fillText(rLabel, cx + cw - 44, by + 56);
-    K.F('700', 64); c.fillStyle = '#F1C40F'; c.fillText(rVal, cx + cw - 44, by + 130); c.restore();
-    // the P&L panel
-    var px = cx + 44, py = by + ts + 40 + 40, pw = cw - 88, ph = cy + ch - 44 - py - (group || q.mine ? 120 : 0);
-    var pg = c.createLinearGradient(0, py, 0, py + ph); pg.addColorStop(0, up ? 'rgba(59,227,143,.08)' : 'rgba(240,84,84,.08)'); pg.addColorStop(1, 'rgba(227,241,239,.02)');
-    K.rr(px, py, pw, ph, 30); c.fillStyle = pg; c.fill(); c.strokeStyle = 'rgba(227,241,239,.08)'; c.lineWidth = 2; c.stroke();
-    var lab = (group ? GROUP_LABEL : OWN_LABEL)[q.per];
-    c.textAlign = 'center'; K.F('600', 34); c.fillStyle = K.INK; c.fillText(lab, Wd / 2, py + ph / 2 - 70); c.textAlign = 'left';
-    var big = K.money(q.net), bs = K.fit(big, '700', 170, 80, pw - 260), bw = c.measureText(big).width, aw = 80, tx = Wd / 2 - (bw + aw + 30) / 2, ty = py + ph / 2 + bs * .55;
-    K.glow(big, tx, ty, col, 50);
-    K.arrow(tx + bw + 30, ty - bs * .62, aw, up, col);
-    // three numbers along the bottom
-    var stats = group
-      ? [['Record', q.W + '–' + q.L + (q.BE ? '–' + q.BE : '')], ['Avg win : loss', q.ratio === null ? '—' : (Math.round(q.ratio * 10) / 10) + ' : 1'], ['Trades', String(q.n)]]
-      : [['Total R', q.totalR === null ? '—' : (q.totalR >= 0 ? '+' : '−') + (Math.round(Math.abs(q.totalR) * 100) / 100) + 'R'], ['Profit factor', q.pf === null ? '—' : q.pf === Infinity ? '∞' : (Math.round(q.pf * 100) / 100).toFixed(2)], ['Best trade', (function(){ var b = null; (q.list || []).forEach(function(e){ if (!e.noPnl && (b === null || +e.pnl > b)) b = +e.pnl; }); return b === null ? '—' : K.money(b); })()]];
-    var sy = py + ph + 24, sw = (pw - 40) / 3;
-    stats.forEach(function(k, i){ var x = px + i * (sw + 20); K.rr(x, sy, sw, 96, 22); c.fillStyle = 'rgba(227,241,239,.04)'; c.fill(); c.strokeStyle = 'rgba(227,241,239,.08)'; c.stroke();
-      K.F('500', 24); c.fillStyle = K.MUTED; c.fillText(k[0], x + 30, sy + 40); K.F('700', 38); c.fillStyle = K.INK; c.fillText(k[1], x + 30, sy + 80); });
-  }
   function openShareCard(scopeArg){
     var isAdm = canAdmin() && !PREVIEW; SHC.scope = isAdm ? (scopeArg === 'me' ? 'me' : SHC.scope) : 'me';
     var old = document.getElementById('shc'); if (old) old.remove();
@@ -5061,10 +5013,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     if (!SHC.sstyle){ try { SHC.sstyle = localStorage.getItem('theproject.groupstyle') || ''; } catch (e) {} if (['profile','ledger'].indexOf(SHC.sstyle) < 0) SHC.sstyle = 'profile'; }
     var styleSeg = seg([['profile','Profile'],['ledger','Ledger']], SHC.style, function(v){ SHC.style = v; try { localStorage.setItem('theproject.cardstyle', v); } catch (e) {} paint(); });
     var gStyleSeg = seg([['profile','Profile'],['ledger','Ledger']], SHC.sstyle, function(v){ SHC.sstyle = v; try { localStorage.setItem('theproject.groupstyle', v); } catch (e) {} paint(); });
-    SHC.pc = !shcIsPhone(); sc.classList.toggle('pc', SHC.pc);
-    top.appendChild(perSeg); if (!SHC.pc){ top.appendChild(styleSeg); top.appendChild(gStyleSeg); } top.appendChild(save); top.appendChild(x);
+    // one card for social media: the 1080 × 1920 story card, on phone and computer alike
+    top.appendChild(perSeg); top.appendChild(styleSeg); top.appendChild(gStyleSeg); top.appendChild(save); top.appendChild(x);
     var stage = el('div','shc-stage'), cv = document.createElement('canvas'); cv.className = 'shc-img'; cv.setAttribute('role','img'); cv.setAttribute('aria-label','Results card'); cv.hidden = true; stage.appendChild(cv);
-    var hint = el('p','shc-hint', shcIsPhone() ? 'Tap the card to hide these buttons for a clean screenshot. Tap again to bring them back.' : 'Save image gives you a sharp 3840 × 2160 picture. On your phone you get story-sized cards instead.');
+    var hint = el('p','shc-hint', shcIsPhone() ? 'Tap the card to hide these buttons for a clean screenshot. Tap again to bring them back.' : 'Save image gives you a 1080 × 1920 story card, sized for Instagram, TikTok and X.');
     sc.appendChild(top); sc.appendChild(hint); sc.appendChild(stage); document.body.appendChild(sc); document.documentElement.classList.add('lb-open');
     var close = function(){ sc.remove(); document.documentElement.classList.remove('lb-open'); document.removeEventListener('keydown', esc, true); };
     var esc = function(e){ if (e.key === 'Escape'){ if (sc.classList.contains('bare')) sc.classList.remove('bare'); else close(); } };

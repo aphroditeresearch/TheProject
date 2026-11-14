@@ -23,6 +23,10 @@ No stored data is rewritten or removed. Every existing entry, day note, account 
   - How it was logged: verified vs by hand.
   - The existing Mistakes factor already shows the cost of each mistake.
 
+- **P&L cards are mobile-only now.** The 16:9 computer card is gone. Every device, including a computer, makes the 1080 × 1920 story card for Instagram, TikTok and X.
+  - The Profile / Ledger styles now show on a computer too.
+  - Only the image is affected. No stored data changes.
+
 ## Tested
 - API tests: 17 passed.
 - Seeded old and new data, then ran: a hand trade verified by CSV (notes and tags kept), a re-import (no duplicates), a tampering attempt on CSV numbers (ignored), and an edit to a hand trade (still allowed).
