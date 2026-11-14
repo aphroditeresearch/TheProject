@@ -968,6 +968,48 @@ button.tri-chip{cursor:pointer}button.tri-chip:hover{border-color:var(--blue)}
 .lb-nm b{display:block}.lb-nm small{color:var(--muted);font-size:12px}
 .lb-pts{font:800 20px var(--sans);color:var(--kana-c)}
 .jr-view{margin-bottom:14px}
+/* journal · Today */
+.ty{display:flex;flex-direction:column;gap:22px}
+.ty-top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.ty-top h2{margin:6px 0 8px;font:700 32px/1.1 var(--sans);letter-spacing:-.01em}
+.ty-streak{display:inline-block;font-size:13px;color:var(--muted);padding:4px 10px;border:1px solid var(--line)}
+.ty-streak.hot{color:#FFD9B0;border-color:rgba(255,170,90,.45);background:rgba(255,140,60,.08)}
+.ty-pnl{text-align:right;display:flex;flex-direction:column;gap:4px}.ty-pnl b{font:700 32px/1 var(--mono)}
+.ty .win{color:var(--win)}.ty .loss{color:var(--loss)}
+.ty-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:20px;align-items:start}
+.ty-main,.ty-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.ty-card{border:1px solid var(--line);background:var(--panel);padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+.ty-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.ty-h h3{margin:0;font:700 17px var(--sans)}
+.ty-sub{color:var(--muted);font-size:12.5px}.ty-acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.ty-step{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 12px var(--mono);flex:none;border:1.5px solid var(--line);color:var(--muted)}
+.ty-step.now{border-color:var(--blue);color:var(--kana-c)}.ty-step.done{background:var(--blue);border-color:var(--blue);color:#fff}
+.ty-b{padding-left:40px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.ty-plan{margin:0;display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px 16px;font-size:14.5px}.ty-plan dt{color:var(--muted)}.ty-plan dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.ty-form{display:grid;gap:10px}.ty-form textarea,.ty-recap textarea{width:100%;resize:vertical}
+.ty-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.ty-row small,.ty-card small{color:var(--muted);font-size:12.5px}
+.ty-empty{margin:0;color:var(--muted);font-size:14px}
+.ty-tr{display:flex;align-items:center;gap:16px;padding:12px 0;border-top:1px solid var(--line)}.ty-b>.ty-tr:first-child{border-top:0;padding-top:0}
+.ty-tl{flex:1;min-width:0}.ty-tl p{margin:4px 0 0;color:var(--muted);font-size:13.5px;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.ty-tl p.need{color:#F2C879}
+.ty-tt{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ty-pill{font-size:12px;padding:2px 8px;border:1px solid var(--line);color:var(--muted)}.ty-pill.ok{border-color:var(--blue-dim);color:var(--kana-c);background:rgba(20,163,157,.10)}
+.ty-amt{font:700 15px var(--mono);white-space:nowrap}
+.ty-recap{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:18px}.ty-recap>div:first-child{display:flex;flex-direction:column;gap:10px;min-width:0}
+.ty-rtext{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14.5px}
+.ty-lock{border:1px solid var(--line);background:linear-gradient(160deg,var(--panel-2),var(--panel));padding:16px;display:flex;flex-direction:column;gap:8px;justify-content:flex-end;min-height:150px}
+.ty-lock.open{border-color:var(--blue)}
+.ty-mark{display:block;width:44px;height:21px;margin-bottom:auto;background:var(--ink);opacity:.6;-webkit-mask:url(logo-tp.svg) left center/contain no-repeat;mask:url(logo-tp.svg) left center/contain no-repeat}
+.ty-cnum{font:700 26px/1 var(--mono)}.ty-lock:not(.open) .ty-cnum{filter:blur(7px);opacity:.6;user-select:none}
+.ty-acct{display:flex;flex-direction:column;gap:6px;padding-top:12px;border-top:1px solid var(--line)}.ty-card>.adm-note+.ty-acct{border-top:0;padding-top:0}
+.ty-ah{display:flex;align-items:baseline;gap:8px}.ty-ah .ty-amt{margin-left:auto}.ty-k{color:var(--muted);font-size:12.5px}
+.ty-bar{height:6px;background:var(--panel-2);overflow:hidden}.ty-bar i{display:block;height:100%;background:var(--blue)}.ty-bar.warn i{background:#F2C879}.ty-bar.bad i{background:var(--loss)}
+.ty-rules{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:13.5px;color:var(--muted)}
+.ty-card .btn-s{align-self:flex-start}
+.jr-form>.lnk,.lnk.jr-cx{align-self:flex-start;width:auto;background:none;border:0;padding:4px 0;color:var(--kana-c);font:600 13px var(--sans);cursor:pointer;text-align:left}.ty .lnk{align-self:flex-start;background:none;border:0;padding:4px 0;color:var(--kana-c);font:600 13px var(--sans);cursor:pointer}
+.ty-msg{appearance:none;display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 0;border:0;border-top:1px solid var(--line);background:none;color:var(--ink);font:500 14px var(--sans);cursor:pointer}.ty-msg b{flex:1;font-weight:600}.ty-msg:hover b{color:var(--kana-c)}
+.jr-tabs{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.jr-acts{margin-left:auto;display:flex;gap:8px}
+@media (max-width:700px){.jr-tabs .seg2,.jr-tabs>div:first-child{overflow-x:auto;max-width:100%}.jr-acts{margin-left:0;width:100%}.jr-acts .btn-s{flex:1}}.ty-tr .btn-s{align-self:center;flex:none}
+@media (max-width:900px){.ty-grid{grid-template-columns:minmax(0,1fr)}.ty-recap{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:600px){.ty-card{padding:16px}.ty-b{padding-left:0}.ty-top h2,.ty-pnl b{font-size:26px}.ty-tr{flex-wrap:wrap;gap:8px 12px}.ty-tl{flex-basis:100%}.ty-tr .btn-s{min-height:44px;margin-left:auto}.ty-plan{grid-template-columns:minmax(0,1fr);gap:2px}.ty-plan dd{margin-bottom:8px}.ty-acts{margin-left:0;width:100%}.ty-acts .btn-s{flex:1;min-height:44px}}
 .jr-pend{margin:0;font-size:13px;color:#E8D27A;border-left:2px solid #E8D27A;padding:4px 0 4px 10px}
 .je{position:relative;border:1px solid var(--line);background:var(--panel);padding:14px 16px 12px 18px;display:flex;flex-direction:column;gap:10px;margin-bottom:10px}
 .je::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--line)}
@@ -3303,7 +3345,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function entryWorth(e){ if (!e || !e.followed) return 0; if (e.kind === 'none') return 1; if (isPaper(e)) return e.outcome === 'tp' ? 1 : 0; return e.outcome === 'tp' ? 3 : 1; }
   function legacyPoints(e){ if (!e || !e.followed) return 0; if (e.kind === 'none') return 1; return e.outcome === 'tp' ? 3 : 1; }
   function entryPoints(e){ if (entryStatus(e) !== 'approved') return 0; return typeof e.awarded === 'number' ? e.awarded : legacyPoints(e); }
-  var JR = { kind:'trade', draft:{ files:[] }, editing:false, view:'cal', month:null, day:todayYmd() };
+  var JR = { kind:'trade', draft:{ files:[] }, editing:false, view:'today', month:null, day:todayYmd() };
   var OUT = { tp:'TP', sl:'SL', be:'BE' };
   function money(n){ n = +n || 0; return (n < 0 ? '−$' : '$') + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
   // the date a new journal entry most likely belongs to: before 5am counts as the day before, and weekends go back to Friday
@@ -3843,7 +3885,16 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     side.appendChild(recapCard(ents, host));
     var pend = ents.filter(function(e){ return entryStatus(e) === 'pending'; }).length;
     if (pend) side.appendChild(el('p','jr-pend', pend + (pend === 1 ? ' entry is' : ' entries are') + ' waiting for an admin to approve ' + (pend === 1 ? 'it' : 'them') + ' for the leaderboard.'));
-    var vs = el('div','jr-view'); vs.appendChild(seg([['cal','Calendar'],['list','Entries'],['stats','Stats'],['progress','Progress'],['new', JR.editId ? '✎ Editing' : '+ New entry'],['import','Import CSV']], JR.view, function(v){ if (v !== 'new' && JR.editId){ JR.editId = null; JR.draft = { files:[] }; } JR.view = v; drawJournal(host); }));
+    var vs = el('div','jr-view jr-tabs'), tabs = [['today','Today'],['list','Trades'],['cal','Calendar'],['stats','Stats'],['progress','Accounts'],['cards','Cards']];
+    if (JR.view === 'new') tabs.push(['new', JR.editId ? '✎ Editing' : '+ New entry']); if (JR.view === 'import') tabs.push(['import','Import CSV']);
+    vs.appendChild(seg(tabs, JR.view, function(v){
+      if (v === 'cards'){ drawJournal(host); SHC.per = 'day'; openShareCard('me'); return; }
+      if (v !== 'new' && JR.editId){ JR.editId = null; JR.draft = { files:[] }; } JR.from = null; JR.view = v; drawJournal(host); }));
+    var va = el('div','jr-acts');
+    [['+ New entry', function(){ JR.kind = 'trade'; JR.editId = null; JR.draft = { files:[] }; JR.view = 'new'; }], ['Import CSV', function(){ JR.view = 'import'; }]].forEach(function(a){
+      var b = el('button','btn-s',a[0]); b.type = 'button'; b.addEventListener('click', function(){ JR.from = JR.view === 'today' ? 'today' : null; a[1](); drawJournal(host); window.scrollTo(0, 0); }); va.appendChild(b); });
+    vs.appendChild(va);
+    if (JR.view === 'today'){ host.appendChild(vs); host.appendChild(todayView(host)); return; }
     main.appendChild(vs);
     if (JR.view === 'stats'){
       JR.per = JR.per || 'today';
@@ -3860,7 +3911,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var f = el('section','jr-form view-in'); f.appendChild(el('h3',null, JR.editId ? 'Edit entry' : 'New entry'));
     if (JR.editId){ var eo = (ME.entries || []).filter(function(x){ return x.id === JR.editId; })[0];
       if (eo && entryStatus(eo) !== 'pending') f.appendChild(el('p','adm-note jr-editnote','This entry was already reviewed. Notes, screenshots, tags and trade data can change freely; changing the result, account, date or the rules answer sends it back for review.'));
-      var cx = el('button','lnk','Cancel editing'); cx.type = 'button'; cx.addEventListener('click', function(){ JR.editId = null; JR.draft = { files:[] }; JR.view = 'cal'; drawJournal(host); }); f.appendChild(cx); }
+      var cx = el('button','lnk','Cancel editing'); cx.type = 'button'; cx.addEventListener('click', function(){ JR.editId = null; JR.draft = { files:[] }; JR.view = JR.from === 'today' ? 'today' : 'cal'; JR.from = null; drawJournal(host); }); f.appendChild(cx); }
     f.appendChild(seg([['trade','Trade'],['none','No trades today']], JR.kind, function(k){ JR.kind = k; drawJournal(host); }));
     var D = JR.draft; if (!D.date) D.date = tradeDay(todayYmd());
     var grid2 = el('div','jr-body'), cur = null, LIVE = {};
@@ -4025,7 +4076,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       post.disabled = true;
       var editing = JR.editId;
       memberPost(editing ? { action:'journal-edit', id:editing, entry:entry } : { action:'journal-add', entry:entry }).then(function(r){ JR.satOk = false; JR.editId = null;
-        toast(editing ? (r && r.entry && r.entry.reopened ? 'Saved. Because the result, account, date or rules answer changed, it\'s back in review.' : 'Saved.') : 'Entry posted. It counts on the leaderboard once an admin approves it.'); JR.draft = { files:[] }; JR.view = 'cal'; JR.month = entry.date.slice(0,7); JR.day = entry.date; return loadMe(); })
+        toast(editing ? (r && r.entry && r.entry.reopened ? 'Saved. Because the result, account, date or rules answer changed, it\'s back in review.' : 'Saved.') : 'Entry posted. It counts on the leaderboard once an admin approves it.'); JR.draft = { files:[] }; JR.view = JR.from === 'today' ? 'today' : 'cal'; JR.from = null; JR.month = entry.date.slice(0,7); JR.day = entry.date; return loadMe(); })
         .then(function(){ drawJournal(host); })
         .catch(function(e){ post.disabled = false; var m = e && e.message; toast(m === 'none_exists' ? 'You already logged a no-trade day for that date.' : m === 'need_files' ? 'Add at least one screenshot.' : m === 'missing' ? 'Some fields are missing.' : 'Couldn\'t post it: ' + m); });
     });
@@ -4150,12 +4201,141 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         go.disabled = true; go.textContent = 'Importing…';
         memberPost({ action:'journal-import', entries: trades }).then(function(r){ r = r || {};
           toast('Imported ' + (r.added || 0) + (r.added === 1 ? ' trade' : ' trades') + (r.dupes ? ' · ' + r.dupes + ' already in your journal' : '') + (r.bad ? ' · ' + r.bad + ' couldn\'t be read' : '') + '. Add notes and screenshots to them anytime.');
-          CSVI.rows = null; return loadMe(); }).then(function(){ JR.view = 'list'; drawJournal(host); })
+          CSVI.rows = null; return loadMe(); }).then(function(){ JR.view = JR.from === 'today' ? 'today' : 'list'; JR.from = null; drawJournal(host); })
           .catch(function(e){ go.disabled = false; go.textContent = 'Import'; toast('Import failed: ' + ((e && e.message) || e)); });
       });
       body.appendChild(go);
     }
     draw(); return box;
+  }
+
+  /* ---------- journal: Today (plan → trades → recap → card), all written by hand ---------- */
+  var PLAN_F = [['Bias','Long, short or flat, and why'],['Key levels','The prices you\'re watching'],['Max loss','Where you stop for the day'],['News','Releases today and how you\'ll handle them']];
+  function planParse(text){
+    var out = { f:{}, free:'' }, lines = String(text || '').split('\n'), cur = null, hit = false;
+    lines.forEach(function(l){ var m = /^(Bias|Key levels|Max loss|News):\s?(.*)$/.exec(l);
+      if (m){ cur = m[1]; out.f[cur] = m[2]; hit = true; } else if (cur) out.f[cur] += '\n' + l; else out.free += (out.free ? '\n' : '') + l; });
+    if (!hit){ out.f = {}; out.free = String(text || ''); }
+    return out; }
+  function planText(f, free){ var t = PLAN_F.map(function(x){ var v = String(f[x[0]] || '').trim(); return v ? x[0] + ': ' + v : ''; }).filter(Boolean).join('\n'); free = String(free || '').trim(); return free ? (free + (t ? '\n' + t : '')) : t; }
+  function hasBreakdown(e){ return String((e && e.overview) || '').trim().length >= 10; }
+  function todayView(host){
+    var day = tradeToday(); if (wday(day) === 6) day = addDays(day, -1);   // Saturday: show Friday's session (Sunday evening already belongs to Monday)
+    var ents = ME.entries || [], note = (ME.dayNotes || {})[day] || {};
+    var todays = ents.filter(function(e){ return e.date === day && entryStatus(e) !== 'denied'; });
+    var trades = todays.filter(function(e){ return e.kind === 'trade'; }).sort(function(a, b){ return String(a.time || '').localeCompare(String(b.time || '')); });
+    var none = todays.filter(function(e){ return e.kind === 'none'; })[0];
+    var counted = trades.filter(countsInStats), pnl = counted.reduce(function(t, e){ return t + (+e.pnl || 0); }, 0);
+    var owed = trades.filter(function(e){ return !hasBreakdown(e); }).length;
+    var planDone = !!String(note.plan || '').trim(), tradesDone = (trades.length || none) && !owed, recapDone = String(note.recap || '').trim().length >= 20;
+    var S = streakOf(ents), wrap = el('div','ty view-in');
+    function redraw(){ drawJournal(host); }
+    function saveNote(patch, btn, msg){ btn.disabled = true;
+      var body = { action:'daynote-save', date:day, plan:note.plan || '', recap:note.recap || '', mood:note.mood || '' }; Object.keys(patch).forEach(function(k){ body[k] = patch[k]; });
+      memberPost(body).then(function(){ toast(msg); JR.planEdit = false; JR.recapEdit = false; return loadMe(); }).then(redraw).catch(function(e){ btn.disabled = false; toast('Couldn\'t save: ' + ((e && e.message) || e)); }); }
+    function step(n, state, title, sub){ var s = el('section','ty-card'), h = el('div','ty-h'), b = el('span','ty-step ' + state, state === 'done' ? '✓' : String(n)); b.setAttribute('aria-hidden','true');
+      h.appendChild(b); h.appendChild(el('h3',null,title)); if (sub) h.appendChild(el('span','ty-sub',sub)); s.appendChild(h); var body = el('div','ty-b'); s.appendChild(body); s.body = body; s.head = h; return s; }
+    // header
+    var hd = el('div','ty-top'), hl = el('div'), hr = el('div','ty-pnl');
+    hl.appendChild(el('span','adm-note', new Date(day + 'T12:00:00Z').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', timeZone:'UTC' }).replace(',', ' ·')));
+    hl.appendChild(el('h2',null,'Today'));
+    hl.appendChild(el('span','ty-streak' + (S.current >= 2 ? ' hot' : ''), (S.current ? '🔥 ' : '') + S.current + (S.current === 1 ? ' day journaled' : ' days journaled') + (S.today ? '' : S.weekday ? ' · journal today to keep it' : '')));
+    hr.appendChild(el('span','adm-note','Day P&L · funded + evaluation'));
+    hr.appendChild(el('b', pnl > 0 ? 'win' : pnl < 0 ? 'loss' : '', counted.length ? (pnl > 0 ? '+' : '') + money(pnl) : '—'));
+    hd.appendChild(hl); hd.appendChild(hr); wrap.appendChild(hd);
+    var grid = el('div','ty-grid'), main = el('div','ty-main'), side = el('aside','ty-side');
+    // 1 · plan
+    var P = planParse(note.plan), editing = JR.planEdit || !planDone;
+    var s1 = step(1, planDone ? 'done' : 'now', 'Plan', planDone ? 'Written before the session' + (note.updatedAt ? '' : '') : 'Write it before you trade');
+    if (!editing){
+      var dl = el('dl','ty-plan'); if (P.free){ dl.appendChild(el('dt',null,'Notes')); dl.appendChild(el('dd',null,P.free)); }
+      PLAN_F.forEach(function(x){ if (!P.f[x[0]]) return; dl.appendChild(el('dt',null,x[0])); dl.appendChild(el('dd',null,P.f[x[0]])); });
+      s1.body.appendChild(dl); var pe = el('button','lnk','Edit plan'); pe.type = 'button'; pe.addEventListener('click', function(){ JR.planEdit = true; redraw(); }); s1.body.appendChild(pe);
+    } else {
+      var PF = {}, free = P.free, pf = el('div','ty-form');
+      if (free){ var fr = inputEl('textarea', free); fr.rows = 3; fr.addEventListener('input', function(){ free = fr.value; }); pf.appendChild(fld('Notes', fr)); }
+      PLAN_F.forEach(function(x){ PF[x[0]] = P.f[x[0]] || ''; var i = inputEl('textarea', PF[x[0]], x[1]); i.rows = 1; i.maxLength = 600; i.addEventListener('input', function(){ PF[x[0]] = i.value; }); pf.appendChild(fld(x[0], i)); });
+      s1.body.appendChild(pf);
+      var ps = el('button','btn-s pri','Save plan'); ps.type = 'button';
+      ps.addEventListener('click', function(){ var t = planText(PF, free); if (t.length < 10){ toast('Write your plan first. A line or two is enough.'); return; } saveNote({ plan:t.slice(0, 3000) }, ps, 'Plan saved.'); });
+      var pr = el('div','ty-row'); pr.appendChild(ps);
+      if (planDone){ var pc = el('button','lnk','Cancel'); pc.type = 'button'; pc.addEventListener('click', function(){ JR.planEdit = false; redraw(); }); pr.appendChild(pc); }
+      s1.body.appendChild(pr);
+    }
+    main.appendChild(s1);
+    // 2 · trades
+    var s2 = step(2, tradesDone ? 'done' : planDone ? 'now' : 'wait', 'Trades', trades.length ? trades.length + (trades.length === 1 ? ' trade' : ' trades') + (owed ? ' · ' + owed + (owed === 1 ? ' needs' : ' need') + ' a breakdown' : '') : none ? 'No trades today' : '');
+    var acts = el('div','ty-acts');
+    [['Import CSV', function(){ JR.view = 'import'; }], ['Add by hand', function(){ JR.kind = 'trade'; JR.draft = { files:[], date:day }; JR.editId = null; JR.view = 'new'; }]].concat(!trades.length && !none ? [['No trades today', function(){ JR.kind = 'none'; JR.draft = { files:[], date:day }; JR.editId = null; JR.view = 'new'; }]] : [])
+      .forEach(function(a){ var b = el('button','btn-s',a[0]); b.type = 'button'; b.addEventListener('click', function(){ JR.from = 'today'; a[1](); redraw(); window.scrollTo(0, 0); }); acts.appendChild(b); });
+    s2.head.appendChild(acts);
+    if (!trades.length && !none) s2.body.appendChild(el('p','ty-empty','Nothing logged yet. Import your CSV so the numbers are verified, or add a trade by hand. Either way, the breakdown is yours to write.'));
+    if (none){ var nr = el('div','ty-tr'), nl = el('div','ty-tl'); nl.appendChild(el('b',null,'No trades today')); nl.appendChild(el('p',null, none.overview || '')); nr.appendChild(nl);
+      var ne = el('button','lnk','Edit'); ne.type = 'button'; ne.addEventListener('click', function(){ JR.from = 'today'; editEntry(none); }); nr.appendChild(ne); s2.body.appendChild(nr); }
+    trades.forEach(function(e){
+      var r = el('div','ty-tr'), l = el('div','ty-tl'), t = el('div','ty-tt'), p = +e.pnl || 0;
+      t.appendChild(el('b',null, String(e.pair || 'Trade').toUpperCase() + (e.dir ? ' · ' + cap(e.dir) : '')));
+      t.appendChild(el('span','ty-pill' + (e.src === 'csv' ? ' ok' : ''), e.src === 'csv' ? '✓ Verified' : 'By hand'));
+      if (e.account) t.appendChild(el('span','ty-pill', e.account));
+      l.appendChild(t);
+      l.appendChild(el('p', hasBreakdown(e) ? null : 'need', (e.time ? e.time + ' · ' : '') + (hasBreakdown(e) ? e.overview : 'No breakdown yet. What did you see, and what\'s the lesson?')));
+      r.appendChild(l);
+      r.appendChild(el('b','ty-amt ' + (p > 0 ? 'win' : p < 0 ? 'loss' : ''), e.noPnl ? '—' : (p > 0 ? '+' : '') + money(p)));
+      var b = el('button', hasBreakdown(e) ? 'btn-s' : 'btn-s pri', hasBreakdown(e) ? 'Edit' : 'Write breakdown'); b.type = 'button'; b.addEventListener('click', function(){ JR.from = 'today'; editEntry(e); }); r.appendChild(b);
+      s2.body.appendChild(r); });
+    main.appendChild(s2);
+    // 3 · recap, and the card it earns
+    var locked = owed > 0, s3 = step(3, recapDone ? 'done' : locked || !tradesDone ? 'wait' : 'now', 'Recap', locked ? 'Finish your breakdowns first' : recapDone ? 'Written. Today\'s card is yours.' : 'Write it to earn today\'s card');
+    var rg = el('div','ty-recap'), rl = el('div'), card = el('div','ty-lock' + (recapDone ? ' open' : ''));
+    if (recapDone && !JR.recapEdit){ rl.appendChild(el('p','ty-rtext', note.recap)); var re = el('button','lnk','Edit recap'); re.type = 'button'; re.addEventListener('click', function(){ JR.recapEdit = true; redraw(); }); rl.appendChild(re); }
+    else { var rv = note.recap || '', rt = inputEl('textarea', rv, 'What went well? What will you do differently next session?'); rt.rows = 5; rt.maxLength = 3000; rt.disabled = locked; rt.setAttribute('aria-label','Recap'); rt.addEventListener('input', function(){ rv = rt.value; });
+      rl.appendChild(rt); var rs = el('button','btn-s pri','Save recap'); rs.type = 'button'; rs.disabled = locked;
+      rs.addEventListener('click', function(){ if (rv.trim().length < 20){ toast('Give it a couple of sentences. This part is the work.'); return; } saveNote({ recap:rv.trim() }, rs, 'Recap saved. Your card is unlocked.'); });
+      var rr = el('div','ty-row'); rr.appendChild(rs); rr.appendChild(el('small',null,'Written by you. No shortcuts.')); rl.appendChild(rr); }
+    var mk = el('span','ty-mark'); mk.setAttribute('aria-hidden','true'); card.appendChild(mk);
+    card.appendChild(el('b','ty-cnum ' + (pnl > 0 ? 'win' : pnl < 0 ? 'loss' : ''), counted.length ? (pnl > 0 ? '+' : '') + money(pnl) : '$0'));
+    if (recapDone){ card.appendChild(el('span',null,'Today\'s card is unlocked.')); var sb = el('button','btn-s pri','Share today\'s card'); sb.type = 'button'; sb.addEventListener('click', function(){ SHC.per = 'day'; openShareCard('me'); }); card.appendChild(sb); }
+    else { card.appendChild(el('span',null,'🔒 Today\'s card is locked.')); card.appendChild(el('small',null,'Write your recap to earn it.')); }
+    rg.appendChild(rl); rg.appendChild(card); s3.body.appendChild(rg); main.appendChild(s3);
+    // side: accounts, rules, export
+    var accts = (COACH.accounts || []).filter(function(a){ return a.status === 'active'; });
+    var sa = el('section','ty-card'); sa.appendChild(el('span','adm-note','Accounts'));
+    if (!accts.length){ sa.appendChild(el('p','ty-empty','Add your prop accounts under Progress to see drawdown room here.')); }
+    accts.forEach(function(a){ var A = acctState(a, ents, COACH.accounts), d = el('div','ty-acct'), h = el('div','ty-ah');
+      A.today = ents.filter(function(e){ return e.kind === 'trade' && e.date === day && entryStatus(e) !== 'denied' && acctFor(e, COACH.accounts) === a.id; }).reduce(function(t, e){ return t + (+e.pnl || 0); }, 0);   // the day shown, not the calendar day
+      var nm = el('b',null,a.name); h.appendChild(nm); h.appendChild(el('span','ty-k', a.kind || '')); h.appendChild(el('b','ty-amt ' + (A.today > 0 ? 'win' : A.today < 0 ? 'loss' : ''), A.today ? (A.today > 0 ? '+' : '') + money(A.today) : '—')); d.appendChild(h);
+      if (A.ddPct !== null){ var bar = el('div','ty-bar' + (A.blown ? ' bad' : A.danger ? ' warn' : '')), fill = el('i'); fill.style.width = Math.round(A.ddPct * 100) + '%'; bar.appendChild(fill); d.appendChild(bar);
+        d.appendChild(el('small',null, A.blown ? 'Drawdown limit hit' : money(Math.max(0, A.room)) + ' of ' + money(a.maxDD) + ' drawdown room left')); }
+      if (a.target) d.appendChild(el('small',null, A.hitTarget ? 'Profit target reached' : money(Math.max(0, A.pnl)) + ' of ' + money(a.target) + ' profit target'));
+      sa.appendChild(d); });
+    side.appendChild(sa);
+    // from your mentor: unread replies on your entries, newest first
+    var sm = el('section','ty-card'), mname = (COACH.mentor && (COACH.mentor.name || COACH.mentor.displayName)) || 'your mentor';
+    sm.appendChild(el('span','adm-note','From ' + mname));
+    var un = (COACH.unread || []).filter(function(u){ return u && u.item && +u.n > 0; });
+    if (!un.length) sm.appendChild(el('p','ty-empty','Nothing new. Replies on your entries show up here.'));
+    un.slice(0, 4).forEach(function(u){ var b = el('button','ty-msg'); b.type = 'button';
+      b.appendChild(el('b',null, itemTitleFor(u.item, ents))); b.appendChild(el('span','ty-pill ok', u.n + ' new'));
+      b.addEventListener('click', function(){ var e0 = /^j:/.test(u.item) ? ents.filter(function(y){ return y.id === u.item.slice(2); })[0] : null; openThread(uid(), u.item, itemTitleFor(u.item, ents), { shots: e0 ? e0.files : [], onClose: function(){ coachLoad().then(redraw); } }); });
+      sm.appendChild(b); });
+    side.appendChild(sm);
+    var sr = el('section','ty-card'); sr.appendChild(el('span','adm-note','Your rules')); var ol = el('ol','ty-rules'); (ME.journal.rules || []).forEach(function(r){ ol.appendChild(el('li',null,r.text)); }); sr.appendChild(ol); side.appendChild(sr);
+    var sx = el('section','ty-card'); sx.appendChild(el('span','adm-note','Your data')); sx.appendChild(el('p','ty-empty','Download everything you\'ve journaled: entries, plans, recaps, goals and accounts.'));
+    var xb = el('button','btn-s','Export my journal'); xb.type = 'button'; xb.addEventListener('click', exportMine); sx.appendChild(xb); side.appendChild(sx);
+    grid.appendChild(main); grid.appendChild(side); wrap.appendChild(grid);
+    return wrap;
+  }
+  // everything this member has journaled, as one JSON file (complete) and one CSV of trades (opens in Excel / Sheets)
+  function exportMine(){
+    var u = user(), stamp = todayYmd(), strip = function(e){ var o = JSON.parse(JSON.stringify(e)); (o.files || []).forEach(function(f){ delete f.preview; }); return o; };
+    var data = { format:'journal-export/1', exportedAt:new Date().toISOString(), member:{ id:u.id || '', name:u.displayName || u.username || '' },
+      rules:(ME.journal && ME.journal.rules) || [], journal:ME.journal || null, entries:(ME.entries || []).map(strip), dayNotes:ME.dayNotes || {}, goals:COACH.goals || {}, accounts:COACH.accounts || [] };
+    downloadBlob(new Blob([JSON.stringify(data, null, 2)], { type:'application/json' }), 'journal-' + stamp + '.json');
+    var cols = ['date','time','exitTime','kind','pair','dir','account','contracts','outcome','pnl','risk','pEntry','pStop','pTarget','pExit','model','entryType','grade','emotion','followed','session','mistakes','tags','overview','src','status','id'];
+    var q = function(v){ if (v === undefined || v === null) v = ''; if (Array.isArray(v)) v = v.join('; '); v = String(v); if (/^[=+\-@\t\r]/.test(v) && isNaN(Number(v))) v = "'" + v; return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    var rows = [cols.join(',')].concat((ME.entries || []).map(function(e){ return cols.map(function(c){ return q(c === 'src' ? (e.src === 'csv' ? 'csv (verified)' : 'by hand') : e[c]); }).join(','); }));
+    setTimeout(function(){ downloadBlob(new Blob(['﻿' + rows.join('\r\n')], { type:'text/csv' }), 'journal-trades-' + stamp + '.csv'); }, 400);
+    toast('Exported: one JSON file with everything, one CSV of your entries.');
   }
   /* ---------- journal: editing, tags, day notes, entry list ---------- */
   function allTags(ents){ var c = {}; (ents || []).forEach(function(e){ (e.tags || []).forEach(function(t){ c[t] = (c[t] || 0) + 1; }); }); return Object.keys(c).sort(function(a, b){ return c[b] - c[a]; }); }
