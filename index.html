@@ -1258,7 +1258,9 @@ body.returning .scene::after{opacity:0}
 .ytbar i.w{background:rgba(255,255,255,.3)}
 .ytbar i.n{background:var(--blue);box-shadow:0 0 8px var(--blue)}
 .player:fullscreen{max-width:none;border:0;aspect-ratio:auto}
-.vwm-tile{position:absolute;inset:0;z-index:5;pointer-events:none;background-repeat:repeat;animation:wdrift2 70s linear infinite}
+.vwm-tile{position:absolute;inset:0;z-index:5;pointer-events:none;background-repeat:repeat;animation:wdrift2 70s linear infinite;opacity:.1;transition:opacity .15s}
+.snap .vwm-tile{opacity:.42;transition:none}.snap .vwm{color:rgba(255,255,255,.7);font-size:16px;transition:none}.snap .vwm.sm{font-size:14px}
+.snap .vwm-big{display:block}.vwm-big{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-18deg);z-index:7;pointer-events:none;font:800 clamp(18px,4.2vw,46px)/1.15 var(--mono);color:rgba(255,255,255,.34);text-shadow:0 2px 6px rgba(0,0,0,.6);white-space:nowrap;text-align:center}
 @keyframes wdrift2{from{background-position:0 0}to{background-position:420px 230px}}
 .vwm.sm{font-size:11px;opacity:.8}
 .vwm{position:absolute;z-index:7;pointer-events:none;font:600 13px/1.3 var(--mono);color:rgba(255,255,255,.16);text-shadow:0 1px 2px rgba(0,0,0,.5);transition:left 1.2s ease,top 1.2s ease;white-space:nowrap}
@@ -2007,18 +2009,16 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   document.addEventListener('keydown', function(e){
     var c = e.code, mod = e.ctrlKey || e.metaKey;
     var kind = null;
-    if (e.metaKey && e.shiftKey){ shieldFlash(); }                                      // Cmd+Shift / Win+Shift: the OS screenshot + recording combos start here
-    if (e.metaKey && e.shiftKey && /^(Digit3|Digit4|Digit5|Digit6|KeyS)$/.test(c)) kind = 'screenshot';
-    else if (e.key === 'F12' || (mod && e.shiftKey && (c === 'KeyI' || c === 'KeyJ' || c === 'KeyC' || c === 'KeyK')) ||
+    if (e.metaKey && e.shiftKey){ snapMarks(); }   // Cmd+Shift / Win+Shift (the OS screenshot keys): screenshots are allowed, so the watermarks turn up instead
+    if (e.key === 'F12' || (mod && e.shiftKey && (c === 'KeyI' || c === 'KeyJ' || c === 'KeyC' || c === 'KeyK')) ||
         (e.metaKey && e.altKey && (c === 'KeyI' || c === 'KeyJ' || c === 'KeyC'))) kind = 'devtools-keys';      // devtools, console, inspector
     else if (mod && c === 'KeyU') kind = 'view-source';
     else if (mod && (c === 'KeyS' || c === 'KeyP')){ e.preventDefault(); return; }   // save / print: just don't (no warning, no flag: usually a habit)
-    if (kind === 'screenshot'){ e.preventDefault(); e.stopPropagation(); blocked(kind); }
-    else if (kind){ e.preventDefault(); e.stopPropagation(); }   // tools shortcuts / view source: simply don't work. Not flagged: pressing a key
+    if (kind){ e.preventDefault(); e.stopPropagation(); }   // tools shortcuts / view source: simply don't work. Not flagged: pressing a key
                                                                    // changes nothing; actually opening developer tools is what's caught and flagged
   }, true);
   document.addEventListener('keyup', function(e){
-    if (e.key === 'PrintScreen' || e.code === 'PrintScreen'){ shieldFlash(); try { var cw = navigator.clipboard && navigator.clipboard.writeText(''); if (cw && cw.catch) cw.catch(function(){}); } catch(err) {} blocked('screenshot'); }
+    if (e.key === 'PrintScreen' || e.code === 'PrintScreen') snapMarks();   // allowed: no cover, no warning, the clipboard is left alone
   }, true);
 
   /* ---------- recording deterrents ----------
@@ -2042,12 +2042,16 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     wmEl.style.backgroundImage = 'url("data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg) + '")';
     wmEl.hidden = false;
   }
+  var snapT = 0;
+  function snapMarks(ms){ if (isAdminViewer()) return; document.documentElement.classList.add('snap'); clearTimeout(snapT); snapT = setTimeout(function(){ if (document.hasFocus()) document.documentElement.classList.remove('snap'); }, ms || 6000); }
+  window.addEventListener('blur', function(){ if (inPortal()) { clearTimeout(snapT); snapMarks(600000); } });
+  window.addEventListener('focus', function(){ clearTimeout(snapT); snapT = setTimeout(function(){ document.documentElement.classList.remove('snap'); }, 1500); });
   function pauseAll(){ document.querySelectorAll('#portal-view video').forEach(function(v){ try { v.pause(); } catch(e) {} }); (typeof ytPlayers !== 'undefined' ? ytPlayers : []).forEach(function(p){ try { p.pauseVideo(); } catch(e) {} }); }
   function shieldOn(){ if (!inPortal() || isAdminViewer() || Date.now() < pickUntil) return; shieldEl.hidden = false; pauseAll(); }
   function shieldOff(){ if (Date.now() < shieldT) return; shieldEl.hidden = true; }
   function shieldFlash(){ if (!inPortal() || isAdminViewer()) return; shieldT = Date.now() + 2500; shieldOn(); setTimeout(function(){ if (document.hasFocus()) shieldOff(); }, 2600); }
   // Videos keep playing when the window loses focus or the tab is in the background (members take notes elsewhere).
-  // The cover still shows for screenshot shortcuts (shieldFlash) and developer tools.
+  // Screenshots are allowed: the screenshot keys and losing focus make the video watermarks much stronger (snapMarks) instead.
   window.addEventListener('focus', function(){ shieldOff(); });
   shieldEl.addEventListener('click', function(){ shieldT = 0; shieldOff(); });
   window.addEventListener('beforeprint', function(){ document.body.style.visibility = 'hidden'; });
@@ -2922,9 +2926,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function addVideoMarks(pl){
     var d = warnDetails(); if (!d || isAdminViewer()) return;   // no watermarks on videos for admins
     var line = (d.username + (d.id ? ' \u00b7 ' + d.id : '') + ' \u00b7 ' + new Date().toLocaleDateString('en-GB',{ day:'numeric', month:'short', year:'numeric' })).replace(/[<&>"']/g,'');
-    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="230"><g transform="rotate(-24 210 115)" font-family="monospace" font-size="14" fill="rgba(255,255,255,0.075)">'
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="230"><g transform="rotate(-24 210 115)" font-family="monospace" font-size="15" font-weight="700" fill="#ffffff">'
       + '<text x="20" y="90">' + line + '</text><text x="120" y="190">' + line + '</text></g></svg>';
     var tile = el('div','vwm-tile'); tile.setAttribute('aria-hidden','true'); tile.style.backgroundImage = 'url("data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg) + '")'; pl.appendChild(tile);
+    var big = el('div','vwm-big'); big.setAttribute('aria-hidden','true'); big.appendChild(el('div',null, d.username)); if (d.id) big.appendChild(el('div',null, d.id)); pl.appendChild(big);
     var tags = [0,1,2].map(function(i){ var t = el('span','vwm' + (i ? ' sm' : ''), d.username + (d.id ? ' \u00b7 ' + d.id : '')); t.setAttribute('aria-hidden','true'); pl.appendChild(t); return t; });
     var move = function(){ if (!tags[0].isConnected){ clearInterval(mt); return; }
       tags.forEach(function(t, i){ t.style.left = (4 + Math.random() * 64) + '%'; t.style.top = (6 + (i * 30) + Math.random() * 22) + '%'; }); };
