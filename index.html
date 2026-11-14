@@ -968,6 +968,24 @@ button.tri-chip{cursor:pointer}button.tri-chip:hover{border-color:var(--blue)}
 .lb-nm b{display:block}.lb-nm small{color:var(--muted);font-size:12px}
 .lb-pts{font:800 20px var(--sans);color:var(--kana-c)}
 .jr-view{margin-bottom:14px}
+/* trades: gallery and trade view */
+.jl-tg{appearance:none;cursor:pointer;min-height:40px;padding:0 12px;border:1px solid var(--line);background:transparent;color:var(--muted);font:600 13px var(--sans)}.jl-tg.on{border-color:var(--blue);color:var(--kana-c);background:rgba(20,163,157,.1)}
+.jl-gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.tg-card{appearance:none;cursor:pointer;text-align:left;padding:0;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;display:flex;flex-direction:column;overflow:hidden}
+.tg-card:hover,.tg-card:focus-visible{border-color:var(--blue)}
+.tg-img{aspect-ratio:16/9;background:#0B1A1C;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;overflow:hidden;border-bottom:1px solid var(--line)}.tg-img img{width:100%;height:100%;object-fit:cover;display:block}
+.tg-b{padding:12px 14px;display:flex;flex-direction:column;gap:8px}.tg-t{display:flex;justify-content:space-between;gap:8px}.tg-t .mono{font-family:var(--mono)}
+.tg-p{display:flex;gap:6px;flex-wrap:wrap}.tg-f{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--muted)}.tg-f .need,.ty-empty.need{color:#F2C879}
+.ty-pill.bad{border-color:#5A2A33;color:#FF8A8A}
+.tv{display:flex;flex-direction:column;gap:12px}.tv>.lnk{align-self:flex-start;background:none;border:0;padding:4px 0;color:var(--kana-c);font:600 14px var(--sans);cursor:pointer;width:auto}.tv .win{color:var(--win)}.tv .loss{color:var(--loss)}
+.tv-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.tv-h h2{margin:0;font:700 28px var(--sans)}.tv-h .mono{font-family:var(--mono)}.tv-acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.tv-g{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}.tv-l,.tv-r{display:flex;flex-direction:column;gap:14px;min-width:0}
+.tv-big{appearance:none;cursor:zoom-in;padding:0;border:1px solid var(--line);background:#fff;display:block;width:100%}.tv-big img{width:100%;display:block}
+.tv-nh{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}.tv-n{margin:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 16px}.tv-n dt{color:var(--muted);font-size:12.5px}.tv-n dd{margin:2px 0 0;font-size:14px}
+.tv-txt{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14.5px}
+.jr-locked{opacity:.6;pointer-events:none}.jr-csvnote{margin:0 0 12px;padding:10px 12px;border:1px solid rgba(20,163,157,.4);background:rgba(20,163,157,.08);font-size:13.5px;color:var(--ink)}
+.cal-dots{display:flex;gap:3px;margin-top:4px}.cal-dots i{width:6px;height:6px;border-radius:50%;background:var(--line)}.cal-dots i.on{background:var(--kana-c)}
+@media (max-width:900px){.tv-g{grid-template-columns:minmax(0,1fr)}.tv-n{grid-template-columns:repeat(2,minmax(0,1fr))}.tv-acts{margin-left:0;width:100%}.tv-acts .btn-s{flex:1;min-height:44px}}
 /* journal · Today */
 .ty{display:flex;flex-direction:column;gap:22px}
 .ty-top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
@@ -3887,11 +3905,11 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     if (pend) side.appendChild(el('p','jr-pend', pend + (pend === 1 ? ' entry is' : ' entries are') + ' waiting for an admin to approve ' + (pend === 1 ? 'it' : 'them') + ' for the leaderboard.'));
     var vs = el('div','jr-view jr-tabs'), tabs = [['today','Today'],['list','Trades'],['cal','Calendar'],['stats','Stats'],['progress','Accounts'],['cards','Cards']];
     if (JR.view === 'new') tabs.push(['new', JR.editId ? '✎ Editing' : '+ New entry']); if (JR.view === 'import') tabs.push(['import','Import CSV']);
-    vs.appendChild(seg(tabs, JR.view, function(v){
+    vs.appendChild(seg(tabs, JR.view === 'trade' ? 'list' : JR.view, function(v){
       if (v === 'cards'){ drawJournal(host); SHC.per = 'day'; openShareCard('me'); return; }
       if (v !== 'new' && JR.editId){ JR.editId = null; JR.draft = { files:[] }; } JR.from = null; JR.view = v; drawJournal(host); }));
     var va = el('div','jr-acts');
-    [['+ New entry', function(){ JR.kind = 'trade'; JR.editId = null; JR.draft = { files:[] }; JR.view = 'new'; }], ['Import CSV', function(){ JR.view = 'import'; }]].forEach(function(a){
+    [['+ New entry', function(){ JR.kind = 'trade'; JR.editId = null; JR.lockCsv = false; JR.draft = { files:[] }; JR.view = 'new'; }], ['Import CSV', function(){ JR.view = 'import'; }]].forEach(function(a){
       var b = el('button','btn-s',a[0]); b.type = 'button'; b.addEventListener('click', function(){ JR.from = JR.view === 'today' ? 'today' : null; a[1](); drawJournal(host); window.scrollTo(0, 0); }); va.appendChild(b); });
     vs.appendChild(va);
     if (JR.view === 'today'){ host.appendChild(vs); host.appendChild(todayView(host)); return; }
@@ -3904,14 +3922,16 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return;
     }
     if (JR.view === 'cal'){ main.appendChild(journalCalendar(ents, host)); grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return; }
+    if (JR.view === 'trade'){ var te = ents.filter(function(x){ return x.id === JR.tradeId; })[0]; if (te){ host.appendChild(vs); host.appendChild(tradeView(te, host)); return; } JR.view = 'list'; }
     if (JR.view === 'list'){ main.appendChild(entriesList(ents, host)); grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return; }
     if (JR.view === 'progress'){ main.appendChild(progressPage({ id:uid(), entries:ME.entries || [], goals:COACH.goals || {}, accounts:COACH.accounts || [], tmeta:COACH.meta || {}, subs:{} }, false, function(){ coachLoad().then(function(){ drawJournal(host); }); })); grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return; }
     if (JR.view === 'import'){ main.appendChild(csvImportView(host)); grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return; }
     // new entry
     var f = el('section','jr-form view-in'); f.appendChild(el('h3',null, JR.editId ? 'Edit entry' : 'New entry'));
     if (JR.editId){ var eo = (ME.entries || []).filter(function(x){ return x.id === JR.editId; })[0];
+      if (eo && eo.src === 'csv') f.appendChild(el('p','jr-csvnote','✓ Verified trade: the symbol, side, date, times, size, prices, result and P&L came from your CSV and are locked. Write your breakdown, add screenshots, tags and the review fields.'));
       if (eo && entryStatus(eo) !== 'pending') f.appendChild(el('p','adm-note jr-editnote','This entry was already reviewed. Notes, screenshots, tags and trade data can change freely; changing the result, account, date or the rules answer sends it back for review.'));
-      var cx = el('button','lnk','Cancel editing'); cx.type = 'button'; cx.addEventListener('click', function(){ JR.editId = null; JR.draft = { files:[] }; JR.view = JR.from === 'today' ? 'today' : 'cal'; JR.from = null; drawJournal(host); }); f.appendChild(cx); }
+      var cx = el('button','lnk','Cancel editing'); cx.type = 'button'; cx.addEventListener('click', function(){ JR.editId = null; JR.draft = { files:[] }; JR.view = JR.from === 'today' ? 'today' : JR.from === 'trade' ? 'trade' : 'cal'; JR.from = null; drawJournal(host); }); f.appendChild(cx); }
     f.appendChild(seg([['trade','Trade'],['none','No trades today']], JR.kind, function(k){ JR.kind = k; drawJournal(host); }));
     var D = JR.draft; if (!D.date) D.date = tradeDay(todayYmd());
     var grid2 = el('div','jr-body'), cur = null, LIVE = {};
@@ -3923,7 +3943,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         var sm = el('summary'); sm.appendChild(el('b',null,title)); if (sub) sm.appendChild(el('span',null,sub)); s.appendChild(sm); }
       else { s = el('section','jr-sec'); if (title){ var hd = el('div','jr-sec-h'); hd.appendChild(el('b',null,title)); if (sub) hd.appendChild(el('span',null,sub)); s.appendChild(hd); } }
       cur = el('div','jr-fields'); s.appendChild(cur); grid2.appendChild(s); return cur; }
-    function field(label, ctl, wide, hint){ var w = fld(label, ctl, hint); if (wide) w.classList.add('wide'); cur.appendChild(w); return ctl; }
+    var CSV_LOCK = { 'Symbol':'pair', 'Side':'dir', 'Date':'date', 'Entry time':'time', 'Contracts':'contracts', 'Outcome':'outcome', 'Net P&L ($)':'pnl', 'Entry price':'pEntry', 'Exit price':'pExit', 'Exit time':'exitTime' };
+    function field(label, ctl, wide, hint){ var lk = CSV_LOCK[label], lv = lk && JR.draft ? JR.draft[lk] : '', lock = JR.editId && JR.lockCsv && lk && lv !== undefined && lv !== null && lv !== '';   /* only what the CSV actually gave */ if (lock){ ctl.setAttribute('inert',''); ctl.classList.add('jr-locked'); if ('disabled' in ctl) ctl.disabled = true; hint = '🔒 From your CSV'; }
+      var w = fld(label, ctl, hint); if (wide) w.classList.add('wide'); cur.appendChild(w); return ctl; }
     // number box that puts in commas as you type (27998 → 27,998); the draft keeps the plain number
     function numIn(name, ph, allowNeg){
       var i = el('input'); i.type = 'text'; i.inputMode = 'decimal'; i.autocomplete = 'off'; i.spellcheck = false; if (ph) i.placeholder = ph;
@@ -4076,7 +4098,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       post.disabled = true;
       var editing = JR.editId;
       memberPost(editing ? { action:'journal-edit', id:editing, entry:entry } : { action:'journal-add', entry:entry }).then(function(r){ JR.satOk = false; JR.editId = null;
-        toast(editing ? (r && r.entry && r.entry.reopened ? 'Saved. Because the result, account, date or rules answer changed, it\'s back in review.' : 'Saved.') : 'Entry posted. It counts on the leaderboard once an admin approves it.'); JR.draft = { files:[] }; JR.view = JR.from === 'today' ? 'today' : 'cal'; JR.from = null; JR.month = entry.date.slice(0,7); JR.day = entry.date; return loadMe(); })
+        toast(editing ? (r && r.entry && r.entry.reopened ? 'Saved. Because the result, account, date or rules answer changed, it\'s back in review.' : 'Saved.') : 'Entry posted. It counts on the leaderboard once an admin approves it.'); JR.draft = { files:[] }; JR.view = JR.from === 'today' ? 'today' : JR.from === 'trade' ? 'trade' : 'cal'; JR.from = null; JR.month = entry.date.slice(0,7); JR.day = entry.date; return loadMe(); })
         .then(function(){ drawJournal(host); })
         .catch(function(e){ post.disabled = false; var m = e && e.message; toast(m === 'none_exists' ? 'You already logged a no-trade day for that date.' : m === 'need_files' ? 'Add at least one screenshot.' : m === 'missing' ? 'Some fields are missing.' : 'Couldn\'t post it: ' + m); });
     });
@@ -4200,7 +4222,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         if (trades.length > 200){ toast('Up to 200 trades at a time. Export a shorter date range.'); return; }
         go.disabled = true; go.textContent = 'Importing…';
         memberPost({ action:'journal-import', entries: trades }).then(function(r){ r = r || {};
-          toast('Imported ' + (r.added || 0) + (r.added === 1 ? ' trade' : ' trades') + (r.dupes ? ' · ' + r.dupes + ' already in your journal' : '') + (r.bad ? ' · ' + r.bad + ' couldn\'t be read' : '') + '. Add notes and screenshots to them anytime.');
+          toast('Imported ' + (r.added || 0) + (r.added === 1 ? ' trade' : ' trades') + (r.verified ? ' · ' + r.verified + ' of your hand-logged ' + (r.verified === 1 ? 'trade' : 'trades') + ' now ✓ Verified' : '') + (r.dupes ? ' · ' + r.dupes + ' already in your journal' : '') + (r.bad ? ' · ' + r.bad + ' couldn\'t be read' : '') + '. Add notes and screenshots to them anytime.');
           CSVI.rows = null; return loadMe(); }).then(function(){ JR.view = JR.from === 'today' ? 'today' : 'list'; JR.from = null; drawJournal(host); })
           .catch(function(e){ go.disabled = false; go.textContent = 'Import'; toast('Import failed: ' + ((e && e.message) || e)); });
       });
@@ -4209,6 +4231,64 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     draw(); return box;
   }
 
+
+  /* ---------- trades: gallery tile and full trade view ---------- */
+  function firstShot(e){ return (e.files || []).filter(function(f){ return f && /^image\//.test(f.type || '') && f.url; })[0] || null; }
+  function verPill(e){ return el('span','ty-pill' + (e.src === 'csv' ? ' ok' : ''), e.src === 'csv' ? '✓ Verified' : 'By hand'); }
+  function tradeTile(e, onOpen){
+    var b = el('button','tg-card'), sh = firstShot(e), img = el('div','tg-img'); b.type = 'button';
+    if (sh){ var im = el('img'); im.src = viewUrl(sh); im.alt = ''; im.loading = 'lazy'; img.appendChild(im); } else img.appendChild(el('span',null, e.kind === 'trade' ? 'No screenshot yet' : 'No-trade day'));
+    b.appendChild(img);
+    var bd = el('div','tg-b'), t = el('div','tg-t'), p = +e.pnl || 0;
+    t.appendChild(el('b',null, e.kind === 'trade' ? String(e.pair || 'Trade').toUpperCase() + (e.dir ? ' · ' + cap(e.dir) : '') : 'No-trade day'));
+    if (e.kind === 'trade') t.appendChild(el('b','mono ' + (p > 0 ? 'win' : p < 0 ? 'loss' : ''), e.noPnl ? '—' : (p > 0 ? '+' : '') + money(p)));
+    bd.appendChild(t);
+    var pl = el('div','tg-p'); if (e.kind === 'trade') pl.appendChild(verPill(e)); (e.tags || []).slice(0, 2).forEach(function(x){ pl.appendChild(el('span','ty-pill','#' + x)); }); bd.appendChild(pl);
+    var f = el('div','tg-f'); f.appendChild(el('span',null, shortDay(e.date) + (e.time ? ' · ' + e.time : '')));
+    f.appendChild(e.kind === 'trade' && !hasBreakdown(e) ? el('span','need','Breakdown owed') : el('span',null, entryStatus(e) === 'approved' ? 'Approved' : entryStatus(e) === 'denied' ? 'Not counted' : 'Waiting for review'));
+    bd.appendChild(f); b.appendChild(bd);
+    b.addEventListener('click', onOpen); return b;
+  }
+  function tradeView(e, host){
+    var w = el('div','tv view-in'), p = +e.pnl || 0;
+    var back = el('button','lnk','← All trades'); back.type = 'button'; back.addEventListener('click', function(){ JR.view = 'list'; drawJournal(host); }); w.appendChild(back);
+    var hd = el('div','tv-h'), h = el('h2'); h.appendChild(document.createTextNode(String(e.pair || 'Trade').toUpperCase() + (e.dir ? ' · ' + cap(e.dir) : '') + ' '));
+    h.appendChild(el('span','mono ' + (p > 0 ? 'win' : p < 0 ? 'loss' : ''), e.noPnl ? '' : (p > 0 ? '+' : '') + money(p))); hd.appendChild(h); hd.appendChild(verPill(e));
+    var acts = el('div','tv-acts'), ed = el('button', hasBreakdown(e) ? 'btn-s' : 'btn-s pri', hasBreakdown(e) ? 'Edit' : 'Write breakdown'); ed.type = 'button'; ed.addEventListener('click', function(){ JR.from = 'trade'; editEntry(e); });
+    var th = el('button','btn-s','Ask your mentor'); th.type = 'button'; th.addEventListener('click', function(){ openThread(uid(), 'j:' + e.id, itemTitleFor('j:' + e.id, ME.entries || []), { shots: e.files || [], onClose: function(){ coachLoad().then(function(){ drawJournal(host); }); } }); });
+    acts.appendChild(th); acts.appendChild(ed); hd.appendChild(acts); w.appendChild(hd);
+    w.appendChild(el('p','adm-note', shortDay(e.date) + (e.time ? ' · ' + e.time : '') + (e.account ? ' · ' + e.account : '') + (countsInStats(e) ? '' : ' · not counted in stats')));
+    var g = el('div','tv-g'), left = el('div','tv-l'), right = el('div','tv-r');
+    // screenshots: the trader's own chart
+    var sc = el('section','ty-card'), shots = (e.files || []).filter(function(f){ return f && f.url; });
+    sc.appendChild(el('span','adm-note','Your chart'));
+    if (!shots.length) sc.appendChild(el('p','ty-empty','No screenshot yet. Add one when you write the breakdown: your entry and exit marked up is what makes a review useful.'));
+    else { var big = firstShot(e); if (big){ var bi = el('button','tv-big'); bi.type = 'button'; var im = el('img'); im.src = viewUrl(big); im.alt = 'Chart screenshot'; bi.appendChild(im); bi.addEventListener('click', function(){ lightbox(shots, shots.indexOf(big)); }); sc.appendChild(bi); }
+      if (shots.length > 1 || !big) sc.appendChild(fileChips(shots)); }
+    left.appendChild(sc);
+    // the numbers
+    var nm = el('section','ty-card'), nh = el('div','tv-nh'); nh.appendChild(el('span','adm-note','The numbers'));
+    nh.appendChild(el('span','ty-sub', e.src === 'csv' ? '🔒 From your CSV, locked' : 'Entered by hand · unverified until a CSV matches it')); nm.appendChild(nh);
+    var dl = el('dl','tv-n'), hm = holdMin(e), rr = rOf(e);
+    [['Symbol', e.pair], ['Side', cap(e.dir || '')], ['Contracts', e.contracts], ['Entry', isNum(e.pEntry) ? commaNum(String(e.pEntry)) : ''], ['Exit', isNum(e.pExit) ? commaNum(String(e.pExit)) : ''],
+     ['Entry time', e.time], ['Exit time', e.exitTime], ['Held', isNum(hm) ? (hm < 60 ? hm + 'm' : Math.floor(hm / 60) + 'h ' + (hm % 60) + 'm') : ''], ['R', isNum(rr) ? fmtRm(rr) : ''], ['Outcome', OUT[e.outcome] || ''], ['Net P&L', e.noPnl ? '' : money(p)]]
+      .forEach(function(x){ if (x[1] === undefined || x[1] === null || x[1] === '') return; dl.appendChild(el('dt',null,x[0])); dl.appendChild(el('dd','mono', String(x[1]))); });
+    nm.appendChild(dl); left.appendChild(nm);
+    // breakdown, review
+    var bd = el('section','ty-card'); bd.appendChild(el('span','adm-note','Breakdown'));
+    bd.appendChild(hasBreakdown(e) ? el('p','tv-txt', e.overview) : el('p','ty-empty need','No breakdown yet. What did you see, why did you take it, and what’s the lesson?'));
+    var meta = el('div','tg-p'); if (e.grade) meta.appendChild(el('span','ty-pill','Grade ' + e.grade)); if (e.emotion) meta.appendChild(el('span','ty-pill', e.emotion));
+    if (e.followed === true) meta.appendChild(el('span','ty-pill ok','Followed rules')); if (e.followed === false) meta.appendChild(el('span','ty-pill bad','Broke rules'));
+    (e.mistakes || []).forEach(function(m){ meta.appendChild(el('span','ty-pill bad', m)); }); (e.tags || []).forEach(function(t){ meta.appendChild(el('span','ty-pill','#' + t)); });
+    if (meta.childNodes.length) bd.appendChild(meta);
+    right.appendChild(bd);
+    var rv = el('section','ty-card'); rv.appendChild(el('span','adm-note','Review'));
+    var st = entryStatus(e); rv.appendChild(el('p',null, st === 'approved' ? 'Approved' + (e.reviewedBy ? ' by ' + e.reviewedBy : '') + '.' : st === 'denied' ? 'Not counted.' : 'Waiting for review.'));
+    if (e.reviewNote) rv.appendChild(el('p','tv-txt', '“' + e.reviewNote + '”'));
+    right.appendChild(rv);
+    g.appendChild(left); g.appendChild(right); w.appendChild(g);
+    return w;
+  }
   /* ---------- journal: Today (plan → trades → recap → card), all written by hand ---------- */
   var PLAN_F = [['Bias','Long, short or flat, and why'],['Key levels','The prices you\'re watching'],['Max loss','Where you stop for the day'],['News','Releases today and how you\'ll handle them']];
   function planParse(text){
@@ -4343,7 +4423,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var d = JSON.parse(JSON.stringify(e)); d.files = (e.files || []).slice(); d.tags = (e.tags || []).slice();
     if (e.sunday){ d.date = e.sunday; delete d.sunday; }   // edit the day it was logged on; the server works out the trading day again
     if (e.noPnl) d.pnl = ''; ['status','points','worth','awarded','reviewNote','reviewedAt','reviewedBy','createdAt','editedAt','void','reopened','importKey','src','noPnl'].forEach(function(k){ delete d[k]; });
-    JR.editId = e.id; JR.kind = e.kind === 'none' ? 'none' : 'trade'; JR.draft = d; JR.view = 'new';
+    JR.editId = e.id; JR.kind = e.kind === 'none' ? 'none' : 'trade'; JR.draft = d; JR.view = 'new'; JR.lockCsv = e.src === 'csv';
     if ((location.hash || '') !== '#journal') location.hash = '#journal'; else showView();
     window.scrollTo(0, 0);
   }
@@ -4366,7 +4446,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     if (!DEMO_MODE) box.appendChild(threadToggle(uid(), 'd:' + day, (COACH.meta || {})['d:' + day], { }));
     return box;
   }
-  var JL = { q:'', out:'all', acct:'', tag:'', model:'', n:30 };
+  var JL = { q:'', out:'all', acct:'', tag:'', model:'', n:30, mode:'gallery', ver:false, owed:false };
   function entriesList(ents, host){
     var wrap = el('section','jl view-in'), bar = el('div','jl-bar');
     var q = el('input'); q.type = 'search'; q.placeholder = 'Search notes, pairs, tags…'; q.value = JL.q;
@@ -4378,6 +4458,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var accts = []; ents.forEach(function(e){ if (e.account && accts.indexOf(e.account) < 0) accts.push(e.account); });
     var models = []; ents.forEach(function(e){ if (e.model && models.indexOf(e.model) < 0) models.push(e.model); });
     bar.appendChild(pickSel('Any account','acct',accts)); bar.appendChild(pickSel('Any model','model',models)); bar.appendChild(pickSel('Any tag','tag',allTags(ents)));
+    [['ver','✓ Verified only'],['owed','Breakdown owed']].forEach(function(t){ var b = el('button','jl-tg' + (JL[t[0]] ? ' on' : ''), t[1]); b.type = 'button'; b.setAttribute('aria-pressed', JL[t[0]] ? 'true' : 'false');
+      b.addEventListener('click', function(){ JL[t[0]] = !JL[t[0]]; b.classList.toggle('on', JL[t[0]]); b.setAttribute('aria-pressed', JL[t[0]] ? 'true' : 'false'); JL.n = 30; draw(); }); bar.appendChild(b); });
+    bar.appendChild(seg([['gallery','Gallery'],['list','List']], JL.mode, function(v){ JL.mode = v; draw(); }));
     wrap.appendChild(bar);
     var sum = el('p','jl-sum'), list = el('div','jl-list'), more = el('button','btn-s','Show more'); more.type = 'button';
     more.addEventListener('click', function(){ JL.n += 30; draw(); });
@@ -4387,6 +4470,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var rows = ents.filter(function(e){
         if (JL.out === 'none' ? e.kind !== 'none' : JL.out !== 'all' && (e.kind !== 'trade' || e.outcome !== JL.out)) return false;
         if (JL.acct && e.account !== JL.acct) return false; if (JL.model && e.model !== JL.model) return false; if (JL.tag && (e.tags || []).indexOf(JL.tag) < 0) return false;
+        if (JL.ver && e.src !== 'csv') return false; if (JL.owed && !(e.kind === 'trade' && !hasBreakdown(e))) return false;
         if (qq && [e.pair, e.overview, e.model, e.session, e.account, (e.tags || []).join(' '), e.newsWhat].join(' ').toLowerCase().indexOf(qq) < 0) return false;
         return true; }).sort(function(a, b){ return String(b.date + (b.time || '')).localeCompare(String(a.date + (a.time || ''))); });
       var tr = rows.filter(function(e){ return e.kind === 'trade' && countsInStats(e); }), pnl = tr.reduce(function(t, e){ return t + (+e.pnl || 0); }, 0), w = tr.filter(function(e){ return e.outcome === 'tp'; }).length;
@@ -4394,6 +4478,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       sum.textContent = rows.length + (rows.length === 1 ? ' entry' : ' entries') + (tr.length ? ' · ' + tr.length + ' funded/eval ' + (tr.length === 1 ? 'trade' : 'trades') + ' · ' + Math.round(w / tr.length * 100) + '% TP · ' + money(pnl) : '') + (other ? ' · ' + other + ' not counted (paper, demo, personal or denied)' : '');
       list.textContent = '';
       if (!rows.length) list.appendChild(el('p','pf-none','Nothing matches. Try clearing a filter.'));
+      list.className = JL.mode === 'gallery' ? 'jl-gal' : 'jl-list';
+      if (JL.mode === 'gallery'){ rows.slice(0, JL.n).forEach(function(e){ list.appendChild(tradeTile(e, function(){ JR.tradeId = e.id; JR.view = 'trade'; drawJournal(host); window.scrollTo(0, 0); })); }); more.hidden = rows.length <= JL.n; return; }
       rows.slice(0, JL.n).forEach(function(e){
         var r = el('button','jl-row'); r.type = 'button';
         r.appendChild(el('span','jl-d', shortDay(e.date) + (e.time ? ' · ' + e.time : '')));
@@ -4403,7 +4489,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         r.appendChild(mid);
         r.appendChild(el('span','jl-p ' + (e.kind !== 'trade' || e.noPnl ? '' : +e.pnl > 0 ? 'win' : +e.pnl < 0 ? 'loss' : ''), e.kind !== 'trade' || e.noPnl ? '—' : money(+e.pnl || 0)));
         r.appendChild(el('span','jl-s st-' + entryStatus(e), entryStatus(e) === 'approved' ? 'Approved' : entryStatus(e) === 'denied' ? 'Not counted' : 'Waiting'));
-        r.addEventListener('click', function(){ JR.view = 'cal'; JR.month = e.date.slice(0, 7); JR.day = e.date; drawJournal(host); window.scrollTo(0, 0); });
+        r.addEventListener('click', function(){ if (e.kind === 'trade'){ JR.tradeId = e.id; JR.view = 'trade'; } else { JR.view = 'cal'; JR.month = e.date.slice(0, 7); JR.day = e.date; } drawJournal(host); window.scrollTo(0, 0); });
         list.appendChild(r);
       });
       more.hidden = rows.length <= JL.n;
@@ -4493,6 +4579,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         if (es.length){
           c.appendChild(el('b','cal-p', trades ? shortMoney(pnl) : allTr ? 'Not counted' : 'No trade'));
           c.appendChild(el('span','cal-k', es.length + (es.length === 1 ? ' entry' : ' entries')));
+          var nt = (ME.dayNotes || {})[d] || {}, trs = es.filter(function(e){ return e.kind === 'trade'; }), dots = el('span','cal-dots');
+          [[!!String(nt.plan || '').trim(), 'plan'], [trs.length ? trs.every(hasBreakdown) : es.length > 0, 'breakdowns'], [String(nt.recap || '').trim().length >= 20, 'recap']]
+            .forEach(function(x){ dots.appendChild(el('i', x[0] ? 'on' : '')); });
+          dots.setAttribute('title', 'Plan · breakdowns · recap'); c.appendChild(dots);
           c.setAttribute('aria-label', d + ': ' + (trades ? money(pnl) : allTr ? 'paper or demo trades only' : 'no trades') + ', ' + es.length + ' entries');
         }
         if (open) c.addEventListener('click', function(){ var dd = tradeDay(d); JR.day = JR.day === dd ? null : dd; drawJournal(host); });   // Sunday opens Monday
@@ -4501,6 +4591,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     }
     wrap.appendChild(g);
     var leg = el('div','cal-leg'); [['win','Green day'],['loss','Red day'],['none','No-trade day'],['pend','Waiting for review']].forEach(function(x){ var s2 = el('span','lg ' + x[0]); s2.appendChild(el('i')); s2.appendChild(document.createTextNode(x[1])); leg.appendChild(s2); });
+    (function(){ var s3 = el('span','lg'), dd = el('span','cal-dots'); dd.appendChild(el('i','on')); dd.appendChild(el('i','on')); dd.appendChild(el('i')); s3.appendChild(dd); s3.appendChild(document.createTextNode(' Plan · breakdowns · recap written')); leg.appendChild(s3); })();
     wrap.appendChild(leg);
     // the chosen day
     if (JR.day){
@@ -5095,7 +5186,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     ['Instrument', function(e){ return String(e.pair || '').toUpperCase().trim(); }],
     ['Account', function(e){ return isPaper(e) ? 'Paper / demo' : (e.account || ''); }],
     ['News day', function(e){ return e.news === 'yes' ? 'News day' : e.news === 'no' ? 'No news' : ''; }],
-    ['Rules followed', function(e){ return e.followed === true ? 'Followed rules' : e.followed === false ? 'Broke rules' : ''; }]
+    ['Rules followed', function(e){ return e.followed === true ? 'Followed rules' : e.followed === false ? 'Broke rules' : ''; }],
+    ['Tags', function(e){ return (e.tags || []).length ? e.tags : ''; }],
+    ['How it was logged', function(e){ return e.src === 'csv' ? 'Verified (CSV)' : 'By hand'; }]
   ];
   var COMBOS = [['Entry model','Session'],['Entry model','Entry time (NY)'],['Entry model','HTF bias vs direction'],['Entry model','Liquidity swept'],['Entry model','Weekday'],['Session','Weekday'],['Entry model','Confluence'],['Entry model','Setup grade']];
   var factorFn = function(name){ for (var i = 0; i < FACTORS.length; i++) if (FACTORS[i][0] === name) return FACTORS[i][1]; return function(){ return ''; }; };

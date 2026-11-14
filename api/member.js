@@ -85,6 +85,15 @@ const EMOTIONS = ['Calm', 'Confident', 'Hesitant', 'FOMO', 'Frustrated', 'Tired'
 // One journal entry from what the page sent. Only what decides stats and points is required:
 //   trades: date, result (TP/SL/BE), account, followed rules · no-trade days: date, followed rules
 // Everything else (time, instrument, P&L, notes, screenshots, trade data, tags) is optional.
+const CSV_LOCKED = ['kind', 'pair', 'dir', 'date', 'sunday', 'time', 'exitTime', 'contracts', 'outcome', 'pnl', 'noPnl', 'pEntry', 'pExit'];
+// a hand-logged trade that a CSV row proves: same day and symbol, same P&L to the cent, and the same entry time when both have one
+function csvMatches(hand, row) {
+  if (hand.kind !== 'trade' || hand.src === 'csv' || hand.noPnl) return false;
+  if (String(hand.sunday || hand.date) !== String(row.sunday || row.date) && hand.date !== row.date) return false;
+  if (String(hand.pair || '').toUpperCase().trim() !== String(row.pair || '').toUpperCase().trim()) return false;
+  if (Math.abs((+hand.pnl || 0) - (+row.pnl || 0)) > 0.005) return false;
+  return !(hand.time && row.time && hand.time !== row.time);
+}
 function buildEntry(e, uid, old) {
   const kind = e.kind === 'none' ? 'none' : 'trade';
   const rawDate = str(e.date, 10);
@@ -292,6 +301,8 @@ module.exports = async (req, res) => {
     const built = buildEntry(body.entry || {}, uid, old);
     if (built.error) return json(res, 400, built);
     const entry = built.entry;
+    // a CSV trade's numbers came from the broker, so they stay as imported: that's what ✓ Verified means
+    if (old && old.src === 'csv') CSV_LOCKED.forEach((k) => { if (old[k] !== undefined && old[k] !== null && old[k] !== '') entry[k] = old[k]; });
     if (entry.kind === 'none' && Object.values(entries).some((x) => x.kind === 'none' && x.date === entry.date && x.id !== entry.id)) return json(res, 409, { error: 'none_exists' });
     if (old) {
       // editing keeps the review, unless something that decides points changed: then it goes back to the mentor
@@ -311,7 +322,7 @@ module.exports = async (req, res) => {
     if (!j) return json(res, 409, { error: 'no_journal' });
     const rows = (Array.isArray(body.entries) ? body.entries : []).slice(0, 200);
     const entries = await loadEntries(uid), seen = new Set(Object.values(entries).map((x) => x.importKey).filter(Boolean));
-    let added = 0, dupes = 0, bad = 0, room = MAX_ENTRIES - Object.keys(entries).length; const fields = [];
+    let added = 0, dupes = 0, bad = 0, verified = 0, room = MAX_ENTRIES - Object.keys(entries).length; const fields = [], upgraded = new Set();
     if (room <= 0) return json(res, 409, { error: 'journal_full' });
     for (const r of rows) {
       const built = buildEntry(Object.assign({}, r, { kind: 'trade' }), uid, null);
@@ -319,12 +330,20 @@ module.exports = async (req, res) => {
       const e = built.entry; e.src = 'csv';
       e.importKey = [e.date, e.time || '', e.exitTime || '', (e.pair || '').toUpperCase(), e.pnl, e.contracts || ''].join('|');
       if (seen.has(e.importKey)) { dupes++; continue; }
+      // already logged by hand: verify that entry instead of adding a second copy. Notes, screenshots, tags and review are kept;
+      // only blanks are filled from the CSV
+      const hand = Object.values(entries).find((x) => !upgraded.has(x.id) && csvMatches(x, e));
+      if (hand) {
+        const up = Object.assign({}, hand, { src: 'csv', importKey: e.importKey, verifiedAt: new Date().toISOString() });
+        ['dir', 'time', 'exitTime', 'contracts', 'pEntry', 'pExit'].forEach((k) => { if ((up[k] === undefined || up[k] === '') && e[k] !== undefined) up[k] = e[k]; });
+        upgraded.add(hand.id); seen.add(e.importKey); fields.push(hand.id, JSON.stringify(up)); verified++; continue;
+      }
       if (added >= room) { bad++; continue; }
       seen.add(e.importKey); fields.push(e.id, JSON.stringify(e)); added++;
     }
     if (fields.length) await kv(['HSET', 'jentries:' + uid].concat(fields));   // one write for the whole file
-    if (added) await logActivity(s.user, { type: 'journal', key: 'import', label: 'Imported ' + added + (added === 1 ? ' trade' : ' trades') + ' from a CSV' });
-    return json(res, 200, { saved: true, added, dupes, bad });
+    if (added || verified) await logActivity(s.user, { type: 'journal', key: 'import', label: 'Imported ' + added + (added === 1 ? ' trade' : ' trades') + ' from a CSV' + (verified ? ' · verified ' + verified + ' logged by hand' : '') });
+    return json(res, 200, { saved: true, added, dupes, bad, verified });
   }
   // a note for one day: the plan before the session and the recap after (TradeZella-style daily journal)
   if (action === 'daynote-save') {
