@@ -15,6 +15,13 @@
 // POST { action:'testimonial-delete', id } → remove your own review
 // GET  /api/member?stats=1 → every member's Funded/Evaluation trades and no-trade days combined, anonymous and reduced to
 //                          what the Stats tab summary needs (admins get the full detail from /api/admin/members)
+// GET  /api/member?pages=1 → the member's Notes pages (Notion-style: title, icon, blocks)
+// POST { action:'page-save', page:{ id?, title, icon, blocks:[{ t, x, c }], pinned } } / { action:'page-delete', id } → their own pages only
+// POST { action:'week-save', week:'YYYY-MM-DD' (any day), went, didnt, fix } → the weekly review (kept per Monday; empty = delete)
+// GET  /api/member?feed=1[&before=<iso>] → the group feed (newest 40). Staff reading it marks posts "seen by" them.
+// POST { action:'feed-post', kind:'recap'|'trade'|'win'|'plan'|'note', text, entryId?, date? } → share to the group. Trade and
+//      recap posts are built from the member's own journal on the server, so numbers can't be typed in.
+// POST { action:'feed-react', id, emoji } (toggle) / { action:'feed-reply', id, text } / { action:'feed-delete', id } (own, or staff)
 // Files are uploaded straight from the browser to Vercel Blob first (see /api/upload), into members/<their id>/…
 const crypto = require('crypto');
 const { readSession, isAdmin, kvConfigured, loadProgress, json, kv, clientIp, rateLimit, staffAlert, timeoutUser } = require('./_lib');
@@ -26,6 +33,50 @@ const FLAG_KINDS = ['right-click', 'devtools-keys', 'devtools-open', 'save', 'vi
 // only real actions count now: developer tools actually opened, and screenshot keys. The rest are still accepted from older
 // pages (so nothing errors) but never alerted or counted toward a timeout.
 const LIGHT_FLAGS = ['right-click', 'save', 'print', 'devtools-keys', 'view-source'];
+
+// ---- Notes pages (Notion-style). Stored per member in pages:<uid> (id → JSON). Only the member reads or writes them. ----
+const BLOCK_TYPES = ['p', 'h1', 'h2', 'todo', 'ul', 'ol', 'quote', 'callout', 'hr'];
+const MAX_PAGES = 200, MAX_BLOCKS = 400;
+function cleanPage(p, old) {
+  p = p && typeof p === 'object' ? p : {};
+  const blocks = (Array.isArray(p.blocks) ? p.blocks : []).slice(0, MAX_BLOCKS).map((b) => {
+    const t = BLOCK_TYPES.includes(b && b.t) ? b.t : 'p';
+    const o = { t, x: t === 'hr' ? '' : String((b && b.x) || '').slice(0, 4000) };
+    if (t === 'todo') o.c = !!(b && b.c);
+    return o;
+  });
+  const now = new Date().toISOString();
+  return { id: old ? old.id : 'pg' + crypto.randomBytes(6).toString('hex'), title: String(p.title || '').trim().slice(0, 140) || 'Untitled',
+    icon: String(p.icon || '').slice(0, 8), blocks, pinned: !!p.pinned, tpl: String(p.tpl || (old && old.tpl) || '').slice(0, 24),
+    createdAt: old ? old.createdAt : now, updatedAt: now };
+}
+async function loadPages(uid) {
+  const f = await kv(['HGETALL', 'pages:' + uid]); const out = [];
+  const put = (v) => { try { out.push(JSON.parse(v)); } catch (e) {} };
+  if (Array.isArray(f)) for (let i = 1; i < f.length; i += 2) put(f[i]); else if (f && typeof f === 'object') Object.values(f).forEach(put);
+  return out.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+}
+async function loadWeekReviews(uid) {
+  const f = await kv(['HGETALL', 'weekrev:' + uid]); const out = {};
+  const put = (k, v) => { try { out[k] = JSON.parse(v); } catch (e) {} };
+  if (Array.isArray(f)) for (let i = 0; i < f.length; i += 2) put(f[i], f[i + 1]); else if (f && typeof f === 'object') Object.keys(f).forEach((k) => put(k, f[k]));
+  return out;
+}
+function mondayOfDay(d) { const t = new Date(d + 'T12:00:00Z'); t.setUTCDate(t.getUTCDate() - ((t.getUTCDay() + 6) % 7)); return t.toISOString().slice(0, 10); }
+
+// ---- the group feed: members choose to share a plan, recap, trade or win. Stored in feed:posts (id → JSON) + feed:order. ----
+const FEED_KINDS = ['recap', 'trade', 'win', 'plan', 'note'];
+const FEED_EMOJI = ['\u{1F525}', '\u{1F4AF}', '\u{1F44F}', '\u{1F9E0}', '\u{1F48E}'];
+async function feedGet(id) { try { return JSON.parse((await kv(['HGET', 'feed:posts', id])) || 'null'); } catch (e) { return null; } }
+async function feedPut(p) { await kv(['HSET', 'feed:posts', p.id, JSON.stringify(p)]); }
+async function feedList(before, staff) {
+  const ids = (await kv(['LRANGE', 'feed:order', '0', '499'])) || [];
+  const out = [];
+  for (const id of ids) { if (out.length >= 40) break; const p = await feedGet(id); if (!p) continue; if (before && p.at >= before) continue; out.push(p); }
+  // staff reading the feed: mark each post seen by them (the "seen by" line students get)
+  if (staff) { for (const p of out) { if (!p.seen || !p.seen[staff.id]) { p.seen = Object.assign({}, p.seen || {}); p.seen[staff.id] = staff.name; await feedPut(p); } } }
+  return out;
+}
 function byEntry(a, b) { return (String(b.date) + String(b.time || '') + b.createdAt).localeCompare(String(a.date) + String(a.time || '') + a.createdAt); }
 // The psych leaderboard: points from journal entries in the period (dates are the trade dates members enter)
 async function leaderboard(period, me) {
@@ -221,11 +272,17 @@ module.exports = async (req, res) => {
     if (board) return json(res, 200, await leaderboard(board[1], uid));
     if (/[?&]stats=1/.test(req.url || '')) return json(res, 200, await communityStats());
     if (/[?&]wins=1/.test(req.url || '')) return json(res, 200, await wins(uid));
-    const [certs, promo, journal, entries, dayNotes] = await Promise.all([loadCerts(uid), loadPromo(uid), loadJournal(uid), loadEntries(uid), loadDayNotes(uid)]);
+    if (/[?&]pages=1/.test(req.url || '')) return json(res, 200, { pages: await loadPages(uid) });
+    if (/[?&]feed=1/.test(req.url || '')) {
+      const before = (/[?&]before=([\w:.%-]+)/.exec(req.url || '') || [])[1];
+      const posts = await feedList(before ? decodeURIComponent(before) : '', isAdmin(s) ? { id: uid, name: s.user.displayName || s.user.username } : null);
+      return json(res, 200, { posts, me: uid, emoji: FEED_EMOJI });
+    }
+    const [certs, promo, journal, entries, dayNotes, weekReviews] = await Promise.all([loadCerts(uid), loadPromo(uid), loadJournal(uid), loadEntries(uid), loadDayNotes(uid), loadWeekReviews(uid).catch(() => ({}))]);
     const list = Object.values(certs).sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt)));
     const ents = Object.values(entries).sort(byEntry).map((e) => Object.assign({}, e, { status: entryStatus(e), points: entryPoints(e), worth: basePoints(e) }));
     await signAll(req, list.map((c) => c.file).concat(...ents.map((e) => e.files || [])), 'url');
-    return json(res, 200, { certs: list, promo, journal, entries: ents, dayNotes });
+    return json(res, 200, { certs: list, promo, journal, entries: ents, dayNotes, weekReviews });
   }
   if (req.method !== 'POST') { res.setHeader('Allow', 'GET, POST'); return json(res, 405, { error: 'method' }); }
 
@@ -346,6 +403,65 @@ module.exports = async (req, res) => {
     return json(res, 200, { saved: true, added, dupes, bad, verified });
   }
   // a note for one day: the plan before the session and the recap after (TradeZella-style daily journal)
+  if (action === 'feed-post') {
+    const kind = FEED_KINDS.includes(body.kind) ? body.kind : 'note', text = str(body.text, 1500);
+    const p = { id: 'f' + crypto.randomBytes(6).toString('hex'), uid, name: s.user.displayName || s.user.username, avatar: s.user.avatar || null,
+      kind, text, at: new Date().toISOString(), reactions: {}, replies: [], seen: {} };
+    if (kind === 'trade' || kind === 'win') {
+      const e = (await loadEntries(uid))[str(body.entryId, 40)];
+      if (e && e.kind === 'trade') p.snap = { date: e.date, pair: String(e.pair || '').toUpperCase().slice(0, 12), dir: e.dir || '', outcome: e.outcome || '', pnl: e.noPnl ? null : (+e.pnl || 0), verified: e.src === 'csv', account: String(e.account || '').slice(0, 30) };
+      else if (kind === 'trade') return json(res, 404, { error: 'no_entry' });
+    }
+    if (kind === 'recap' || kind === 'plan') {
+      const d = tradeDay(str(body.date, 10)); const n = (await loadDayNotes(uid))[d];
+      const t = n && String(kind === 'recap' ? n.recap : n.plan || '').trim(); if (!t) return json(res, 404, { error: 'nothing_written' });
+      p.text = (text ? text + '\n\n' : '') + t.slice(0, 1500); p.snap = { date: d };
+      const tr = Object.values(await loadEntries(uid)).filter((e) => e.date === d && e.kind === 'trade' && entryStatus(e) !== 'denied' && /^(funded|evaluation)$/i.test(String(e.account || '').trim()));   // same rule as the stats
+      if (kind === 'recap' && tr.length) { p.snap.n = tr.length; p.snap.pnl = tr.reduce((a, e) => a + (+e.pnl || 0), 0); }
+    }
+    if (!p.text && !p.snap) return json(res, 400, { error: 'empty' });
+    if (p.text.length < 2 && kind === 'note') return json(res, 400, { error: 'empty' });
+    await feedPut(p); await kv(['LPUSH', 'feed:order', p.id]); await kv(['LTRIM', 'feed:order', '0', '499']);
+    return json(res, 200, { saved: true, post: p });
+  }
+  if (action === 'feed-react' || action === 'feed-reply' || action === 'feed-delete') {
+    const p = await feedGet(str(body.id, 20)); if (!p) return json(res, 404, { error: 'no_post' });
+    if (action === 'feed-delete') {
+      if (p.uid !== uid && !isAdmin(s)) return json(res, 403, { error: 'not_yours' });
+      await kv(['HDEL', 'feed:posts', p.id]); await kv(['LREM', 'feed:order', '0', p.id]); return json(res, 200, { saved: true });
+    }
+    if (action === 'feed-react') {
+      const em = FEED_EMOJI.includes(body.emoji) ? body.emoji : null; if (!em) return json(res, 400, { error: 'bad_emoji' });
+      const list = (p.reactions[em] || []).slice(); const i = list.indexOf(uid); if (i >= 0) list.splice(i, 1); else list.push(uid);
+      if (list.length) p.reactions[em] = list; else delete p.reactions[em];
+    } else {
+      const t = str(body.text, 600); if (!t) return json(res, 400, { error: 'empty' });
+      if ((p.replies || []).length >= 60) return json(res, 409, { error: 'too_many' });
+      p.replies = (p.replies || []).concat([{ id: 'r' + crypto.randomBytes(4).toString('hex'), uid, name: s.user.displayName || s.user.username, avatar: s.user.avatar || null, text: t, at: new Date().toISOString(), staff: isAdmin(s) }]);
+    }
+    await feedPut(p); return json(res, 200, { saved: true, post: p });
+  }
+  if (action === 'page-save') {
+    const p = body.page || {}, id = typeof p.id === 'string' && /^pg[0-9a-f]{12}$/.test(p.id) ? p.id : '';
+    let old = null; if (id) { try { old = JSON.parse((await kv(['HGET', 'pages:' + uid, id])) || 'null'); } catch (e) {} if (!old) return json(res, 404, { error: 'no_page' }); }
+    if (!old && Number(await kv(['HLEN', 'pages:' + uid])) >= MAX_PAGES) return json(res, 409, { error: 'too_many' });
+    const page = cleanPage(p, old), raw = JSON.stringify(page);
+    if (raw.length > 120000) return json(res, 413, { error: 'too_big' });
+    await kv(['HSET', 'pages:' + uid, page.id, raw]);
+    return json(res, 200, { saved: true, page });
+  }
+  if (action === 'page-delete') {
+    const id = String(body.id || ''); if (!/^pg[0-9a-f]{12}$/.test(id)) return json(res, 400, { error: 'bad_id' });
+    await kv(['HDEL', 'pages:' + uid, id]);
+    return json(res, 200, { saved: true });
+  }
+  if (action === 'week-save') {
+    const d = str(body.week, 10); if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return json(res, 400, { error: 'bad_date' });
+    const wk = mondayOfDay(d), r = { went: str(body.went, 3000), didnt: str(body.didnt, 3000), fix: str(body.fix, 1000), updatedAt: new Date().toISOString() };
+    if (!r.went && !r.didnt && !r.fix) await kv(['HDEL', 'weekrev:' + uid, wk]);
+    else await kv(['HSET', 'weekrev:' + uid, wk, JSON.stringify(r)]);
+    return json(res, 200, { saved: true, week: wk, review: r });
+  }
   if (action === 'daynote-save') {
     const date = tradeDay(str(body.date, 10));
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return json(res, 400, { error: 'bad_date' });

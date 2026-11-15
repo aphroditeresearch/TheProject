@@ -50,7 +50,11 @@ function clean(c) {
       id: id(a && a.id), title: str(a && a.title, 140), body: str(a && a.body, 2000),
       createdAt: date(a && a.createdAt), expires: date(a && a.expires),
     })).filter((a) => a.id && (a.title || a.body)),
-    settings: { unlockMode: c.settings && c.settings.unlockMode === 'approve' ? 'approve' : 'submit' },
+    settings: { unlockMode: c.settings && c.settings.unlockMode === 'approve' ? 'approve' : 'submit',
+      // the journal's daily plan questions and recap prompt, written by the mentor (empty = the built-in ones)
+      planQs: (Array.isArray(c.settings && c.settings.planQs) ? c.settings.planQs : []).slice(0, 8)
+        .map((q) => ({ l: str(q && q.l, 40).replace(/[:\n]/g, ' ').trim(), ph: str(q && q.ph, 120), req: !!(q && q.req) })).filter((q) => q.l),
+      recapPh: str(c.settings && c.settings.recapPh, 200) },
     updatedAt: new Date().toISOString(),
   };
 }

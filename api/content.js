@@ -7,7 +7,7 @@
 const { readSession, isAdmin, json } = require('./_lib');
 const { gateFor, memberState, contentWithDefaults, bdChains, bdKind, bdKey, BD_TASK, unitsOf } = require('./_gate');
 const { signAll } = require('./_blob');
-const { newsThisWeek, newsHistory } = require('./_news');
+const { newsThisWeek, newsHistory, fedNews } = require('./_news');
 const { loadTestimonials } = require('./_gate');
 
 module.exports = async (req, res) => {
@@ -31,7 +31,8 @@ module.exports = async (req, res) => {
   if (nq) {
     try {
       if (nq === 'history') return json(res, 200, { history: await newsHistory() });
-      return json(res, 200, Object.assign({ source: 'ForexFactory', link: 'https://www.forexfactory.com/calendar' }, await newsThisWeek()));
+      const [wk, fed] = await Promise.all([newsThisWeek(), fedNews().catch(() => [])]);
+      return json(res, 200, Object.assign({ source: 'ForexFactory', link: 'https://www.forexfactory.com/calendar', fed }, wk));
     } catch (e) { return json(res, 200, { events: [], stale: true, updated: null }); }
   }
 
@@ -62,7 +63,7 @@ module.exports = async (req, res) => {
     passed: access.homework['hw:' + h.id].passed, sub: withSub('hw:' + h.id) }));
   out.level = access.level;
   out.preview = asStep && !admin ? asStep : 0;
-  out.settings = { unlockMode: content.settings.unlockMode };
+  out.settings = { unlockMode: content.settings.unlockMode, planQs: content.settings.planQs || [], recapPh: content.settings.recapPh || '' };
   out.promotion = { canRequest: access.canPromote, status: promo ? promo.status : null, note: promo ? promo.note || '' : '' };
 
   out.curriculum = [];

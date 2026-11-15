@@ -83,4 +83,38 @@ async function newsHistory() {
   return out;
 }
 
-module.exports = { newsThisWeek, newsHistory, weekOf, mainWeek, clean };
+// The Federal Reserve's own announcements (monetary policy press releases and speeches), from its public RSS feeds.
+// US government material: free to show. Cached 30 minutes, same lock and back-off as the calendar.
+const FED_FEEDS = [['policy', 'https://www.federalreserve.gov/feeds/press_monetary.xml'], ['speech', 'https://www.federalreserve.gov/feeds/speeches.xml']];
+function rssItems(xml, kind) {
+  const out = [], strip = (t) => String(t || '').replace(/<!\[CDATA\[|\]\]>/g, '').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&#39;|&apos;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
+  (String(xml).match(/<item[\s\S]*?<\/item>/g) || []).slice(0, 12).forEach((it) => {
+    const g = (tag) => { const m = new RegExp('<' + tag + '[^>]*>([\\s\\S]*?)<\\/' + tag + '>').exec(it); return m ? strip(m[1]) : ''; };
+    const title = g('title').slice(0, 200), link = g('link'), t = Date.parse(g('pubDate'));
+    if (title && /^https:\/\/www\.federalreserve\.gov\//.test(link) && isFinite(t)) out.push({ kind, title, link, t: new Date(t).toISOString() });
+  });
+  return out;
+}
+async function fedNews() {
+  if (!kvConfigured()) return [];
+  let cur = null; try { cur = JSON.parse((await kv(['GET', 'news:fed'])) || 'null'); } catch (e) {}
+  if (cur && Date.now() - cur.at < 30 * 60 * 1000) return cur.items;
+  let cooling = false; try { cooling = !!(await kv(['GET', 'news:fedcool'])); } catch (e) {}
+  let mine = false; if (!cooling) { try { mine = (await kv(['SET', 'news:fedlock', '1', 'NX', 'EX', '60'])) === 'OK'; } catch (e) {} }
+  if (mine) {
+    try {
+      const all = [];
+      for (const [kind, url] of FED_FEEDS) {
+        const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 7000);
+        try { const r = await fetch(url, { signal: ctl.signal, headers: { 'User-Agent': '05project.com journal (cached)' } }); if (r.ok) rssItems(await r.text(), kind).forEach((x) => all.push(x)); } finally { clearTimeout(to); }
+      }
+      if (!all.length) throw new Error('fed empty');
+      const items = all.sort((a, b) => (a.t < b.t ? 1 : -1)).slice(0, 16);
+      await kv(['SET', 'news:fed', JSON.stringify({ at: Date.now(), items })]);
+      return items;
+    } catch (e) { try { await kv(['SET', 'news:fedcool', '1', 'EX', '600']); } catch (e2) {} }
+  }
+  return cur ? cur.items : [];
+}
+
+module.exports = { fedNews, rssItems, newsThisWeek, newsHistory, weekOf, mainWeek, clean };
