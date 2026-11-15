@@ -26,11 +26,13 @@
 // POST { action:'testimonial-review', id, status:'approved'|'denied'|'pending', post:true|false, note } → approve (shows on the
 //      Wins tab; posts to DISCORD_TESTIMONIAL_WEBHOOK unless post is false) or deny. Admins can't edit what a member wrote.
 // POST { action:'testimonial-remove', id } → take a testimonial down
+// POST { action:'testimonial-front', id, front:true|false } → show an approved review on the public front page, or take it off
 // Certifying a payout (cert-review approved) posts it to DISCORD_PAYOUT_WEBHOOK when the member allowed sharing (post:false skips)
 // GET  ?snippets=1 / POST { action:'snippets', snippets:[…] } → the saved feedback lines admins tap into reviews
 // POST { action:'restore', keys:{…}, mode:'missing'|'all', confirm:'RESTORE' } → put keys from a backup file back
 const { kvPipeline, KEY_PREFIX, staffAlert, clientIp, loadAlerts, staffHook } = require('../_lib');
 const zlib = require('zlib');
+const { newsThisWeek } = require('../_news');
 const { readSession, isAdmin, adminIds, kvConfigured, kv, listMembers, loadProgress, saveProgress, loadFlags, json } = require('../_lib');
 const { nyToday, loadActivity, saveCert, contentWithDefaults, memberState, loadSubs, saveSub, deleteSub, setOverride, loadCerts, loadPromo, savePromo, findItem, loadJournal, loadEntries, saveEntry, entryPoints, lastWorkOf, loadDayNotes, loadTestimonials, saveTestimonial, deleteTestimonial, hookReady, discordPost, testimonialPayload, payoutPayload, loadFeedSettings, entryStatus, basePoints, ROLES, chapterRoles } = require('../_gate');
 const { signAll, makeSigner } = require('../_blob');
@@ -342,6 +344,8 @@ module.exports = async (req, res) => {
     if (!secret || (req.headers.authorization || '') !== 'Bearer ' + secret) return json(res, 401, { error: 'not_cron' });
     if (!kvConfigured()) return json(res, 503, { error: 'no_storage' });
     const st = await cronBackup();
+    // also refresh the economic calendar once a day, so every week's releases are kept even if nobody opens News
+    try { await newsThisWeek(); } catch (e) {}
     return json(res, st.ok ? 200 : 500, st);
   }
   const s = readSession(req);
@@ -373,6 +377,15 @@ module.exports = async (req, res) => {
       const v = { testimonials: ok(body.testimonials), payouts: ok(body.payouts) };
       await kv(['SET', 'feed-settings', JSON.stringify(v)]);
       return json(res, 200, { saved: true, feeds: v });
+    }
+    // feature an approved review on the public front page (or take it off); nothing else about it changes
+    if (body.action === 'testimonial-front') {
+      const t = (await loadTestimonials())[String(body.id || '')];
+      if (!t) return json(res, 404, { error: 'not_found' });
+      if (t.status !== 'approved' && body.front) return json(res, 400, { error: 'not_approved' });
+      t.front = !!body.front; t.frontAt = t.front ? new Date().toISOString() : null; t.frontBy = t.front ? who : null;
+      await saveTestimonial(t);
+      return json(res, 200, { saved: true, testimonial: t });
     }
     if (body.action === 'testimonial-remove') { await deleteTestimonial(String(body.id || '')); return json(res, 200, { saved: true }); }
     if (body.action === 'snippets') {   // saved feedback lines, shared by every admin

@@ -7,10 +7,33 @@
 const { readSession, isAdmin, json } = require('./_lib');
 const { gateFor, memberState, contentWithDefaults, bdChains, bdKind, bdKey, BD_TASK, unitsOf } = require('./_gate');
 const { signAll } = require('./_blob');
+const { newsThisWeek, newsHistory } = require('./_news');
+const { loadTestimonials } = require('./_gate');
 
 module.exports = async (req, res) => {
+  // GET /api/content?testimonials=front → public: approved reviews an admin chose for the front page (name, picture, stars, words)
+  if (/[?&]testimonials=front\b/.test(req.url || '')) {
+    let list = [];
+    try {
+      list = Object.values(await loadTestimonials()).filter((t) => t.status === 'approved' && t.front)
+        .sort((a, b) => String(b.frontAt || b.reviewedAt || '').localeCompare(String(a.frontAt || a.reviewedAt || '')))
+        .slice(0, 24).map((t) => ({ name: String(t.name || 'Member').slice(0, 40), avatar: /^https:\/\/cdn\.discordapp\.com\//.test(t.avatar || '') ? t.avatar : null,
+          rating: Math.max(1, Math.min(5, +t.rating || 5)), text: String(t.text || '').slice(0, 320), result: String(t.result || '').slice(0, 80) }));
+    } catch (e) { list = []; }
+    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+    return json(res, 200, { testimonials: list });
+  }
   const s = readSession(req);
   if (!s) return json(res, 401, { error: 'signed_out' });
+
+  // GET /api/content?news=week|history → the economic calendar (see _news.js)
+  const nq = (/[?&]news=(week|history)\b/.exec(req.url || '') || [])[1];
+  if (nq) {
+    try {
+      if (nq === 'history') return json(res, 200, { history: await newsHistory() });
+      return json(res, 200, Object.assign({ source: 'ForexFactory', link: 'https://www.forexfactory.com/calendar' }, await newsThisWeek()));
+    } catch (e) { return json(res, 200, { events: [], stale: true, updated: null }); }
+  }
 
   let admin = isAdmin(s);
   // admins can preview the site as a brand-new member of one step (?as=1|2|3): same locks and blur, nothing done

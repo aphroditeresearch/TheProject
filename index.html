@@ -995,6 +995,60 @@ button.tri-chip{cursor:pointer}button.tri-chip:hover{border-color:var(--blue)}
 .ty-pnl{text-align:right;display:flex;flex-direction:column;gap:4px}.ty-pnl b{font:700 32px/1 var(--mono)}
 .ty .win{color:var(--win)}.ty .loss{color:var(--loss)}
 .ty-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:20px;align-items:start}
+/* journal \u00b7 news */
+.nw-g{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:16px;align-items:start}.nw-l,.nw-r{display:flex;flex-direction:column;gap:14px;min-width:0}
+.nw-day.now{border-color:var(--blue-dim)}.nw-dh{display:flex;align-items:center;gap:10px}.nw-dh b{font-size:16px}.nw-ff{margin-left:auto;font-size:12.5px;color:var(--muted)}
+.nw-row{display:grid;grid-template-columns:76px 18px 42px minmax(0,1fr) 78px 78px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.nw-row.head{border-top:0;padding:0;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.nw-row.past{opacity:.5}.nw-row.hi .nw-n{font-weight:700}.nw-t,.nw-v,.nw-c{font-family:var(--mono);font-size:13px;color:var(--muted)}.nw-t{color:var(--ink)}
+.nw-row.sm{grid-template-columns:70px 16px minmax(0,1fr) auto}.nw-u{font-size:12px;color:var(--kana-c);white-space:nowrap}.nw-row.past .nw-u{color:var(--muted)}
+.nw-f{display:inline-block;width:14px;height:11px;border-radius:2px 2px 2px 2px;position:relative;background:#E8C547}.nw-f::before{content:"";position:absolute;left:0;top:-3px;width:6px;height:3px;border-radius:2px 2px 0 0;background:inherit}
+.nw-f.high{background:#E5484D}.nw-f.medium{background:#F59E0B}.nw-f.low{background:#E8C547}.nw-f.holiday{background:#8B9AA0}
+.nw-warn{margin:4px 0 0;padding:8px 10px;border:1px solid rgba(229,72,77,.45);background:rgba(229,72,77,.08);font-size:13px}
+.nw-next{border:1px solid rgba(229,72,77,.45);background:linear-gradient(90deg,rgba(229,72,77,.12),transparent 70%);padding:16px 20px;display:flex;flex-direction:column;gap:6px}
+.nw-nx{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.nw-nx b{font-size:18px}.nw-nx span{color:var(--muted)}
+.nw-credit{margin:0;font-size:12.5px;color:var(--muted)}.nw-credit a{color:var(--kana-c)}
+.nw-rec{display:flex;flex-direction:column}.nw-rr{display:grid;grid-template-columns:minmax(0,1fr) 46px 76px 96px;gap:8px;padding:7px 0;border-top:1px solid var(--line);font-size:14px}
+.nw-rr.head{border-top:0;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.nw-rr .mono{font-family:var(--mono)}.nw-rr .win{color:var(--win)}.nw-rr .loss{color:var(--loss)}
+@media (max-width:900px){.nw-g{grid-template-columns:minmax(0,1fr)}.nw-row{grid-template-columns:62px 16px minmax(0,1fr) 64px;font-size:13.5px}.nw-row>.nw-c,.nw-row>.nw-v:last-child{display:none}}
+/* journal \u00b7 opening screen and tab explainers */
+.jr-info{flex-basis:100%;margin:2px 0 0;font-size:13.5px;color:var(--muted);max-width:none}.jr-info .lnk{font-size:13px;margin-left:4px;color:var(--kana-c);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.ji{display:flex;flex-direction:column;gap:18px}
+.ji-hero{position:relative;overflow:hidden;padding:40px 36px 30px;border:1px solid var(--line);background:radial-gradient(120% 140% at 100% 0%,rgba(20,163,157,.28),transparent 55%),linear-gradient(170deg,#0B1A1C,#050C0D);display:flex;flex-direction:column;gap:12px}
+.ji-hero .lockup{font-size:34px}.ji-kick{font:600 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--kana-c)}
+.ji-hero h2{margin:0;font-family:var(--display);font-style:italic;font-weight:900;font-stretch:125%;font-size:clamp(28px,4.4vw,46px);line-height:1.05;letter-spacing:-.02em}
+.ji-hero p{margin:0;max-width:60ch;color:var(--muted);font-size:16px}
+.ji-flow{list-style:none;margin:8px 0 0;padding:0;display:flex;gap:8px;flex-wrap:wrap}.ji-flow li{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border:1px solid var(--line);background:rgba(0,0,0,.25);font-size:14px}
+.ji-flow b{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--blue);color:#021012;font:700 12px var(--mono)}
+.ji-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.ji-card{appearance:none;text-align:left;font:inherit;color:var(--ink);border:1px solid var(--line);background:var(--panel);padding:18px;display:flex;flex-direction:column;gap:6px}
+button.ji-card{cursor:pointer}button.ji-card:hover,button.ji-card:focus-visible{border-color:var(--blue);background:rgba(20,163,157,.06)}
+.ji-card b{font-size:16px}.ji-card p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.45}.ji-ic{font-size:22px;line-height:1}
+.ji-mentor{border-style:dashed}.nw-r .ty-card>p{margin:0;font-size:14px;color:var(--muted)}.ji-go{align-self:flex-start;min-height:46px;padding:0 22px;font-size:15px}
+@media (max-width:1000px){.ji-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.ji-grid{grid-template-columns:minmax(0,1fr)}.ji-hero{padding:28px 20px 22px}.nw-r .ty-card>p{margin:0;font-size:14px;color:var(--muted)}.ji-go{align-self:stretch}}
+/* front page: member reviews */
+#gate-view[hidden]~.tst,#gate-view[hidden] .tst-cue{display:none!important}
+.tst-cue{position:absolute;left:50%;transform:translateX(-50%);bottom:4vh;z-index:5;font:600 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+.tst-cue:hover{color:var(--kana-c)}.tst-cue span{display:inline-block;animation:tstBob 2.4s ease-in-out infinite}
+@keyframes tstBob{50%{transform:translateY(4px)}}
+.tst{position:relative;z-index:2;padding:72px 0 88px;border-top:1px solid var(--line);background:linear-gradient(180deg,rgba(2,9,11,.0),rgba(2,9,11,.6))}
+.tst-head{padding:0 max(24px,4vw);margin-bottom:28px;display:flex;flex-direction:column;gap:6px}
+.tst-kick{font:600 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--kana-c)}
+.tst h2{margin:0;font-family:var(--display);font-style:italic;font-weight:900;font-stretch:125%;font-size:clamp(28px,4vw,44px);letter-spacing:-.02em;line-height:1.05}
+.tst-vp{overflow:hidden;-webkit-mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.tst-track{display:flex;width:max-content;padding:4px 0}
+.tst-row{display:flex;gap:16px;padding-right:16px}
+.tst:not(.moving) .tst-track{width:auto;padding:4px max(24px,4vw)}.tst:not(.moving) .tst-row{flex-wrap:wrap}
+.tst.moving .tst-track{animation:tstMove var(--tst-dur,60s) linear infinite}.tst.moving .tst-vp:hover .tst-track,.tst.moving .tst-vp:focus-within .tst-track{animation-play-state:paused}
+@keyframes tstMove{to{transform:translateX(-50%)}}
+.tst-card{margin:0;width:340px;flex:none;box-sizing:border-box;padding:22px 22px 18px;border:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;gap:12px}
+.tst-card blockquote{margin:0;font-size:15px;line-height:1.55;color:var(--ink);display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+.tst-st{color:#F5C518;letter-spacing:2px;font-size:14px}.tst-res{align-self:flex-start;font:600 12.5px var(--mono);padding:3px 8px;border:1px solid var(--blue-dim);color:var(--kana-c);background:rgba(20,163,157,.1)}
+.tst-card figcaption{margin-top:auto;display:flex;align-items:center;gap:10px}.tst-card figcaption b{display:block;font-size:14px}.tst-card figcaption small{color:var(--muted);font-size:12px}
+.tst-av{width:36px;height:36px;border-radius:50%;overflow:hidden;flex:none;display:grid;place-items:center;background:var(--blue-dim);color:var(--ink);font-weight:700}.tst-av img{width:100%;height:100%;object-fit:cover;display:block}
+@media (prefers-reduced-motion:reduce){.tst.moving .tst-track{animation:none;width:auto}.tst-vp{overflow-x:auto;-webkit-mask:none;mask:none}.tst-row[aria-hidden]{display:none}.tst-cue span{animation:none}}
+@media (max-width:700px){.tst{padding:48px 0 64px}.tst-card{width:280px}.tst-cue{display:none}}
 .ty-main,.ty-side{display:flex;flex-direction:column;gap:14px;min-width:0}
 .ty-card{border:1px solid var(--line);background:var(--panel);padding:20px 22px;display:flex;flex-direction:column;gap:12px}
 .ty-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.ty-h h3{margin:0;font:700 17px var(--sans)}
@@ -1553,7 +1607,14 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       <button class="cta" id="discord-btn" type="button">Continue with Discord</button>
       <p class="fine">Lessons play in Google Chrome on your computer or phone.<br><a href="terms.html">Terms of sale</a> &#xb7; <a href="privacy.html">Privacy policy</a></p>
     </section>
+    <a class="tst-cue" id="tst-cue" href="#tst-h" hidden>What members say <span aria-hidden="true">&#x2193;</span></a>
   </main>
+
+  <!-- FRONT PAGE REVIEWS: real reviews from members, chosen by an admin -->
+  <section class="tst" id="tst" aria-labelledby="tst-h" hidden>
+    <div class="tst-head"><span class="tst-kick">From the Discord</span><h2 id="tst-h">What members say</h2></div>
+    <div class="tst-vp"><div class="tst-track"></div></div>
+  </section>
 
   <!-- PORTAL -->
   <section id="portal-view" class="portal" hidden>
@@ -3880,15 +3941,49 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var host = document.getElementById('jr'); if (!host) return;
     Promise.all([loadMe(), coachLoad()]).then(function(){ drawJournal(host); });
   }
+  /* ---------- journal: the opening screen, and one line under the tabs saying what each tab is for ---------- */
+  var JR_TABS = [
+    ['today', '\ud83d\udccb', 'Today', 'Plan before the open, break down every trade, recap after the close. Finish all three to unlock the day\u2019s card.'],
+    ['list', '\ud83d\uddbc\ufe0f', 'Trades', 'Every trade with your chart, the numbers and your breakdown. \u2713 Verified means the numbers came from your broker\u2019s CSV.'],
+    ['cal', '\ud83d\udcc5', 'Calendar', 'Your month in green and red, with dots for the days you planned, broke down and recapped.'],
+    ['stats', '\ud83d\udcca', 'Stats', 'Win rate, P&L and what works best for you: by setup, time, tag and mistake. Funded and evaluation trades only.'],
+    ['progress', '\ud83d\udcbc', 'Accounts', 'Your prop accounts: balance, drawdown room and progress to the target.'],
+    ['news', '\ud83d\udcf0', 'News', 'This week\u2019s releases from ForexFactory, and how you\u2019ve traded on big-news days.'],
+    ['cards', '\ud83c\udfb4', 'Cards', 'Story-sized P&L cards for Instagram, TikTok and X, made from your journal.']
+  ];
+  var JR_INFO = { 'new': 'Log a trade by hand: the numbers, your chart and your breakdown. Import a CSV later and it turns \u2713 Verified.',
+    'import': 'Upload the trade export from your platform. Matching hand-logged trades turn \u2713 Verified and nothing is added twice.' };
+  JR_TABS.forEach(function(t){ JR_INFO[t[0]] = t[3]; }); JR_INFO.trade = JR_INFO.list;
+  function introSeen(){ try { return localStorage.getItem('theproject.jrintro') === '1'; } catch (e) { return true; } }
+  function journalIntro(host, first){
+    var w = el('section','ji view-in'), hero = el('div','ji-hero');
+    var lg = el('div','wm sm brand lockup'); lg.setAttribute('aria-hidden','true'); var g = el('span','wm-g tp-g'); g.appendChild(el('span','tp-svg')); lg.appendChild(g); hero.appendChild(lg);
+    hero.appendChild(el('span','ji-kick','Your trading journal'));
+    hero.appendChild(el('h2',null,'A journal you actually have to use.'));
+    hero.appendChild(el('p',null,'Every day you plan, trade, break down and recap, all by hand. Your mentor reads it, the group sees your wins, and your P&L card unlocks once the day\u2019s work is done.'));
+    var flow = el('ol','ji-flow'); ['Plan','Trade','Break down','Recap','Card'].forEach(function(x, i){ var li = el('li'); li.appendChild(el('b',null,String(i + 1))); li.appendChild(el('span',null,x)); flow.appendChild(li); });
+    hero.appendChild(flow); w.appendChild(hero);
+    var grid = el('div','ji-grid');
+    JR_TABS.forEach(function(t){ var c = el(first ? 'div' : 'button','ji-card'); if (!first){ c.type = 'button'; c.addEventListener('click', function(){ markSeen(); if (t[0] === 'cards'){ JR.view = 'today'; drawJournal(host); openShareCard('me'); return; } JR.view = t[0]; drawJournal(host); window.scrollTo(0, 0); }); }
+      c.appendChild(el('span','ji-ic', t[1])); c.appendChild(el('b',null, t[2])); c.appendChild(el('p',null, t[3])); grid.appendChild(c); });
+    var m = el('div','ji-card ji-mentor'); m.appendChild(el('span','ji-ic','\ud83d\udcac')); m.appendChild(el('b',null,'Your mentor'));
+    m.appendChild(el('p',null,'Ask about any trade from the trade itself. Replies from ' + ((COACH.mentor && COACH.mentor.name) || 'your mentor') + ' show up on Today.')); grid.appendChild(m);
+    w.appendChild(grid);
+    function markSeen(){ try { localStorage.setItem('theproject.jrintro', '1'); } catch (e) {} }
+    if (!first){ var go = el('button','btn-s pri ji-go','Open my journal \u2192'); go.type = 'button'; go.addEventListener('click', function(){ markSeen(); JR.view = 'today'; drawJournal(host); window.scrollTo(0, 0); }); w.appendChild(go); }
+    return w;
+  }
   function drawJournal(host){
     host.textContent = '';
     if (!ME.journal){
-      var c = el('section','jr-create'); c.appendChild(el('h3',null,'Create your journal'));
+      host.appendChild(journalIntro(host, true));
+      var c = el('section','jr-create'); c.appendChild(el('h3',null,'Step 1: write your rules'));
       c.appendChild(el('p',null,'Start by writing your trading rules. They sit next to every entry, and each entry asks whether you followed them. Following your rules is what scores on the psych leaderboard.'));
       c.appendChild(rulesEditor(null, function(rules){ return memberPost({ action:'journal-create', rules:rules }).then(function(){ toast('Journal created.'); return loadMe(); }).then(function(){ drawJournal(host); })
         .catch(function(e){ toast('Couldn\'t create it: ' + (e && e.message)); throw e; }); }, 'Create journal'));
       host.appendChild(c); return;
     }
+    if (JR.view === 'intro' || (!introSeen() && !JR.introShown)){ JR.introShown = true; host.appendChild(journalIntro(host, false)); return; }
     var grid = el('div','jr-grid'), side = el('aside','jr-side'), main = el('div','jr-main');
     side.appendChild(streakCard(ME.entries || []));
     side.appendChild(goalBox(uid(), COACH.goals || {}, false, function(g){ COACH.goals = g; drawJournal(host); }));
@@ -3910,7 +4005,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     side.appendChild(recapCard(ents, host));
     var pend = ents.filter(function(e){ return entryStatus(e) === 'pending'; }).length;
     if (pend) side.appendChild(el('p','jr-pend', pend + (pend === 1 ? ' entry is' : ' entries are') + ' waiting for an admin to approve ' + (pend === 1 ? 'it' : 'them') + ' for the leaderboard.'));
-    var vs = el('div','jr-view jr-tabs'), tabs = [['today','Today'],['list','Trades'],['cal','Calendar'],['stats','Stats'],['progress','Accounts'],['cards','Cards']];
+    var vs = el('div','jr-view jr-tabs'), tabs = [['today','Today'],['list','Trades'],['cal','Calendar'],['stats','Stats'],['progress','Accounts'],['news','News'],['cards','Cards']];
     if (JR.view === 'new') tabs.push(['new', JR.editId ? '\u270e Editing' : '+ New entry']); if (JR.view === 'import') tabs.push(['import','Import CSV']);
     vs.appendChild(seg(tabs, JR.view === 'trade' ? 'list' : JR.view, function(v){
       if (v === 'cards'){ drawJournal(host); SHC.per = 'day'; openShareCard('me'); return; }
@@ -3919,7 +4014,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     [['+ New entry', function(){ JR.kind = 'trade'; JR.editId = null; JR.lockCsv = false; JR.draft = { files:[] }; JR.view = 'new'; }], ['Import CSV', function(){ JR.view = 'import'; }]].forEach(function(a){
       var b = el('button','btn-s',a[0]); b.type = 'button'; b.addEventListener('click', function(){ JR.from = JR.view === 'today' ? 'today' : null; a[1](); drawJournal(host); window.scrollTo(0, 0); }); va.appendChild(b); });
     vs.appendChild(va);
+    var info = el('p','jr-info'), iv = JR.view === 'trade' ? 'list' : JR.view; info.appendChild(document.createTextNode((JR_INFO[iv] || '') + ' '));
+    var how = el('button','lnk','How the journal works'); how.type = 'button'; how.addEventListener('click', function(){ JR.view = 'intro'; drawJournal(host); window.scrollTo(0, 0); }); info.appendChild(how); vs.appendChild(info);
     if (JR.view === 'today'){ host.appendChild(vs); host.appendChild(todayView(host)); return; }
+    if (JR.view === 'news'){ host.appendChild(vs); host.appendChild(newsView(host)); return; }
     main.appendChild(vs);
     if (JR.view === 'stats'){
       JR.per = JR.per || 'today';
@@ -4239,6 +4337,102 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   }
 
 
+  /* ---------- news: this week's economic calendar (ForexFactory feed, cached on our server) ---------- */
+  var NEWS = { at:0, data:null, hist:null, busy:null }, NF = { cur:'USD', imp:'hm' };
+  try { var nf0 = JSON.parse(localStorage.getItem('theproject.newsf') || 'null'); if (nf0 && nf0.cur) NF = nf0; } catch (e) {}
+  function loadNews(withHist){
+    if (NEWS.data && Date.now() - NEWS.at < 10 * 60 * 1000 && (!withHist || NEWS.hist)) return Promise.resolve(NEWS);
+    if (NEWS.busy) return NEWS.busy;
+    var get = function(q){ return fetch('/api/content?news=' + q, { credentials:'same-origin' }).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }); };
+    NEWS.busy = Promise.all([get('week'), withHist ? get('history') : Promise.resolve(null)]).then(function(x){
+      if (x[0]) { NEWS.data = x[0]; NEWS.at = Date.now(); } if (x[1]) NEWS.hist = x[1].history || []; NEWS.busy = null; return NEWS; });
+    return NEWS.busy;
+  }
+  function nLocalDay(iso){ var d = new Date(iso); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function nEtDay(iso){ var p = new Date(iso).toLocaleDateString('en-CA', { timeZone:'America/New_York' }); return p.slice(0, 10); }
+  function nTime(iso){ var d = new Date(iso); return (d.getHours() === 0 && d.getMinutes() === 0) ? 'All day' : d.toLocaleTimeString([], { hour:'numeric', minute:'2-digit' }); }
+  function nUntil(iso){ var ms = new Date(iso) - Date.now(); if (ms <= 0) return ms > -15 * 60000 ? 'just out' : 'out'; var m = Math.round(ms / 60000);
+    return m < 60 ? 'in ' + m + 'm' : m < 1440 ? 'in ' + Math.floor(m / 60) + 'h ' + (m % 60) + 'm' : 'in ' + Math.floor(m / 1440) + 'd ' + Math.floor((m % 1440) / 60) + 'h'; }
+  function nShow(e){ if (e.impact === 'holiday') return NF.imp === 'all'; if (NF.cur === 'USD' && e.cur !== 'USD') return false;
+    return NF.imp === 'all' || e.impact === 'high' || (NF.imp === 'hm' && e.impact === 'medium'); }
+  function nFolder(imp){ var f = el('i','nw-f ' + imp); f.title = imp === 'high' ? 'High impact' : imp === 'medium' ? 'Medium impact' : imp === 'holiday' ? 'Holiday' : 'Low impact'; return f; }
+  function ffDayLink(iso){ var d = new Date(new Date(iso).toLocaleString('en-US', { timeZone:'America/New_York' }));
+    return 'https://www.forexfactory.com/calendar?day=' + ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'][d.getMonth()] + d.getDate() + '.' + d.getFullYear(); }
+  function nCredit(d){ var p = el('p','nw-credit'); p.appendChild(document.createTextNode('Calendar via '));
+    var a = el('a',null,'ForexFactory'); a.href = 'https://www.forexfactory.com/calendar'; a.target = '_blank'; a.rel = 'noopener'; p.appendChild(a);
+    p.appendChild(document.createTextNode(d && d.updated ? ' \u00b7 updated ' + new Date(d.updated).toLocaleTimeString([], { hour:'numeric', minute:'2-digit' }) + (d.stale ? ' (couldn\u2019t refresh, showing the last copy)' : '') : '')
+      ); p.appendChild(document.createTextNode(' \u00b7 actual results on ForexFactory')); return p; }
+  // Today's side panel: today's releases with a countdown
+  function newsTodayCard(day, host){
+    var c = el('section','ty-card nw-today'), h = el('div','ty-ah'); h.appendChild(el('span','adm-note','News today'));
+    var all = el('button','lnk','This week \u2192'); all.type = 'button'; all.addEventListener('click', function(){ JR.view = 'news'; drawJournal(host); window.scrollTo(0, 0); }); h.appendChild(all); c.appendChild(h);
+    var body = el('div','nw-list'); body.appendChild(el('p','ty-empty','Loading the calendar\u2026')); c.appendChild(body);
+    loadNews(false).then(function(N){ body.textContent = ''; var d = N.data;
+      if (!d || !d.events){ body.appendChild(el('p','ty-empty','The calendar is unavailable right now.')); return; }
+      var ev = d.events.filter(function(e){ return nEtDay(e.t) === day && e.cur === 'USD' && (e.impact === 'high' || e.impact === 'medium'); });
+      if (!ev.length){ body.appendChild(el('p','ty-empty','No major US releases today.')); return; }
+      ev.forEach(function(e){ var r = el('div','nw-row sm' + (new Date(e.t) < Date.now() ? ' past' : '')); r.appendChild(el('span','nw-t', nTime(e.t))); r.appendChild(nFolder(e.impact));
+        r.appendChild(el('span','nw-n', e.title)); r.appendChild(el('span','nw-u', nUntil(e.t))); body.appendChild(r); });
+      var hi = ev.filter(function(e){ return e.impact === 'high' && new Date(e.t) > Date.now(); })[0];
+      if (hi) body.appendChild(el('p','nw-warn','\u26a0 ' + hi.title + ' ' + nUntil(hi.t) + '. Put it in your plan: trade it, or wait it out.'));
+    });
+    return c;
+  }
+  // which releases count as the same kind, for "your record on news days"
+  var NEWS_FAM = [['CPI', /\bCPI\b/], ['NFP (jobs report)', /Non-Farm|NFP/i], ['FOMC / Fed', /FOMC|Federal Funds|Fed Chair|Powell/i], ['PPI', /\bPPI\b/], ['Retail Sales', /Retail Sales/i],
+    ['GDP', /\bGDP\b/], ['PCE', /\bPCE\b/], ['Jobless claims', /Unemployment Claims|Jobless/i], ['ISM', /\bISM\b/], ['JOLTS', /JOLTS/i]];
+  function newsRecord(ents){
+    var evs = (NEWS.hist || []).concat(((NEWS.data && NEWS.data.events) || []).filter(function(e){ return e.impact === 'high'; }))
+      .filter(function(e){ return e.cur === 'USD'; });
+    var byFam = {}, newsDays = {};
+    evs.forEach(function(e){ var d = nEtDay(e.t); newsDays[d] = 1; NEWS_FAM.forEach(function(f){ if (f[1].test(e.title)){ (byFam[f[0]] = byFam[f[0]] || {})[d] = 1; } }); });
+    var trades = ents.filter(function(e){ return e.kind === 'trade' && countsInStats(e) && entryStatus(e) !== 'denied'; });
+    function sum(days){ var ts = trades.filter(function(e){ return days[e.date]; }), dd = {}; ts.forEach(function(e){ dd[e.date] = (dd[e.date] || 0) + (+e.pnl || 0); });
+      var dl = Object.keys(dd); return { days: dl.length, green: dl.filter(function(k){ return dd[k] > 0; }).length, red: dl.filter(function(k){ return dd[k] < 0; }).length, net: ts.reduce(function(t, e){ return t + (+e.pnl || 0); }, 0), n: ts.length }; }
+    var rows = NEWS_FAM.map(function(f){ return byFam[f[0]] ? [f[0], sum(byFam[f[0]])] : null; }).filter(function(x){ return x && x[1].days; });
+    var quiet = {}; trades.forEach(function(e){ if (!newsDays[e.date]) quiet[e.date] = 1; });
+    return { rows: rows.sort(function(a, b){ return b[1].days - a[1].days; }), quiet: sum(quiet), tracked: Object.keys(newsDays).length };
+  }
+  function newsView(host){
+    var w = el('div','nw view-in');
+    var bar = el('div','rv-bar');
+    bar.appendChild(seg([['USD','USD only'],['all','All currencies']], NF.cur, function(v){ NF.cur = v; try { localStorage.setItem('theproject.newsf', JSON.stringify(NF)); } catch (e) {} drawJournal(host); }));
+    bar.appendChild(seg([['h','High'],['hm','High + medium'],['all','Everything']], NF.imp, function(v){ NF.imp = v; try { localStorage.setItem('theproject.newsf', JSON.stringify(NF)); } catch (e) {} drawJournal(host); }));
+    w.appendChild(bar);
+    var g = el('div','nw-g'), left = el('div','nw-l'), right = el('div','nw-r'); g.appendChild(left); g.appendChild(right); w.appendChild(g);
+    left.appendChild(el('p','ty-empty','Loading this week\u2019s calendar\u2026'));
+    loadNews(true).then(function(N){ left.textContent = ''; var d = N.data;
+      if (!d || !d.events || !d.events.length){ left.appendChild(el('p','ty-empty','The calendar is unavailable right now. Check ForexFactory directly.')); left.appendChild(nCredit(d)); return; }
+      var next = d.events.filter(function(e){ return e.impact === 'high' && e.cur === 'USD' && new Date(e.t) > Date.now(); })[0];
+      if (next){ var nx = el('section','nw-next'); nx.appendChild(el('span','adm-note','Next big one')); var b = el('div','nw-nx'); b.appendChild(nFolder('high'));
+        b.appendChild(el('b',null, next.title)); b.appendChild(el('span',null, new Date(next.t).toLocaleDateString([], { weekday:'long' }) + ' ' + nTime(next.t) + ' \u00b7 ' + nUntil(next.t))); nx.appendChild(b); left.appendChild(nx); }
+      var days = {}, today = nLocalDay(new Date().toISOString());
+      d.events.filter(nShow).forEach(function(e){ var k = nLocalDay(e.t); (days[k] = days[k] || []).push(e); });
+      var keys = Object.keys(days).sort();
+      if (!keys.length) left.appendChild(el('p','ty-empty','Nothing matches these filters this week.'));
+      keys.forEach(function(k){ var sec = el('section','ty-card nw-day' + (k === today ? ' now' : '')), dd = new Date(k + 'T12:00:00');
+        var hh = el('div','nw-dh'); hh.appendChild(el('b',null, dd.toLocaleDateString([], { weekday:'long', month:'short', day:'numeric' }))); if (k === today) hh.appendChild(el('span','ty-pill ok','Today'));
+        var lk = el('a','nw-ff','ForexFactory \u2197'); lk.href = ffDayLink(days[k][0].t); lk.target = '_blank'; lk.rel = 'noopener'; hh.appendChild(lk); sec.appendChild(hh);
+        var head = el('div','nw-row head'); ['Time','','Cur','Event','Forecast','Previous'].forEach(function(x){ head.appendChild(el('span',null,x)); }); sec.appendChild(head);
+        days[k].forEach(function(e){ var r = el('div','nw-row' + (new Date(e.t) < Date.now() ? ' past' : '') + (e.impact === 'high' ? ' hi' : ''));
+          r.appendChild(el('span','nw-t', nTime(e.t))); r.appendChild(nFolder(e.impact)); r.appendChild(el('span','nw-c', e.cur)); r.appendChild(el('span','nw-n', e.title));
+          r.appendChild(el('span','nw-v', e.forecast || '\u2014')); r.appendChild(el('span','nw-v', e.previous || '\u2014')); sec.appendChild(r); });
+        left.appendChild(sec); });
+      left.appendChild(nCredit(d));
+      // your record on news days
+      var R = newsRecord(ME.entries || []), rc = el('section','ty-card'); rc.appendChild(el('span','adm-note','Your record on news days'));
+      if (!R.rows.length){ rc.appendChild(el('p','ty-empty', R.tracked ? 'No funded or evaluation trades on big-news days yet. This fills in as you trade them.' : 'This builds up week by week from today: every big US release is kept, then matched to the days you traded.')); }
+      else { var tb = el('div','nw-rec'); var hd = el('div','nw-rr head'); ['Release','Days','Green\u2013red','Net'].forEach(function(x){ hd.appendChild(el('span',null,x)); }); tb.appendChild(hd);
+        R.rows.concat(R.quiet.days ? [['Quiet days (no big news)', R.quiet]] : []).forEach(function(x){ var s = x[1], r = el('div','nw-rr'); r.appendChild(el('span',null,x[0])); r.appendChild(el('span','mono',String(s.days)));
+          r.appendChild(el('span','mono', s.green + '\u2013' + s.red)); r.appendChild(el('span','mono ' + (s.net >= 0 ? 'win' : 'loss'), money(s.net))); tb.appendChild(r); });
+        rc.appendChild(tb); rc.appendChild(el('p','adm-note','Funded and evaluation trades only. A day counts as green or red by its total P&L.')); }
+      right.appendChild(rc);
+      var tip = el('section','ty-card'); tip.appendChild(el('span','adm-note','How to use this'));
+      tip.appendChild(el('p',null,'Red folders move the market. Before the open, check today\u2019s releases and write in your plan whether you\u2019ll trade the release or stay flat until it\u2019s out.'));
+      right.appendChild(tip);
+    });
+    return w;
+  }
   /* ---------- trades: gallery tile and full trade view ---------- */
   function firstShot(e){ return (e.files || []).filter(function(f){ return f && /^image\//.test(f.type || '') && f.url; })[0] || null; }
   function verPill(e){ return el('span','ty-pill' + (e.src === 'csv' ? ' ok' : ''), e.src === 'csv' ? '\u2713 Verified' : 'By hand'); }
@@ -4384,7 +4578,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     if (recapDone){ card.appendChild(el('span',null,'Today\'s card is unlocked.')); var sb = el('button','btn-s pri','Share today\'s card'); sb.type = 'button'; sb.addEventListener('click', function(){ SHC.per = 'day'; openShareCard('me'); }); card.appendChild(sb); }
     else { card.appendChild(el('span',null,'\ud83d\udd12 Today\'s card is locked.')); card.appendChild(el('small',null,'Write your recap to earn it.')); }
     rg.appendChild(rl); rg.appendChild(card); s3.body.appendChild(rg); main.appendChild(s3);
-    // side: accounts, rules, export
+    // side: news, accounts, rules, export
+    side.appendChild(newsTodayCard(day, host));
     var accts = (COACH.accounts || []).filter(function(a){ return a.status === 'active'; });
     var sa = el('section','ty-card'); sa.appendChild(el('span','adm-note','Accounts'));
     if (!accts.length){ sa.appendChild(el('p','ty-empty','Add your prop accounts under Progress to see drawdown room here.')); }
@@ -6218,6 +6413,25 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok) throw new Error(j.error || ('error ' + r.status)); return j; }); });
   }
 
+  /* ---------- front page: reviews from members, picked by an admin (Admin -> Testimonials -> Show on front page) ---------- */
+  (function(){
+    var sec = document.getElementById('tst'), cue = document.getElementById('tst-cue'); if (!sec) return;
+    fetch('/api/content?testimonials=front', { credentials:'omit' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+      var T = (j && j.testimonials) || []; if (!T.length) return;
+      var track = sec.querySelector('.tst-track'), rowA = el('div','tst-row');
+      function card(t){ var c = el('figure','tst-card'), q = el('blockquote'); q.textContent = '\u201c' + t.text + '\u201d'; c.appendChild(el('span','tst-st', '\u2605\u2605\u2605\u2605\u2605'.slice(0, t.rating)));
+        c.appendChild(q); if (t.result) c.appendChild(el('span','tst-res', t.result));
+        var by = el('figcaption'), av = el('span','tst-av');
+        if (t.avatar){ var im = el('img'); im.src = t.avatar; im.alt = ''; im.loading = 'lazy'; im.referrerPolicy = 'no-referrer'; av.appendChild(im); } else av.textContent = String(t.name || '?').charAt(0).toUpperCase();
+        by.appendChild(av); var nm = el('span'); nm.appendChild(el('b',null, t.name)); nm.appendChild(el('small',null,'Member \u00b7 The Project Discord')); by.appendChild(nm); c.appendChild(by); return c; }
+      T.forEach(function(t){ rowA.appendChild(card(t)); });
+      track.appendChild(rowA);
+      // enough cards to scroll: a second copy makes the loop seamless (hidden from screen readers)
+      if (T.length >= 3){ var rowB = rowA.cloneNode(true); rowB.setAttribute('aria-hidden','true'); track.appendChild(rowB); sec.classList.add('moving');
+        track.style.setProperty('--tst-dur', Math.max(40, T.length * 11) + 's'); }
+      sec.hidden = false; if (cue) cue.hidden = false;
+    }).catch(function(){});
+  })();
   /* ---------- Wins: student testimonials + certified payouts ---------- */
   var WINS = { tab:'payouts', data:null, at:0, draft:{ rating:0, text:'', result:'' } };
   var starStr = function(n){ return '\u2605\u2605\u2605\u2605\u2605'.slice(0, n) + '\u2606\u2606\u2606\u2606\u2606'.slice(0, 5 - n); };
@@ -6284,7 +6498,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         .catch(function(e){ go.disabled = false; var m = String((e && e.message) || e); toast(/pending_exists/.test(m) ? 'You already have a review waiting.' : /too_many/.test(m) ? 'You\'ve shared 5 reviews already.' : 'Couldn\'t send it. Try again.'); });
     });
     box.appendChild(go);
-    box.appendChild(el('small','adm-note','Approved reviews show here and are posted in the Discord testimonials channel with your name and picture. A mentor approves them as written; nothing is edited.'));
+    box.appendChild(el('small','adm-note','Approved reviews show here and are posted in the Discord testimonials channel with your name and picture, and may be featured on the 05project.com front page. A mentor approves them as written; nothing is edited.'));
     return box;
   }
 
@@ -6340,6 +6554,9 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         if (t.status !== 'approved'){ var ok = el('button','btn-s pri','Approve'); ok.type = 'button'; ok.addEventListener('click', function(){ act('approved'); }); acts.appendChild(ok); }
         else if (!t.posted && H.testimonials){ var rp = el('button','btn-s','Post to Discord'); rp.type = 'button'; rp.addEventListener('click', function(){ act('approved'); }); acts.appendChild(rp); }
         if (t.status !== 'denied'){ var no = el('button','btn-s warn', t.status === 'approved' ? 'Take down' : 'Deny'); no.type = 'button'; no.addEventListener('click', function(){ act('denied'); }); acts.appendChild(no); }
+        if (t.status === 'approved'){ var fp = el('button','btn-s' + (t.front ? ' pri' : ''), t.front ? '\u2713 On the front page' : 'Show on front page'); fp.type = 'button'; fp.title = t.front ? 'Click to take it off the front page' : 'Shows this review (name, picture, stars, words) to anyone visiting 05project.com';
+          fp.addEventListener('click', function(){ adminPost({ action:'testimonial-front', id:t.id, front:!t.front }).then(function(){ toast(t.front ? 'Taken off the front page.' : 'Now showing on the front page.'); admRender(); }).catch(function(e){ toast('Couldn\'t save: ' + e.message); }); });
+          acts.insertBefore(fp, acts.firstChild); }
         c.appendChild(note);
         c.appendChild(acts); host.appendChild(c);
       });
