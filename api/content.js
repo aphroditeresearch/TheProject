@@ -8,20 +8,38 @@ const { readSession, isAdmin, json } = require('./_lib');
 const { gateFor, memberState, contentWithDefaults, bdChains, bdKind, bdKey, BD_TASK, unitsOf } = require('./_gate');
 const { signAll } = require('./_blob');
 const { newsThisWeek, newsHistory, fedNews } = require('./_news');
-const { loadTestimonials } = require('./_gate');
+const { loadTestimonials, loadCerts } = require('./_gate');
+const { kv, listMembers } = require('./_lib');
 
 module.exports = async (req, res) => {
-  // GET /api/content?testimonials=front → public: approved reviews an admin chose for the front page (name, picture, stars, words)
+  // GET /api/content?testimonials=front → public: every approved review (unless an admin hid it from the front page) and the
+  // certified payouts members chose to share. Only name, picture and what they wrote / the amount. Cached 5 minutes.
   if (/[?&]testimonials=front\b/.test(req.url || '')) {
-    let list = [];
-    try {
-      list = Object.values(await loadTestimonials()).filter((t) => t.status === 'approved' && t.front)
-        .sort((a, b) => String(b.frontAt || b.reviewedAt || '').localeCompare(String(a.frontAt || a.reviewedAt || '')))
-        .slice(0, 24).map((t) => ({ name: String(t.name || 'Member').slice(0, 40), avatar: /^https:\/\/cdn\.discordapp\.com\//.test(t.avatar || '') ? t.avatar : null,
-          rating: Math.max(1, Math.min(5, +t.rating || 5)), text: String(t.text || '').slice(0, 320), result: String(t.result || '').slice(0, 80) }));
-    } catch (e) { list = []; }
+    let out = null;
+    try { const c = await kv(['GET', 'front-cache']); if (c) out = JSON.parse(c); } catch (e) {}
+    if (!out) {
+      out = { testimonials: [], payouts: [] };
+      const pic = (a) => (/^https:\/\/cdn\.discordapp\.com\//.test(a || '') ? a : null);
+      try {
+        out.testimonials = Object.values(await loadTestimonials()).filter((t) => t.status === 'approved' && t.front !== false)
+          .sort((a, b) => String(b.reviewedAt || '').localeCompare(String(a.reviewedAt || ''))).slice(0, 24)
+          .map((t) => ({ name: String(t.name || 'Member').slice(0, 40), avatar: pic(t.avatar), rating: Math.max(1, Math.min(5, +t.rating || 5)), text: String(t.text || '').slice(0, 320), result: String(t.result || '').slice(0, 80) }));
+      } catch (e) {}
+      try {
+        const pays = [];
+        await Promise.all((await listMembers()).map(async (m) => {
+          Object.values(await loadCerts(m.id)).forEach((c) => {
+            if (c.kind !== 'payout' || !c.review || c.review.status !== 'approved' || c.share === false || c.front === false) return;
+            const amount = Number(c.review.amount || c.amount || 0); if (!(amount > 0)) return;
+            pays.push({ name: String(m.displayName || m.username || 'Member').slice(0, 40), avatar: pic(m.avatar), amount, firm: String(c.note || '').slice(0, 40), paidAt: String(c.paidAt || c.uploadedAt || '').slice(0, 10) });
+          });
+        }));
+        out.payouts = pays.sort((a, b) => String(b.paidAt).localeCompare(String(a.paidAt))).slice(0, 24);
+      } catch (e) {}
+      try { await kv(['SET', 'front-cache', JSON.stringify(out), 'EX', 300]); } catch (e) {}
+    }
     res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
-    return json(res, 200, { testimonials: list });
+    return json(res, 200, out);
   }
   const s = readSession(req);
   if (!s) return json(res, 401, { error: 'signed_out' });

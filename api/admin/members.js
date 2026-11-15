@@ -26,7 +26,7 @@
 // POST { action:'testimonial-review', id, status:'approved'|'denied'|'pending', post:true|false, note } → approve (shows on the
 //      Wins tab; posts to DISCORD_TESTIMONIAL_WEBHOOK unless post is false) or deny. Admins can't edit what a member wrote.
 // POST { action:'testimonial-remove', id } → take a testimonial down
-// POST { action:'testimonial-front', id, front:true|false } → show an approved review on the public front page, or take it off
+// POST { action:'testimonial-front', id, front:true|false } → approved reviews show on the public front page unless hidden here
 // Certifying a payout (cert-review approved) posts it to DISCORD_PAYOUT_WEBHOOK when the member allowed sharing (post:false skips)
 // GET  ?snippets=1 / POST { action:'snippets', snippets:[…] } → the saved feedback lines admins tap into reviews
 // POST { action:'restore', keys:{…}, mode:'missing'|'all', confirm:'RESTORE' } → put keys from a backup file back
@@ -369,7 +369,7 @@ module.exports = async (req, res) => {
         discord = await discordPost(process.env.DISCORD_TESTIMONIAL_WEBHOOK, testimonialPayload(t, (await loadFeedSettings()).testimonials));
         if (discord.ok) { t.posted = true; t.postedAt = new Date().toISOString(); }
       }
-      await saveTestimonial(t);
+      await saveTestimonial(t); try { await kv(['DEL', 'front-cache']); } catch (e) {}   // the front page picks it up right away
       return json(res, 200, { saved: true, testimonial: t, discord });
     }
     if (body.action === 'feed-settings') {   // who the Discord feeds tag
@@ -383,8 +383,8 @@ module.exports = async (req, res) => {
       const t = (await loadTestimonials())[String(body.id || '')];
       if (!t) return json(res, 404, { error: 'not_found' });
       if (t.status !== 'approved' && body.front) return json(res, 400, { error: 'not_approved' });
-      t.front = !!body.front; t.frontAt = t.front ? new Date().toISOString() : null; t.frontBy = t.front ? who : null;
-      await saveTestimonial(t);
+      t.front = !!body.front; t.frontAt = new Date().toISOString(); t.frontBy = who;
+      await saveTestimonial(t); try { await kv(['DEL', 'front-cache']); } catch (e) {}
       return json(res, 200, { saved: true, testimonial: t });
     }
     if (body.action === 'testimonial-remove') { await deleteTestimonial(String(body.id || '')); return json(res, 200, { saved: true }); }
@@ -464,6 +464,7 @@ module.exports = async (req, res) => {
       }
       await saveCert(userId, c);
       try { await kv(['DEL', 'wins-cache']); } catch (e) {}
+      try { await kv(['DEL', 'front-cache']); } catch (e) {}
       return json(res, 200, { saved: true, cert: c, discord });
     }
     if (body.action === 'journal-review' || body.action === 'journal-void') {

@@ -89,6 +89,9 @@ a{color:var(--blue);text-underline-offset:3px}
 .wm-svg,.tp-svg{display:block;background:linear-gradient(180deg,#FFFFFF 0%,#EFFFFC 48%,#A6DDD6 100%);-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat;max-width:none}
 .wm-svg{--m:url(logo-word.svg);height:1.05em;aspect-ratio:1329/183}
 .tp-svg{--m:url(logo-tp.svg);height:1.1em;aspect-ratio:576/273}
+/* the TPx mark (filled): replaces the plain TP mark wherever it appears */
+:root{--tpx:url(data:image/png;base64,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)}
+.tp-svg{-webkit-mask:none!important;mask:none!important;background:var(--tpx) center/contain no-repeat!important;aspect-ratio:480/189;height:1.2em}
 .lockup{gap:.42em}.lockup .wm-svg{height:.86em}
 .lk-div{display:block;flex:none;width:1px;height:1.05em;background:linear-gradient(180deg,transparent,rgba(227,241,239,.35),transparent)}
 .brand .wm-g{filter:drop-shadow(0 0 8px rgba(120,255,210,.32))}
@@ -1039,13 +1042,14 @@ button.ji-card{cursor:pointer}button.ji-card:hover,button.ji-card:focus-visible{
 .tst-vp{overflow:hidden;-webkit-mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
 .tst-track{display:flex;width:max-content;padding:4px 0}
 .tst-row{display:flex;gap:16px;padding-right:16px}
-.tst:not(.moving) .tst-track{width:auto;padding:4px max(24px,4vw)}.tst:not(.moving) .tst-row{flex-wrap:wrap}
+
 .tst.moving .tst-track{animation:tstMove var(--tst-dur,60s) linear infinite}.tst.moving .tst-vp:hover .tst-track,.tst.moving .tst-vp:focus-within .tst-track{animation-play-state:paused}
 @keyframes tstMove{to{transform:translateX(-50%)}}
 .tst-card{margin:0;width:340px;flex:none;box-sizing:border-box;padding:22px 22px 18px;border:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;gap:12px}
 .tst-card blockquote{margin:0;font-size:15px;line-height:1.55;color:var(--ink);display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
 .tst-st{color:#F5C518;letter-spacing:2px;font-size:14px}.tst-res{align-self:flex-start;font:600 12.5px var(--mono);padding:3px 8px;border:1px solid var(--blue-dim);color:var(--kana-c);background:rgba(20,163,157,.1)}
 .tst-card figcaption{margin-top:auto;display:flex;align-items:center;gap:10px}.tst-card figcaption b{display:block;font-size:14px}.tst-card figcaption small{color:var(--muted);font-size:12px}
+.tst-pay{border-color:rgba(59,227,143,.35);background:linear-gradient(160deg,rgba(59,227,143,.10),var(--panel) 60%)}.tst-kick2{font:600 11.5px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#3BE38F}.tst-amt{font:800 44px/1 var(--sans);color:#3BE38F;text-shadow:0 0 22px rgba(59,227,143,.45)}.tst-firm{font-size:13px;color:var(--muted)}
 .tst-av{width:36px;height:36px;border-radius:50%;overflow:hidden;flex:none;display:grid;place-items:center;background:var(--blue-dim);color:var(--ink);font-weight:700}.tst-av img{width:100%;height:100%;object-fit:cover;display:block}
 @media (prefers-reduced-motion:reduce){.tst.moving .tst-track{animation:none;width:auto}.tst-vp{overflow-x:auto;-webkit-mask:none;mask:none}.tst-row[aria-hidden]{display:none}.tst-cue span{animation:none}}
 @media (max-width:700px){.tst{padding:48px 0 64px}.tst-card{width:280px}.tst-cue{display:none}}
@@ -1107,6 +1111,7 @@ button.ji-card{cursor:pointer}button.ji-card:hover,button.ji-card:focus-visible{
 @media (max-width:900px){.gf{grid-template-columns:minmax(0,1fr)}.gf-side{order:-1}}
 .nw-fi{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;align-items:baseline;padding:8px 0;border-top:1px solid var(--line);color:var(--ink);text-decoration:none}.nw-fi:hover b{color:var(--kana-c)}.nw-fi b{font-size:14px;font-weight:600}.nw-fd{grid-column:2;font-size:12px;color:var(--muted)}
 .nw-fedline{display:block;margin-top:6px;font-size:13px;color:var(--kana-c);text-decoration:none}.nw-fedline:hover{text-decoration:underline}
+.jr-grid.solo{grid-template-columns:minmax(0,1fr)}.jr-side.slim{padding:16px 18px}.jr-pendline{flex-basis:100%;margin:0;font-size:13px;color:#F2C879}
 .ty-main,.ty-side{display:flex;flex-direction:column;gap:14px;min-width:0}
 .ty-card{border:1px solid var(--line);background:var(--panel);padding:20px 22px;display:flex;flex-direction:column;gap:12px}
 .ty-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.ty-h h3{margin:0;font:700 17px var(--sans)}
@@ -1127,7 +1132,7 @@ button.ji-card{cursor:pointer}button.ji-card:hover,button.ji-card:focus-visible{
 .ty-rtext{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14.5px}
 .ty-lock{border:1px solid var(--line);background:linear-gradient(160deg,var(--panel-2),var(--panel));padding:16px;display:flex;flex-direction:column;gap:8px;justify-content:flex-end;min-height:150px}
 .ty-lock.open{border-color:var(--blue)}
-.ty-mark{display:block;width:44px;height:21px;margin-bottom:auto;background:var(--ink);opacity:.6;-webkit-mask:url(logo-tp.svg) left center/contain no-repeat;mask:url(logo-tp.svg) left center/contain no-repeat}
+.ty-mark{display:block;width:54px;height:21px;margin-bottom:auto;background:var(--tpx) left center/contain no-repeat!important;-webkit-mask:none!important;mask:none!important;opacity:.75;-webkit-mask:url(logo-tp.svg) left center/contain no-repeat;mask:url(logo-tp.svg) left center/contain no-repeat}
 .ty-cnum{font:700 26px/1 var(--mono)}.ty-lock:not(.open) .ty-cnum{filter:blur(7px);opacity:.6;user-select:none}
 .ty-acct{display:flex;flex-direction:column;gap:6px;padding-top:12px;border-top:1px solid var(--line)}.ty-card>.adm-note+.ty-acct{border-top:0;padding-top:0}
 .ty-ah{display:flex;align-items:baseline;gap:8px}.ty-ah .ty-amt{margin-left:auto}.ty-k{color:var(--muted);font-size:12.5px}
@@ -1670,7 +1675,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
 
   <!-- FRONT PAGE REVIEWS: real reviews from members, chosen by an admin -->
   <section class="tst" id="tst" aria-labelledby="tst-h" hidden>
-    <div class="tst-head"><span class="tst-kick">From the Discord</span><h2 id="tst-h">What members say</h2></div>
+    <div class="tst-head"><span class="tst-kick">From the Discord</span><h2 id="tst-h">Real members. Real payouts.</h2></div>
     <div class="tst-vp"><div class="tst-track"></div></div>
   </section>
 
@@ -3424,7 +3429,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var paid = inputEl('date', todayYmd()); paid.setAttribute('aria-label','Day of the payout');
     var payBox = el('div','cert-pay'); payBox.appendChild(fld('Payout amount ($)', amt)); payBox.appendChild(fld('Paid on', paid));
     kind.addEventListener('change', function(){ payBox.hidden = kind.value !== 'payout'; });
-    var shr = el('label','tick'), shc = el('input'); shc.type = 'checkbox'; shc.checked = true; shr.appendChild(shc); shr.appendChild(document.createTextNode(' Share it on the Wins tab and in the Discord payouts channel once a mentor certifies it'));
+    var shr = el('label','tick'), shc = el('input'); shc.type = 'checkbox'; shc.checked = true; shr.appendChild(shc); shr.appendChild(document.createTextNode(' Share it on the Wins tab, the Discord payouts channel and the 05project.com front page once a mentor certifies it (amount, name and picture only)'));
     var shi = el('label','tick'), sic = el('input'); sic.type = 'checkbox'; sic.checked = true; shi.appendChild(sic); shi.appendChild(document.createTextNode(' Include my certificate picture in Discord (untick it if it shows account numbers or anything private)'));
     shc.addEventListener('change', function(){ shi.hidden = !shc.checked; if (!shc.checked) sic.checked = false; });
     var shareBox = el('div','cert-share'); shareBox.appendChild(shr); shareBox.appendChild(shi); payBox.appendChild(shareBox);
@@ -4072,11 +4077,12 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       if (v === 'cards'){ drawJournal(host); SHC.per = 'day'; openShareCard('me'); return; }
       if (v !== 'new' && JR.editId){ JR.editId = null; JR.draft = { files:[] }; } JR.from = null; JR.view = v; drawJournal(host); }));
     var va = el('div','jr-acts');
-    [['+ New entry', function(){ JR.kind = 'trade'; JR.editId = null; JR.lockCsv = false; JR.draft = { files:[] }; JR.view = 'new'; }], ['Import CSV', function(){ JR.view = 'import'; }]].forEach(function(a){
+    [['+ New entry', function(){ JR.kind = 'trade'; JR.editId = null; JR.lockCsv = false; JR.draft = { files:[] }; JR.view = 'new'; }, 'new'], ['Import CSV', function(){ JR.view = 'import'; }, 'import']].forEach(function(a){ if (JR.view === a[2]) return;
       var b = el('button','btn-s',a[0]); b.type = 'button'; b.addEventListener('click', function(){ JR.from = JR.view === 'today' ? 'today' : null; a[1](); drawJournal(host); window.scrollTo(0, 0); }); va.appendChild(b); });
     vs.appendChild(va);
     var info = el('p','jr-info'), iv = JR.view === 'trade' ? 'list' : JR.view; info.appendChild(document.createTextNode((JR_INFO[iv] || '') + ' '));
     var how = el('button','lnk','How the journal works'); how.type = 'button'; how.addEventListener('click', function(){ JR.view = 'intro'; drawJournal(host); window.scrollTo(0, 0); }); info.appendChild(how); vs.appendChild(info);
+    if (pend && JR.view !== 'today') vs.appendChild(el('p','jr-pendline', pend + (pend === 1 ? ' entry is' : ' entries are') + ' waiting for a mentor to approve ' + (pend === 1 ? 'it' : 'them') + ' for the leaderboard.'));
     if (JR.view === 'today'){ host.appendChild(vs); host.appendChild(todayView(host)); return; }
     if (JR.view === 'news'){ host.appendChild(vs); host.appendChild(newsView(host)); return; }
     if (JR.view === 'notes'){ host.appendChild(vs); host.appendChild(notesView(host)); return; }
@@ -4087,13 +4093,13 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var sbar = el('div','rv-bar'); sbar.appendChild(periodSelect(JR.per, function(v){ JR.per = v; drawJournal(host); }));
       var shb = el('button','btn-s pri','\ud83d\udcf1 Share my P&L'); shb.type = 'button'; shb.addEventListener('click', function(){ openShareCard('me'); }); sbar.appendChild(shb); main.appendChild(sbar);
       var fromS = periodFrom(JR.per); main.appendChild(statsView(ents.filter(function(e){ return e.date >= fromS && countsInStats(e); })));
-      grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return;
+      grid.className = 'jr-grid solo'; grid.appendChild(main); host.appendChild(grid); return;
     }
-    if (JR.view === 'cal'){ main.appendChild(journalCalendar(ents, host)); grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return; }
+    if (JR.view === 'cal'){ main.appendChild(journalCalendar(ents, host)); grid.className = 'jr-grid solo'; grid.appendChild(main); host.appendChild(grid); return; }
     if (JR.view === 'trade'){ var te = ents.filter(function(x){ return x.id === JR.tradeId; })[0]; if (te){ host.appendChild(vs); host.appendChild(tradeView(te, host)); return; } JR.view = 'list'; }
-    if (JR.view === 'list'){ main.appendChild(entriesList(ents, host)); grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return; }
-    if (JR.view === 'progress'){ main.appendChild(progressPage({ id:uid(), entries:ME.entries || [], goals:COACH.goals || {}, accounts:COACH.accounts || [], tmeta:COACH.meta || {}, subs:{} }, false, function(){ coachLoad().then(function(){ drawJournal(host); }); })); grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return; }
-    if (JR.view === 'import'){ main.appendChild(csvImportView(host)); grid.appendChild(side); grid.appendChild(main); host.appendChild(grid); return; }
+    if (JR.view === 'list'){ main.appendChild(entriesList(ents, host)); grid.className = 'jr-grid solo'; grid.appendChild(main); host.appendChild(grid); return; }
+    if (JR.view === 'progress'){ main.appendChild(progressPage({ id:uid(), entries:ME.entries || [], goals:COACH.goals || {}, accounts:COACH.accounts || [], tmeta:COACH.meta || {}, subs:{} }, false, function(){ coachLoad().then(function(){ drawJournal(host); }); })); grid.className = 'jr-grid solo'; grid.appendChild(main); host.appendChild(grid); return; }
+    if (JR.view === 'import'){ main.appendChild(csvImportView(host)); grid.className = 'jr-grid solo'; grid.appendChild(main); host.appendChild(grid); return; }
     // new entry
     var f = el('section','jr-form view-in'); f.appendChild(el('h3',null, JR.editId ? 'Edit entry' : 'New entry'));
     if (JR.editId){ var eo = (ME.entries || []).filter(function(x){ return x.id === JR.editId; })[0];
@@ -4272,7 +4278,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     });
     f.appendChild(post);
     main.appendChild(f);
-    grid.appendChild(side); grid.appendChild(main); host.appendChild(grid);
+    var rside = el('aside','jr-side slim'); rside.appendChild(el('h4',null,'Your rules')); var rol = el('ol','jr-rl show'); ((ME.journal && ME.journal.rules) || []).forEach(function(r){ rol.appendChild(el('li',null,r.text)); }); rside.appendChild(rol);
+    grid.appendChild(rside); grid.appendChild(main); host.appendChild(grid);
     if (!document.getElementById('jr-pairs')){ var dl = el('datalist'); dl.id = 'jr-pairs'; ['NQ','MNQ','ES','MES','YM','RTY','GC','CL','EURUSD','GBPUSD','XAUUSD'].forEach(function(x){ var o = el('option'); o.value = x; dl.appendChild(o); }); document.body.appendChild(dl);
       var dn = el('datalist'); dn.id = 'jr-news'; ['CPI','PPI','FOMC','NFP','Jobless Claims','GDP','Retail Sales','PCE','ISM','JOLTS','Powell speech'].forEach(function(x){ var o = el('option'); o.value = x; dn.appendChild(o); }); document.body.appendChild(dn);
       var dm = el('datalist'); dm.id = 'jr-models'; [].forEach(function(x){ var o = el('option'); o.value = x; dm.appendChild(o); }); document.body.appendChild(dm); }
@@ -4731,7 +4738,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   }
 
   /* ---------- customize Today: order and show/hide the side cards (kept in this browser) ---------- */
-  var TODAY_SIDE = [['news','News today'],['accounts','Accounts'],['mentor','From your mentor'],['rules','Your rules'],['export','Your data']];
+  var TODAY_SIDE = [['news','News today'],['accounts','Accounts'],['mentor','From your mentor'],['focus','This week\u2019s focus'],['rules','Your rules'],['export','Your data']];
   function todayPrefs(){ var p = null; try { p = JSON.parse(localStorage.getItem('theproject.today') || 'null'); } catch (e) {}
     var order = (p && p.order || []).filter(function(k){ return TODAY_SIDE.some(function(x){ return x[0] === k; }); });
     TODAY_SIDE.forEach(function(x){ if (order.indexOf(x[0]) < 0) order.push(x[0]); });
@@ -5025,7 +5032,11 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       b.addEventListener('click', function(){ var e0 = /^j:/.test(u.item) ? ents.filter(function(y){ return y.id === u.item.slice(2); })[0] : null; openThread(uid(), u.item, itemTitleFor(u.item, ents), { shots: e0 ? e0.files : [], onClose: function(){ coachLoad().then(redraw); } }); });
       sm.appendChild(b); });
     sm.dataset.k = 'mentor'; side.appendChild(sm);
-    var sr = el('section','ty-card'); sr.appendChild(el('span','adm-note','Your rules')); var ol = el('ol','ty-rules'); (ME.journal.rules || []).forEach(function(r){ ol.appendChild(el('li',null,r.text)); }); sr.appendChild(ol); sr.dataset.k = 'rules'; side.appendChild(sr);
+    var sr = el('section','ty-card'); sr.appendChild(el('span','adm-note','Your rules')); var ol = el('ol','ty-rules'); (ME.journal.rules || []).forEach(function(r){ ol.appendChild(el('li',null,r.text)); }); sr.appendChild(ol);
+    if (JR.editing){ sr.replaceChild(rulesEditor(ME.journal.rules, function(rules){ return memberPost({ action:'journal-rules', rules:rules }).then(function(){ JR.editing = false; toast('Rules updated.'); return loadMe(); }).then(function(){ drawJournal(host); }); }, 'Save rules'), ol); }
+    else { var er = el('button','lnk','Edit rules'); er.type = 'button'; er.addEventListener('click', function(){ JR.editing = true; drawJournal(host); }); sr.appendChild(er); }
+    sr.dataset.k = 'rules'; side.appendChild(sr);
+    var fg = goalBox(uid(), COACH.goals || {}, false, function(g){ COACH.goals = g; drawJournal(host); }); fg.dataset.k = 'focus'; side.appendChild(fg);
     var sx = el('section','ty-card'); sx.appendChild(el('span','adm-note','Your data')); sx.appendChild(el('p','ty-empty','Download everything you\'ve journaled: entries, plans, recaps, goals and accounts.'));
     var xb = el('button','btn-s','Export my journal'); xb.type = 'button'; xb.addEventListener('click', exportMine); sx.appendChild(xb); sx.dataset.k = 'export'; side.appendChild(sx);
     todayLayout(side, host);
@@ -5888,7 +5899,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     // header: TP \u00d7 NAME, period on the right
     var hy = 72 + 33;
     if (TPM){ var th = 66, tw = th * TPM.width / TPM.height; c.drawImage(TPM, M, hy - th / 2, tw, th); var hx = M + tw + 30; } else { K.F('italic 900', 60, K.DISP); c.fillStyle = '#fff'; c.textBaseline = 'middle'; c.fillText('TP', M, hy); hx = M + c.measureText('TP').width + 30; }
-    c.textBaseline = 'middle'; K.F('500', 45); c.fillStyle = 'rgba(255,255,255,.6)'; c.fillText('\u00d7', hx, hy); hx += c.measureText('\u00d7').width + 26;
+    c.textBaseline = 'middle'; if (!TPM){ K.F('500', 45); c.fillStyle = 'rgba(255,255,255,.6)'; c.fillText('\u00d7', hx, hy); hx += c.measureText('\u00d7').width + 26; } else hx -= 6;   /* the TPx mark carries its own x */
     K.F('600', 37); var per = q.pill, pw0 = c.measureText(per).width;
     var nm = group ? 'The Project' : String(w.name || 'Trader').toUpperCase(); K.fit(nm, '700', 51, 30, Wd - M - pw0 - 50 - hx); K.glow(nm, hx, hy, nameCol, 14);
     K.F('600', 37); c.fillStyle = 'rgba(255,255,255,.8)'; c.textAlign = 'right'; c.fillText(per, Wd - M, hy); c.textAlign = 'left';
@@ -6080,7 +6091,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     });
     stage.appendChild(el('p','adm-note','Loading results\u2026'));
     var gemReady = GEM ? Promise.resolve() : new Promise(function(res){ var im = new Image(); im.onload = function(){ GEM = im; res(); }; im.onerror = function(){ res(); }; im.src = 'diamond-gem.png'; });
-    var tpReady = TPM ? Promise.resolve() : new Promise(function(res){ var im = new Image(); im.onload = function(){ TPM = im; res(); }; im.onerror = function(){ res(); }; im.src = 'logo-tp.svg'; });
+    var tpReady = TPM ? Promise.resolve() : new Promise(function(res){ var im = new Image(); im.onload = function(){ TPM = im; res(); }; im.onerror = function(){ res(); }; im.src = getComputedStyle(document.documentElement).getPropertyValue('--tpx').trim().replace(/^url\(["']?|["']?\)$/g, '') || 'logo-tp.svg'; });
     var fontsReady = (document.fonts && document.fonts.load) ? Promise.all(['italic 900 100px Archivo','italic 200 100px Archivo','600 40px "Instrument Sans"','400 22px "Instrument Sans"','500 22px "JetBrains Mono"'].map(function(f){ return document.fonts.load(f).catch(function(){}); })) : Promise.resolve();
     function load(){
       stage.querySelectorAll('.adm-note').forEach(function(n){ n.remove(); }); stage.appendChild(el('p','adm-note','Loading results\u2026'));
@@ -6839,22 +6850,30 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok) throw new Error(j.error || ('error ' + r.status)); return j; }); });
   }
 
-  /* ---------- front page: reviews from members, picked by an admin (Admin -> Testimonials -> Show on front page) ---------- */
+  /* ---------- front page: member reviews and certified payouts, always scrolling ---------- */
   (function(){
     var sec = document.getElementById('tst'), cue = document.getElementById('tst-cue'); if (!sec) return;
     fetch('/api/content?testimonials=front', { credentials:'omit' }).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
-      var T = (j && j.testimonials) || []; if (!T.length) return;
-      var track = sec.querySelector('.tst-track'), rowA = el('div','tst-row');
-      function card(t){ var c = el('figure','tst-card'), q = el('blockquote'); q.textContent = '\u201c' + t.text + '\u201d'; c.appendChild(el('span','tst-st', '\u2605\u2605\u2605\u2605\u2605'.slice(0, t.rating)));
-        c.appendChild(q); if (t.result) c.appendChild(el('span','tst-res', t.result));
-        var by = el('figcaption'), av = el('span','tst-av');
-        if (t.avatar){ var im = el('img'); im.src = t.avatar; im.alt = ''; im.loading = 'lazy'; im.referrerPolicy = 'no-referrer'; av.appendChild(im); } else av.textContent = String(t.name || '?').charAt(0).toUpperCase();
-        by.appendChild(av); var nm = el('span'); nm.appendChild(el('b',null, t.name)); nm.appendChild(el('small',null,'Member \u00b7 The Project Discord')); by.appendChild(nm); c.appendChild(by); return c; }
-      T.forEach(function(t){ rowA.appendChild(card(t)); });
-      track.appendChild(rowA);
-      // enough cards to scroll: a second copy makes the loop seamless (hidden from screen readers)
-      if (T.length >= 3){ var rowB = rowA.cloneNode(true); rowB.setAttribute('aria-hidden','true'); track.appendChild(rowB); sec.classList.add('moving');
-        track.style.setProperty('--tst-dur', Math.max(40, T.length * 11) + 's'); }
+      var T = (j && j.testimonials) || [], P = (j && j.payouts) || []; if (!T.length && !P.length) return;
+      var track = sec.querySelector('.tst-track');
+      function who(o, sub){ var by = el('figcaption'), av = el('span','tst-av');
+        if (o.avatar){ var im = el('img'); im.src = o.avatar; im.alt = ''; im.loading = 'lazy'; im.referrerPolicy = 'no-referrer'; av.appendChild(im); } else av.textContent = String(o.name || '?').charAt(0).toUpperCase();
+        by.appendChild(av); var nm = el('span'); nm.appendChild(el('b',null, o.name)); nm.appendChild(el('small',null, sub)); by.appendChild(nm); return by; }
+      function review(t){ var c = el('figure','tst-card'), q = el('blockquote'); q.textContent = '\u201c' + t.text + '\u201d'; c.appendChild(el('span','tst-st', '\u2605\u2605\u2605\u2605\u2605'.slice(0, t.rating)));
+        c.appendChild(q); if (t.result) c.appendChild(el('span','tst-res', t.result)); c.appendChild(who(t, 'Member \u00b7 The Project Discord')); return c; }
+      function payout(p){ var c = el('figure','tst-card tst-pay'); c.appendChild(el('span','tst-kick2','\u2713 Certified payout'));
+        c.appendChild(el('b','tst-amt', '+$' + Math.round(p.amount).toLocaleString('en-US')));
+        var sub = [p.firm, p.paidAt ? new Date(p.paidAt + 'T12:00:00').toLocaleDateString([], { month:'short', day:'numeric', year:'numeric' }) : ''].filter(Boolean).join(' \u00b7 ');
+        if (sub) c.appendChild(el('span','tst-firm', sub)); c.appendChild(who(p, 'Paid out \u00b7 verified by a mentor')); return c; }
+      // reviews and payouts take turns
+      var cards = [], i = 0; while (i < Math.max(T.length, P.length)){ if (T[i]) cards.push(review(T[i])); if (P[i]) cards.push(payout(P[i])); i++; }
+      var row = el('div','tst-row'); cards.forEach(function(c){ row.appendChild(c); });
+      // always moving: repeat the cards until a row is wide enough, then a second copy makes the loop seamless
+      var base = cards.slice(); while (row.children.length < 6 && base.length){ base.forEach(function(c){ var k = c.cloneNode(true); k.setAttribute('aria-hidden','true'); row.appendChild(k); }); }
+      track.appendChild(row); var rowB = row.cloneNode(true); rowB.setAttribute('aria-hidden','true'); track.appendChild(rowB);
+      sec.classList.add('moving'); track.style.setProperty('--tst-dur', Math.max(36, row.children.length * 8) + 's');
+      var h2 = document.getElementById('tst-h'); if (h2) h2.textContent = P.length ? 'Real members. Real payouts.' : 'What members say';
+      var h = sec.querySelector('.tst-kick'); if (h) h.textContent = T.length && P.length ? 'From the Discord \u00b7 reviews and certified payouts' : P.length ? 'From the Discord \u00b7 certified payouts' : 'From the Discord';
       sec.hidden = false; if (cue) cue.hidden = false;
     }).catch(function(){});
   })();
@@ -6980,8 +6999,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         if (t.status !== 'approved'){ var ok = el('button','btn-s pri','Approve'); ok.type = 'button'; ok.addEventListener('click', function(){ act('approved'); }); acts.appendChild(ok); }
         else if (!t.posted && H.testimonials){ var rp = el('button','btn-s','Post to Discord'); rp.type = 'button'; rp.addEventListener('click', function(){ act('approved'); }); acts.appendChild(rp); }
         if (t.status !== 'denied'){ var no = el('button','btn-s warn', t.status === 'approved' ? 'Take down' : 'Deny'); no.type = 'button'; no.addEventListener('click', function(){ act('denied'); }); acts.appendChild(no); }
-        if (t.status === 'approved'){ var fp = el('button','btn-s' + (t.front ? ' pri' : ''), t.front ? '\u2713 On the front page' : 'Show on front page'); fp.type = 'button'; fp.title = t.front ? 'Click to take it off the front page' : 'Shows this review (name, picture, stars, words) to anyone visiting 05project.com';
-          fp.addEventListener('click', function(){ adminPost({ action:'testimonial-front', id:t.id, front:!t.front }).then(function(){ toast(t.front ? 'Taken off the front page.' : 'Now showing on the front page.'); admRender(); }).catch(function(e){ toast('Couldn\'t save: ' + e.message); }); });
+        if (t.status === 'approved'){ var onFront = t.front !== false, fp = el('button','btn-s' + (onFront ? ' pri' : ''), onFront ? '\u2713 On the front page' : 'Show on front page'); fp.type = 'button'; fp.title = onFront ? 'Click to hide it from the front page' : 'Shows this review (name, picture, stars, words) to anyone visiting 05project.com';
+          fp.addEventListener('click', function(){ adminPost({ action:'testimonial-front', id:t.id, front:!onFront }).then(function(){ toast(onFront ? 'Hidden from the front page.' : 'Now showing on the front page.'); admRender(); }).catch(function(e){ toast('Couldn\'t save: ' + e.message); }); });
           acts.insertBefore(fp, acts.firstChild); }
         c.appendChild(note);
         c.appendChild(acts); host.appendChild(c);
