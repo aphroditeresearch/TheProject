@@ -228,17 +228,17 @@ a{color:var(--blue);text-underline-offset:3px}
 .sig-in{display:flex;flex-direction:column;align-items:center;gap:30px;padding:24px 16px;transition:transform .7s cubic-bezier(.2,.7,.2,1),opacity .55s ease}
 /* the lockup: the TP mark draws itself, then slides left as the full name comes out of it (same proportions as the top bar) */
 .sig-lock{--H:min(64px,calc(86vw / 8.6));display:flex;align-items:center;gap:calc(var(--H) * .38);height:var(--H);transform:translateX(calc(var(--H) * 3.2))}
-.sig-tp{display:block;height:100%;aspect-ratio:480/183;flex:none;background:var(--tpx) center/contain no-repeat;clip-path:inset(0 100% 0 0)}   /* the same TPx mark as the top bar */
+.sig-tp{display:block;height:100%;aspect-ratio:480/183;flex:none;background:var(--tpx) center/contain no-repeat;-webkit-mask:linear-gradient(90deg,#000 40%,transparent 60%) 100% 0/260% 100% no-repeat;mask:linear-gradient(90deg,#000 40%,transparent 60%) 100% 0/260% 100% no-repeat}   /* the same TPx mark as the top bar; revealed by a soft wipe (no box) */
 .sig-tpp{fill:transparent;stroke:#E3F1EF;stroke-width:3.2;stroke-dasharray:1;stroke-dashoffset:1;stroke-linejoin:round}
 .sig-div{display:block;width:1px;height:95%;flex:none;background:linear-gradient(180deg,transparent,rgba(227,241,239,.5),transparent);transform:scaleY(0)}
 .sig-wm{height:78%;width:auto;flex:none;clip-path:inset(0 100% 0 0);filter:drop-shadow(0 0 10px rgba(140,255,215,.3))}
 .sig.draw .sig-tp{animation:sigTpx .9s cubic-bezier(.5,0,.2,1) .15s forwards}
-@keyframes sigTpx{0%{clip-path:inset(0 100% 0 0);filter:brightness(2.2) drop-shadow(0 0 14px rgba(140,255,230,.8))}70%{filter:brightness(1.4) drop-shadow(0 0 12px rgba(140,255,230,.5))}100%{clip-path:inset(0 0 0 0);filter:none}}
+@keyframes sigTpx{0%{-webkit-mask-position:100% 0;mask-position:100% 0;filter:brightness(1.8)}70%{filter:brightness(1.25)}100%{-webkit-mask-position:0 0;mask-position:0 0;filter:none}}
 .sig.draw .sig-lock{animation:sigSlide .7s cubic-bezier(.6,0,.2,1) 1.25s forwards}
 .sig.draw .sig-div{animation:sigGrow .4s ease 1.2s forwards}
 .sig.draw .sig-wm{animation:sigWipe .7s cubic-bezier(.6,0,.2,1) 1.3s forwards}
 .sig-ghost{position:fixed;z-index:75;margin:0;pointer-events:none;transform-origin:0 0;will-change:transform}
-.sig-ghost *{animation:none!important}.sig-ghost .sig-wm{clip-path:none}.sig-ghost .sig-div{transform:none}.sig-ghost .sig-tp{clip-path:none}
+.sig-ghost *{animation:none!important}.sig-ghost .sig-wm{clip-path:none}.sig-ghost .sig-div{transform:none}.sig-ghost .sig-tp{-webkit-mask:none;mask:none}
 .sig-line{width:min(560px,76vw);height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,#14A39D 18%,#14A39D 82%,transparent);box-shadow:0 0 18px rgba(20,163,157,.7);transform:scaleX(0);transition:transform .7s cubic-bezier(.2,.8,.2,1) 1.75s;margin-top:-6px}
 .sig.draw .sig-line{transform:scaleX(1)}
 .sig.wait .sig-line{animation:sigPulse 1.4s ease-in-out infinite}
@@ -266,7 +266,7 @@ a{color:var(--blue);text-underline-offset:3px}
 @keyframes sigSpin{to{transform:rotate(360deg)}}
 @keyframes sigPulse{50%{opacity:.45}}
 @media (max-width:560px){.sig-who{flex-direction:column;gap:12px;min-height:0}.sig-txt{text-align:center;align-items:center;gap:6px}.sig-hi{font-size:21px}.sig-hi b{text-shadow:0 0 14px color-mix(in srgb,var(--rc) 45%,transparent)}.sig-av{width:56px;height:56px}.sig-ring{inset:-3px;box-shadow:0 0 20px color-mix(in srgb,var(--rc) 45%,transparent)}.sig-av img,.sig-ini{border-width:3px}.sig-ini{font-size:22px}.sig-ok{width:20px;height:20px;font-size:11px;border-width:2px;right:-4px;bottom:-3px}.sig-role{font-size:10px;letter-spacing:.22em}}
-@media (prefers-reduced-motion:reduce){.sig *{transition:none!important;animation:none!important}.sig-tp{clip-path:none}.sig-lock{transform:none}.sig-div{transform:none}.sig-wm{clip-path:none}.sig-line{transform:none}}
+@media (prefers-reduced-motion:reduce){.sig *{transition:none!important;animation:none!important}.sig-tp{-webkit-mask:none;mask:none}.sig-lock{transform:none}.sig-div{transform:none}.sig-wm{clip-path:none}.sig-line{transform:none}}
 .scrim{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:rgba(2,3,7,.8);backdrop-filter:blur(10px)}
 .modal{position:relative;width:100%;max-width:440px;box-sizing:border-box;background:var(--panel);border:2px solid var(--ink);box-shadow:14px 14px 0 var(--blue);padding:44px 30px 30px;display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center;overflow:hidden;max-width:380px}
 .ring{position:relative;width:200px;height:200px;margin-block:8px}
