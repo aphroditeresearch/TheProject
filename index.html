@@ -982,6 +982,8 @@ button.tri-chip{cursor:pointer}button.tri-chip:hover{border-color:var(--blue)}
 /* trades: gallery and trade view */
 .jl-tg{appearance:none;cursor:pointer;min-height:40px;padding:0 12px;border:1px solid var(--line);background:transparent;color:var(--muted);font:600 13px var(--sans)}.jl-tg.on{border-color:var(--blue);color:var(--kana-c);background:rgba(20,163,157,.1)}
 .jl-gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.tv-cp{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.tv-cp>b{display:block;margin-bottom:6px;font-size:13px}
 .tg-card{appearance:none;cursor:pointer;text-align:left;padding:0;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;display:flex;flex-direction:column;overflow:hidden}
 .tg-card:hover,.tg-card:focus-visible{border-color:var(--blue)}
 .tg-img{aspect-ratio:16/9;background:#0B1A1C;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;overflow:hidden;border-bottom:1px solid var(--line)}.tg-img img{width:100%;height:100%;object-fit:cover;display:block}
@@ -4377,6 +4379,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var e = { kind:'trade', date: tdate, calDate: en.date, asia: asia, time: en.time, exitTime: ex ? ex.time : '', pair: String(g('symbol') || '').trim().slice(0, 40), account: opt.account,
         outcome: pnl > 0 ? 'tp' : pnl < 0 ? 'sl' : 'be', pnl: pnl, followed: opt.followed, session: '', news: '', overview: '', files: [], tz: (function(){ try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e2) { return ''; } })() };
       if (q > 0) e.contracts = q; if (dir) e.dir = dir; if (!isNaN(pE)) e.pEntry = pE; if (!isNaN(pX)) e.pExit = pX;
+      var an = String(g('account') || '').trim().slice(0, 40); if (an) e.acctName = an;
       out.push(e);
     });
     return out;
@@ -4411,20 +4414,30 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       body.appendChild(opts);
       var trades = csvRows(CSVI.rows, CSVI.map, { account: CSVI.account, followed: CSVI.followed, net: CSVI.net });
       var skipped = CSVI.rows.length - trades.length;
-      body.appendChild(el('h4',null, trades.length + (trades.length === 1 ? ' trade' : ' trades') + ' found' + (skipped ? ' (' + skipped + ' rows skipped: no date or P&L)' : '')));
+      var cpSig = function(e){ return [e.date, e.time, e.exitTime, String(e.pair).toUpperCase(), e.dir || ''].join('|'); }, cpN = {}, cpT = {};
+      trades.forEach(function(e){ if (!e.acctName) return; var k = cpSig(e); cpN[k] = (cpN[k] || 0) + 1; cpT[k] = (cpT[k] || 0) + e.pnl; });
+      var nCopies = Object.keys(cpN).reduce(function(a, k){ return a + cpN[k] - 1; }, 0), nTrades = trades.length - nCopies;
+      body.appendChild(el('h4',null, nTrades + (nTrades === 1 ? ' trade' : ' trades') + ' found'
+        + (nCopies ? ' \u00b7 ' + nCopies + ' copy-traded ' + (nCopies === 1 ? 'copy' : 'copies') + ' on other accounts' : '')
+        + (skipped ? ' (' + skipped + ' rows skipped: no date or P&L)' : '')));
+      if (nCopies) body.appendChild(el('p','adm-note','Copy trading: the same trade on several accounts is saved once, with each account\u2019s P&L kept under it. Stats, points and the leaderboard count it once (one account\u2019s P&L); the trade also shows your total across accounts.'));
+      else if (!(CSVI.map.account >= 0)) body.appendChild(el('p','adm-note','Copy trading on several accounts? Pick the Account column above so every account\u2019s copy is kept. Without it, identical copies are skipped as duplicates.'));
       if (!trades.length){ body.appendChild(el('p','bk-warn','No trades could be read. Pick the entry time and P&L columns above.')); return; }
       var tw = el('div','tbl-wrap'), t = el('table','st-t'), hr = el('tr'); ['Date','Time','Instrument','Side','Qty','Entry','Exit','P&L','Result'].forEach(function(h){ hr.appendChild(el('th',null,h)); }); t.appendChild(hr);
-      trades.slice(0, 12).forEach(function(e){ var r = el('tr'); [e.date + (e.asia ? ' (Asia)' : ''), e.time + (e.exitTime ? '\u2013' + e.exitTime : ''), e.pair, e.dir ? cap(e.dir) : '', e.contracts || '', isNaN(e.pEntry) || e.pEntry === undefined ? '' : e.pEntry, e.pExit === undefined ? '' : e.pExit].forEach(function(v){ r.appendChild(el('td',null,String(v))); });
-        r.appendChild(el('td', e.pnl > 0 ? 'win' : e.pnl < 0 ? 'loss' : '', money(e.pnl))); r.appendChild(el('td',null, OUT[e.outcome] || '')); t.appendChild(r); });
+      var cpShown = {};
+      trades.filter(function(e){ if (!e.acctName) return true; var k = cpSig(e); if (cpShown[k]) return false; cpShown[k] = 1; return true; }).slice(0, 12).forEach(function(e){
+        var r = el('tr'), ck = e.acctName ? cpSig(e) : '', cn = ck ? cpN[ck] : 1; [e.date + (e.asia ? ' (Asia)' : ''), e.time + (e.exitTime ? '\u2013' + e.exitTime : ''), e.pair, e.dir ? cap(e.dir) : '', e.contracts || '', isNaN(e.pEntry) || e.pEntry === undefined ? '' : e.pEntry, e.pExit === undefined ? '' : e.pExit].forEach(function(v){ r.appendChild(el('td',null,String(v))); });
+        r.appendChild(el('td', e.pnl > 0 ? 'win' : e.pnl < 0 ? 'loss' : '', money(e.pnl) + (cn > 1 ? ' \u00d7' + cn + ' accts = ' + money(Math.round(cpT[ck] * 100) / 100) : '')));
+        r.appendChild(el('td',null, OUT[e.outcome] || '')); t.appendChild(r); });
       tw.appendChild(t); if (trades.some(function(e){ return e.asia; })) body.appendChild(el('p','adm-note','Asia session trades (6 pm New York or later) are saved under the next trading day, marked (Asia).'));
       body.appendChild(tw); if (trades.length > 12) body.appendChild(el('p','adm-note','\u2026and ' + (trades.length - 12) + ' more.'));
-      var go = el('button','btn-s pri','Import ' + trades.length + (trades.length === 1 ? ' trade' : ' trades')); go.type = 'button';
+      var go = el('button','btn-s pri','Import ' + nTrades + (nTrades === 1 ? ' trade' : ' trades') + (nCopies ? ' + ' + nCopies + (nCopies === 1 ? ' copy' : ' copies') : '')); go.type = 'button';
       go.addEventListener('click', function(){
         if (!CSVI.account){ toast('Pick the account type for these trades.'); acc.focus(); return; }
-        if (trades.length > 200){ toast('Up to 200 trades at a time. Export a shorter date range.'); return; }
+        if (trades.length > 200){ toast('Up to 200 rows at a time. Export a shorter date range.'); return; }
         go.disabled = true; go.textContent = 'Importing\u2026';
         memberPost({ action:'journal-import', entries: trades }).then(function(r){ r = r || {};
-          toast('Imported ' + (r.added || 0) + (r.added === 1 ? ' trade' : ' trades') + (r.moved ? ' \u00b7 ' + r.moved + ' Asia ' + (r.moved === 1 ? 'trade' : 'trades') + ' moved to the next trading day' : '') + (r.verified ? ' \u00b7 ' + r.verified + ' of your hand-logged ' + (r.verified === 1 ? 'trade' : 'trades') + ' now \u2713 Verified' : '') + (r.dupes ? ' \u00b7 ' + r.dupes + ' already in your journal' : '') + (r.bad ? ' \u00b7 ' + r.bad + ' couldn\'t be read' : '') + '. Add notes and screenshots to them anytime.');
+          toast('Imported ' + (r.added || 0) + (r.added === 1 ? ' trade' : ' trades') + (r.copied ? ' \u00b7 ' + r.copied + ' copy-trade ' + (r.copied === 1 ? 'account' : 'accounts') + ' added to their trades' : '') + (r.moved ? ' \u00b7 ' + r.moved + ' Asia ' + (r.moved === 1 ? 'trade' : 'trades') + ' moved to the next trading day' : '') + (r.verified ? ' \u00b7 ' + r.verified + ' of your hand-logged ' + (r.verified === 1 ? 'trade' : 'trades') + ' now \u2713 Verified' : '') + (r.dupes ? ' \u00b7 ' + r.dupes + ' already in your journal' : '') + (r.bad ? ' \u00b7 ' + r.bad + ' couldn\'t be read' : '') + '. Add notes and screenshots to them anytime.');
           CSVI.rows = null; return loadMe(); }).then(function(){ JR.view = JR.from === 'today' ? 'today' : 'list'; JR.from = null; drawJournal(host); })
           .catch(function(e){ go.disabled = false; go.textContent = 'Import'; toast('Import failed: ' + ((e && e.message) || e)); });
       });
@@ -4881,6 +4894,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   /* ---------- trades: gallery tile and full trade view ---------- */
   function firstShot(e){ return (e.files || []).filter(function(f){ return f && /^image\//.test(f.type || '') && f.url; })[0] || null; }
   function verPill(e){ return el('span','ty-pill' + (e.src === 'csv' ? ' ok' : ''), e.src === 'csv' ? '\u2713 Verified' : 'By hand'); }
+  // copy trading: one trade copied onto several accounts (from a CSV with an Account column)
+  function copyN(e){ return e && Array.isArray(e.copies) ? e.copies.length : 0; }
   function tradeTile(e, onOpen){
     var b = el('button','tg-card'), sh = firstShot(e), img = el('div','tg-img'); b.type = 'button';
     if (sh){ var im = el('img'); im.src = viewUrl(sh); im.alt = ''; im.loading = 'lazy'; img.appendChild(im); } else img.appendChild(el('span',null, e.kind === 'trade' ? 'No screenshot yet' : 'No-trade day'));
@@ -4889,7 +4904,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     t.appendChild(el('b',null, e.kind === 'trade' ? String(e.pair || 'Trade').toUpperCase() + (e.dir ? ' \u00b7 ' + cap(e.dir) : '') : 'No-trade day'));
     if (e.kind === 'trade') t.appendChild(el('b','mono ' + (p > 0 ? 'win' : p < 0 ? 'loss' : ''), e.noPnl ? '\u2014' : (p > 0 ? '+' : '') + money(p)));
     bd.appendChild(t);
-    var pl = el('div','tg-p'); if (e.kind === 'trade') pl.appendChild(verPill(e)); (e.tags || []).slice(0, 2).forEach(function(x){ pl.appendChild(el('span','ty-pill','#' + x)); }); bd.appendChild(pl);
+    var pl = el('div','tg-p'); if (e.kind === 'trade') pl.appendChild(verPill(e));
+    if (copyN(e) > 1) pl.appendChild(el('span','ty-pill','\u00d7' + copyN(e) + ' accts \u00b7 ' + money(e.copyTotal))); (e.tags || []).slice(0, 2).forEach(function(x){ pl.appendChild(el('span','ty-pill','#' + x)); }); bd.appendChild(pl);
     var f = el('div','tg-f'); f.appendChild(el('span',null, shortDay(e.date) + (e.time ? ' \u00b7 ' + e.time : '')));
     f.appendChild(e.kind === 'trade' && !hasBreakdown(e) ? el('span','need','Breakdown owed') : el('span',null, entryStatus(e) === 'approved' ? 'Approved' : entryStatus(e) === 'denied' ? 'Not counted' : 'Waiting for review'));
     bd.appendChild(f); b.appendChild(bd);
@@ -4904,7 +4920,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var th = el('button','btn-s','Ask your mentor'); th.type = 'button'; th.addEventListener('click', function(){ openThread(uid(), 'j:' + e.id, itemTitleFor('j:' + e.id, ME.entries || []), { shots: e.files || [], onClose: function(){ coachLoad().then(function(){ drawJournal(host); }); } }); });
     var shb = el('button','btn-s','\ud83d\udcac Share to group'); shb.type = 'button'; shb.addEventListener('click', function(){ gfShare({ kind: p > 0 ? 'win' : 'trade', entryId:e.id }, shb); });
     acts.appendChild(shb); acts.appendChild(th); acts.appendChild(ed); hd.appendChild(acts); w.appendChild(hd);
-    w.appendChild(el('p','adm-note', shortDay(e.date) + (e.time ? ' \u00b7 ' + e.time : '') + (e.account ? ' \u00b7 ' + e.account : '') + (countsInStats(e) ? '' : ' \u00b7 not counted in stats')));
+    w.appendChild(el('p','adm-note', shortDay(e.date) + (e.time ? ' \u00b7 ' + e.time : '') + (e.account ? ' \u00b7 ' + e.account : '') + (e.acctName && copyN(e) < 2 ? ' \u00b7 ' + e.acctName : '')
+      + (countsInStats(e) ? '' : ' \u00b7 not counted in stats')));
     var g = el('div','tv-g'), left = el('div','tv-l'), right = el('div','tv-r');
     // screenshots: the trader's own chart
     var sc = el('section','ty-card'), shots = (e.files || []).filter(function(f){ return f && f.url; });
@@ -4920,7 +4937,13 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     [['Symbol', e.pair], ['Side', cap(e.dir || '')], ['Contracts', e.contracts], ['Entry', isNum(e.pEntry) ? commaNum(String(e.pEntry)) : ''], ['Exit', isNum(e.pExit) ? commaNum(String(e.pExit)) : ''],
      ['Entry time', e.time], ['Exit time', e.exitTime], ['Held', isNum(hm) ? (hm < 60 ? hm + 'm' : Math.floor(hm / 60) + 'h ' + (hm % 60) + 'm') : ''], ['R', isNum(rr) ? fmtRm(rr) : ''], ['Outcome', OUT[e.outcome] || ''], ['Net P&L', e.noPnl ? '' : money(p)]]
       .forEach(function(x){ if (x[1] === undefined || x[1] === null || x[1] === '') return; dl.appendChild(el('dt',null,x[0])); dl.appendChild(el('dd','mono', String(x[1]))); });
-    nm.appendChild(dl); left.appendChild(nm);
+    nm.appendChild(dl);
+    if (copyN(e) > 1){ var cpb = el('div','tv-cp'); cpb.appendChild(el('b',null,'Copy traded on ' + copyN(e) + ' accounts \u00b7 total ' + money(e.copyTotal)));
+      var cdl = el('dl','tv-n'); e.copies.forEach(function(c){ cdl.appendChild(el('dt',null, c.a + (c.q ? ' (' + c.q + ')' : '')));
+        cdl.appendChild(el('dd','mono ' + (c.pnl > 0 ? 'win' : c.pnl < 0 ? 'loss' : ''), money(c.pnl))); });
+      cpb.appendChild(cdl); cpb.appendChild(el('p','ty-sub','Stats, points and the leaderboard count this trade once, at ' + money(p) + '.'));
+      nm.appendChild(cpb); }
+    left.appendChild(nm);
     // breakdown, review
     var bd = el('section','ty-card'); bd.appendChild(el('span','adm-note','Breakdown'));
     bd.appendChild(hasBreakdown(e) ? el('p','tv-txt', e.overview) : el('p','ty-empty need','No breakdown yet. What did you see, why did you take it, and what\u2019s the lesson?'));

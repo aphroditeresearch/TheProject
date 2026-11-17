@@ -365,7 +365,7 @@ module.exports = async (req, res) => {
       // editing keeps the review, unless something that decides points changed: then it goes back to the mentor
       const was = Object.assign({}, old, { date: tradeDay(old.sunday || old.date) });   // as it's shown now (entries the old evening rule moved are back on their day)
       const keyChanged = ['kind', 'date', 'outcome', 'account', 'followed'].some((k) => String(was[k] === undefined ? '' : was[k]) !== String(entry[k] === undefined ? '' : entry[k]));
-      ['createdAt', 'status', 'void', 'awarded', 'reviewedAt', 'reviewedBy', 'reviewNote', 'src', 'importKey'].forEach((k) => { if (old[k] !== undefined) entry[k] = old[k]; });
+      ['createdAt', 'status', 'void', 'awarded', 'reviewedAt', 'reviewedBy', 'reviewNote', 'src', 'importKey', 'verifiedAt', 'movedFrom', 'acctName', 'copies', 'copyTotal'].forEach((k) => { if (old[k] !== undefined) entry[k] = old[k]; });
       if (keyChanged && entryStatus(old) !== 'pending') { entry.status = 'pending'; entry.void = false; delete entry.awarded; delete entry.reviewedAt; delete entry.reviewedBy; delete entry.reviewNote; entry.reopened = true; }
       entry.editedAt = new Date().toISOString();
     }
@@ -379,13 +379,30 @@ module.exports = async (req, res) => {
     if (!j) return json(res, 409, { error: 'no_journal' });
     const rows = (Array.isArray(body.entries) ? body.entries : []).slice(0, 200);
     const entries = await loadEntries(uid), seen = new Set(Object.values(entries).map((x) => x.importKey).filter(Boolean));
-    let added = 0, dupes = 0, bad = 0, verified = 0, moved = 0, room = MAX_ENTRIES - Object.keys(entries).length; const fields = [], upgraded = new Set();
+    let added = 0, dupes = 0, bad = 0, verified = 0, moved = 0, copied = 0, room = MAX_ENTRIES - Object.keys(entries).length; const writes = new Map(), upgraded = new Set();
     if (room <= 0) return json(res, 409, { error: 'journal_full' });
     for (const r of rows) {
       const built = buildEntry(Object.assign({}, r, { kind: 'trade' }), uid, null);
       if (built.error) { bad++; continue; }
       const e = built.entry; e.src = 'csv'; delete e.calDate; delete e.asia;
       e.importKey = [e.date, e.time || '', e.exitTime || '', (e.pair || '').toUpperCase(), e.pnl, e.contracts || ''].join('|');
+      // copy trading: the same trade on another account (same day, times, instrument and side) is added to that trade as a copy,
+      // not a new entry. Stats and points count the trade once (its first account's P&L); copyTotal is the money across all accounts.
+      const an = str(r.acctName, 40); if (an) e.acctName = an;
+      if (an) {
+        const sig = (x) => [x.date, x.time || '', x.exitTime || '', String(x.pair || '').toUpperCase(), x.dir || ''].join('|');
+        const mate = Object.values(entries).find((x) => x.kind === 'trade' && x.src === 'csv' && sig(x) === sig(e));
+        if (mate) {
+          const up = Object.assign({}, mate);
+          if (!up.acctName) up.acctName = an;   // imported before accounts were read: that copy was this account
+          const list = Array.isArray(up.copies) && up.copies.length ? up.copies.slice() : [{ a: up.acctName, pnl: +up.pnl || 0, q: up.contracts || 0 }];
+          if (list.some((c) => c.a === an)) { if (up.acctName !== mate.acctName) { entries[up.id] = up; writes.set(up.id, up); } dupes++; continue; }
+          if (list.length >= 30) { bad++; continue; }
+          list.push({ a: an, pnl: +e.pnl || 0, q: e.contracts || 0 });
+          up.copies = list; up.copyTotal = Math.round(list.reduce((t, c) => t + (+c.pnl || 0), 0) * 100) / 100;
+          entries[up.id] = up; writes.set(up.id, up); seen.add(e.importKey); copied++; continue;
+        }
+      }
       if (seen.has(e.importKey)) { dupes++; continue; }
       // an Asia-session trade imported before this rule sits on its calendar day: move that entry to the trading day it belongs to
       // (everything else about it, notes and review included, stays exactly as it is) instead of adding a second copy
@@ -395,7 +412,8 @@ module.exports = async (req, res) => {
         const prev = Object.values(entries).find((x) => x.importKey === legacy && !upgraded.has(x.id));
         if (prev) {
           const up = Object.assign({}, prev, { date: e.date, importKey: e.importKey, movedFrom: cal }); delete up.sunday;
-          upgraded.add(prev.id); seen.add(e.importKey); fields.push(prev.id, JSON.stringify(up)); moved++; continue;
+          if (an && !up.acctName) up.acctName = an;
+          upgraded.add(prev.id); seen.add(e.importKey); entries[up.id] = up; writes.set(up.id, up); moved++; continue;
         }
       }
       // already logged by hand: verify that entry instead of adding a second copy. Notes, screenshots, tags and review are kept;
@@ -404,14 +422,16 @@ module.exports = async (req, res) => {
       if (hand) {
         const up = Object.assign({}, hand, { src: 'csv', importKey: e.importKey, verifiedAt: new Date().toISOString() });
         ['dir', 'time', 'exitTime', 'contracts', 'pEntry', 'pExit'].forEach((k) => { if ((up[k] === undefined || up[k] === '') && e[k] !== undefined) up[k] = e[k]; });
-        upgraded.add(hand.id); seen.add(e.importKey); fields.push(hand.id, JSON.stringify(up)); verified++; continue;
+        if (an) up.acctName = an;
+        upgraded.add(hand.id); seen.add(e.importKey); entries[up.id] = up; writes.set(up.id, up); verified++; continue;
       }
       if (added >= room) { bad++; continue; }
-      seen.add(e.importKey); fields.push(e.id, JSON.stringify(e)); added++;
+      seen.add(e.importKey); entries[e.id] = e; writes.set(e.id, e); added++;
     }
+    const fields = []; writes.forEach((v, k) => fields.push(k, JSON.stringify(v)));
     if (fields.length) await kv(['HSET', 'jentries:' + uid].concat(fields));   // one write for the whole file
-    if (added || verified || moved) await logActivity(s.user, { type: 'journal', key: 'import', label: 'Imported ' + added + (added === 1 ? ' trade' : ' trades') + ' from a CSV' + (verified ? ' · verified ' + verified + ' logged by hand' : '') });
-    return json(res, 200, { saved: true, added, dupes, bad, verified, moved });
+    if (added || verified || moved || copied) await logActivity(s.user, { type: 'journal', key: 'import', label: 'Imported ' + added + (added === 1 ? ' trade' : ' trades') + ' from a CSV' + (verified ? ' · verified ' + verified + ' logged by hand' : '') + (copied ? ' · ' + copied + ' copy-trade ' + (copied === 1 ? 'account' : 'accounts') : '') });
+    return json(res, 200, { saved: true, added, dupes, bad, verified, moved, copied });
   }
   // a note for one day: the plan before the session and the recap after (TradeZella-style daily journal)
   if (action === 'feed-post') {
