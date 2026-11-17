@@ -4331,7 +4331,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     ['exitPrice','Exit price',[/^(exit ?price|close ?price|avg ?exit|sell ?price|price ?out)$/]],
     ['pnl','P&L ($)',[/^(pnl|p&l|p\/l|net ?p&l|net ?pnl|profit|realized ?pnl|realized ?p&l|gross ?p&l|net ?profit|profit ?\/ ?loss|pl)$/]],
     ['fees','Fees / commission',[/^(fees|commission|commissions|comm|fee)$/]],
-    ['account','Account',[/^(account|account ?name|acct)$/]]
+    ['account','Account',[/^(account|account ?name|acct)$/]],
+    ['tradeId','Trade ID',[/^(id|trade ?id)$/]]
   ];
   function csvGuess(header){
     var m = {}, norm = header.map(function(h){ return String(h).trim().toLowerCase().replace(/[_\-]+/g, ' ').replace(/\s+/g, ' '); });
@@ -4380,6 +4381,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         outcome: pnl > 0 ? 'tp' : pnl < 0 ? 'sl' : 'be', pnl: pnl, followed: opt.followed, session: '', news: '', overview: '', files: [], tz: (function(){ try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e2) { return ''; } })() };
       if (q > 0) e.contracts = q; if (dir) e.dir = dir; if (!isNaN(pE)) e.pEntry = pE; if (!isNaN(pX)) e.pExit = pX;
       var an = String(g('account') || '').trim().slice(0, 40); if (an) e.acctName = an;
+      var xid = String(g('tradeId') || '').trim().slice(0, 40); if (xid) e.extId = xid;
       out.push(e);
     });
     return out;
@@ -4409,7 +4411,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var acc = el('select'); ['','Funded','Evaluation','Personal / live','Paper','Demo'].forEach(function(a){ var o = el('option',null, a || 'Account type for these trades\u2026'); o.value = a; acc.appendChild(o); });
       acc.value = CSVI.account; acc.addEventListener('change', function(){ CSVI.account = acc.value; draw(); }); opts.appendChild(fld('Account type', acc));
       if (!(CSVI.map.account >= 0)){ var anI = el('input'); anI.type = 'text'; anI.maxLength = 40; anI.placeholder = 'e.g. Topstep 50K #2'; anI.value = CSVI.acctName;
-        anI.addEventListener('change', function(){ CSVI.acctName = anI.value.trim(); draw(); }); opts.appendChild(fld('Account name (copy trading: one file per account)', anI)); }
+        anI.addEventListener('input', function(){ CSVI.acctName = anI.value.trim(); });
+        anI.addEventListener('change', function(){ CSVI.acctName = anI.value.trim(); draw(); }); opts.appendChild(fld('Account name (optional)', anI)); }
       opts.appendChild(fld('Followed your rules on these?', seg([[true,'Yes'],[false,'No']], CSVI.followed, function(v){ CSVI.followed = v; draw(); })));
       if (CSVI.map.fees !== undefined && CSVI.map.fees >= 0){ var nl = el('label','tick'), nc = el('input'); nc.type = 'checkbox'; nc.checked = CSVI.net; nl.appendChild(nc); nl.appendChild(document.createTextNode(' Take fees off the P&L'));
         nc.addEventListener('change', function(){ CSVI.net = nc.checked; draw(); }); opts.appendChild(nl); }
@@ -4423,6 +4426,16 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       body.appendChild(el('h4',null, nTrades + (nTrades === 1 ? ' trade' : ' trades') + ' found'
         + (nCopies ? ' \u00b7 ' + nCopies + ' copy-traded ' + (nCopies === 1 ? 'copy' : 'copies') + ' on other accounts' : '')
         + (skipped ? ' (' + skipped + ' rows skipped: no date or P&L)' : '')));
+      var haveSig = {}; (ME.entries || []).forEach(function(x){ if (x.kind === 'trade' && x.src === 'csv') haveSig[cpSig(x)] = x; });
+      var nHave = 0, nNewAcct = 0;
+      trades.forEach(function(e){ var x = haveSig[cpSig(e)]; if (!x) return;
+        var names = (x.copies || []).map(function(c){ return c.a; }).concat(x.acctName ? [x.acctName] : []);
+        var ids = (x.copies || []).map(function(c){ return c.id; }).concat([x.extId]).filter(Boolean);
+        var dup = e.extId && ids.length ? ids.indexOf(e.extId) >= 0 : (!e.acctName ? (!e.extId || !ids.length) : names.indexOf(e.acctName) >= 0);
+        if (dup && !(e.extId && ids.length)) nHave++; else if (!dup) nNewAcct++; });
+      if (nHave && !(CSVI.map.account >= 0) && !CSVI.acctName)
+        body.appendChild(el('p','bk-warn', nHave + (nHave === 1 ? ' of these trades is' : ' of these trades are') + ' already in your journal. If this file is from another account you copy trade to, type that account\u2019s name in Account name above: they\u2019ll be added to your trades as copies.'));
+      else if (nNewAcct) body.appendChild(el('p','bk-ok','\u2713 ' + nNewAcct + (nNewAcct === 1 ? ' trade matches one' : ' trades match ones') + ' already in your journal and will be added as ' + (CSVI.acctName || 'another account') + '\u2019s copy.'));
       if (nCopies) body.appendChild(el('p','adm-note','Copy trading: the same trade on several accounts is saved once, with each account\u2019s P&L kept under it. Stats, points and the leaderboard count it once (one account\u2019s P&L); the trade also shows your total across accounts.'));
       else if (!(CSVI.map.account >= 0) && !CSVI.acctName) body.appendChild(el('p','adm-note','Copy trading on several accounts (e.g. TopstepX, one export per account)? Type the account name above for each file. The same trade from another account\u2019s file is then added to it as a copy instead of being skipped as a duplicate.'));
       if (!trades.length){ body.appendChild(el('p','bk-warn','No trades could be read. Pick the entry time and P&L columns above.')); return; }

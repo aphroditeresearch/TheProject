@@ -365,7 +365,7 @@ module.exports = async (req, res) => {
       // editing keeps the review, unless something that decides points changed: then it goes back to the mentor
       const was = Object.assign({}, old, { date: tradeDay(old.sunday || old.date) });   // as it's shown now (entries the old evening rule moved are back on their day)
       const keyChanged = ['kind', 'date', 'outcome', 'account', 'followed'].some((k) => String(was[k] === undefined ? '' : was[k]) !== String(entry[k] === undefined ? '' : entry[k]));
-      ['createdAt', 'status', 'void', 'awarded', 'reviewedAt', 'reviewedBy', 'reviewNote', 'src', 'importKey', 'verifiedAt', 'movedFrom', 'acctName', 'copies', 'copyTotal'].forEach((k) => { if (old[k] !== undefined) entry[k] = old[k]; });
+      ['createdAt', 'status', 'void', 'awarded', 'reviewedAt', 'reviewedBy', 'reviewNote', 'src', 'importKey', 'verifiedAt', 'movedFrom', 'acctName', 'extId', 'copies', 'copyTotal'].forEach((k) => { if (old[k] !== undefined) entry[k] = old[k]; });
       if (keyChanged && entryStatus(old) !== 'pending') { entry.status = 'pending'; entry.void = false; delete entry.awarded; delete entry.reviewedAt; delete entry.reviewedBy; delete entry.reviewNote; entry.reopened = true; }
       entry.editedAt = new Date().toISOString();
     }
@@ -394,19 +394,28 @@ module.exports = async (req, res) => {
       // copy trading: the same trade on another account (same day, times, instrument and side) is added to that trade as a copy,
       // not a new entry. Stats and points count the trade once (its first account's P&L); copyTotal is the money across all accounts.
       const an = str(r.acctName, 40); if (an) e.acctName = an;
-      if (an) {
-
+      const xid = str(String(r.extId === undefined ? '' : r.extId), 40); if (xid) e.extId = xid;   // the broker's own trade id (TopstepX "Id")
+      const ids = (x) => [x.extId].concat((x.copies || []).map((c) => c.id)).filter(Boolean);
+      if (xid && Object.values(entries).some((x) => ids(x).includes(xid))) { dupes++; continue; }   // this exact broker trade is in already
+      if (an || xid) {
         const mate = Object.values(entries).find((x) => x.kind === 'trade' && x.src === 'csv' && sig(x) === sig(e));
         if (mate) {
           const up = Object.assign({}, mate);
-          // imported before it had an account name: from a file holding several accounts it was the first one (this row);
-          // from a one-account file (e.g. TopstepX exports per account) it belongs to another account, so this row is a copy
-          if (!up.acctName) up.acctName = (batchAccts.get(sig(e)) || new Set()).size > 1 ? an : 'First import';
-          const list = Array.isArray(up.copies) && up.copies.length ? up.copies.slice() : [{ a: up.acctName, pnl: +up.pnl || 0, q: up.contracts || 0 }];
-          if (list.some((c) => c.a === an)) { if (up.acctName !== mate.acctName) { entries[up.id] = up; writes.set(up.id, up); } dupes++; continue; }
+          // imported before accounts / trade ids were read: is this row that same trade again, or another account's copy?
+          if (!up.acctName && !up.extId && !(up.copies || []).length) {
+            const multi = (batchAccts.get(sig(e)) || new Set()).size > 1;
+            if (multi || (!an && up.importKey === e.importKey)) {
+              if (an) up.acctName = an; if (xid) up.extId = xid;
+              entries[up.id] = up; writes.set(up.id, up); dupes++; continue;
+            }
+            up.acctName = 'Account 1';
+          }
+          const list = Array.isArray(up.copies) && up.copies.length ? up.copies.slice()
+            : [Object.assign({ a: up.acctName || 'Account 1', pnl: +up.pnl || 0, q: up.contracts || 0 }, up.extId ? { id: up.extId } : {})];
+          if (an && list.some((c) => c.a === an)) { dupes++; continue; }
           if (list.length >= 30) { bad++; continue; }
-          list.push({ a: an, pnl: +e.pnl || 0, q: e.contracts || 0 });
-          up.copies = list; up.copyTotal = Math.round(list.reduce((t, c) => t + (+c.pnl || 0), 0) * 100) / 100;
+          list.push(Object.assign({ a: an || ('Account ' + (list.length + 1)), pnl: +e.pnl || 0, q: e.contracts || 0 }, xid ? { id: xid } : {}));
+          up.copies = list; up.copyTotal = Math.round(list.reduce((s2, c) => s2 + (+c.pnl || 0), 0) * 100) / 100;
           entries[up.id] = up; writes.set(up.id, up); seen.add(e.importKey); copied++; continue;
         }
       }
