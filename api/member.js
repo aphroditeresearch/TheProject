@@ -379,14 +379,25 @@ module.exports = async (req, res) => {
     if (!j) return json(res, 409, { error: 'no_journal' });
     const rows = (Array.isArray(body.entries) ? body.entries : []).slice(0, 200);
     const entries = await loadEntries(uid), seen = new Set(Object.values(entries).map((x) => x.importKey).filter(Boolean));
-    let added = 0, dupes = 0, bad = 0, verified = 0, room = MAX_ENTRIES - Object.keys(entries).length; const fields = [], upgraded = new Set();
+    let added = 0, dupes = 0, bad = 0, verified = 0, moved = 0, room = MAX_ENTRIES - Object.keys(entries).length; const fields = [], upgraded = new Set();
     if (room <= 0) return json(res, 409, { error: 'journal_full' });
     for (const r of rows) {
       const built = buildEntry(Object.assign({}, r, { kind: 'trade' }), uid, null);
       if (built.error) { bad++; continue; }
-      const e = built.entry; e.src = 'csv';
+      const e = built.entry; e.src = 'csv'; delete e.calDate; delete e.asia;
       e.importKey = [e.date, e.time || '', e.exitTime || '', (e.pair || '').toUpperCase(), e.pnl, e.contracts || ''].join('|');
       if (seen.has(e.importKey)) { dupes++; continue; }
+      // an Asia-session trade imported before this rule sits on its calendar day: move that entry to the trading day it belongs to
+      // (everything else about it, notes and review included, stays exactly as it is) instead of adding a second copy
+      const cal = /^\d{4}-\d{2}-\d{2}$/.test(String(r.calDate || '')) ? String(r.calDate) : '';
+      if (cal && cal !== e.date) {
+        const legacy = [cal].concat(e.importKey.split('|').slice(1)).join('|');
+        const prev = Object.values(entries).find((x) => x.importKey === legacy && !upgraded.has(x.id));
+        if (prev) {
+          const up = Object.assign({}, prev, { date: e.date, importKey: e.importKey, movedFrom: cal }); delete up.sunday;
+          upgraded.add(prev.id); seen.add(e.importKey); fields.push(prev.id, JSON.stringify(up)); moved++; continue;
+        }
+      }
       // already logged by hand: verify that entry instead of adding a second copy. Notes, screenshots, tags and review are kept;
       // only blanks are filled from the CSV
       const hand = Object.values(entries).find((x) => !upgraded.has(x.id) && csvMatches(x, e));
@@ -399,8 +410,8 @@ module.exports = async (req, res) => {
       seen.add(e.importKey); fields.push(e.id, JSON.stringify(e)); added++;
     }
     if (fields.length) await kv(['HSET', 'jentries:' + uid].concat(fields));   // one write for the whole file
-    if (added || verified) await logActivity(s.user, { type: 'journal', key: 'import', label: 'Imported ' + added + (added === 1 ? ' trade' : ' trades') + ' from a CSV' + (verified ? ' · verified ' + verified + ' logged by hand' : '') });
-    return json(res, 200, { saved: true, added, dupes, bad, verified });
+    if (added || verified || moved) await logActivity(s.user, { type: 'journal', key: 'import', label: 'Imported ' + added + (added === 1 ? ' trade' : ' trades') + ' from a CSV' + (verified ? ' · verified ' + verified + ' logged by hand' : '') });
+    return json(res, 200, { saved: true, added, dupes, bad, verified, moved });
   }
   // a note for one day: the plan before the session and the recap after (TradeZella-style daily journal)
   if (action === 'feed-post') {

@@ -4363,12 +4363,18 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       else { en = csvLocal(csvDate(g('entryTime'))); ex = csvLocal(csvDate(g('exitTime'))); pE = csvNum(g('entryPrice')); pX = csvNum(g('exitPrice'));
         var sd = String(g('side')).toLowerCase(); dir = /long|buy|^b$|^0$/.test(sd) ? 'long' : /short|sell|^s$|^1$/.test(sd) ? 'short' : ''; }
       if (!en) return;
+      // the trading day: futures reopen at 6 pm New York, so anything from then on (the Asia session) counts for the next day;
+      // a Sunday-evening open counts for Monday. The broker's times are read on this computer's clock and converted to New York.
+      var myZone = (function(){ try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e2) { return ''; } })();
+      var ny = /^\d{2}:\d{2}$/.test(en.time || '') ? nyAt(en.date, en.time, myZone) : null, tdate = en.date, asia = false;
+      if (ny){ tdate = ny.date; if (ny.mins >= 18 * 60){ tdate = addDays(ny.date, 1); asia = true; } }
+      tdate = tradeDay(tdate);
       var pnl = csvNum(g('pnl')), fees = csvNum(g('fees'));
       if (isNaN(pnl)) return;
       if (opt.net && !isNaN(fees)) pnl = pnl - Math.abs(fees);
       pnl = Math.round(pnl * 100) / 100;
       var q = Math.abs(csvNum(g('qty')));
-      var e = { kind:'trade', date: en.date, time: en.time, exitTime: ex ? ex.time : '', pair: String(g('symbol') || '').trim().slice(0, 40), account: opt.account,
+      var e = { kind:'trade', date: tdate, calDate: en.date, asia: asia, time: en.time, exitTime: ex ? ex.time : '', pair: String(g('symbol') || '').trim().slice(0, 40), account: opt.account,
         outcome: pnl > 0 ? 'tp' : pnl < 0 ? 'sl' : 'be', pnl: pnl, followed: opt.followed, session: '', news: '', overview: '', files: [], tz: (function(){ try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e2) { return ''; } })() };
       if (q > 0) e.contracts = q; if (dir) e.dir = dir; if (!isNaN(pE)) e.pEntry = pE; if (!isNaN(pX)) e.pExit = pX;
       out.push(e);
@@ -4408,16 +4414,17 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       body.appendChild(el('h4',null, trades.length + (trades.length === 1 ? ' trade' : ' trades') + ' found' + (skipped ? ' (' + skipped + ' rows skipped: no date or P&L)' : '')));
       if (!trades.length){ body.appendChild(el('p','bk-warn','No trades could be read. Pick the entry time and P&L columns above.')); return; }
       var tw = el('div','tbl-wrap'), t = el('table','st-t'), hr = el('tr'); ['Date','Time','Instrument','Side','Qty','Entry','Exit','P&L','Result'].forEach(function(h){ hr.appendChild(el('th',null,h)); }); t.appendChild(hr);
-      trades.slice(0, 12).forEach(function(e){ var r = el('tr'); [e.date, e.time + (e.exitTime ? '\u2013' + e.exitTime : ''), e.pair, e.dir ? cap(e.dir) : '', e.contracts || '', isNaN(e.pEntry) || e.pEntry === undefined ? '' : e.pEntry, e.pExit === undefined ? '' : e.pExit].forEach(function(v){ r.appendChild(el('td',null,String(v))); });
+      trades.slice(0, 12).forEach(function(e){ var r = el('tr'); [e.date + (e.asia ? ' (Asia)' : ''), e.time + (e.exitTime ? '\u2013' + e.exitTime : ''), e.pair, e.dir ? cap(e.dir) : '', e.contracts || '', isNaN(e.pEntry) || e.pEntry === undefined ? '' : e.pEntry, e.pExit === undefined ? '' : e.pExit].forEach(function(v){ r.appendChild(el('td',null,String(v))); });
         r.appendChild(el('td', e.pnl > 0 ? 'win' : e.pnl < 0 ? 'loss' : '', money(e.pnl))); r.appendChild(el('td',null, OUT[e.outcome] || '')); t.appendChild(r); });
-      tw.appendChild(t); body.appendChild(tw); if (trades.length > 12) body.appendChild(el('p','adm-note','\u2026and ' + (trades.length - 12) + ' more.'));
+      tw.appendChild(t); if (trades.some(function(e){ return e.asia; })) body.appendChild(el('p','adm-note','Asia session trades (6 pm New York or later) are saved under the next trading day, marked (Asia).'));
+      body.appendChild(tw); if (trades.length > 12) body.appendChild(el('p','adm-note','\u2026and ' + (trades.length - 12) + ' more.'));
       var go = el('button','btn-s pri','Import ' + trades.length + (trades.length === 1 ? ' trade' : ' trades')); go.type = 'button';
       go.addEventListener('click', function(){
         if (!CSVI.account){ toast('Pick the account type for these trades.'); acc.focus(); return; }
         if (trades.length > 200){ toast('Up to 200 trades at a time. Export a shorter date range.'); return; }
         go.disabled = true; go.textContent = 'Importing\u2026';
         memberPost({ action:'journal-import', entries: trades }).then(function(r){ r = r || {};
-          toast('Imported ' + (r.added || 0) + (r.added === 1 ? ' trade' : ' trades') + (r.verified ? ' \u00b7 ' + r.verified + ' of your hand-logged ' + (r.verified === 1 ? 'trade' : 'trades') + ' now \u2713 Verified' : '') + (r.dupes ? ' \u00b7 ' + r.dupes + ' already in your journal' : '') + (r.bad ? ' \u00b7 ' + r.bad + ' couldn\'t be read' : '') + '. Add notes and screenshots to them anytime.');
+          toast('Imported ' + (r.added || 0) + (r.added === 1 ? ' trade' : ' trades') + (r.moved ? ' \u00b7 ' + r.moved + ' Asia ' + (r.moved === 1 ? 'trade' : 'trades') + ' moved to the next trading day' : '') + (r.verified ? ' \u00b7 ' + r.verified + ' of your hand-logged ' + (r.verified === 1 ? 'trade' : 'trades') + ' now \u2713 Verified' : '') + (r.dupes ? ' \u00b7 ' + r.dupes + ' already in your journal' : '') + (r.bad ? ' \u00b7 ' + r.bad + ' couldn\'t be read' : '') + '. Add notes and screenshots to them anytime.');
           CSVI.rows = null; return loadMe(); }).then(function(){ JR.view = JR.from === 'today' ? 'today' : 'list'; JR.from = null; drawJournal(host); })
           .catch(function(e){ go.disabled = false; go.textContent = 'Import'; toast('Import failed: ' + ((e && e.message) || e)); });
       });
