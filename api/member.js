@@ -381,6 +381,11 @@ module.exports = async (req, res) => {
     const entries = await loadEntries(uid), seen = new Set(Object.values(entries).map((x) => x.importKey).filter(Boolean));
     let added = 0, dupes = 0, bad = 0, verified = 0, moved = 0, copied = 0, room = MAX_ENTRIES - Object.keys(entries).length; const writes = new Map(), upgraded = new Set();
     if (room <= 0) return json(res, 409, { error: 'journal_full' });
+    const sig = (x) => [x.date, x.time || '', x.exitTime || '', String(x.pair || '').toUpperCase(), x.dir || ''].join('|');
+    const batchAccts = new Map();   // trade signature -> account names in this file
+    for (const r of rows) { const an0 = str(r.acctName, 40); if (!an0) continue;
+      const k = [String(r.date || ''), r.time || '', r.exitTime || '', String(r.pair || '').toUpperCase(), r.dir || ''].join('|');
+      if (!batchAccts.has(k)) batchAccts.set(k, new Set()); batchAccts.get(k).add(an0); }
     for (const r of rows) {
       const built = buildEntry(Object.assign({}, r, { kind: 'trade' }), uid, null);
       if (built.error) { bad++; continue; }
@@ -390,11 +395,13 @@ module.exports = async (req, res) => {
       // not a new entry. Stats and points count the trade once (its first account's P&L); copyTotal is the money across all accounts.
       const an = str(r.acctName, 40); if (an) e.acctName = an;
       if (an) {
-        const sig = (x) => [x.date, x.time || '', x.exitTime || '', String(x.pair || '').toUpperCase(), x.dir || ''].join('|');
+
         const mate = Object.values(entries).find((x) => x.kind === 'trade' && x.src === 'csv' && sig(x) === sig(e));
         if (mate) {
           const up = Object.assign({}, mate);
-          if (!up.acctName) up.acctName = an;   // imported before accounts were read: that copy was this account
+          // imported before it had an account name: from a file holding several accounts it was the first one (this row);
+          // from a one-account file (e.g. TopstepX exports per account) it belongs to another account, so this row is a copy
+          if (!up.acctName) up.acctName = (batchAccts.get(sig(e)) || new Set()).size > 1 ? an : 'First import';
           const list = Array.isArray(up.copies) && up.copies.length ? up.copies.slice() : [{ a: up.acctName, pnl: +up.pnl || 0, q: up.contracts || 0 }];
           if (list.some((c) => c.a === an)) { if (up.acctName !== mate.acctName) { entries[up.id] = up; writes.set(up.id, up); } dupes++; continue; }
           if (list.length >= 30) { bad++; continue; }

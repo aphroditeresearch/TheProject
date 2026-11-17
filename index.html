@@ -4384,7 +4384,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     });
     return out;
   }
-  var CSVI = { rows:null, header:null, map:null, name:'', account:'', followed:true, net:true };
+  var CSVI = { rows:null, header:null, map:null, name:'', account:'', acctName:'', followed:true, net:true };
   function csvImportView(host){
     var box = el('section','jr-form csv view-in'); box.appendChild(el('h3',null,'Import trades from a CSV'));
     box.appendChild(el('p','adm-note','Export your trades from your platform (Tradovate: Performance \u2192 Export CSV \u00b7 NinjaTrader: Trade Performance \u2192 Trades \u2192 Export \u00b7 TopstepX / ProjectX: Trades \u2192 Export \u00b7 others: any trade-history CSV), then pick the file here. Each completed trade becomes a journal entry you can add notes and screenshots to later. Trades already imported are skipped.'));
@@ -4408,11 +4408,14 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var opts = el('div','csv-opts');
       var acc = el('select'); ['','Funded','Evaluation','Personal / live','Paper','Demo'].forEach(function(a){ var o = el('option',null, a || 'Account type for these trades\u2026'); o.value = a; acc.appendChild(o); });
       acc.value = CSVI.account; acc.addEventListener('change', function(){ CSVI.account = acc.value; draw(); }); opts.appendChild(fld('Account type', acc));
+      if (!(CSVI.map.account >= 0)){ var anI = el('input'); anI.type = 'text'; anI.maxLength = 40; anI.placeholder = 'e.g. Topstep 50K #2'; anI.value = CSVI.acctName;
+        anI.addEventListener('change', function(){ CSVI.acctName = anI.value.trim(); draw(); }); opts.appendChild(fld('Account name (copy trading: one file per account)', anI)); }
       opts.appendChild(fld('Followed your rules on these?', seg([[true,'Yes'],[false,'No']], CSVI.followed, function(v){ CSVI.followed = v; draw(); })));
       if (CSVI.map.fees !== undefined && CSVI.map.fees >= 0){ var nl = el('label','tick'), nc = el('input'); nc.type = 'checkbox'; nc.checked = CSVI.net; nl.appendChild(nc); nl.appendChild(document.createTextNode(' Take fees off the P&L'));
         nc.addEventListener('change', function(){ CSVI.net = nc.checked; draw(); }); opts.appendChild(nl); }
       body.appendChild(opts);
       var trades = csvRows(CSVI.rows, CSVI.map, { account: CSVI.account, followed: CSVI.followed, net: CSVI.net });
+      if (!(CSVI.map.account >= 0) && CSVI.acctName) trades.forEach(function(e){ e.acctName = CSVI.acctName; });
       var skipped = CSVI.rows.length - trades.length;
       var cpSig = function(e){ return [e.date, e.time, e.exitTime, String(e.pair).toUpperCase(), e.dir || ''].join('|'); }, cpN = {}, cpT = {};
       trades.forEach(function(e){ if (!e.acctName) return; var k = cpSig(e); cpN[k] = (cpN[k] || 0) + 1; cpT[k] = (cpT[k] || 0) + e.pnl; });
@@ -4421,7 +4424,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         + (nCopies ? ' \u00b7 ' + nCopies + ' copy-traded ' + (nCopies === 1 ? 'copy' : 'copies') + ' on other accounts' : '')
         + (skipped ? ' (' + skipped + ' rows skipped: no date or P&L)' : '')));
       if (nCopies) body.appendChild(el('p','adm-note','Copy trading: the same trade on several accounts is saved once, with each account\u2019s P&L kept under it. Stats, points and the leaderboard count it once (one account\u2019s P&L); the trade also shows your total across accounts.'));
-      else if (!(CSVI.map.account >= 0)) body.appendChild(el('p','adm-note','Copy trading on several accounts? Pick the Account column above so every account\u2019s copy is kept. Without it, identical copies are skipped as duplicates.'));
+      else if (!(CSVI.map.account >= 0) && !CSVI.acctName) body.appendChild(el('p','adm-note','Copy trading on several accounts (e.g. TopstepX, one export per account)? Type the account name above for each file. The same trade from another account\u2019s file is then added to it as a copy instead of being skipped as a duplicate.'));
       if (!trades.length){ body.appendChild(el('p','bk-warn','No trades could be read. Pick the entry time and P&L columns above.')); return; }
       var tw = el('div','tbl-wrap'), t = el('table','st-t'), hr = el('tr'); ['Date','Time','Instrument','Side','Qty','Entry','Exit','P&L','Result'].forEach(function(h){ hr.appendChild(el('th',null,h)); }); t.appendChild(hr);
       var cpShown = {};
