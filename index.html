@@ -4332,7 +4332,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     ['pnl','P&L ($)',[/^(pnl|p&l|p\/l|net ?p&l|net ?pnl|profit|realized ?pnl|realized ?p&l|gross ?p&l|net ?profit|profit ?\/ ?loss|pl)$/]],
     ['fees','Fees / commission',[/^(fees|commission|commissions|comm|fee)$/]],
     ['account','Account',[/^(account|account ?name|acct)$/]],
-    ['tradeId','Trade ID',[/^(id|trade ?id)$/]]
+    ['tradeId','Trade ID',[/^(id|trade ?id)$/]],
+    ['tradeDay','Trading day',[/^(trade ?day|trading ?day|trade ?date|session ?date)$/]]
   ];
   function csvGuess(header){
     var m = {}, norm = header.map(function(h){ return String(h).trim().toLowerCase().replace(/[_\-]+/g, ' ').replace(/\s+/g, ' '); });
@@ -4347,8 +4348,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   function csvDate(v){
     var t = String(v || '').trim(); if (!t) return null; var m;
     if ((m = /^(\d{4})-(\d{1,2})-(\d{1,2})[ T](\d{1,2}):(\d{2})/.exec(t))) return { date: m[1] + '-' + m[2].padStart(2,'0') + '-' + m[3].padStart(2,'0'), time: m[4].padStart(2,'0') + ':' + m[5], iso: /Z|[+-]\d{2}:?\d{2}$/.test(t) ? t : null };
-    if ((m = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})[ ,]+(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?/i.exec(t))){ var h = +m[4]; if (m[6]){ if (/pm/i.test(m[6]) && h < 12) h += 12; if (/am/i.test(m[6]) && h === 12) h = 0; }
-      var y = m[3].length === 2 ? '20' + m[3] : m[3]; return { date: y + '-' + m[1].padStart(2,'0') + '-' + m[2].padStart(2,'0'), time: String(h).padStart(2,'0') + ':' + m[5] }; }
+    if ((m = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})[ ,]+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?\s*(AM|PM)?\s*(Z|[+-]\d{2}:?\d{2})?/i.exec(t))){ var h = +m[4]; if (m[7]){ if (/pm/i.test(m[7]) && h < 12) h += 12; if (/am/i.test(m[7]) && h === 12) h = 0; }
+      var y = m[3].length === 2 ? '20' + m[3] : m[3], dd = y + '-' + m[1].padStart(2,'0') + '-' + m[2].padStart(2,'0'), hh = String(h).padStart(2,'0');
+      var off = m[8] ? (/^z$/i.test(m[8]) ? 'Z' : m[8].replace(/^([+-]\d{2})(\d{2})$/, '$1:$2')) : '';
+      return { date: dd, time: hh + ':' + m[5], iso: off ? dd + 'T' + hh + ':' + m[5] + ':' + (m[6] || '00') + off : null }; }
     if ((m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t))) return { date: t, time:'' };
     var d = new Date(t); if (!isNaN(d)) return { date: ymd(d), time: String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') };
     return null;
@@ -4371,6 +4374,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var myZone = (function(){ try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e2) { return ''; } })();
       var ny = /^\d{2}:\d{2}$/.test(en.time || '') ? nyAt(en.date, en.time, myZone) : null, tdate = en.date, asia = false;
       if (ny){ tdate = ny.date; if (ny.mins >= 18 * 60){ tdate = addDays(ny.date, 1); asia = true; } }
+      // the platform's own trading day (TopstepX: TradeDay) is the final word when the file has one
+      var bd = csvDate(g('tradeDay')); if (bd && bd.date){ tdate = bd.date; asia = tdate !== en.date && !!ny && ny.mins >= 17 * 60; }
       tdate = tradeDay(tdate);
       var pnl = csvNum(g('pnl')), fees = csvNum(g('fees'));
       if (isNaN(pnl)) return;
@@ -5997,8 +6002,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       K.F('500', 32); c.fillStyle = 'rgba(255,255,255,.55)'; c.fillText((q.board.length > list.length ? 'Top ' + list.length + ' of ' + q.traders + ' traders \u00b7 ' : '') + q.sub, M, ty + tH - 14);
       bottom = ty - 30;
     } else {
-      rows = group ? [['Trades', String(q.n)], ['Win rate', q.wr === null ? '\u2014' : q.wr + '%'], ['Record', q.W + '\u2013' + q.L + (q.BE ? '\u2013' + q.BE : '')], ['Avg win : loss', q.ratio === null ? '\u2014' : (Math.round(q.ratio * 10) / 10) + ' : 1'], ['Period', q.sub]]
-        : [['Trades', String(q.n)], ['Period', q.sub], ['Total PnL', money2(q.net), true]];
+      rows = [['Trades', String(q.n)], ['Win rate', q.wr === null ? '\u2014' : q.wr + '%'], ['Record', q.W + '\u2013' + q.L + (q.BE ? '\u2013' + q.BE : '')], ['Avg win : loss', q.ratio === null ? '\u2014' : (Math.round(q.ratio * 10) / 10) + ' : 1'], ['Period', q.sub]]
+        ;   // the same rows on every card: personal and group
       K.F('600', 45); var lw = rows.reduce(function(m0, r){ return Math.max(m0, c.measureText(r[0]).width); }, 0), vx = M + lw + 90;
       rows.forEach(function(r, i){ var y = bottom - (rows.length - 1 - i) * rowH - 20;
         K.F('600', 45); c.fillStyle = 'rgba(255,255,255,.62)'; c.fillText(r[0], M, y);
@@ -6095,9 +6100,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   // Phones get the 9:16 story cards; computers get the wide PC card (in the style of copy-trading group cards)
   function shcIsPhone(){ return TOUCHY && Math.min(screen.width || 9999, screen.height || 9999) <= 900; }
   function drawShareCard(cv, q){
-    var st = q.mine ? SHC.style : SHC.sstyle;
-    if (st === 'story' || st === 'storyt') drawStoryCard(cv, q, st === 'storyt');
-    else st === 'ledger' ? drawLedgerCard(cv, q) : drawProfileCard(cv, q);
+    drawStoryCard(cv, q, !q.mine && SHC.sstyle === 'storyt');
     var c = cv.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); cardKit(c).dither();
   }
 
@@ -6117,11 +6120,13 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       who.value = SHC.scope; if (who.value !== SHC.scope){ SHC.scope = 'all'; who.value = 'all'; } }
     // the new Story card is the default; the older Profile and Ledger looks stay available (new storage keys, so everyone sees Story first)
     var ls = function(k){ try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }, lset = function(k, v){ try { localStorage.setItem(k, v); } catch (e) {} };
-    if (!SHC.style){ SHC.style = ls('theproject.cardstyle2'); if (['story','profile','ledger'].indexOf(SHC.style) < 0) SHC.style = 'story'; }
-    if (!SHC.sstyle){ SHC.sstyle = ls('theproject.groupstyle2'); if (['story','storyt','profile','ledger'].indexOf(SHC.sstyle) < 0) SHC.sstyle = 'story'; }
+    // every card is the Story card now (the old Profile / Ledger looks are retired, even if someone had picked one before)
+    SHC.style = 'story';
+    if (!SHC.sstyle){ SHC.sstyle = ls('theproject.groupstyle2'); }
+    if (['story','storyt'].indexOf(SHC.sstyle) < 0) SHC.sstyle = 'story';
     if (!SHC.bg){ SHC.bg = ls('theproject.cardbg'); if (!CARD_BGS.some(function(b){ return b[0] === SHC.bg; })) SHC.bg = 'tp'; }
-    var styleSeg = seg([['story','Story'],['profile','Profile'],['ledger','Ledger']], SHC.style, function(v){ SHC.style = v; lset('theproject.cardstyle2', v); paint(); });
-    var gStyleSeg = seg([['story','Story'],['storyt','Story + traders'],['profile','Profile'],['ledger','Ledger']], SHC.sstyle, function(v){ SHC.sstyle = v; lset('theproject.groupstyle2', v); paint(); });
+    var styleSeg = el('span'); styleSeg.style.display = 'none';
+    var gStyleSeg = seg([['story','Story'],['storyt','Story + traders']], SHC.sstyle, function(v){ SHC.sstyle = v; lset('theproject.groupstyle2', v); paint(); });
     var bgRow = el('div','shc-bgs'); bgRow.setAttribute('role','radiogroup'); bgRow.setAttribute('aria-label','Card background');
     CARD_BGS.forEach(function(b){ var t = el('button','shc-bg' + (SHC.bg === b[0] ? ' on' : '')); t.type = 'button'; t.setAttribute('role','radio'); t.setAttribute('aria-checked', SHC.bg === b[0] ? 'true' : 'false'); t.title = b[1];
       var sw = el('span','sw sw-' + b[0]); if (b[0] !== 'tp' && b[0] !== 'none') sw.style.backgroundImage = 'url(' + CARD_SRC[b[0]] + ')'; t.appendChild(sw); t.appendChild(el('span',null,b[1]));
@@ -6145,7 +6150,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       if (SHC.scope === 'me'){ var u = user(); return { id: u.id, name: u.displayName || u.username || 'Me', handle: u.username || '', avatar: u.avatar || '', role: roleTitle(u.id, (SESSION && SESSION.roles) || []), color: nameColor(u.id, canAdmin(), (SESSION && SESSION.roles) || []) }; }
       var m = (SHC.rows || []).filter(function(x){ return x.id === SHC.scope; })[0]; return m ? { id: m.id, name: m.displayName || m.username || 'Trader', handle: m.username || '', avatar: m.avatar || '', role: roleTitle(m.id, m.roles), color: nameColor(m.id, m.isAdmin, m.roles) } : null; }
     function paint(){ var r = rowsNow(); if (!r) return; var w = whoNow(), q = shcData(r, SHC.per, w);
-      styleSeg.style.display = w ? '' : 'none'; gStyleSeg.style.display = w ? 'none' : ''; var st = w ? SHC.style : SHC.sstyle; bgRow.hidden = !(st === 'story' || st === 'storyt');
+      styleSeg.style.display = 'none'; gStyleSeg.style.display = w ? 'none' : ''; var st = w ? SHC.style : SHC.sstyle; bgRow.hidden = !(st === 'story' || st === 'storyt');
       var go = function(av){ q.avatar = av; drawShareCard(cv, q); cv.hidden = false; };
       if (w && w.avatar && AVATARS[w.avatar] === undefined){ go(null); loadAvatar(w.avatar).then(function(av){ if (av) paint(); }); } else go(w && w.avatar ? AVATARS[w.avatar] : null); }
     save.addEventListener('click', function(){
