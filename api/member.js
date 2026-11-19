@@ -317,7 +317,7 @@ module.exports = async (req, res) => {
     const found = findItem(content, lessonId);
     if (!found) return json(res, 404, { error: 'no_lesson' });
     if (!access.all[lessonId] || !access.all[lessonId].open) return json(res, 403, { error: 'locked' });
-    const skippable = found.kind === 'breakdown' && (found.item || {}).kind !== 'advanced';   // breakdowns can be handed in without watching to the end
+    const skippable = found.kind === 'breakdown';   // breakdowns and advanced lectures can be skipped through and handed in without watching to the end
     if (found.video && !admin && !skippable) {
       const prog = await loadProgress(uid);
       if (!prog[lessonId]) return json(res, 409, { error: 'watch_first' });

@@ -12,7 +12,7 @@
 //
 // BREAKDOWNS run every week, oldest first: Weekly Outlook → Monday → … → Friday → Weekly Breakdown → next
 // week. Each needs notes and mark-ups handed in before the next opens. Any signed-in level gets them;
-// Advanced Breakdowns are their own chain for the top level (Enlightened).
+// Advanced Breakdowns are for the top level (Enlightened): all of them open at once, in no set order.
 //
 // Admins can unlock, lock, or mark done any single item for any member, and that beats the rules above.
 const { kv, kvConfigured, loadContent } = require('./_lib');
@@ -189,6 +189,7 @@ function accessForBreakdowns({ breakdowns, level, top, settings, subs, overrides
       let open, passed, reason = null;
       if (admin || (mod && name === 'advanced')) { open = true; passed = true; }   // moderators can open every advanced lecture
       else if (!allowed) { open = false; passed = false; reason = name === 'advanced' ? 'hidden' : 'level'; }
+      else if (name === 'advanced') { open = true; passed = passes(subs[key], settings); }   // advanced: all open for Enlightened, no order
       else { open = i === 0 || prevPassed; if (!open) reason = 'order'; passed = passes(subs[key], settings); }
       if (!admin && ov === 'unlock' && !open) { open = true; reason = null; }
       if (!admin && ov === 'lock') { open = false; reason = 'admin'; }
