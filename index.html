@@ -1401,12 +1401,14 @@ body.returning .scene::after{opacity:0}
 .ytbar i.w{background:rgba(255,255,255,.3)}
 .ytbar i.n{background:var(--blue);box-shadow:0 0 8px var(--blue)}
 .player:fullscreen{max-width:none;border:0;aspect-ratio:auto}
-.vwm-tile{position:absolute;inset:0;z-index:5;pointer-events:none;background-repeat:repeat;animation:wdrift2 70s linear infinite;opacity:.055;transition:opacity .15s}
+/* the watermark slides with a GPU transform (no repaint each frame): repainting a layer over a playing video made
+   weaker laptops drop frames, and YouTube then lowered the quality mid-video */
+.vwm-tile{position:absolute;left:-760px;top:-460px;right:0;bottom:0;z-index:5;pointer-events:none;background-repeat:repeat;animation:wdrift2 90s linear infinite;opacity:.055;transition:opacity .15s;will-change:transform;contain:strict}
 .snap .vwm-tile{opacity:.6;transition:none}.snap .vwm{color:rgba(255,255,255,.7);font-size:16px;text-shadow:0 1px 2px rgba(0,0,0,.6);transition:none}.snap .vwm.sm{font-size:14px}
 .snap .vwm-big{display:block}.vwm-big{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-18deg);z-index:7;pointer-events:none;font:800 clamp(18px,4.2vw,46px)/1.15 var(--mono);color:rgba(255,255,255,.34);text-shadow:0 2px 6px rgba(0,0,0,.6);white-space:nowrap;text-align:center}
-@keyframes wdrift2{from{background-position:0 0}to{background-position:420px 230px}}
+@keyframes wdrift2{from{transform:translate3d(0,0,0)}to{transform:translate3d(760px,460px,0)}}
 .vwm.sm{font-size:11px;opacity:.85}
-.vwm{position:absolute;z-index:7;pointer-events:none;font:600 12px/1.3 var(--mono);color:rgba(255,255,255,.1);text-shadow:none;transition:left 1.2s ease,top 1.2s ease;white-space:nowrap}
+.vwm{position:absolute;z-index:7;pointer-events:none;font:600 12px/1.3 var(--mono);color:rgba(255,255,255,.1);text-shadow:none;left:0;top:0;transition:transform 1.2s ease;will-change:transform;white-space:nowrap}
 /* ---------- lockdown ---------- */
 body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 input,textarea{-webkit-user-select:text;user-select:text}
@@ -3092,7 +3094,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var big = el('div','vwm-big'); big.setAttribute('aria-hidden','true'); big.appendChild(el('div',null, d.username)); if (d.id) big.appendChild(el('div',null, d.id)); pl.appendChild(big);
     var tags = [0,1].map(function(i){ var t = el('span','vwm' + (i ? ' sm' : ''), d.username + (d.id ? ' \u00b7 ' + d.id : '')); t.setAttribute('aria-hidden','true'); pl.appendChild(t); return t; });
     var move = function(){ if (!tags[0].isConnected){ clearInterval(mt); return; }
-      tags.forEach(function(t, i){ t.style.left = (4 + Math.random() * 64) + '%'; t.style.top = (8 + (i * 44) + Math.random() * 30) + '%'; }); };
+      var W = pl.clientWidth || 800, H = pl.clientHeight || 450;   // moved with a GPU transform, not left/top (no relayout over the video)
+      tags.forEach(function(t, i){ t.style.transform = 'translate3d(' + Math.round(W * (4 + Math.random() * 64) / 100) + 'px,' + Math.round(H * (8 + (i * 44) + Math.random() * 30) / 100) + 'px,0)'; }); };
     move(); var mt = setInterval(move, 6000);
   }
   // if the bare <video> goes full screen (its own button), swap to the player box so the marks stay on
