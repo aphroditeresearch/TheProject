@@ -1381,9 +1381,8 @@ body.returning .scene::after{opacity:0}
 .adm-notice{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px dashed var(--line)}
 .yt{position:absolute;inset:0;z-index:2;background:#000;outline:none}
 .yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none}
-/* sharper YouTube: YouTube picks the quality from the player's size, so the player is drawn at twice the size and
-   scaled down to fit (it then streams a higher resolution). Full screen is already big enough. */
-.player:not(:fullscreen) .yt iframe{width:200%;height:200%;transform:scale(.5);transform-origin:0 0}
+/* YouTube quality: see ytFit() (the player is drawn at the size the picked quality needs, then scaled to fit) */
+.ytq{font:600 12px var(--mono);width:auto;min-width:52px;padding:0 8px}
 .yt-click{position:absolute;inset:0;z-index:3;cursor:pointer}
 .yt-cover{position:absolute;inset:0;z-index:4;display:grid;place-items:center;border:0;cursor:pointer;color:var(--ink);
   background:radial-gradient(ellipse at center,rgba(2,9,11,.55),rgba(2,9,11,.96));transition:opacity .2s ease}
@@ -2195,7 +2194,10 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
   }
   var snapT = 0;
   function snapMarks(ms){ if (isAdminViewer()) return; document.documentElement.classList.add('snap'); clearTimeout(snapT); snapT = setTimeout(function(){ if (document.hasFocus()) document.documentElement.classList.remove('snap'); }, ms || 6000); }
-  window.addEventListener('blur', function(){ if (inPortal()) { clearTimeout(snapT); snapMarks(600000); } });
+  // losing focus (screenshot tools take focus) turns the strong marks on for a few seconds only, then back to the light ones,
+  // even while the window stays unfocused: members watch with notes / charts open in another window and need a clear video
+  window.addEventListener('blur', function(){ if (!inPortal() || isAdminViewer()) return; clearTimeout(snapT);
+    document.documentElement.classList.add('snap'); snapT = setTimeout(function(){ document.documentElement.classList.remove('snap'); }, 8000); });
   window.addEventListener('focus', function(){ clearTimeout(snapT); snapT = setTimeout(function(){ document.documentElement.classList.remove('snap'); }, 1500); });
   function pauseAll(){ document.querySelectorAll('#portal-view video').forEach(function(v){ try { v.pause(); } catch(e) {} }); (typeof ytPlayers !== 'undefined' ? ytPlayers : []).forEach(function(p){ try { p.pauseVideo(); } catch(e) {} }); }
   function shieldOn(){ if (!inPortal() || isAdminViewer() || Date.now() < pickUntil) return; shieldEl.hidden = false; pauseAll(); }
@@ -2804,7 +2806,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
       var ycover = el('button','yt-cover'); ycover.type = 'button'; ycover.setAttribute('aria-label','Play video'); ycover.innerHTML = playSvg;
       var yclick = el('div','yt-click');                                   // sits over the video: clicks never reach YouTube
       var ctl = el('div','ytc'), bPlay = el('button','ytb'), tTime = el('span','ytt','0:00'), bar = el('div','ytbar'), bWat = el('i','w'), bNow = el('i','n'),
-          bMute = el('button','ytb'), bFull = el('button','ytb'), bRate = el('button','ytb ytr', speedLabel()), bCC = el('button','ytb ytcc','CC');
+          bMute = el('button','ytb'), bFull = el('button','ytb'), bRate = el('button','ytb ytr', speedLabel()), bCC = el('button','ytb ytcc','CC'), bQ = el('button','ytb ytq', ytqLabel());
       bCC.type = 'button'; bCC.setAttribute('aria-label','Captions'); bCC.setAttribute('aria-pressed', CC ? 'true' : 'false'); bCC.classList.toggle('on', CC);
       bPlay.type = bMute.type = bFull.type = bRate.type = 'button'; bRate.setAttribute('aria-label','Playback speed');
       var ICON = { play:'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>',
@@ -2814,7 +2816,12 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         full:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>' };
       bPlay.innerHTML = ICON.play; bPlay.setAttribute('aria-label','Play'); bMute.innerHTML = ICON.vol; bMute.setAttribute('aria-label','Mute'); bFull.innerHTML = ICON.full; bFull.setAttribute('aria-label','Full screen');
       bar.appendChild(bWat); bar.appendChild(bNow); bar.setAttribute('role','slider'); bar.setAttribute('aria-label','Video position');
-      ctl.appendChild(bPlay); ctl.appendChild(tTime); ctl.appendChild(bar); ctl.appendChild(bCC); ctl.appendChild(bRate); ctl.appendChild(bMute); ctl.appendChild(bFull);
+      ctl.appendChild(bPlay); ctl.appendChild(tTime); ctl.appendChild(bar); ctl.appendChild(bCC); ctl.appendChild(bQ); ctl.appendChild(bRate); ctl.appendChild(bMute); ctl.appendChild(bFull);
+      bQ.type = 'button'; bQ.setAttribute('aria-label','Video quality'); bQ.title = 'Video quality';
+      var yFit = ytWatchSize(holder, function(){ return yt; });
+      bQ.addEventListener('click', function(){ YTQ = YTQ_OPTS[(YTQ_OPTS.indexOf(YTQ) + 1) % YTQ_OPTS.length]; try { localStorage.setItem('theproject.ytq', YTQ); } catch(e) {}
+        bQ.textContent = ytqLabel(); yFit();
+        toast(YTQ === 'auto' ? 'Quality: Auto (YouTube decides).' : 'Quality: up to ' + ytqLabel() + '. YouTube may go lower on a slow connection or if the video wasn\u2019t uploaded that sharp.'); });
       bCC.addEventListener('click', function(){ setCC(!CC); bCC.classList.toggle('on', CC); bCC.setAttribute('aria-pressed', CC ? 'true' : 'false'); ytCaptions(yt, CC); toast(CC ? 'Captions on (auto-generated).' : 'Captions off.'); });
       bRate.addEventListener('click', function(){ setSpeed(nextSpeed()); bRate.textContent = speedLabel(); if (yt && yt.setPlaybackRate) yt.setPlaybackRate(SPEED); });
       holder.appendChild(yclick); holder.appendChild(ycover); holder.appendChild(ctl); pl.appendChild(holder); pl.classList.add('has-yt');
@@ -2849,8 +2856,8 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
           playerVars: { controls:0, disablekb:1, fs:0, rel:0, modestbranding:1, playsinline:1, iv_load_policy:3, cc_load_policy: CC ? 1 : 0, cc_lang_pref:'en', showinfo:0,
                         start: Math.floor(yst.pos || 0), origin: location.origin },
           events: {
-            onReady: function(){ ytPlayers.push(yt); try { yt.setPlaybackRate(SPEED); } catch(e) {} ytCaptions(yt, CC); ydur = yt.getDuration() || 0; tTime.textContent = fmtT(yst.pos) + ' / ' + fmtT(ydur); },
-            onStateChange: function(e){ if (e.data === 1 && CC) try { yt.setOption('captions', 'fontSize', 3); } catch(e2) {}
+            onReady: function(){ ytPlayers.push(yt); yFit(); try { yt.setPlaybackRate(SPEED); } catch(e) {} ytCaptions(yt, CC); ydur = yt.getDuration() || 0; tTime.textContent = fmtT(yst.pos) + ' / ' + fmtT(ydur); },
+            onStateChange: function(e){ if (e.data === 1 && CC) ytCapFont(yt, holder._ytk || 1);
               var was = yplaying; yplaying = e.data === 1 || e.data === 3;
               if (was !== yplaying) HOLD.video = Math.max(0, HOLD.video + (yplaying ? 1 : -1));
               holder.classList.toggle('playing', yplaying); if (yplaying) ytStarted(holder);
@@ -3132,10 +3139,30 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         b.classList.toggle('on', CC); b.setAttribute('aria-pressed', CC ? 'true' : 'false'); toast(CC ? 'Captions on.' : 'Captions off.'); });
       pl.appendChild(b); }, 0); }
   function setCC(on){ CC = !!on; try { localStorage.setItem('theproject.cc', CC ? '1' : '0'); } catch(e) {} }
+  // YouTube quality. YouTube no longer lets a site set the quality: it picks it from the player's size (and the
+  // viewer's internet). So for 1080p the player is drawn as tall as 1080 screen pixels and scaled down to fit:
+  // YouTube then streams 1080p (if the video has it and the connection keeps up). Auto = YouTube's normal choice.
+  var YTQ_OPTS = ['auto','720','1080','1440'], YTQ = '1080';
+  try { var yq0 = localStorage.getItem('theproject.ytq'); if (YTQ_OPTS.indexOf(yq0) >= 0) YTQ = yq0; } catch(e) {}
+  function ytqLabel(){ return YTQ === 'auto' ? 'Auto' : YTQ + 'p'; }
+  function ytFit(holder, p){
+    var f = holder && holder.querySelector('iframe'); if (!f) return 1;
+    var w = holder.clientWidth || 0, h = holder.clientHeight || 0, dpr = window.devicePixelRatio || 1; if (!w || !h) return 1;
+    var k = YTQ === 'auto' ? 1 : Math.max(1, Math.min(4, (+YTQ) / (h * dpr)));
+    if (k < 1.02){ f.style.width = f.style.height = f.style.transform = f.style.transformOrigin = ''; k = 1; }
+    else { f.style.width = Math.round(w * k) + 'px'; f.style.height = Math.round(h * k) + 'px'; f.style.transform = 'scale(' + (1 / k).toFixed(4) + ')'; f.style.transformOrigin = '0 0'; }
+    holder._ytk = k; if (p && CC) ytCapFont(p, k); return k; }
+  // captions are drawn inside the scaled player, so make them bigger to match
+  function ytCapFont(p, k){ try { p.setOption('captions', 'fontSize', k >= 2.2 ? 3 : k >= 1.5 ? 2 : k > 1.02 ? 1 : 0); } catch(e) {} }
+  function ytWatchSize(holder, p){
+    var go = function(){ if (holder.isConnected) ytFit(holder, p()); };
+    if (window.ResizeObserver){ var ro = new ResizeObserver(go); ro.observe(holder); } else window.addEventListener('resize', go);
+    document.addEventListener('fullscreenchange', function(){ setTimeout(go, 60); });
+    return go; }
   function ytCaptions(p, on){
     if (!p) return;
     try {
-      if (on){ p.loadModule && p.loadModule('captions'); setTimeout(function(){ try { p.setOption('captions', 'track', { languageCode:'en' }); p.setOption('captions', 'fontSize', 3); } catch(e) {} }, 400); }
+      if (on){ p.loadModule && p.loadModule('captions'); setTimeout(function(){ try { p.setOption('captions', 'track', { languageCode:'en' }); var hh = p.getIframe && p.getIframe().closest('.yt'); ytCapFont(p, (hh && hh._ytk) || 1); } catch(e) {} }, 400); }
       else { p.setOption && p.setOption('captions', 'track', {}); p.unloadModule && p.unloadModule('captions'); }
     } catch(e) {}
   }
@@ -3309,7 +3336,7 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
         if (!h2.isConnected) return;
         yt = new YT.Player(h2, { videoId: ytId(src), width:'100%', height:'100%',
           playerVars: { controls:0, disablekb:1, fs:0, rel:0, modestbranding:1, playsinline:1, iv_load_policy:3, origin: location.origin },
-          events: { onReady: function(){ ytPlayers.push(yt); }, onStateChange: function(e){ if (e.data === 1 && CC) try { yt.setOption('captions', 'fontSize', 3); } catch(e2) {} playing = e.data === 1 || e.data === 3; holder.classList.toggle('playing', playing); if (playing) ytStarted(holder); } } });
+          events: { onReady: function(){ ytPlayers.push(yt); ytWatchSize(holder, function(){ return yt; })(); }, onStateChange: function(e){ if (e.data === 1 && CC) ytCapFont(yt, holder._ytk || 1); playing = e.data === 1 || e.data === 3; holder.classList.toggle('playing', playing); if (playing) ytStarted(holder); } } });
         var t = setInterval(function(){ if (!holder.isConnected){ clearInterval(t); ytPlayers = ytPlayers.filter(function(x){ return x !== yt; }); try { yt.destroy(); } catch(e) {} return; }
           if (yt.getCurrentTime && yt.getDuration && yt.getDuration()) fill.style.width = (yt.getCurrentTime() / yt.getDuration() * 100) + '%'; }, 500);
       }).catch(function(){ var bx = el('div','perr'); bx.appendChild(el('b',null,'Video unavailable')); pl.appendChild(bx); });
