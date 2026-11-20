@@ -5680,9 +5680,11 @@ html.pfs-open,html.pfs-open body{overflow:hidden}
     var cx = M, ch = 1236, cy = (Ht - ch) / 2, cw = Wd - M * 2;
     c.save(); c.shadowColor = 'rgba(0,0,0,.6)'; c.shadowBlur = 80; c.shadowOffsetY = 30; K.rr(cx, cy, cw, ch, 48); c.fillStyle = '#071315'; c.fill(); c.restore();
     K.rr(cx, cy, cw, ch, 48); c.strokeStyle = 'rgba(227,241,239,.09)'; c.lineWidth = 2; c.stroke();
-    // header strip: brand + period
+    // header strip: TPx, the name next to it, period on the right
     K.word(cx + 56, cy + 118, .62);
-    K.F('600', 28); c.fillStyle = K.MUTED; c.textAlign = 'right'; c.fillText(q.pill, cx + cw - 56, cy + 104); c.textAlign = 'left';
+    K.F('600', 28); c.fillStyle = K.MUTED; c.textAlign = 'right'; c.fillText(q.pill, cx + cw - 56, cy + 104); var pw1 = c.measureText(q.pill).width; c.textAlign = 'left';
+    if (TPM){ var hw = 74 * .62 * TPM.width / TPM.height, hx1 = cx + 56 + hw + 22, hn = group ? 'The Project' : String((q.who || {}).name || 'Trader').toUpperCase();
+      K.fit(hn, '700', 40, 24, cx + cw - 56 - pw1 - 36 - hx1); c.textBaseline = 'middle'; K.glow(hn, hx1, cy + 96, (q.who || {}).color || K.UP, 12); c.textBaseline = 'alphabetic'; }
     c.fillStyle = 'rgba(227,241,239,.08)'; c.fillRect(cx + 56, cy + 160, cw - 112, 2);
     // who
     var w = q.who || {}, ay = cy + 290, ar = 72;
