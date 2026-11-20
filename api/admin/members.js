@@ -596,6 +596,7 @@ module.exports = async (req, res) => {
       Object.values(certs).forEach((c) => files.push(c.file));
       const ents = Object.values(entries).sort((a, b) => (String(b.date) + (b.time || '')).localeCompare(String(a.date) + (a.time || ''))).map((e) => Object.assign({}, e, { status: entryStatus(e), points: entryPoints(e), worth: basePoints(e) }));
       ents.forEach((e) => (e.files || []).forEach((f) => files.push(f)));
+      Object.values(dayNotes || {}).forEach((n) => { if (n) files.push(...(n.planShots || []), ...(n.recapShots || [])); });   // plan / recap screenshots
       return Object.assign({}, m, {
         progress, flags, subs: st.subs, overrides: st.overrides, promo: st.promo,
         certs: Object.values(certs).sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt))),

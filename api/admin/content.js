@@ -19,14 +19,14 @@ function clean(c) {
     curriculum: arr(c.curriculum, 30).map((ch) => ({
       id: id(ch && ch.id), name: str(ch && ch.name, 80), role: role(ch && ch.role), promotion: !!(ch && ch.promotion),
       lessons: arr(ch && ch.lessons, 80).map((l) => {
-        const out = { id: id(l && l.id), title: str(l && l.title, 140), video: url(l && l.video), summary: str(l && l.summary, 2000), homework: str(l && l.homework, 4000) };
+        const out = { id: id(l && l.id), title: str(l && l.title, 140), video: url(l && l.video), captions: url(l && l.captions), summary: str(l && l.summary, 2000), homework: str(l && l.homework, 4000) };
         // optional announcement banner above the video
         const n = l && l.notice;
         if (n && (str(n.title, 140) || str(n.body, 2000))) out.notice = { title: str(n.title, 140), body: str(n.body, 2000), link: url(n.link) };
         // a lesson can branch into parts (Liquidity part 1, part 2…); each part unlocks on its own
         if (l && Array.isArray(l.parts)) out.parts = arr(l.parts, 12).map((p) => ({
           id: /^ch\w{1,24}-\w{1,40}$/.test(String(p && p.id)) ? p.id : null,
-          title: str(p && p.title, 140), video: url(p && p.video), summary: str(p && p.summary, 2000), homework: str(p && p.homework, 4000),
+          title: str(p && p.title, 140), video: url(p && p.video), captions: url(p && p.captions), summary: str(p && p.summary, 2000), homework: str(p && p.homework, 4000),
         })).filter((p) => p.id && p.title);
         return out;
       }).filter((l) => l.id && l.title),
@@ -39,7 +39,7 @@ function clean(c) {
     })).filter((h) => h.id && h.title),
     breakdowns: arr(c.breakdowns, 500).map((b) => ({
       id: id(b && b.id), title: str(b && b.title, 160), date: str(b && b.date, 40), summary: str(b && b.summary, 4000),
-      video: url(b && b.video), link: url(b && b.link), createdAt: date(b && b.createdAt),
+      video: url(b && b.video), captions: url(b && b.captions), link: url(b && b.link), createdAt: date(b && b.createdAt),
       kind: ['daily', 'weekly', 'outlook', 'advanced'].includes(b && b.kind) ? b.kind : 'daily',
       week: /^\d{4}-\d{2}-\d{2}$/.test(str(b && b.week, 10)) ? monday(str(b && b.week, 10)) : '',
       day: ['mon', 'tue', 'wed', 'thu', 'fri'].includes(b && b.day) ? b.day : '',

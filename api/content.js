@@ -43,6 +43,20 @@ module.exports = async (req, res) => {
   }
   const s = readSession(req);
   if (!s) return json(res, 401, { error: 'signed_out' });
+  // captions file for a lecture video (members only): fetched here so the browser can show it, .srt turned into WebVTT
+  const ccq = (/[?&]cc=([^&]+)/.exec(req.url || '') || [])[1];
+  if (ccq) {
+    let raw = ''; try { raw = decodeURIComponent(ccq).split('?')[0]; } catch (e) {}
+    if (!/^https:\/\/[a-z0-9]+\.(private\.|public\.)?blob\.vercel-storage\.com\/(lessons|breakdowns)\/[\w.\-]{1,140}$/i.test(raw)) return json(res, 400, { error: 'bad_link' });
+    try {
+      const it = { u: raw }; await signAll(req, [it], 'u');
+      const r = await fetch(it.u); if (!r.ok) return json(res, 404, { error: 'not_found' });
+      let t = (await r.text()).replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+      if (!/^WEBVTT/.test(t)) t = 'WEBVTT\n\n' + t.replace(/^\d+\n(?=\d{1,2}:\d{2})/gm, '').replace(/(\d{1,2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2');
+      res.setHeader('Content-Type', 'text/vtt; charset=utf-8'); res.setHeader('Cache-Control', 'private, max-age=3600');
+      res.statusCode = 200; return res.end(t.slice(0, 2000000));
+    } catch (e) { return json(res, 502, { error: 'fetch_failed' }); }
+  }
 
   // GET /api/content?news=week|history → the economic calendar (see _news.js)
   const nq = (/[?&]news=(week|history)\b/.exec(req.url || '') || [])[1];
@@ -93,7 +107,7 @@ module.exports = async (req, res) => {
       const unit = (u) => {
         const ua = A[u.id] || { open: false, reason: 'order' };
         if (!ua.open) return { id: u.id, open: false, reason: ua.reason };
-        return { id: u.id, title: u.title, video: u.video || '', summary: u.summary || '', homework: u.homework || '',
+        return { id: u.id, title: u.title, video: u.video || '', captions: u.captions || '', summary: u.summary || '', homework: u.homework || '',
           notice: u.notice && (u.notice.title || u.notice.body) ? u.notice : null, open: true, passed: ua.passed, sub: withSub(u.id) };
       };
       if (!hasParts) return unit(l);
@@ -115,7 +129,7 @@ module.exports = async (req, res) => {
     if (a.reason === 'hidden') return;
     const slot = { id: b.id, kind: bdKind(b), week: b.week || '', day: b.day || '', section: b.section || '', createdAt: b.createdAt || '' };
     if (!a.open) { out.breakdowns.push(Object.assign(slot, { open: false, reason: a.reason })); return; }
-    out.breakdowns.push(Object.assign(slot, { title: b.title, date: b.date || '', summary: b.summary || '', video: b.video || '', link: b.link || '',
+    out.breakdowns.push(Object.assign(slot, { title: b.title, date: b.date || '', summary: b.summary || '', video: b.video || '', captions: b.captions || '', link: b.link || '',
       homework: b.homework || BD_TASK[slot.kind], open: true, passed: a.passed, sub: withSub(key) }));
   });
   out.announcements = (content.announcements || []).filter((a) => !a.expires || Date.parse(a.expires) > now);

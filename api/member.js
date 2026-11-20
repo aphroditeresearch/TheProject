@@ -281,7 +281,8 @@ module.exports = async (req, res) => {
     const [certs, promo, journal, entries, dayNotes, weekReviews] = await Promise.all([loadCerts(uid), loadPromo(uid), loadJournal(uid), loadEntries(uid), loadDayNotes(uid), loadWeekReviews(uid).catch(() => ({}))]);
     const list = Object.values(certs).sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt)));
     const ents = Object.values(entries).sort(byEntry).map((e) => Object.assign({}, e, { status: entryStatus(e), points: entryPoints(e), worth: basePoints(e) }));
-    await signAll(req, list.map((c) => c.file).concat(...ents.map((e) => e.files || [])), 'url');
+    const noteShots = []; Object.values(dayNotes || {}).forEach((n) => { if (n) noteShots.push(...(n.planShots || []), ...(n.recapShots || [])); });
+    await signAll(req, list.map((c) => c.file).concat(...ents.map((e) => e.files || []), noteShots), 'url');
     return json(res, 200, { certs: list, promo, journal, entries: ents, dayNotes, weekReviews });
   }
   if (req.method !== 'POST') { res.setHeader('Allow', 'GET, POST'); return json(res, 405, { error: 'method' }); }
@@ -515,12 +516,32 @@ module.exports = async (req, res) => {
     // an older Sunday note was shown merged into this Monday, so what's saved now replaces both
     const sun = new Date(date + 'T12:00:00Z'); sun.setUTCDate(sun.getUTCDate() - 1);
     if (sun.getUTCDay() === 0) await kv(['HDEL', 'daynotes:' + uid, sun.toISOString().slice(0, 10)]);
-    const note = { plan: str(body.plan, 3000), recap: str(body.recap, 3000), mood: ['great', 'good', 'ok', 'rough', 'bad'].includes(body.mood) ? body.mood : '', updatedAt: new Date().toISOString() };
+    const note = { plan: str(body.plan, 6000), recap: str(body.recap, 6000), mood: ['great', 'good', 'ok', 'rough', 'bad'].includes(body.mood) ? body.mood : '', updatedAt: new Date().toISOString() };
+    // screenshots on the plan / recap are saved by 'daynote-shots'; a text save keeps them as they are
+    let oldNote = {}; try { oldNote = JSON.parse((await kv(['HGET', 'daynotes:' + uid, date])) || '{}') || {}; } catch (e) {}
+    ['planShots', 'recapShots'].forEach((k) => { if (Array.isArray(oldNote[k]) && oldNote[k].length) note[k] = oldNote[k]; });
     if (note.plan || note.recap || note.mood) { const [n, has] = await Promise.all([kv(['HLEN', 'daynotes:' + uid]), kv(['HEXISTS', 'daynotes:' + uid, date])]);
       if (!Number(has) && Number(n) >= 3000) return json(res, 409, { error: 'too_many' }); }
-    if (!note.plan && !note.recap && !note.mood) await kv(['HDEL', 'daynotes:' + uid, date]);
+    if (!note.plan && !note.recap && !note.mood && !note.planShots && !note.recapShots) await kv(['HDEL', 'daynotes:' + uid, date]);
     else await kv(['HSET', 'daynotes:' + uid, date, JSON.stringify(note)]);
+    await signAll(req, [].concat(note.planShots || [], note.recapShots || []), 'url');
     return json(res, 200, { saved: true, note });
+  }
+  // screenshots on a day's plan or recap (after-market analysis): only that list changes, the text is untouched
+  if (action === 'daynote-shots') {
+    const date = tradeDay(str(body.date, 10)), key = body.key === 'planShots' ? 'planShots' : body.key === 'recapShots' ? 'recapShots' : '';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !key) return json(res, 400, { error: 'bad_date' });
+    const shots = (Array.isArray(body.shots) ? body.shots : []).slice(0, MAX_FILES).map((f) => cleanFile(f, uid, 'journal'));
+    if (shots.some((f) => !f)) return json(res, 400, { error: 'bad_file' });
+    let note = {}; try { note = JSON.parse((await kv(['HGET', 'daynotes:' + uid, date])) || '{}') || {}; } catch (e) {}
+    if (!note.updatedAt) { const n = await kv(['HLEN', 'daynotes:' + uid]); if (Number(n) >= 3000) return json(res, 409, { error: 'too_many' }); }
+    if (shots.length) note[key] = shots; else delete note[key];
+    note.updatedAt = new Date().toISOString();
+    if (!note.plan && !note.recap && !note.mood && !note.planShots && !note.recapShots) await kv(['HDEL', 'daynotes:' + uid, date]);
+    else await kv(['HSET', 'daynotes:' + uid, date, JSON.stringify(note)]);
+    const out = JSON.parse(JSON.stringify(note));
+    await signAll(req, [].concat(out.planShots || [], out.recapShots || []), 'url');
+    return json(res, 200, { saved: true, note: out });
   }
   if (action === 'journal-delete') {
     const entries = await loadEntries(uid);
